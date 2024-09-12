@@ -5,29 +5,35 @@
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Interface/MManagerInterface.h"
 
-void JMesh::ApplyMaterial() const
+bool JMesh::ApplyMaterial() const
 {
-	if (auto diffuse = mMaterial->GetMaterialParam("DiffuseColor"))
+	auto material = GetMaterial();
+	if (!material)
+	{
+		return false;
+	}
+
+	if (auto diffuse = material->GetMaterialParam("DiffuseColor"))
 	{
 		diffuse->TextureValue = IManager.TextureManager.CreateOrLoad(diffuse->StringValue);
 	}
-	if (auto normal = mMaterial->GetMaterialParam("NormalMap"))
+	if (auto normal = material->GetMaterialParam("NormalMap"))
 	{
 		normal->TextureValue = IManager.TextureManager.CreateOrLoad(normal->StringValue);
 	}
-	if (auto specular = mMaterial->GetMaterialParam("SpecularMap"))
+	if (auto specular = material->GetMaterialParam("SpecularMap"))
 	{
 		specular->TextureValue = IManager.TextureManager.CreateOrLoad(specular->StringValue);
 	}
-	if (auto roughness = mMaterial->GetMaterialParam("RoughnessMap"))
+	if (auto roughness = material->GetMaterialParam("RoughnessMap"))
 	{
 		roughness->TextureValue = IManager.TextureManager.CreateOrLoad(roughness->StringValue);
 	}
-	if (auto metallic = mMaterial->GetMaterialParam("MetallicMap"))
+	if (auto metallic = material->GetMaterialParam("MetallicMap"))
 	{
 		metallic->TextureValue = IManager.TextureManager.CreateOrLoad(metallic->StringValue);
 	}
-	if (auto ao = mMaterial->GetMaterialParam("AOMap"))
+	if (auto ao = material->GetMaterialParam("AOMap"))
 	{
 		ao->TextureValue = IManager.TextureManager.CreateOrLoad(ao->StringValue);
 	}
@@ -40,4 +46,5 @@ void JMesh::ApplyMaterial() const
 		opacity->TextureValue = IManager.TextureManager.CreateOrLoad(opacity->StringValue);
 	}
 
+	return true;
 }

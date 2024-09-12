@@ -1,7 +1,6 @@
 ﻿#include "common_pch.h"
 #include "FbxFile.h"
 
-#include "FbxMaterial.h"
 #include "FbxUtils.h"
 #include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Graphics/Mesh/JMesh.h"
@@ -162,13 +161,6 @@ namespace Utils::Fbx
 					}
 				}
 			}
-		}
-
-		// TODO: 위 작업이 완료되면 *.jasset 파일로 직렬화하여 저장.
-		for (auto& mesh : mMeshList)
-		{
-			std::ofstream file("Game/test.jasset", std::ios::binary);
-			mesh->Serialize(file);
 		}
 		return true;
 	}

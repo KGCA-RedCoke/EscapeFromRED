@@ -85,6 +85,22 @@ struct IsTriangleSame
 	}
 };
 
+template <typename T>
+struct IsVertexSame
+{
+	static_assert(std::is_base_of_v<Vertex::FVertexInfo_2D, T>, "T must be derived from FVertexInfo_2D");
+
+	T Vertex;
+
+	IsVertexSame(T Data)
+		: Vertex(Data) {}
+
+	bool operator()(T& Value)
+	{
+		return Value.Position == Vertex.Position && Value.UV == Vertex.UV && Value.Color == Vertex.Color;
+	}
+};
+
 /**
  * 
  * @tparam T 정점 정보
@@ -127,8 +143,18 @@ struct JData
 			for (int32_t i = 0; i < 3; ++i)
 			{
 				auto vertex = TriangleList[StartTriangle + face].Vertex[i];
-				VertexArray.push_back(vertex);
-				IndexArray.push_back(VertexArray.size() - 1);
+
+				auto foundedVertex = std::find_if(VertexArray.begin(), VertexArray.end(), IsVertexSame<T>(vertex));
+				if (foundedVertex != VertexArray.end())
+				{
+					int32_t vertexIndex = std::distance(VertexArray.begin(), foundedVertex); // 찾은 것의 Index가 필요
+					IndexArray.push_back(vertexIndex);									// IndexArray에 추가
+				}
+				else
+				{
+					VertexArray.push_back(vertex);
+					IndexArray.push_back(VertexArray.size() - 1);
+				}
 			}
 		}
 		return faceNum;

@@ -150,7 +150,6 @@
     <ClInclude Include="Core\Utils\Math\Vector2.h" />
     <ClInclude Include="Core\Utils\Math\Vector4.h" />
     <ClInclude Include="Core\Utils\ObjectLoader\FbxFile.h" />
-    <ClInclude Include="Core\Utils\ObjectLoader\FbxMaterial.h" />
     <ClInclude Include="Core\Utils\ObjectLoader\FbxUtils.h" />
     <ClInclude Include="Core\Utils\Timer.h" />
     <ClInclude Include="Core\Utils\Utils.h" />
@@ -215,7 +214,6 @@
     <ClCompile Include="Core\Utils\Math\Vector2.cpp" />
     <ClCompile Include="Core\Utils\Math\Vector4.cpp" />
     <ClCompile Include="Core\Utils\ObjectLoader\FbxFile.cpp" />
-    <ClCompile Include="Core\Utils\ObjectLoader\FbxMaterial.cpp" />
     <ClCompile Include="Core\Window\Application.cpp" />
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />

@@ -84,16 +84,14 @@ void AutoSerializer::Serialize(char* Buffer)
 
 void AutoSerializer::Serialize(std::ofstream& OutFileStream) const
 {
-	JAssetHeader   header;
-	JAssetMetaData metadata;
+	JAssetHeader header;
 
-	header.DataSize        = 0;
-	
+
+	header.DataSize = 0;
+
 	// header.DataSize += (sizeof(JAssetHeader) + sizeof(JAssetMetaData) + sizeof(metadata.InstanceCount));
 
 	OutFileStream.write(reinterpret_cast<char*>(&header), sizeof(JAssetHeader));
-
-	OutFileStream.write(reinterpret_cast<char*>(&metadata), sizeof(JAssetMetaData));
 
 	for (int32_t i = 0; i < Serializables.Members.size(); ++i)
 	{
@@ -114,7 +112,6 @@ void AutoSerializer::Serialize(std::ofstream& OutFileStream) const
 	OutFileStream.seekp(0);
 
 	OutFileStream.write(reinterpret_cast<char*>(&header), sizeof(JAssetHeader));
-	OutFileStream.write(reinterpret_cast<char*>(&metadata), sizeof(JAssetMetaData));
 
 	OutFileStream.flush();
 	OutFileStream.close();
@@ -149,11 +146,9 @@ void AutoSerializer::DeSerialize(const char* Buffer) const
 
 void AutoSerializer::DeSerialize(std::ifstream& InFileStream) const
 {
-	JAssetHeader   header{};
-	JAssetMetaData metadata{};
+	JAssetHeader header{};
 
 	InFileStream.read(reinterpret_cast<char*>(&header), sizeof(header));
-	InFileStream.read(reinterpret_cast<char*>(&metadata), sizeof(metadata));
 
 	if (StringHash(header.Signature) != JAssetHash)
 	{

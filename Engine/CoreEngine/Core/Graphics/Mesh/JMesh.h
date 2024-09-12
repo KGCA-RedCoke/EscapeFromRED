@@ -24,7 +24,7 @@ class JMesh : public AutoSerializer // 직렬화 해서 저장
 {
 
 public:
-	void ApplyMaterial() const;
+	[[nodiscard]] bool ApplyMaterial() const;
 
 public:
 	[[nodiscard]] JText                                GetName() const { return mName; }

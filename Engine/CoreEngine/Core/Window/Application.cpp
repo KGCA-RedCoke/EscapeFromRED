@@ -93,7 +93,7 @@ void Application::Initialize()
 	mFpsText->SetScreenPosition({25, 25});
 
 	// // FIXME: Test Code
-	Utils::Fbx::FbxFile g_testObj("Game/Model/Male_Jacket.fbx");
+	Utils::Fbx::FbxFile g_testObj("Game/Model/SM_Vehicle01.fbx");
 	g_testObj.Load();
 	mDXObject = std::make_unique<JDXObject>(&g_testObj);
 }

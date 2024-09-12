@@ -87,7 +87,7 @@ public:
 
 	FORCEINLINE void               SetTransparent(bool bInTransparent) { bTransparent = bInTransparent; }
 	[[nodiscard]] FORCEINLINE bool IsTransparent() const { return bTransparent; }
-
+	
 private:
 	uint32_t mMaterialID;
 
@@ -127,5 +127,10 @@ namespace Utils::Material
 
 		return materialParams;
 	}
+
+
+
+	
+
 
 }
