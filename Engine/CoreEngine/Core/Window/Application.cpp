@@ -93,9 +93,9 @@ void Application::Initialize()
 	mFpsText->SetScreenPosition({25, 25});
 
 	// // FIXME: Test Code
-	// Utils::Fbx::FbxFile g_testObj("Game/Model/Male_Jacket.fbx");
-	// g_testObj.Load();
-	// mDXObject = std::make_unique<JDXObject>(/*&g_testObj*/);
+	Utils::Fbx::FbxFile g_testObj("Game/Model/Male_Jacket.fbx");
+	g_testObj.Load();
+	mDXObject = std::make_unique<JDXObject>(&g_testObj);
 }
 
 void Application::Update(float DeltaTime)
@@ -112,8 +112,8 @@ void Application::Render()
 
 	IManager.Render(); // GUI Render
 
-	// mDXObject->PreRender();
-	// mDXObject->PostRender();
+	mDXObject->PreRender();
+	mDXObject->PostRender();
 
 	mFpsText->PreRender();
 	mFpsText->Render();

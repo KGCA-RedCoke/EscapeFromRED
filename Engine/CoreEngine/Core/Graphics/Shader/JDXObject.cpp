@@ -75,24 +75,6 @@ JDXObject::JDXObject(Utils::Fbx::FbxFile* InFbxObj)
     mScale = 0.1f;
 }
 
-JDXObject::JDXObject(const JWText& InShaderFile)
-    : mShaderFile(InShaderFile)
-{
-    mShader = IManager.ShaderManager.CreateOrLoad(L"alphablend");
-
-    mVertexSize = sizeof(Vertex::FVertexInfo_Base);
-    mIndexSize  = sizeof(DWORD);
-
-    CreateBuffers();
-}
-
-JDXObject::JDXObject(Utils::Fbx::FbxFile* InFbxObj, const JWText& InShaderFile)
-    : JDXObject(InShaderFile)
-{
-    CreateBuffers();
-}
-
-
 void JDXObject::Update(float DeltaTime)
 {
     UpdateTransform();

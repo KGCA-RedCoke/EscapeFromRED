@@ -213,8 +213,8 @@ namespace JMath
         : XMFLOAT3(0.f, 0.f, 0.f) {}
 
 
-    // constexpr TVector::TVector(float InF)
-    //     : XMFLOAT3(InF, InF, InF) {}
+    TVector::TVector(float InF)
+        : XMFLOAT3(InF, InF, InF) {}
 
     constexpr TVector::TVector(float InX, float InY, float InZ)
         : XMFLOAT3(InX, InY, InZ) {}

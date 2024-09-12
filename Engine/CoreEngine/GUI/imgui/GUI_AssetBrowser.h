@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "GUI_Base.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
 // #include "Core/Texture/MTextureManager.h"
 
+class JTexture;
 namespace fs = std::filesystem;
 
 enum class EFileType : uint8_t
@@ -78,14 +80,14 @@ struct AssetBrowserIconList
 
 	void CreateTextures()
 	{
-		// 	FolderIcon = Manager_Texture.CreateOrLoad(L"rsc/Icons/Folders/Folder_Base_64x.png");
-		// 	FileIcon   = Manager_Texture.CreateOrLoad(L"rsc/Icons/AssetIcons/Actor_64x.png");
-		// }
+		FolderIcon = Manager_Texture.CreateOrLoad(L"rsc/Icons/Folders/Folder_Base_64x.png");
+		FileIcon   = Manager_Texture.CreateOrLoad(L"rsc/Icons/AssetIcons/Actor_64x.png");
 	}
 
-public:
-	// JTexture* FolderIcon;
-	// JTexture* FileIcon;
+public
+:
+	JTexture* FolderIcon;
+	JTexture* FileIcon;
 };
 
 struct FBasicFilePreview

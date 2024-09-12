@@ -13,8 +13,6 @@ class JDXObject : public IRenderable
 public:
     explicit JDXObject();
     explicit JDXObject(Utils::Fbx::FbxFile* InFbxObj);
-    explicit JDXObject(const JWText& InShaderFile);
-    explicit JDXObject(Utils::Fbx::FbxFile* InFbxObj, const JWText& InShaderFile);
     ~JDXObject() = default;
 
 public:

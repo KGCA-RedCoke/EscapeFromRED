@@ -70,7 +70,7 @@ namespace JMath
 	public:
 		// ------------------------ 생성자 ----------------------------
 		TVector() noexcept;
-		constexpr TVector(float InF){};
+		TVector(float InF);
 		constexpr TVector(float InX, float InY, float InZ);
 
 		explicit TVector(const TVector2 V, float InZ);

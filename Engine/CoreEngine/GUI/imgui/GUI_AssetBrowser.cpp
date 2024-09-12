@@ -1,12 +1,8 @@
 ﻿#include "common_pch.h"
 #include "GUI_AssetBrowser.h"
 
-#include "Core/Utils/Logger.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"
-
-// #include "Core/Utils/Utils.h"
-// #include "Core/Utils/Math/MathUtility.h"
 
 
 GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
@@ -71,7 +67,10 @@ void GUI_AssetBrowser::Update(float_t DeltaTime)
 			{
 				// 파일 불러오기 (파일 선택창 띄우기)
 				// 현재 파일 위치는 기본적으로 Game 폴더로 설정되어있음
-				
+				// if (const auto path = OpenFile(L"Game", L"JEngine Asset (*.jasset)\0*.jasset\0"))
+				// {
+				// 	// 파일 불러오기
+				// }
 			}
 			if (ImGui::MenuItem("Save"))
 			{
@@ -377,15 +376,15 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 		ImVec2 box_max(box_min.x + mLayoutItemSize.x + 2, box_min.y + mLayoutItemSize.y + 2); // Dubious
 		draw_list->AddRectFilled(box_min, box_max, iconBgColor); // Background color
 
-		// // if (itemData->GetType() != 0)
-		// {
-		// 	draw_list->AddImage(
-		// 						itemData->FileType == EFileType::Folder
-		// 							? g_IconList.FolderIcon->GetSRV()
-		// 							: g_IconList.FileIcon->GetSRV(),
-		// 						box_min + ImVec2(2, 2),
-		// 						box_max - ImVec2(2, 2));
-		// }
+		// if (itemData->GetType() != 0)
+		{
+			draw_list->AddImage(
+								itemData->FileType == EFileType::Folder
+									? g_IconList.FolderIcon->GetSRV()
+									: g_IconList.FileIcon->GetSRV(),
+								box_min + ImVec2(2, 2),
+								box_max - ImVec2(2, 2));
+		}
 
 		// if (bShowTypeOverlay /*&& item_data->GetType() != 0*/)
 		// {
@@ -479,7 +478,7 @@ void GUI_AssetBrowser::HandleFile()
 	if (currentPath.has_parent_path())
 	{
 		const fs::path parentPath = fs::absolute(mCurrentDirectory).parent_path();
-		// mFiles.emplace_back(StringHash(parentPath.c_str()), L"..", parentPath, EFileType::Folder);
+		mFiles.emplace_back(StringHash(parentPath.c_str()), L"..", parentPath, EFileType::Folder);
 	}
 
 	mCachedDirectory = mCurrentDirectory;
@@ -490,11 +489,11 @@ void GUI_AssetBrowser::HandleFile()
 
 		if (fs::is_directory(dir))
 		{
-			// mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Folder);
+			mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Folder);
 		}
 		else if (!path.extension().empty() && path.extension() == ".jasset")
 		{
-			// mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
+			mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
 		}
 	}
 }
