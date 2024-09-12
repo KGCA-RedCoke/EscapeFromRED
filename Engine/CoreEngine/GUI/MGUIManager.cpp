@@ -1,0 +1,127 @@
+﻿#include "common_pch.h"
+#include "MGUIManager.h"
+
+#include <ranges>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_win32.h>
+#include <imgui/imgui_impl_dx11.h>
+
+#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Interface/MManagerInterface.h"
+#include "imgui/GUI_Inspector.h"
+#include "imgui/GUI_Themes.h"
+#include "imgui/GUI_Viewport.h"
+#include "Core/Window/Window.h"
+#include "imgui/GUI_AssetBrowser.h"
+
+constexpr char Name_Viewport[]     = "Editor Viewport";
+constexpr char Name_Inspector[]    = "Editor Inspector";
+constexpr char Name_AssetBrowser[] = "Asset Browser";
+
+MGUIManager::MGUIManager()  = default;
+MGUIManager::~MGUIManager() = default;
+
+/**
+ * ImGui는 기본적으로 렌더링을 위한 초기화가 필요.
+ * ImGui 초기화는 ImGui 컨텍스트를 생성하고, 스타일을 설정하며, 플랫폼 및 백엔드를 초기화해야한다.
+ */
+void MGUIManager::Initialize()
+{
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();	// ImGui 컨텍스트 생성
+
+	// 아래는 ImGui 설정과 관련된 변수(전역 설정)
+	ImGuiIO&    io    = ImGui::GetIO();
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// 키보드 컨트롤 활성화
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// Docking(다른 창에 붙이기) 활성화
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 뷰포트 활성화 
+
+	ImGui::Spectrum::StyleColorsSpectrum();	// 스펙트럼 테마 적용(테마는 io로 다양하게 설정이 가능하다)
+
+	/// NOTE:만약 특정 창에 대해서만 스타일을 설정하고 싶다면 (Push이후엔 Pop으로 설정을 되돌릴 수 있다, Pop을 안하면 계속 적용된다...)
+	/// ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	/// ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+	/// ImGui::PopStyleColor();
+	/// ImGui::PopStyleVar();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding              = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
+	// 플랫폼, 백엔드 초기화
+	ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
+	ImGui_ImplDX11_Init(G_Context.GetDevice(), G_Context.GetImmediateDeviceContext());
+
+	InitializeStaticGUI();
+	ImGui::GetIO().FontGlobalScale = 1.5f; // 기본 글자 크기보다 1.5배로 확대
+}
+
+void MGUIManager::InitializeStaticGUI()
+{
+	CreateOrLoad<GUI_Viewport>(Name_Viewport)->Initialize();
+	CreateOrLoad<GUI_Inspector>(Name_Inspector)->Initialize();
+	CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser)->Initialize();
+}
+
+void MGUIManager::UpdateStaticGUI(float DeltaTime)
+{
+	for (UPtr<GUI_Base>& gui : mManagedList | std::ranges::views::values)
+	{
+		gui->Update(DeltaTime);
+	}
+}
+
+void MGUIManager::Update(float_t DeltaTime)
+{
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::DockSpaceOverViewport();
+
+	UpdateStaticGUI(DeltaTime);
+}
+
+void MGUIManager::Release()
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+}
+
+/**
+ * 여러 GUI창들의 Update(Frame)에서 생성된 렌더링 명령들을 GPU에 전달 (한번에)
+ * 그래서 업데이트와 렌더링 로직은 Update에 있지만 실제 렌더링은 Render에서 이루어진다.
+ */
+void MGUIManager::Render()
+{
+	ImGui::Render(); // ImGui 렌더링 명령 생성
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // 생성된 명령(GetDrawData)을 GPU에 전달
+
+	// Update and Present additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows(); // 새 뷰포트 생성 | 기존 뷰포트 상태, 위치 업데이트 | 필요없는 뷰포트 파괴 등
+		ImGui::RenderPlatformWindowsDefault(); // 각 뷰포트 렌더
+	}
+}
+
+void MGUIManager::AddGUI(EGUIType InType)
+{}
+
+void MGUIManager::HideGUI(EGUIType InType)
+{}
+
+void MGUIManager::DeleteGUI(EGUIType InType)
+{}
+
+void MGUIManager::ScaleAllSize(float InScale)
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(InScale);
+}

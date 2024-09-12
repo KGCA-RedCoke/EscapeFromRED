@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{4ecf8732-d8c6-476a-b16c-258ae318ee74}</ProjectGuid>
+    <RootNamespace>CoreEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <EnableUnitySupport>true</EnableUnitySupport>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>../../bin/$(Configuration)\$(SolutionName)\$(ProjectName)\Output/</OutDir>
+    <IntDir>../../bin/$(Configuration)\$(SolutionName)\$(ProjectName)\Intermediate/</IntDir>
+    <ExternalIncludePath>$(ProjectDir)Vender\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>../../bin/$(Configuration)\$(SolutionName)\$(ProjectName)\Output/</OutDir>
+    <IntDir>../../bin/$(Configuration)\$(SolutionName)\$(ProjectName)\Intermediate/</IntDir>
+    <ExternalIncludePath>$(ProjectDir)Vender\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vender\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;d3dcompiler.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmtd.lib;spdlogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vender\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;d3dcompiler.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmt.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AppDefines.h" />
+    <ClInclude Include="common_include.h" />
+    <ClInclude Include="common_pch.h" />
+    <ClInclude Include="Core\Entity\Actor\JActor.h" />
+    <ClInclude Include="Core\Entity\Camera\JCamera.h" />
+    <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
+    <ClInclude Include="Core\Entity\JObject.h" />
+    <ClInclude Include="Core\Entity\Mesh\JBaseMeshComponent.h" />
+    <ClInclude Include="Core\Entity\Mesh\JStaticMeshComponent.h" />
+    <ClInclude Include="Core\Entity\Transform\JTransformComponent.h" />
+    <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
+    <ClInclude Include="Core\Graphics\Font\JFont.h" />
+    <ClInclude Include="Core\Graphics\Font\XTKFont.h" />
+    <ClInclude Include="Core\Graphics\GraphicDevice.h" />
+    <ClInclude Include="Core\Graphics\graphics_common_include.h" />
+    <ClInclude Include="Core\Graphics\Layer\XLayerBase.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial.h" />
+    <ClInclude Include="Core\Graphics\Mesh\JMesh.h" />
+    <ClInclude Include="Core\Graphics\Renderer.h" />
+    <ClInclude Include="Core\Graphics\ShaderStructs.h" />
+    <ClInclude Include="Core\Graphics\Shader\InputLayouts.h" />
+    <ClInclude Include="Core\Graphics\Shader\JDXObject.h" />
+    <ClInclude Include="Core\Graphics\Shader\JShader.h" />
+    <ClInclude Include="Core\Graphics\Shader\MShaderManager.h" />
+    <ClInclude Include="Core\Graphics\State\SamplerState.h" />
+    <ClInclude Include="Core\Graphics\Texture\JTexture.h" />
+    <ClInclude Include="Core\Graphics\Texture\MTextureManager.h" />
+    <ClInclude Include="Core\Graphics\Vertex\XTKPrimitiveBatch.h" />
+    <ClInclude Include="Core\Graphics\Vertex\XVertexMesh.h" />
+    <ClInclude Include="Core\Graphics\Viewport\MViewportManager.h" />
+    <ClInclude Include="Core\Input\XController.h" />
+    <ClInclude Include="Core\Input\XKeyboardMouse.h" />
+    <ClInclude Include="Core\Interface\ICoreInterface.h" />
+    <ClInclude Include="Core\Interface\IRenderable.h" />
+    <ClInclude Include="Core\Interface\MManagerInterface.h" />
+    <ClInclude Include="Core\Manager\Manager_Base.h" />
+    <ClInclude Include="Core\Thread\ThreadPool.h" />
+    <ClInclude Include="Core\Thread\ThreadQueue.h" />
+    <ClInclude Include="Core\Utils\FileIO\JSerialization.h" />
+    <ClInclude Include="Core\Utils\HelperFunction.h" />
+    <ClInclude Include="Core\Utils\Logger.h" />
+    <ClInclude Include="Core\Utils\Math\Color.h" />
+    <ClInclude Include="Core\Utils\Math\FTransform.h" />
+    <ClInclude Include="Core\Utils\Math\MathFwd.h" />
+    <ClInclude Include="Core\Utils\Math\MathUtility.h" />
+    <ClInclude Include="Core\Utils\Math\Quaternion.h" />
+    <ClInclude Include="Core\Utils\Math\TMatrix.h" />
+    <ClInclude Include="Core\Utils\Math\Vector.h" />
+    <ClInclude Include="Core\Utils\Math\Vector2.h" />
+    <ClInclude Include="Core\Utils\Math\Vector4.h" />
+    <ClInclude Include="Core\Utils\ObjectLoader\FbxFile.h" />
+    <ClInclude Include="Core\Utils\ObjectLoader\FbxMaterial.h" />
+    <ClInclude Include="Core\Utils\ObjectLoader\FbxUtils.h" />
+    <ClInclude Include="Core\Utils\Timer.h" />
+    <ClInclude Include="Core\Utils\Utils.h" />
+    <ClInclude Include="Core\Window\Application.h" />
+    <ClInclude Include="Core\Window\Window.h" />
+    <ClInclude Include="Debug\Assert.h" />
+    <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
+    <ClInclude Include="enums.h" />
+    <ClInclude Include="GUI\imgui\Chatting\GUI_Chat.h" />
+    <ClInclude Include="GUI\imgui\GUI_AssetBrowser.h" />
+    <ClInclude Include="GUI\imgui\GUI_Base.h" />
+    <ClInclude Include="GUI\imgui\GUI_Inspector.h" />
+    <ClInclude Include="GUI\imgui\GUI_Themes.h" />
+    <ClInclude Include="GUI\imgui\GUI_Viewport.h" />
+    <ClInclude Include="GUI\MGUIManager.h" />
+    <ClInclude Include="Vender\include\imgui\imconfig.h" />
+    <ClInclude Include="Vender\include\imgui\imgui.h" />
+    <ClInclude Include="Vender\include\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="Vender\include\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="Vender\include\imgui\imgui_internal.h" />
+    <ClInclude Include="Vender\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Vender\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="Vender\include\imgui\imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\Entity\Actor\JActor.cpp" />
+    <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
+    <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
+    <ClCompile Include="Core\Entity\JObject.cpp" />
+    <ClCompile Include="Core\Entity\Mesh\JBaseMeshComponent.cpp" />
+    <ClCompile Include="Core\Entity\Mesh\JStaticMeshComponent.cpp" />
+    <ClCompile Include="Core\Entity\Transform\JTransformComponent.cpp" />
+    <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
+    <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
+    <ClCompile Include="Core\Graphics\GraphicDevice.cpp" />
+    <ClCompile Include="Core\Graphics\Layer\XLayerBase.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial.cpp" />
+    <ClCompile Include="Core\Graphics\Mesh\JMesh.cpp" />
+    <ClCompile Include="Core\Graphics\Renderer.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JDXObject.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JShader.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\MShaderManager.cpp" />
+    <ClCompile Include="Core\Graphics\State\SamplerState.cpp" />
+    <ClCompile Include="Core\Graphics\Texture\JTexture.cpp" />
+    <ClCompile Include="Core\Graphics\Texture\MTextureManager.cpp" />
+    <ClCompile Include="Core\Graphics\Vertex\XTKPrimitiveBatch.cpp" />
+    <ClCompile Include="Core\Graphics\Vertex\XVertexMesh.cpp" />
+    <ClCompile Include="Core\Graphics\Viewport\MViewportManager.cpp" />
+    <ClCompile Include="Core\Input\XController.cpp" />
+    <ClCompile Include="Core\Input\XKeyboardMouse.cpp" />
+    <ClCompile Include="Core\Interface\MManagerInterface.cpp" />
+    <ClCompile Include="Core\Manager\BaseManager.cpp" />
+    <ClCompile Include="Core\Thread\ThreadPool.cpp" />
+    <ClCompile Include="Core\Thread\ThreadQueue.cpp" />
+    <ClCompile Include="Core\Utils\FileIO\JSerialization.cpp" />
+    <ClCompile Include="Core\Utils\Logger.cpp" />
+    <ClCompile Include="Core\Utils\Math\Color.cpp" />
+    <ClCompile Include="Core\Utils\Math\Math.cpp" />
+    <ClCompile Include="Core\Utils\Math\Quaternion.cpp" />
+    <ClCompile Include="Core\Utils\Math\TMatrix.cpp" />
+    <ClCompile Include="Core\Utils\Math\Vector.cpp" />
+    <ClCompile Include="Core\Utils\Math\Vector2.cpp" />
+    <ClCompile Include="Core\Utils\Math\Vector4.cpp" />
+    <ClCompile Include="Core\Utils\ObjectLoader\FbxFile.cpp" />
+    <ClCompile Include="Core\Utils\ObjectLoader\FbxMaterial.cpp" />
+    <ClCompile Include="Core\Window\Application.cpp" />
+    <ClCompile Include="Core\Window\Window.cpp" />
+    <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
+    <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="GUI\imgui\Chatting\GUI_Chat.cpp" />
+    <ClCompile Include="GUI\imgui\GUI_AssetBrowser.cpp" />
+    <ClCompile Include="GUI\imgui\GUI_Base.cpp" />
+    <ClCompile Include="GUI\imgui\GUI_Inspector.cpp" />
+    <ClCompile Include="GUI\imgui\GUI_Themes.cpp" />
+    <ClCompile Include="GUI\imgui\GUI_Viewport.cpp" />
+    <ClCompile Include="GUI\MGUIManager.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
