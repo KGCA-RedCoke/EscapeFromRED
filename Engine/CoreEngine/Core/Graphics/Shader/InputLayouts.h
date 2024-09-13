@@ -5,7 +5,8 @@ const uint32_t HASH_SHADER_SKELETAL_MESH     = StringHash(L"Shader/Character.hls
 const uint32_t HASH_SHADER_STATIC_MESH       = StringHash(L"Shader/Basic.hlsl");
 const uint32_t HASH_SHADER_WorldGridMaterial = StringHash(L"Shader/WorldGridMaterial.hlsl");
 const uint32_t HASH_SHADER_SIMPLE_MESH       = StringHash(L"Shader/SimpleShape.hlsl");
-
+const uint32_t HASH_SHADER_TOON              = StringHash(L"Shader/Toon.hlsl");
+const uint32_t HASH_UVANIM                   = StringHash(L"Shader/UVAnim.hlsl");
 namespace InputLayout
 {
 	constexpr D3D11_INPUT_ELEMENT_DESC Position =
@@ -128,13 +129,17 @@ namespace InputLayout
 	inline std::unordered_map<uint32_t, const D3D11_INPUT_ELEMENT_DESC*> HASH_INPUT_LAYOUT_MAP_DESC =
 	{
 		{HASH_SHADER_STATIC_MESH, LAYOUT_StaticMesh_Base},
-		{HASH_SHADER_WorldGridMaterial, LAYOUT_StaticMesh_Base}
+		{HASH_SHADER_WorldGridMaterial, LAYOUT_StaticMesh_Base},
+		{HASH_SHADER_TOON, LAYOUT_StaticMesh_Base},
+		{HASH_UVANIM, LAYOUT_StaticMesh_Base},
 	};
 
 	inline std::unordered_map<uint32_t, uint32_t> HASH_INPUT_LAYOUT_MAP_NUMELEMENT =
 	{
 		{HASH_SHADER_STATIC_MESH, 6},
-		{HASH_SHADER_WorldGridMaterial, 6}
+		{HASH_SHADER_WorldGridMaterial, 6},
+		{HASH_SHADER_TOON, 6},
+		{HASH_UVANIM, 6}
 	};
 
 }

@@ -1,8 +1,5 @@
-﻿#include "common_pch.h"
-#include "FbxFile.h"
-
+﻿#include "FbxFile.h"
 #include "FbxUtils.h"
-#include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Graphics/Mesh/JMesh.h"
 #include "Core/Interface/MManagerInterface.h"
 
@@ -126,6 +123,10 @@ namespace Utils::Fbx
 						{
 							mesh->mMaterial = subMaterial;
 						}
+						else
+						{
+							mesh->mMaterial = Utils::Material::s_DefaultMaterial;
+						}
 
 						mNumVertex += data->VertexArray.size();
 						mNumIndex += data->IndexArray.size();
@@ -199,7 +200,7 @@ namespace Utils::Fbx
 				meshData->mParentMesh     = InParentMeshData;
 				meshData->mMaterialRefNum = 0;
 				meshData->mFaceNum        = 0;
-				meshData->mVertexData     = MakePtr<VertexInfoData>();;
+				meshData->mVertexData     = MakePtr<JData<Vertex::FVertexInfo_Base>>();;
 			}
 			mMeshList.push_back(meshData);
 
@@ -516,7 +517,7 @@ namespace Utils::Fbx
 						// 현재는 머티리얼이 여러개 있으니 서브메시를 머티리얼 개수만큼 생성한다.
 						auto subMesh = MakePtr<JMesh>();
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
-						subMesh->mVertexData = MakePtr<VertexInfoData>();
+						subMesh->mVertexData = MakePtr<JData<Vertex::FVertexInfo_Base>>();
 
 						// 현재 메시에 서브메시를 추가한다.
 						InMeshData->mSubMesh.push_back(subMesh);

@@ -92,10 +92,26 @@ void Application::Initialize()
 	mFpsText->SetColor(FLinearColor::Orange);
 	mFpsText->SetScreenPosition({25, 25});
 
+	// Utils::Material::s_DefaultMaterial = Utils::Material::CreateDefaultMaterial("DefaultMaterial");
+	//
+	// // ------------------------------- 테스트 코드 -----------------------------------------
+	// // JMaterial      material("Game/Model/T_CP_NPC_Male_Cloth_B.png");
+	// std::ofstream outfile("Game/has.json");
+	// Utils::Material::s_DefaultMaterial->Serialize(outfile);
+	// // texture.Serialize(outfile);
+	// outfile.flush();
+	// outfile.close();
+
+	std::ifstream infile("Game/has.json");
+	JMaterial texture;
+	texture.DeSerialize(infile);
+	infile.close();
+	// -------------------------------------------------------------------------------------
+
 	// // FIXME: Test Code
-	Utils::Fbx::FbxFile g_testObj("Game/Model/SM_Vehicle01.fbx");
-	g_testObj.Load();
-	mDXObject = std::make_unique<JDXObject>(&g_testObj);
+	// Utils::Fbx::FbxFile g_testObj("Game/Model/sword.fbx");
+	// g_testObj.Load();
+	// mDXObject = std::make_unique<JDXObject>(&g_testObj);
 }
 
 void Application::Update(float DeltaTime)
@@ -112,8 +128,8 @@ void Application::Render()
 
 	IManager.Render(); // GUI Render
 
-	mDXObject->PreRender();
-	mDXObject->PostRender();
+	// mDXObject->PreRender();
+	// mDXObject->PostRender();
 
 	mFpsText->PreRender();
 	mFpsText->Render();

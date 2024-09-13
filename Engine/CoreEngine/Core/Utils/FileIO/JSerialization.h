@@ -85,10 +85,7 @@ class ISerializable
 {
 public:
 	virtual void   Serialize(std::ofstream& FileStream) = 0;
-	virtual void*  GetData() = 0;
-	virtual size_t GetDataSize() = 0;
-	virtual bool   IsModified() = 0;
-	virtual void   ResetState() = 0;
+	virtual void   DeSerialize(std::ifstream& InFileStream) = 0;
 };
 
 class SerializableMember
@@ -111,32 +108,30 @@ public:
 		Serializables.AddMember(member);
 	}
 
-	// Get size of total buffer.
-	size_t GetSerializationBufferSize() const;
+	// // Get size of total buffer.
+	// size_t GetSerializationBufferSize() const;
+	//
+	// // Get size of modified Members only.
+	// size_t GetModifiedSerializationBufferSize() const;
 
-	// Get size of modified Members only.
-	size_t GetModifiedSerializationBufferSize() const;
+	// // Serailize.
+	// void Serialize(char* Buffer);
+	//
+	// void Serialize(std::ofstream& OutFileStream) const;
+	//
+	// /**
+	//  * 역 직렬화 메서드
+	//  * 메모리에서 직접 버퍼를 읽음
+	//  */
+	// void DeSerialize(const char* Buffer) const;
+	//
+	// /**
+	//  * 역 직렬화 메서드
+	//  * 파일스트림에서 버퍼를 읽음 (더 느림!)
+	//  */
+	// void DeSerialize(std::ifstream& InFileStream) const;
 
-	void Serialize() {}
-
-	// Serailize.
-	void Serialize(char* Buffer);
-
-	void Serialize(std::ofstream& OutFileStream) const;
-
-	/**
-	 * 역 직렬화 메서드
-	 * 메모리에서 직접 버퍼를 읽음
-	 */
-	void DeSerialize(const char* Buffer) const;
-
-	/**
-	 * 역 직렬화 메서드
-	 * 파일스트림에서 버퍼를 읽음 (더 느림!)
-	 */
-	void DeSerialize(std::ifstream& InFileStream) const;
-
-	void ResetModifiedState();
+	// void ResetModifiedState();
 
 private:
 	SerializableMember Serializables{};
@@ -189,70 +184,70 @@ public:
 				FileStream.write(static_cast<char*>(&value), sizeof(value));
 			}
 		}
-		else
-		{
-			FileStream.write(static_cast<char*>(GetData()), GetDataSize());
-		}
+		// else
+		// {
+		// 	FileStream.write(static_cast<char*>(GetData()), GetDataSize());
+		// }
 	}
 
-	void* GetData() override
-	{
-		if constexpr (bIsSmartPtr<T>)
-		{
-			return mData.get();
-		}
-
-		if constexpr (bIsPtr<T>)
-		{
-			return mData;
-		}
-
-		if constexpr (bIsVector<T>)
-		{
-			return mData.data();
-		}
-
-		return &mData;
-	}
-
-	size_t GetDataSize() override
-	{
-		if constexpr (bIsSmartPtr<T> || bIsPtr<T>)
-		{
-			return sizeof(*mData);
-		}
-
-		if constexpr (bIsString<T>)
-		{
-			return mData.length();
-		}
-
-		if constexpr (bIsVector<T> || bIsArray<T> || bIsMap<T>)
-		{
-			return mData.size() * sizeof(T);
-		}
-
-		return sizeof(mData);
-	}
-
-	bool IsModified() override
-	{
-		return bIsModified;
-	}
-
-	void ResetState() override
-	{
-		this->bIsModified = false;
-	}
-
-	JProperty& operator=(T& Val)
-	{
-		if (mData == Val)
-			return *this;
-
-		mData = Val;
-		return *this;
-	}
+	// void* GetData() override
+	// {
+	// 	if constexpr (bIsSmartPtr<T>)
+	// 	{
+	// 		return mData.get();
+	// 	}
+	//
+	// 	if constexpr (bIsPtr<T>)
+	// 	{
+	// 		return mData;
+	// 	}
+	//
+	// 	if constexpr (bIsVector<T>)
+	// 	{
+	// 		return mData.data();
+	// 	}
+	//
+	// 	return &mData;
+	// }
+	//
+	// size_t GetDataSize() override
+	// {
+	// 	if constexpr (bIsSmartPtr<T> || bIsPtr<T>)
+	// 	{
+	// 		return sizeof(*mData);
+	// 	}
+	//
+	// 	if constexpr (bIsString<T>)
+	// 	{
+	// 		return mData.length();
+	// 	}
+	//
+	// 	if constexpr (bIsVector<T> || bIsArray<T> || bIsMap<T>)
+	// 	{
+	// 		return mData.size() * sizeof(T);
+	// 	}
+	//
+	// 	return sizeof(mData);
+	// }
+	//
+	// bool IsModified() override
+	// {
+	// 	return bIsModified;
+	// }
+	//
+	// void ResetState() override
+	// {
+	// 	this->bIsModified = false;
+	// }
+	//
+	// JProperty& operator=(T& Val)
+	// {
+	// 	if (mData == Val)
+	// 		return *this;
+	//
+	// 	mData = Val;
+	// 	return *this;
+	// }
 
 private:
 	T    mData;

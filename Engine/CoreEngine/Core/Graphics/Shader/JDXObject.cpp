@@ -5,17 +5,14 @@
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Graphics/DXUtils.h"
+#include "Core/Window/Application.h"
 
 extern FVector4 g_DirectionalLightPos;
 extern FVector4 g_DirectionalLightColor;
 
 JDXObject::JDXObject()
 {
-	mPrimitiveMeshData.push_back(MakePtr<JMesh>());
-	int32_t i = sizeof(mPrimitiveMeshData[0]->GetVertexData());
-
-	std::ifstream ifs("Game/test.jasset", std::ios::binary);
-	mPrimitiveMeshData[0]->DeSerialize(ifs);
+	
 
 	CreateBuffers();
 
@@ -69,12 +66,14 @@ JDXObject::JDXObject(Utils::Fbx::FbxFile* InFbxObj)
 
 	CreateBuffers();
 
-	mShader = IManager.ShaderManager.CreateOrLoad(L"Basic");
+	// mShader = IManager.ShaderManager.CreateOrLoad(L"Basic");
+	// mShader = IManager.ShaderManager.CreateOrLoad(L"Toon");
+	mShader = IManager.ShaderManager.CreateOrLoad(L"UVAnim");
 	// mShader = IManager.ShaderManager.CreateOrLoad(L"WorldGridMaterial");
 	// JText texPath = mPrimitiveMeshData[0]->GetMaterial()->GetMaterialParam("DiffuseColor")->StringValue;
 	// mTexture      = IManager.TextureManager.CreateOrLoad(texPath);
 
-	mScale = 0.1f;
+	mScale = 10.f;
 }
 
 void JDXObject::Update(float DeltaTime)
@@ -115,8 +114,7 @@ void JDXObject::CreateBuffers()
 							1,
 							mConstantBuffer_Space.GetAddressOf(),
 							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE
-						   );
+							D3D11_CPU_ACCESS_WRITE);
 
 
 	// 상수 버퍼 생성 (World Directional Light)
@@ -126,6 +124,16 @@ void JDXObject::CreateBuffers()
 							sizeof(CBuffer::Light),
 							1,
 							mConstantBuffer_Light.GetAddressOf(),
+							D3D11_USAGE_DYNAMIC,
+							D3D11_CPU_ACCESS_WRITE);
+
+	// 상수 버퍼 생성 (World Time)
+	Utils::DX::CreateBuffer(device,
+							D3D11_BIND_CONSTANT_BUFFER,
+							nullptr,
+							sizeof(CBuffer::Time),
+							1,
+							mConstantBuffer_Time.GetAddressOf(),
 							D3D11_USAGE_DYNAMIC,
 							D3D11_CPU_ACCESS_WRITE);
 }
@@ -181,6 +189,15 @@ void JDXObject::UpdateSpaceBuffer()
 								   mConstantBuffer_Light.Get(),
 								   &light,
 								   sizeof(CBuffer::Light));
+
+
+	auto          curTime = (float)Application::s_AppInstance->GetFramePerSeconds() * (float)Application::s_AppInstance->GetDeltaSeconds();
+	CBuffer::Time time    = CBuffer::Time{FVector4{curTime, 0, 0, 0}};
+
+	Utils::DX::UpdateDynamicBuffer(deviceContext,
+								   mConstantBuffer_Time.Get(),
+								   &time,
+								   sizeof(CBuffer::Time));
 }
 
 void JDXObject::PreRender()
@@ -207,6 +224,7 @@ void JDXObject::PreRender()
 	// 버텍스 버퍼 설정
 	deviceContext->VSSetConstantBuffers(0, 1, mConstantBuffer_Space.GetAddressOf());
 	deviceContext->VSSetConstantBuffers(1, 1, mConstantBuffer_Light.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(2, 1, mConstantBuffer_Time.GetAddressOf());
 	deviceContext->PSSetConstantBuffers(1, 1, mConstantBuffer_Light.GetAddressOf());
 	deviceContext->VSSetShader(mShader->GetVertexShader(), nullptr, 0);
 
@@ -227,7 +245,9 @@ void JDXObject::PreRender()
 	deviceContext->PSSetShader(mShader->GetPixelShader(), nullptr, 0);
 	for (int32_t i = 0; i < mPrimitiveMeshData[0]->GetMaterial()->GetMaterialParams().size(); ++i)
 	{
-		mPrimitiveMeshData[0]->GetMaterial()->GetMaterialParams().at(i).TextureValue->PreRender(i);
+		JTexture* tex = mPrimitiveMeshData[0]->GetMaterial()->GetMaterialParams().at(i).TextureValue;
+		if (tex)
+			tex->PreRender(i);
 	}
 	// mShader->GetDefaultAlbedoTexture()->PreRender(0);
 	// mShader->GetDefaultNormalTexture()->PreRender(1);

@@ -1,23 +1,29 @@
 ﻿#pragma once
 #include "Core/Graphics/graphics_common_include.h"
-#include "Core/Interface/IRenderable.h"
+#include "Core/Utils/FileIO/JSerialization.h"
 
 
 /**
  * 텍스처 관련 리소스 집합
  * IManager->TextureManager로 관리된다.
  */
-class JTexture
+class JTexture : public ISerializable
 {
 public:
+	JTexture();
 	explicit JTexture(JWTextView InName);
 	explicit JTexture(JTextView InName);
 	~JTexture() = default;
 
 public:
+	void Serialize(std::ofstream& FileStream) override;
+	void DeSerialize(std::ifstream& InFileStream) override;
+
+public:
 	void PreRender(int32_t InSlot = 0);
 
 public:
+	[[nodiscard]] FORCEINLINE JWText                          GetPath() const { return mTextureName; }
 	[[nodiscard]] FORCEINLINE ID3D11ShaderResourceView*       GetSRV() const { return mShaderResourceView.Get(); }
 	[[nodiscard]] FORCEINLINE D3D11_SHADER_RESOURCE_VIEW_DESC GetSrvDesc() const { return mSRVDesc; }
 	[[nodiscard]] FORCEINLINE D3D11_TEXTURE2D_DESC            GetTextureDesc() const { return mTextureDesc; }

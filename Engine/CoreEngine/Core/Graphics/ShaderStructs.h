@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "GraphicDevice.h"
 #include "Core/Graphics/graphics_common_include.h"
+#include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
 
 namespace CBuffer
@@ -22,6 +23,11 @@ namespace CBuffer
 		FVector4 LightColor;
 	};
 
+	struct Time
+	{
+		FVector4 WorldTime;
+	};
+
 	struct Camera
 	{
 		FVector4 CamPos;
@@ -30,11 +36,31 @@ namespace CBuffer
 
 namespace Vertex
 {
-	struct FVertexInfo_2D
+	struct FVertexInfo_2D : public ISerializable
 	{
 		FVector  Position;
 		FVector2 UV;
 		FVector4 Color;
+
+		void Serialize(std::ofstream& FileStream) override
+		{
+			// Position
+			FileStream.write(reinterpret_cast<char*>(&Position), sizeof(Position));
+			// UV
+			FileStream.write(reinterpret_cast<char*>(&UV), sizeof(UV));
+			// Color
+			FileStream.write(reinterpret_cast<char*>(&Color), sizeof(Color));
+		}
+
+		void DeSerialize(std::ifstream& InFileStream) override
+		{
+			// Position
+			InFileStream.read(reinterpret_cast<char*>(&Position), sizeof(Position));
+			// UV
+			InFileStream.read(reinterpret_cast<char*>(&UV), sizeof(UV));
+			// Color
+			InFileStream.read(reinterpret_cast<char*>(&Color), sizeof(Color));
+		}
 	};
 
 	struct FVertexInfo_Base : public FVertexInfo_2D
@@ -42,6 +68,34 @@ namespace Vertex
 		FVector Normal;
 		FVector Tangent;
 		FVector Binormal;
+
+		void Serialize(std::ofstream& FileStream) override
+		{
+			using Base = FVertexInfo_2D;
+
+			Base::Serialize(FileStream);
+
+			// Normal
+			FileStream.write(reinterpret_cast<char*>(&Normal), sizeof(Normal));
+			// Tangent
+			FileStream.write(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
+			// Binormal
+			FileStream.write(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
+		}
+
+		void DeSerialize(std::ifstream& InFileStream) override
+		{
+			using Base = FVertexInfo_2D;
+
+			Base::DeSerialize(InFileStream);
+
+			// Normal
+			InFileStream.read(reinterpret_cast<char*>(&Normal), sizeof(Normal));
+			// Tangent
+			InFileStream.read(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
+			// Binormal
+			InFileStream.read(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
+		}
 	};
 
 }
@@ -65,6 +119,7 @@ public:
 
 	FTriangle(int32_t InIndex)
 		: SubIndex(InIndex) {};
+
 };
 
 /**
@@ -106,14 +161,60 @@ struct IsVertexSame
  * @tparam T 정점 정보
  */
 template <typename T>
-struct JData
+struct JData : public ISerializable
 {
+	static_assert(std::is_base_of_v<T, Vertex::FVertexInfo_2D>, "T must be derived from FVertexInfo_2D");
+
 	int32_t                   FaceCount = 0;
 	std::vector<T>            VertexArray;
 	std::vector<WORD>         IndexArray;
 	std::vector<FTriangle<T>> TriangleList;
-	T*                        DrawVertex = nullptr;
-	FMatrix                   InverseMatrix;
+
+	void Serialize(std::ofstream& FileStream) override
+	{
+		// FaceCount
+		FileStream.write(reinterpret_cast<char*>(&FaceCount), sizeof(FaceCount));
+
+		// VertexArray
+		size_t vertexSize = VertexArray.size();
+		FileStream.write(reinterpret_cast<char*>(&vertexSize), sizeof(vertexSize));
+		for (int32_t i = 0; i < vertexSize; ++i)
+		{
+			VertexArray[i].Serialize(FileStream);
+		}
+
+		// IndexArray
+		size_t indexSize = IndexArray.size();
+		FileStream.write(reinterpret_cast<char*>(&indexSize), sizeof(indexSize));
+		for (int32_t i = 0; i < indexSize; ++i)
+		{
+			FileStream.write(reinterpret_cast<char*>(&IndexArray[i]), sizeof(IndexArray[i]));
+		}
+	}
+
+	void DeSerialize(std::ifstream& InFileStream) override
+	{
+		// FaceCount
+		InFileStream.read(reinterpret_cast<char*>(&FaceCount), sizeof(FaceCount));
+
+		// VertexArray
+		size_t vertexSize;
+		InFileStream.read(reinterpret_cast<char*>(&vertexSize), sizeof(vertexSize));
+		VertexArray.resize(vertexSize);
+		for (int32_t i = 0; i < vertexSize; ++i)
+		{
+			VertexArray[i].DeSerialize(InFileStream);
+		}
+
+		// IndexArray
+		size_t indexSize;
+		InFileStream.read(reinterpret_cast<char*>(&indexSize), sizeof(indexSize));
+		IndexArray.resize(indexSize);
+		for (int32_t i = 0; i < indexSize; ++i)
+		{
+			InFileStream.read(reinterpret_cast<char*>(&IndexArray[i]), sizeof(IndexArray[i]));
+		}
+	}
 
 
 	/**

@@ -420,7 +420,7 @@ namespace Utils::Fbx
 				if (Property.GetSrcObject<FbxTexture>(i))
 				{
 					const FbxFileTexture* fileTexture    = Property.GetSrcObject<FbxFileTexture>(i);
-					FMaterialParams       materialParams = Utils::Material::CreateTextureParam(ParamName,
+					FMaterialParams       materialParams = Material::CreateTextureParam(ParamName,
 							 fileTexture->GetFileName(),
 							 i,
 							 ParamFlags);

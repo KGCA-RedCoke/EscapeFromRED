@@ -4,16 +4,74 @@
 #include "Core/Utils/Utils.h"
 
 
+JMaterial::JMaterial() {}
+
 JMaterial::JMaterial(JTextView InMaterialName)
 	: bTransparent(false)
 {
-	mMaterialID = StringHash(InMaterialName.data());
+	mMaterialName = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialID   = StringHash(InMaterialName.data());
 }
 
 JMaterial::JMaterial(JWTextView InMaterialName)
 	: bTransparent(false)
 {
-	mMaterialID = StringHash(InMaterialName.data());
+	mMaterialName = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialID   = StringHash(InMaterialName.data());
+}
+
+void JMaterial::Serialize(std::ofstream& FileStream)
+{
+	// Material ID
+	FileStream.write(reinterpret_cast<const char*>(&mMaterialID), sizeof(mMaterialID));
+
+	// Material Name
+	size_t nameSize = mMaterialName.size();
+	FileStream.write(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
+	JText rawString = WString2String(mMaterialName);
+	FileStream.write(reinterpret_cast<char*>(rawString.data()), nameSize);
+
+	// Transparent
+	FileStream.write(reinterpret_cast<char*>(&bTransparent), sizeof(bTransparent));
+
+	// Material Param Count
+	int32_t paramCount = mMaterialParams.size();
+	FileStream.write(reinterpret_cast<char*>(&paramCount), sizeof(paramCount));
+
+	// Material Params
+	for (int32_t i = 0; i < paramCount; ++i)
+	{
+		mMaterialParams[i].Serialize(FileStream);
+	}
+}
+
+void JMaterial::DeSerialize(std::ifstream& InFileStream)
+{
+	// Material ID
+	InFileStream.read(reinterpret_cast<char*>(&mMaterialID), sizeof(mMaterialID));
+
+	// Material Name
+	size_t nameSize;
+	InFileStream.read(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
+	JText rawString(nameSize, '0');
+	InFileStream.read(reinterpret_cast<char*>(rawString.data()), nameSize);
+	mMaterialName = String2WString(rawString);
+
+	// Transparent
+	InFileStream.read(reinterpret_cast<char*>(&bTransparent), sizeof(bTransparent));
+
+	// Material Param Count
+	int32_t paramCount;
+	InFileStream.read(reinterpret_cast<char*>(&paramCount), sizeof(paramCount));
+
+	// Material Params
+	mMaterialParams.reserve(paramCount);
+	for (int32_t i = 0; i < paramCount; ++i)
+	{
+		FMaterialParams param;
+		param.DeSerialize(InFileStream);
+		mMaterialParams.push_back(param);
+	}
 }
 
 const FMaterialParams* JMaterial::GetMaterialParam(const JText& InParamName) const

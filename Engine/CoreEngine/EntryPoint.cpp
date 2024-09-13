@@ -1,7 +1,5 @@
 ﻿#include "common_pch.h"
 #include "AppDefines.h"
-#include "Core/Graphics/Mesh/JMesh.h"
-#include "Core/Utils/FileIO/JSerialization.h"
 
 
 /*class CharacterAttribute : public AutoSerializer
@@ -60,7 +58,6 @@ private:
 };*/
 
 
-
 int main(int argc, char** argv)
 {
 
@@ -85,9 +82,12 @@ int main(int argc, char** argv)
 	// bar.DeSerialize(outfile);
 	// bar.Print();
 	//
+
+
+
+
 	RUN(Name_Engine_Version, HD_X, HD_Y)
 
-	
-	
+
 	return 0;
 }

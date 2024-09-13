@@ -38,6 +38,12 @@ PixelInput_Base VS(VertexInput_Base Input)
 	output.Tangent  = normalize(worldTangent);
 	output.Binormal = normalize(worldBinormal);
 
+	// -------------------------------------------------------------------------------
+	// UV 애니메이션
+	output.UV = output.UV + float2(WorldTime.x, WorldTime.x); 
+	// -------------------------------------------------------------------------------
+
+
 	return output;
 }
 

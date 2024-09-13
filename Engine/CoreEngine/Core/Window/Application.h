@@ -21,8 +21,9 @@ public:
 public:
 	[[nodiscard]] FORCEINLINE float_t GetDeltaSeconds() const { return mDeltaTime; }
 	[[nodiscard]] FORCEINLINE int32_t GetFramePerSeconds() const { return mFramesPerSec; }
-	[[nodiscard]] uint32_t            GetWindowWidth();
-	[[nodiscard]] uint32_t            GetWindowHeight();
+	[[nodiscard]] FORCEINLINE int32_t GetCurrentTime() const { return mCurrentTime; }
+	[[nodiscard]] uint32_t GetWindowWidth();
+	[[nodiscard]] uint32_t GetWindowHeight();
 
 private:
 	void HandleFrame();

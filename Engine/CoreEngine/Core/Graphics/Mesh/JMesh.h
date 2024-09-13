@@ -20,8 +20,14 @@ enum class EMeshType : uint8_t
 /**
  * Mesh 
  */
-class JMesh : public AutoSerializer // 직렬화 해서 저장
+class JMesh : public ISerializable // 직렬화 해서 저장
 {
+public:
+	JMesh() = default;
+
+public:
+	void Serialize(std::ofstream& FileStream) override;
+	void DeSerialize(std::ifstream& InFileStream) override;
 
 public:
 	[[nodiscard]] bool ApplyMaterial() const;
@@ -48,7 +54,7 @@ private:
 
 	Ptr<JMesh>              mParentMesh;
 	std::vector<Ptr<JMesh>> mSubMesh;
-	std::vector<JMesh*>     mChildMesh;
+	std::vector<Ptr<JMesh>>     mChildMesh;
 
 	Ptr<JData<Vertex::FVertexInfo_Base>> mVertexData;
 	Ptr<class JMaterial>                 mMaterial;

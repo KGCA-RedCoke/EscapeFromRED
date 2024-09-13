@@ -63,6 +63,14 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	float3 lightDir = normalize(Input.LightDir);
 	float3 diffuse  = saturate(dot(-lightDir, worldNormal));
 	diffuse         = LightColor.rgb * albedoColor.rgb * diffuse;
+
+	// -------------------------------------------------------------------------------
+	// NOTE: Toon Shading을 위해서는 색상을 Ceiling 처리해야함
+	// TODO: 이런 세부 조정 값은 에디터에서 조절 할 수 있도록 해야 함
+	diffuse = ceil(diffuse * 5) / 5; // 값은 뚝뚝 끊어지는 값(0.2단위)이 나옴
+	// -------------------------------------------------------------------------------
+
+
 	float3 specular = 0;
 
 	// 난반사광이 없으면 애초에 반사되는 색상이 없음
