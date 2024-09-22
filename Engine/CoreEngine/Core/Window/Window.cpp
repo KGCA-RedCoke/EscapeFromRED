@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "Window.h"
+﻿#include "Window.h"
 #include "imgui/imgui.h"
 
 

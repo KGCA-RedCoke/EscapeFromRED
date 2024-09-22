@@ -1,5 +1,8 @@
-﻿#include "common_pch.h"
-#include "JCamera.h"
+﻿#include "JCamera.h"
+
+#include "Core/Graphics/ShaderStructs.h"
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Window/Application.h"
 
 uint32_t JCamera::s_CameraNum = 0;
@@ -17,7 +20,7 @@ JCamera::JCamera() noexcept
 	  mPitch(0.f),
 	  mFOV(0),
 	  mAspect(0),
-	  mNearPlane(1.f),
+	  mNearPlane(0.1f),
 	  mFarPlane(10000.f),
 	  mRotationValue(0.01f),
 	  mTranslationValue(5.f),
@@ -41,6 +44,15 @@ JCamera::JCamera(const JWText& InName)
 void JCamera::Initialize()
 {
 	mInputKeyboard.Initialize();
+
+	Utils::DX::CreateBuffer(DeviceRSC.GetDevice(),
+							D3D11_BIND_CONSTANT_BUFFER,
+							nullptr,
+							sizeof(CBuffer::Camera),
+							1,
+							mCameraConstantBuffer.GetAddressOf(),
+							D3D11_USAGE_DYNAMIC,
+							D3D11_CPU_ACCESS_WRITE);
 }
 
 void JCamera::Update(float_t DeltaTime)
@@ -83,6 +95,14 @@ void JCamera::Update(float_t DeltaTime)
 
 	XMMATRIX mTrans = XMMatrixTranslation(0, 0, mVelocity.z * DeltaTime);
 	XMStoreFloat4x4(&mWorld, mTrans);
+
+	// Update the camera constant buffer
+	CBuffer::Camera camPos;
+	camPos.CameraPos = FVector4(mEye, 1.f);
+	Utils::DX::UpdateDynamicBuffer(DeviceRSC.GetImmediateDeviceContext(),
+								   mCameraConstantBuffer.Get(),
+								   &mEye,
+								   sizeof(CBuffer::Camera));
 }
 
 void JCamera::Release()
@@ -145,6 +165,11 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 
 	XMMATRIX projMat = XMMatrixPerspectiveFovLH(InFOV, InAspect, InNearPlane, InFarPlane);
 	XMStoreFloat4x4(&mProj, projMat);
+}
+
+void JCamera::SetCameraConstantBuffer(uint32_t InSlot)
+{
+	DeviceRSC.GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot, 1, mCameraConstantBuffer.GetAddressOf());
 }
 
 void JCamera::UpdateVelocity(float DeltaTime)

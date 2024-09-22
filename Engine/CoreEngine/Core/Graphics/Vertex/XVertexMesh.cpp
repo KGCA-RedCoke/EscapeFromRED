@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-// #include "XVertexMesh.h"
+﻿// #include "XVertexMesh.h"
 // #include "Core/Graphics/GraphicDevice.h"
 // #include "Core/Graphics/ConstantBuffer/CWorldBuffer.h"
 // #include "Core/Graphics/Shader/MShaderManager.h"

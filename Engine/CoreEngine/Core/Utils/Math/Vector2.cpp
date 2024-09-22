@@ -1,4 +1,3 @@
-#include "common_pch.h"
 #include "Vector2.h"
 
 namespace JMath

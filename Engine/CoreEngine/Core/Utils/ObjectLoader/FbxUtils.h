@@ -2,6 +2,7 @@
 #include <fbxsdk.h>
 
 #include "Core/Graphics/Material/JMaterial.h"
+#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Math/TMatrix.h"
 
@@ -377,10 +378,10 @@ namespace Utils::Fbx
 
 #pragma endregion
 
-	[[nodiscard]] inline bool ParseTexture_AddParamToMaterial(FbxProperty&   Property,
-															  const char*    ParamName,
-															  Ptr<JMaterial> Material,
-															  EMaterialFlag  ParamFlags)
+	[[nodiscard]] inline bool ParseTexture_AddParamToMaterial(FbxProperty&  Property,
+															  const char*   ParamName,
+															  JMaterial*    Material,
+															  EMaterialFlag ParamFlags)
 	{
 		bool          bResult             = false;
 		const int32_t layeredTextureCount = Property.GetSrcObjectCount<FbxLayeredTexture>();
@@ -421,9 +422,9 @@ namespace Utils::Fbx
 				{
 					const FbxFileTexture* fileTexture    = Property.GetSrcObject<FbxFileTexture>(i);
 					FMaterialParams       materialParams = Material::CreateTextureParam(ParamName,
-							 fileTexture->GetFileName(),
-							 i,
-							 ParamFlags);
+																					  fileTexture->GetFileName(),
+																					  i,
+																					  ParamFlags);
 					Material->AddMaterialParam(materialParams);
 					bResult = true;
 				}
@@ -460,33 +461,61 @@ namespace Utils::Fbx
 		return world;
 	}
 
-	[[nodiscard]] inline Ptr<JMaterial> ParseLayerMaterial(FbxMesh* InMesh, int32_t InMaterialIndex)
+	[[nodiscard]] inline JMaterial* ParseLayerMaterial(FbxMesh* InMesh, int32_t InMaterialIndex)
 	{
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
 
+		auto fileName = std::format("{0}_{1}", InMesh->GetName(), fbxMaterial->GetName());
 		// 새 머티리얼 생성
-		Ptr<JMaterial> material = MakePtr<JMaterial>(fbxMaterial->GetName());
+		auto materialSavePath = std::format("Game/Materials/{0}", fileName);
+
+		JMaterial* material = IManager.MaterialManager.CreateOrLoad(materialSavePath.c_str());
 
 		/** 임시 텍스처 추출 구조체 */
 		struct Temp_TextureParams
 		{
 			const char*   FbxPropertyName;
+			const char*   TextureName;
 			uint8_t       PostOperations;
 			EMaterialFlag ParamFlags;
 		};
 
 		Temp_TextureParams materialProperties[] =
 		{
-			{FbxSurfaceMaterial::sDiffuse, 0, EMaterialFlag::Diffuse},
-			{FbxSurfaceMaterial::sSpecular, 0, EMaterialFlag::Specular},
-			{FbxSurfaceMaterial::sAmbient, 0, EMaterialFlag::Ambient},
-			{FbxSurfaceMaterial::sEmissive, 0, EMaterialFlag::Emissive},
-			{FbxSurfaceMaterial::sNormalMap, 0, EMaterialFlag::Normal},
-			{FbxSurfaceMaterial::sTransparencyFactor, 1, EMaterialFlag::Opacity},
-			{FbxSurfaceMaterial::sTransparentColor, 1, EMaterialFlag::Alpha},
-			{FbxSurfaceMaterial::sBump, 0, EMaterialFlag::Bump},
+			{FbxSurfaceMaterial::sDiffuse, "Diffuse", 0, EMaterialFlag::Diffuse},
+			{FbxSurfaceMaterial::sNormalMap, "Normal", 0, EMaterialFlag::Normal},
+			{FbxSurfaceMaterial::sAmbient, "Ambient", 0, EMaterialFlag::Ambient},
+			{FbxSurfaceMaterial::sSpecular, "Specular", 0, EMaterialFlag::Specular},
+			{FbxSurfaceMaterial::sEmissive, "Emissive", 0, EMaterialFlag::Emissive},
+			{FbxSurfaceMaterial::sTransparencyFactor, "Opacity", 1, EMaterialFlag::Opacity},
+			{FbxSurfaceMaterial::sTransparentColor, "Opacity", 1, EMaterialFlag::Alpha},
+			{FbxSurfaceMaterial::sBump, "Bump", 0, EMaterialFlag::Bump},
 		};
+
+
+#if _DEBUG
+		FbxProperty prop = fbxMaterial->GetFirstProperty();
+		while (prop.IsValid())
+		{
+			FbxString propName  = prop.GetName();
+			FbxString propType  = prop.GetPropertyDataType().GetName();
+			FbxString propValue = prop.Get<FbxString>();
+
+			LOG_CORE_INFO("Property Name: {0}, Type: {1}, Value: {2}\n",
+						  propName.Buffer(),
+						  propType.Buffer(),
+						  propValue.Buffer());
+
+			if (prop.GetSrcObject<FbxTexture>())
+			{
+				LOG_CORE_INFO("Texture: {0}\n", prop.GetSrcObject<FbxFileTexture>()->GetFileName());
+			}
+
+			prop = fbxMaterial->GetNextProperty(prop);
+
+		}
+#endif
 
 		/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
 		for (int32_t i = 0; i < ARRAYSIZE(materialProperties); ++i)
@@ -497,7 +526,7 @@ namespace Utils::Fbx
 			if (property.IsValid())
 			{
 				if (Utils::Fbx::ParseTexture_AddParamToMaterial(property,
-																textureParams.FbxPropertyName,
+																textureParams.TextureName,
 																material,
 																textureParams.ParamFlags))
 				{
@@ -508,8 +537,9 @@ namespace Utils::Fbx
 				}
 			}
 		}
+
 		return material;
 	}
 
-	
+
 }

@@ -1,12 +1,11 @@
-﻿#include "common_pch.h"
-#include "MGUIManager.h"
+﻿#include "MGUIManager.h"
 
 #include <ranges>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx11.h>
 
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "imgui/GUI_Inspector.h"
 #include "imgui/GUI_Themes.h"
@@ -54,7 +53,7 @@ void MGUIManager::Initialize()
 
 	// 플랫폼, 백엔드 초기화
 	ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
-	ImGui_ImplDX11_Init(G_Context.GetDevice(), G_Context.GetImmediateDeviceContext());
+	ImGui_ImplDX11_Init(DeviceRSC.GetDevice(), DeviceRSC.GetImmediateDeviceContext());
 
 	InitializeStaticGUI();
 	ImGui::GetIO().FontGlobalScale = 1.5f; // 기본 글자 크기보다 1.5배로 확대

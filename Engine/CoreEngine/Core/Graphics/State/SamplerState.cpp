@@ -1,7 +1,6 @@
-﻿#include "common_pch.h"
-#include "SamplerState.h"
+﻿#include "SamplerState.h"
 
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 
 
 SamplerState::SamplerState(const UINT InSlot, const ESamplerType InSamplerType, const FLinearColor& InColor)
@@ -47,7 +46,7 @@ void SamplerState::Initialize()
 	}
 
 
-	CheckResult(G_Context.GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
+	CheckResult(DeviceRSC.GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
 
 }
 
@@ -55,7 +54,7 @@ void SamplerState::Update(float DeltaTime) {}
 
 void SamplerState::Render()
 {
-	G_Context.GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
+	DeviceRSC.GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
 }
 
 void SamplerState::Release()

@@ -1,15 +1,16 @@
-﻿#include "common_pch.h"
-#include "Application.h"
+﻿#include "Application.h"
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
-#include "Core/Graphics/Shader/JDXObject.h"
+#include "Core/Graphics/Shader/J3DObject.h"
+#include "Core/Graphics/Shader/SFXAAEffect.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Timer.h"
 #include "Core/Utils/Math/Color.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
 
-FVector4 g_DirectionalLightPos   = {500, 1200, -1000, 1};
+FVector4 g_DirectionalLightPos   = {500, 1200, 1000, 1};
 FVector4 g_DirectionalLightColor = {1.f, 0.976f, 0.992f, 1}; // 6500k 주광색 (완벽히 같진 않음)
 
 
@@ -41,7 +42,69 @@ Application::Application(LPCWSTR WindowTitle, const FBasicWindowData& WindowData
 }
 
 /** 모든 개체들을 스마트포인터로 관리하기에 앱 종료시에 처리, 구현할 내용은 없다. */
-Application::~Application() = default;
+Application::~Application()
+{
+	Release();
+};
+
+void Application::Initialize()
+{
+	if (bRunning)
+	{
+		LOG_CORE_ERROR("Application is already running.");
+		return;
+	}
+
+	ResetValues();
+
+	//---------------------------------- 초기화 --------------------------------------------
+	mWindow->Initialize();	// 가장 먼저 윈도우 창을 초기화한다.
+
+	IManager.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 MManagerInterface.cpp 참조)
+
+	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
+	mFpsText = std::make_unique<JFont>(IManager.ViewportManager.FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
+	mFpsText->Initialize();
+	mFpsText->SetFontSize(48);
+	mFpsText->SetColor(FLinearColor::Orange);
+	mFpsText->SetScreenPosition({25, 25});
+
+	// // FIXME: Test Code
+	Utils::Fbx::FbxFile fbxLoader;
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cube.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Sphere.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cone.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cylinder.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Plane.fbx");
+	// fbxLoader.Load("Game/Model/axis.fbx");
+	// fbxLoader.Load("Game/Model/Bot.fbx");
+	// fbxLoader.Load("Game/Model/CyberPunk_A.fbx");
+	// fbxLoader.Load("Game/Model/King.fbx");
+	// fbxLoader.Load("Game/Model/Male_Jacket.fbx");
+	mRenderObjects.reserve(10);
+
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cube.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Sphere.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cone.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cylinder.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Plane.jasset"));
+	
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Bot.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/CyberPunk_A.jasset"));
+	// mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/King.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Male_Jacket.jasset"));
+	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/axis.jasset"));
+
+
+	// Utils::Serialization::DeSerialize("Game/Cube.jasset", mDXObject.get());
+	// Utils::Serialization::DeSerialize("rsc/Cylinder.jasset", mDXObject2.get());
+
+	size_t objHalfSize = mRenderObjects.size() / 2;
+	for (int32_t i = 0; i < mRenderObjects.size(); ++i)
+	{
+		mRenderObjects[i]->SetTranslation({/*-5 * objHalfSize +*/ i * 5.f, 0, 0});
+	}
+}
 
 void Application::Run()
 {
@@ -66,52 +129,6 @@ void Application::Run()
 		CheckWindowClosure();
 	}
 
-	// 관리 개체 해제
-	Application::Release();
-}
-
-void Application::Initialize()
-{
-	if (bRunning)
-	{
-		LOG_CORE_ERROR("Application is already running.");
-		return;
-	}
-
-	ResetValues();
-
-	//---------------------------------- 초기화 --------------------------------------------
-	mWindow->Initialize();	// 가장 먼저 윈도우 창을 초기화한다.
-
-	IManager.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 MManagerInterface.cpp 참조)
-
-	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
-	mFpsText = std::make_unique<JFont>(IManager.ViewportManager.FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
-	mFpsText->Initialize();
-	mFpsText->SetFontSize(48);
-	mFpsText->SetColor(FLinearColor::Orange);
-	mFpsText->SetScreenPosition({25, 25});
-
-	// Utils::Material::s_DefaultMaterial = Utils::Material::CreateDefaultMaterial("DefaultMaterial");
-	//
-	// // ------------------------------- 테스트 코드 -----------------------------------------
-	// // JMaterial      material("Game/Model/T_CP_NPC_Male_Cloth_B.png");
-	// std::ofstream outfile("Game/has.json");
-	// Utils::Material::s_DefaultMaterial->Serialize(outfile);
-	// // texture.Serialize(outfile);
-	// outfile.flush();
-	// outfile.close();
-
-	std::ifstream infile("Game/has.json");
-	JMaterial texture;
-	texture.DeSerialize(infile);
-	infile.close();
-	// -------------------------------------------------------------------------------------
-
-	// // FIXME: Test Code
-	// Utils::Fbx::FbxFile g_testObj("Game/Model/sword.fbx");
-	// g_testObj.Load();
-	// mDXObject = std::make_unique<JDXObject>(&g_testObj);
 }
 
 void Application::Update(float DeltaTime)
@@ -124,18 +141,20 @@ void Application::Update(float DeltaTime)
 
 void Application::Render()
 {
-	G_Context.ClearColor(FLinearColor::EbonyClay);
+	DeviceRSC.ClearColor(FLinearColor::EbonyClay);
 
 	IManager.Render(); // GUI Render
 
-	// mDXObject->PreRender();
-	// mDXObject->PostRender();
+	for (int32_t i = 0; i < mRenderObjects.size(); ++i)
+	{
+		mRenderObjects[i]->PreRender();
+	}
 
 	mFpsText->PreRender();
 	mFpsText->Render();
 	mFpsText->PostRender();
 
-	G_Context.Present();
+	DeviceRSC.Present();
 }
 
 void Application::Release()
@@ -143,16 +162,6 @@ void Application::Release()
 	mFpsText = nullptr;
 
 	IManager.Release();
-}
-
-uint32_t Application::GetWindowWidth()
-{
-	return mWindow->GetWindowWidth();
-}
-
-uint32_t Application::GetWindowHeight()
-{
-	return mWindow->GetWindowHeight();
 }
 
 void Application::HandleFrame()
@@ -190,8 +199,20 @@ void Application::CheckWindowClosure()
 
 void Application::ResetValues()
 {
+	assert(mTimer == nullptr); // 뭔가 잘못됐다...
+
 	mTimer     = std::make_unique<Timer>();
 	bRunning   = true;
 	bMinimized = false;
 	mTime      = 0.f;
+}
+
+uint32_t Application::GetWindowWidth() const
+{
+	return mWindow->GetWindowWidth();
+}
+
+uint32_t Application::GetWindowHeight() const
+{
+	return mWindow->GetWindowHeight();
 }

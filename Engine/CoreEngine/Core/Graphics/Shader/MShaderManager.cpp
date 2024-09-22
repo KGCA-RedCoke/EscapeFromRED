@@ -1,5 +1,6 @@
-﻿#include "common_pch.h"
-#include "MShaderManager.h"
+﻿#include "MShaderManager.h"
+
+#include "SFXAAEffect.h"
 
 
 void MShaderManager::Initialize()
@@ -8,8 +9,11 @@ void MShaderManager::Initialize()
 	CreateOrLoad(L"Shader/WorldGridMaterial.hlsl");
 	CreateOrLoad(L"Shader/Toon.hlsl");
 	CreateOrLoad(L"Shader/UVAnim.hlsl");
+
+	// g_FXAAEffect = CreateOrLoad<SFXAAEffect>(L"Shader/FXAA.hlsl");
 }
 
-MShaderManager::MShaderManager()
+JShader* MShaderManager::GetBasicShader()
 {
+	return FetchResource(L"Basic");
 }

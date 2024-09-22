@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include "common_include.h"
 /**
  * 컴파일타임에 Serialize 메서드가 있는지 확인
  */
@@ -84,8 +84,11 @@ struct JAssetHeader
 class ISerializable
 {
 public:
-	virtual void   Serialize(std::ofstream& FileStream) = 0;
-	virtual void   DeSerialize(std::ifstream& InFileStream) = 0;
+	virtual ~ISerializable() = default;
+
+public:
+	virtual void Serialize(std::ofstream& FileStream) = 0;
+	virtual void DeSerialize(std::ifstream& InFileStream) = 0;
 };
 
 class SerializableMember
@@ -253,3 +256,17 @@ private:
 	T    mData;
 	bool bIsModified = false;
 };
+
+namespace Utils::Serialization
+{
+	bool Serialize(const char* InFilePath, class ISerializable* InData);
+	bool DeSerialize(const char* InFilePath, ISerializable* OutData);
+
+	void Serialize_Text(JText& Text, std::ofstream& FileStream);
+	void Serialize_Text(JWText& Text, std::ofstream& FileStream);
+	void Serialize_Primitive(void* Data, size_t Size, std::ofstream& FileStream);
+
+	void DeSerialize_Primitive(void* Data, size_t Size, std::ifstream& InFileStream);
+	void DeSerialize_Text(JText& Text, std::ifstream& InFileStream);
+	void DeSerialize_Text(JWText& Text, std::ifstream& InFileStream);
+}

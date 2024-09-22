@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "common_include.h"
 
 /**
  * 윈도우 창 데이터

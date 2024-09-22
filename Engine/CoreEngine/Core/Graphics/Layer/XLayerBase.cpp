@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "XLayerBase.h"
+﻿#include "XLayerBase.h"
 
 #include "Core/Utils/Logger.h"
 

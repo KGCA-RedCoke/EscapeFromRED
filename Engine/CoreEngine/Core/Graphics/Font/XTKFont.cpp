@@ -1,10 +1,9 @@
-﻿#include "common_pch.h"
-#include "XTKFont.h"
+﻿#include "XTKFont.h"
 
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 
 void XTKFont::Initialize()
 {
-	mSpriteBatch = std::make_unique<SpriteBatch>(G_Context.GetImmediateDeviceContext());
-	mSpriteFont  = std::make_unique<SpriteFont>(G_Context.GetDevice(), L"");
+	mSpriteBatch = std::make_unique<SpriteBatch>(DeviceRSC.GetImmediateDeviceContext());
+	mSpriteFont  = std::make_unique<SpriteFont>(DeviceRSC.GetDevice(), L"");
 }

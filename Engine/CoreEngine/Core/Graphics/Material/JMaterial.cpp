@@ -1,23 +1,37 @@
-﻿#include "common_pch.h"
-#include "JMaterial.h"
-
+﻿#include "JMaterial.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Utils.h"
 
 
-JMaterial::JMaterial() {}
+JMaterial::JMaterial() = default;
 
 JMaterial::JMaterial(JTextView InMaterialName)
-	: bTransparent(false)
+	: mShader(nullptr),
+	  bTransparent(false)
 {
 	mMaterialName = {InMaterialName.begin(), InMaterialName.end()};
 	mMaterialID   = StringHash(InMaterialName.data());
+
+	if (std::filesystem::is_regular_file(InMaterialName))
+	{
+		std::ifstream path(InMaterialName.data(), std::ios::binary);
+		JMaterial::DeSerialize(path);
+	}
 }
 
 JMaterial::JMaterial(JWTextView InMaterialName)
-	: bTransparent(false)
+	: mShader(nullptr),
+	  bTransparent(false)
 {
 	mMaterialName = {InMaterialName.begin(), InMaterialName.end()};
 	mMaterialID   = StringHash(InMaterialName.data());
+
+	if (std::filesystem::is_regular_file(InMaterialName))
+	{
+		std::ifstream path(InMaterialName.data(), std::ios::binary);
+		JMaterial::DeSerialize(path);
+	}
 }
 
 void JMaterial::Serialize(std::ofstream& FileStream)
@@ -26,10 +40,7 @@ void JMaterial::Serialize(std::ofstream& FileStream)
 	FileStream.write(reinterpret_cast<const char*>(&mMaterialID), sizeof(mMaterialID));
 
 	// Material Name
-	size_t nameSize = mMaterialName.size();
-	FileStream.write(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
-	JText rawString = WString2String(mMaterialName);
-	FileStream.write(reinterpret_cast<char*>(rawString.data()), nameSize);
+	Utils::Serialization::Serialize_Text(mMaterialName, FileStream);
 
 	// Transparent
 	FileStream.write(reinterpret_cast<char*>(&bTransparent), sizeof(bTransparent));
@@ -43,6 +54,12 @@ void JMaterial::Serialize(std::ofstream& FileStream)
 	{
 		mMaterialParams[i].Serialize(FileStream);
 	}
+
+	// Shader File Name
+	if (!mShader)
+		mShader = IManager.ShaderManager.GetBasicShader();
+	JWText shaderName = mShader->GetShaderFile();
+	Utils::Serialization::Serialize_Text(shaderName, FileStream);
 }
 
 void JMaterial::DeSerialize(std::ifstream& InFileStream)
@@ -71,6 +88,36 @@ void JMaterial::DeSerialize(std::ifstream& InFileStream)
 		FMaterialParams param;
 		param.DeSerialize(InFileStream);
 		mMaterialParams.push_back(param);
+	}
+
+	// Shader File Name
+	JWText shaderName;
+	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
+	mShader = IManager.ShaderManager.CreateOrLoad(shaderName);
+
+	ApplyTextures();
+}
+
+
+void JMaterial::AddMaterialParam(const FMaterialParams& InMaterialParam)
+{
+	mMaterialParams.push_back(InMaterialParam);
+}
+
+void JMaterial::BindMaterial(ID3D11DeviceContext* InDeviceContext)
+{
+	if (!mShader)
+	{
+		mShader = IManager.ShaderManager.GetBasicShader();
+	}
+	mShader->ApplyShader(InDeviceContext);
+
+	for (int32_t i = 0; i < mMaterialParams.size(); ++i)
+	{
+		if (mMaterialParams[i].ParamType == EMaterialParamType::Texture2D)
+		{
+			mMaterialParams[i].TextureValue->PreRender(i);
+		}
 	}
 }
 
@@ -127,7 +174,39 @@ FMaterialParams* JMaterial::GetMaterialParam(const JWText& InParamName)
 	return nullptr;
 }
 
-void JMaterial::AddMaterialParam(const FMaterialParams& InMaterialParam)
+
+void JMaterial::ApplyTextures()
 {
-	mMaterialParams.push_back(InMaterialParam);
+	for (auto& param : mMaterialParams)
+	{
+		if (param.ParamType == EMaterialParamType::Texture2D)
+		{
+			param.TextureValue = IManager.TextureManager.CreateOrLoad(param.StringValue.c_str());
+		}
+	}
+}
+
+FMaterialParams Utils::Material::CreateTextureParam(const char*   ParamName, const char* FileName, int32_t Index,
+													EMaterialFlag Flag)
+{
+	FMaterialParams materialParams;
+
+	if (Index == 0)
+	{
+		materialParams.Name.assign(ParamName);
+	}
+	else
+	{
+		materialParams.Name = std::format("{0}_{1}", ParamName, Index);
+	}
+
+	materialParams.Key            = StringHash(materialParams.Name.c_str());
+	materialParams.ParamType      = EMaterialParamType::Texture2D;
+	materialParams.StringValue    = FileName;
+	materialParams.bInstanceParam = true;
+	materialParams.Flags          = Flag;
+
+	materialParams.TextureValue = IManager.TextureManager.CreateOrLoad(FileName);
+
+	return materialParams;
 }

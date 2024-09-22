@@ -1,9 +1,11 @@
 ﻿#pragma once
-#include "GraphicDevice.h"
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
 
+/**
+ * @brief 셰이더에서 사용하는 상수 버퍼 구조체
+ */
 namespace CBuffer
 {
 	/**
@@ -18,7 +20,6 @@ namespace CBuffer
 
 	struct Light
 	{
-		FVector4 CameraPos;
 		FVector4 LightPos;
 		FVector4 LightColor;
 	};
@@ -30,19 +31,30 @@ namespace CBuffer
 
 	struct Camera
 	{
-		FVector4 CamPos;
+		FVector4 CameraPos;
 	};
 }
 
+/**
+ * @brief 정점 정보 구조체
+ */
 namespace Vertex
 {
-	struct FVertexInfo_2D : public ISerializable
+	struct FVertexInfo_ScreenQuad
+	{
+		FVector  Position = FVector::ZeroVector;
+		FVector2 UV       = FVector2::ZeroVector;
+	};
+
+	struct FVertexInfo_2D
 	{
 		FVector  Position;
 		FVector2 UV;
 		FVector4 Color;
 
-		void Serialize(std::ofstream& FileStream) override
+
+		/// 구조체에 vtable이 없어야 하므로 가상함수 사용X (정점 버퍼에 넘길 때 크기가 다르면 문제가 생길 수 있음)
+		void Serialize(std::ofstream& FileStream)
 		{
 			// Position
 			FileStream.write(reinterpret_cast<char*>(&Position), sizeof(Position));
@@ -52,7 +64,7 @@ namespace Vertex
 			FileStream.write(reinterpret_cast<char*>(&Color), sizeof(Color));
 		}
 
-		void DeSerialize(std::ifstream& InFileStream) override
+		void DeSerialize(std::ifstream& InFileStream)
 		{
 			// Position
 			InFileStream.read(reinterpret_cast<char*>(&Position), sizeof(Position));
@@ -69,7 +81,7 @@ namespace Vertex
 		FVector Tangent;
 		FVector Binormal;
 
-		void Serialize(std::ofstream& FileStream) override
+		void Serialize(std::ofstream& FileStream)
 		{
 			using Base = FVertexInfo_2D;
 
@@ -83,7 +95,7 @@ namespace Vertex
 			FileStream.write(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
 		}
 
-		void DeSerialize(std::ifstream& InFileStream) override
+		void DeSerialize(std::ifstream& InFileStream)
 		{
 			using Base = FVertexInfo_2D;
 
@@ -100,6 +112,29 @@ namespace Vertex
 
 }
 
+/**
+ * @brief Basic Buffer 구조체
+ */
+namespace Buffer
+{
+	struct FBufferInstance
+	{
+		std::vector<ComPtr<ID3D11Buffer>> Buffer_Vertex;	// Vertex 
+		std::vector<ComPtr<ID3D11Buffer>> Buffer_Index;		// Index
+		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Space;	// World, View, Projection
+		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Light;	// Light Direction
+		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Time;		// Time
+
+		void Resize(const int32_t Size)
+		{
+			Buffer_Vertex.resize(Size);
+			Buffer_Index.resize(Size);
+			CBuffer_Space.resize(Size);
+			CBuffer_Light.resize(Size);
+			CBuffer_Time.resize(Size);
+		}
+	};
+}
 
 /**
  * 삼각형(정점)을 나타내는 데이터 구조체
@@ -161,9 +196,9 @@ struct IsVertexSame
  * @tparam T 정점 정보
  */
 template <typename T>
-struct JData : public ISerializable
+struct JVertexData final : public ISerializable
 {
-	static_assert(std::is_base_of_v<T, Vertex::FVertexInfo_2D>, "T must be derived from FVertexInfo_2D");
+	static_assert(std::is_base_of_v<Vertex::FVertexInfo_2D, T>, "T must be derived from FVertexInfo_2D");
 
 	int32_t                   FaceCount = 0;
 	std::vector<T>            VertexArray;
@@ -225,7 +260,8 @@ struct JData : public ISerializable
 	 * @param StartTriangle 삼각형 시작 인덱스
 	 * @return 
 	 */
-	int32_t GenerateIndexArray(std::vector<FTriangle<T>>& TriangleList, int32_t Material = -1, int32_t StartTriangle = 0)
+	int32_t GenerateIndexArray(std::vector<FTriangle<T>>& TriangleList, int32_t Material = -1,
+							   int32_t                    StartTriangle                  = 0)
 	{
 		int32_t faceNum = TriangleList.size();
 

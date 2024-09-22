@@ -77,9 +77,9 @@ ReturnType* Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::string& 
 	std::string id   = ParseFile(InName);
 	uint32_t    hash = StringHash(InName.c_str());
 
-	if (ReturnType* resource = FetchResource<ReturnType>(id))
+	if (mManagedList.contains(hash))
 	{
-		return resource;
+		return dynamic_cast<ReturnType*>(mManagedList[hash].get());
 	}
 
 	std::unique_ptr<ReturnType> obj    = std::make_unique<ReturnType>(InName, std::forward<Args>(InArgs)...);

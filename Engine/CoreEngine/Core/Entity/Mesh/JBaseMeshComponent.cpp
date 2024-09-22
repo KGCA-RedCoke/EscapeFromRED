@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-// #include "JBaseMeshComponent.h"
+﻿// #include "JBaseMeshComponent.h"
 //
 // #include "Core/Graphics/Shader/JDXObject.h"
 //

@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "GUI_AssetBrowser.h"
+﻿#include "GUI_AssetBrowser.h"
 
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"

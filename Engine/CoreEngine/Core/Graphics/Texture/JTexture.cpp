@@ -1,24 +1,28 @@
-﻿#include "common_pch.h"
-#include "JTexture.h"
-#include "Core/Graphics/GraphicDevice.h"
+﻿#include "JTexture.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include <directxtk/WICTextureLoader.h>
 
 #include "Core/Utils/Utils.h"
 
-JTexture::JTexture() {}
+JTexture::JTexture()
+	: mSlot(0),
+	  mID(0),
+	  mSRVDesc(),
+	  mTextureDesc() {}
 
 JTexture::JTexture(JWTextView InName)
-	: mID(StringHash(InName.data())),
+	: mSlot(0),
+	  mID(StringHash(InName.data())),
 	  mTextureName(InName),
 	  mSRVDesc(),
 	  mTextureDesc()
 {
-	mSlot = 0;
 	LoadFromFile();
 }
 
 JTexture::JTexture(JTextView InName)
 	: JTexture(String2WString(InName.data())) {}
+
 
 void JTexture::Serialize(std::ofstream& FileStream)
 {
@@ -35,10 +39,7 @@ void JTexture::Serialize(std::ofstream& FileStream)
 	FileStream.write(reinterpret_cast<const char*>(&mSlot), sizeof(mSlot));
 
 	// Texture Name
-	const JText  rawString = WString2String(mTextureName);
-	const size_t nameSize  = rawString.length();
-	FileStream.write(reinterpret_cast<const char*>(&nameSize), sizeof(nameSize));
-	FileStream.write(reinterpret_cast<const char*>(rawString.data()), nameSize);
+	Utils::Serialization::Serialize_Text(mTextureName, FileStream);
 }
 
 void JTexture::DeSerialize(std::ifstream& InFileStream)
@@ -61,12 +62,7 @@ void JTexture::DeSerialize(std::ifstream& InFileStream)
 	InFileStream.read(reinterpret_cast<char*>(&mSlot), sizeof(mSlot));
 
 	// Texture Name
-	size_t nameSize;
-	InFileStream.read(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
-
-	JText rawString(nameSize,'0');
-	InFileStream.read(reinterpret_cast<char*>(rawString.data()), nameSize);
-	mTextureName = String2WString(rawString);
+	Utils::Serialization::DeSerialize_Text(mTextureName, InFileStream);
 
 	LoadFromFile();
 }
@@ -74,7 +70,7 @@ void JTexture::DeSerialize(std::ifstream& InFileStream)
 void JTexture::PreRender(int32_t InSlot)
 {
 	if (mShaderResourceView.Get())
-		G_Context.GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, mShaderResourceView.GetAddressOf());
+		DeviceRSC.GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, mShaderResourceView.GetAddressOf());
 }
 
 
@@ -83,11 +79,14 @@ void JTexture::LoadFromFile()
 	ComPtr<ID3D11Resource>  textureResource;
 	ComPtr<ID3D11Texture2D> texture;
 
-
-	CheckResult(CreateWICTextureFromFile(G_Context.GetDevice(),
-										 mTextureName.c_str(),
-										 textureResource.GetAddressOf(),
-										 mShaderResourceView.GetAddressOf()));
+	// 여기서는 CheckResult를 하지 않는다. 텍스처 파일이 없을 경우 디폴트 텍스처 적용
+	if (FAILED(CreateWICTextureFromFile(DeviceRSC.GetDevice(),
+				   mTextureName.c_str(),
+				   textureResource.GetAddressOf(),
+				   mShaderResourceView.GetAddressOf())))
+	{
+		return;
+	}
 
 	CheckResult(textureResource->QueryInterface(__uuidof(ID3D11Texture2D),
 												reinterpret_cast<void**>(texture.GetAddressOf())));

@@ -7,10 +7,15 @@ class MCameraManager : public Manager_Base<JCamera, MCameraManager>
 public:
 	void Initialize();
 
+public:
 	FORCEINLINE JCamera* GetCurrentMainCam() const { return mCurrentCamera; }
 	FORCEINLINE JCamera* GetCam(JWTextView InName) { return FetchResource<JCamera>(InName.data()); }
 
+public:
 	void SetCurrentMainCam(JWTextView InName);
+
+public:
+	void SetCameraConstantBuffer(uint32_t InSlot) const;
 
 private:
 	JCamera* mCurrentCamera;

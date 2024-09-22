@@ -4,7 +4,8 @@
 #include "FbxUtils.h"
 #include "Core/Utils/Math/TMatrix.h"
 
-class JMesh;
+class JSkeletalMesh;
+class JMeshData;
 class JMaterial;
 
 // Fbx 파일 구조에 대해 자세하게 나와있는 링크
@@ -20,18 +21,16 @@ namespace Utils::Fbx
 		// FIXME: FbxImporter, FbxScene을 개체마다 하나씩 가져야 할 필요가 있을까?
 
 	public:
-		FbxFile(const JText& InName);
-		FbxFile(const JWText& InName);
+		FbxFile() = default;
 		~FbxFile();
 
 	public:
 		/** Importer, Scene 생성 */
-		void Initialize();
+		void Initialize(const char* InFilePath);
 		/** 존재하는 모든 fbx sdk destroy (프로세스 종료 전에 호출) */
-		void Release();
+		void Release() const;
 
 	public:
-		bool Load();
 		bool Load(const char* InFilePath);
 		bool Convert();
 
@@ -44,16 +43,20 @@ namespace Utils::Fbx
 		 * @param InNode 탐색할 노드
 		 * @param NodeAttribute 탐색할 노드 AttributeType
 		 * @param InParentMeshData
+		 * @param InParentMatrix
 		 */
-		void ParseNode_Recursive(FbxNode*          InNode, FbxNodeAttribute::EType NodeAttribute,
-								 const Ptr<JMesh>& InParentMeshData = nullptr);
+		void ParseNode_Recursive(FbxNode*                InNode, FbxNodeAttribute::EType NodeAttribute,
+								 const Ptr<JMeshData>& InParentMeshData = nullptr,
+								 const FMatrix&          InParentMatrix   = FMatrix::Identity);
 
 		/**
 		 * @brief 메시노드의 속성을 파싱하는 함수
 		 * @param InNode 메시노드 InNode->GetMesh()
 		 * @param InMeshData 저장할 데이터 Mesh
 		 */
-		void ParseMesh(FbxNode* InNode, Ptr<JMesh> InMeshData);
+		void ParseMesh(FbxNode* InNode, Ptr<JMeshData> InMeshData);
+
+		void ParseSkeleton(FbxNode* InNode, Ptr<JMeshData> InMeshData);
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -64,18 +67,16 @@ namespace Utils::Fbx
 		 * @param InMesh FbxMesh 개체
 		 * @param InMeshData JMesh 개체 (파싱된 데이터를 저장할 개체)
 		 */
-		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMesh>& InMeshData);
+		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData);
 
 	public:
-		JText mFileName;
-
 		FbxImporter* mFbxImporter;
 		FbxScene*    mFbxScene;
 
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
-		std::vector<Ptr<JMesh>> mMeshList;
+		std::vector<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
-		std::vector<std::vector<Ptr<JMaterial>>> mMaterialList;
+		std::vector<std::vector<JMaterial*>> mMaterialList;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

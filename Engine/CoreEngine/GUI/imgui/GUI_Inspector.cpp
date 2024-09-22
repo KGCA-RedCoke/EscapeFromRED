@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "GUI_Inspector.h"
+﻿#include "GUI_Inspector.h"
 
 GUI_Inspector::GUI_Inspector(const std::string& InTitle)
 	: GUI_Base(InTitle) {}

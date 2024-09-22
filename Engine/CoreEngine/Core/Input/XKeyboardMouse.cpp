@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "XKeyboardMouse.h"
+﻿#include "XKeyboardMouse.h"
 
 #include "Core/Window/Window.h"
 

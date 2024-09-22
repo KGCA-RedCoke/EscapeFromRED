@@ -1,8 +1,15 @@
-﻿#include "common_pch.h"
-#include "Vector4.h"
+﻿#include "Vector4.h"
 
 namespace JMath
 {
+
+	TVector4::TVector4(TVector X, float Y)
+	{
+		x = X.x;
+		y = X.y;
+		z = X.z;
+		w = Y;
+	}
 
 	TVector4::TVector4(XMFLOAT4 V)
 		: XMFLOAT4(V) {}

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 
-class JDXObject;
+class J3DObject;
 class XVertexMesh;
 class JFont;
 class Timer;
@@ -22,8 +22,8 @@ public:
 	[[nodiscard]] FORCEINLINE float_t GetDeltaSeconds() const { return mDeltaTime; }
 	[[nodiscard]] FORCEINLINE int32_t GetFramePerSeconds() const { return mFramesPerSec; }
 	[[nodiscard]] FORCEINLINE int32_t GetCurrentTime() const { return mCurrentTime; }
-	[[nodiscard]] uint32_t GetWindowWidth();
-	[[nodiscard]] uint32_t GetWindowHeight();
+	[[nodiscard]] uint32_t GetWindowWidth() const;
+	[[nodiscard]] uint32_t GetWindowHeight() const;
 
 private:
 	void HandleFrame();
@@ -47,8 +47,8 @@ private:
 	int32_t     mFramesPerSec = 0;
 	int32_t     mFrameCounter = 0;
 
-	UPtr<JDXObject> mDXObject = nullptr;
-	UPtr<JFont>     mFpsText  = nullptr;
+	std::vector<UPtr<J3DObject>> mRenderObjects;
+	UPtr<JFont>                  mFpsText = nullptr;
 
 public:
 	Application();

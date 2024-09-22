@@ -1,28 +1,19 @@
 ﻿#include "FbxFile.h"
 #include "FbxUtils.h"
-#include "Core/Graphics/Mesh/JMesh.h"
+#include "Core/Graphics/Mesh/JSkeletalMesh.h"
+#include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Interface/MManagerInterface.h"
 
 namespace Utils::Fbx
 {
 	FbxManager* g_fbx_manager = nullptr;
 
-	FbxFile::FbxFile(const JText& InName)
-		: mFileName(InName),
-		  mFbxImporter(nullptr),
-		  mFbxScene(nullptr) {}
-
-	FbxFile::FbxFile(const JWText& InName)
-		: mFileName(WString2String(InName)),
-		  mFbxImporter(nullptr),
-		  mFbxScene(nullptr) {}
-
 	FbxFile::~FbxFile()
 	{
 		Release();
 	}
 
-	void FbxFile::Initialize()
+	void FbxFile::Initialize(const char* InFilePath)
 	{
 		if (!g_fbx_manager)
 		{
@@ -30,18 +21,32 @@ namespace Utils::Fbx
 		}
 		assert(g_fbx_manager);
 
+		if (mFbxScene)
+		{
+			mFbxScene->Destroy();
+		}
+		if (mFbxImporter)
+		{
+			mFbxImporter->Destroy();
+		}
+
 		mFbxImporter = FbxImporter::Create(g_fbx_manager, "");
 		mFbxScene    = FbxScene::Create(g_fbx_manager, "");
-
 		assert(mFbxImporter);
 		assert(mFbxScene);
 
-		bool bSuccess = mFbxImporter->Initialize(mFileName.c_str(), -1, g_fbx_manager->GetIOSettings());
+
+		bool bSuccess = mFbxImporter->Initialize(InFilePath, -1, g_fbx_manager->GetIOSettings());
 		if (!bSuccess)
 		{
-			LOG_CORE_ERROR("Failed to initialize fbx importer, {0} {1}", __FILE__, __LINE__);
+			FbxStatus status = mFbxImporter->GetStatus();
+			LOG_CORE_ERROR("Failed to initialize fbx importer, Error: {0}, {1}, {2}",
+						   status.GetErrorString(),
+						   __FILE__,
+						   __LINE__);
 			return;
 		}
+
 
 		bSuccess = mFbxImporter->Import(mFbxScene);
 		if (!bSuccess)
@@ -52,10 +57,15 @@ namespace Utils::Fbx
 
 		// front -> y | right -> x | up -> z (y, z 축이 바뀐 형태) 
 		FbxAxisSystem::MayaZUp.ConvertScene(mFbxScene);
-		FbxSystemUnit::cm.ConvertScene(mFbxScene);
+		FbxSystemUnit::m.ConvertScene(mFbxScene);
+
+		mMeshList.clear();
+		mMaterialList.clear();
+		mNumVertex = 0;
+		mNumIndex  = 0;
 	}
 
-	void FbxFile::Release()
+	void FbxFile::Release() const
 	{
 		if (mFbxScene)
 			mFbxScene->Destroy();
@@ -65,24 +75,29 @@ namespace Utils::Fbx
 			g_fbx_manager->Destroy();
 	}
 
-	bool FbxFile::Load()
+
+	bool FbxFile::Load(const char* InFilePath)
 	{
-		Initialize();
+		Initialize(InFilePath);
 
 		ProcessLoad();
 
 		Convert();
 
+		JText filePath = "rsc/";
+		filePath += std::format("{0}.jasset", ParseFile(InFilePath));
+		std::ofstream fileStream(filePath, std::ios::binary);
+
+		size_t meshSize = mMeshList.size();
+		fileStream.write(reinterpret_cast<char*>(&meshSize), sizeof(size_t));
+		for (int32_t i = 0; i < meshSize; ++i)
+		{
+			mMeshList[i]->Serialize(fileStream);
+		}
+		fileStream.close();
+
+
 		return true;
-	}
-
-	bool FbxFile::Load(const char* InFilePath)
-	{
-		mFileName = InFilePath;
-
-		Initialize();
-
-		return Load();
 	}
 
 	bool FbxFile::Convert()
@@ -90,11 +105,11 @@ namespace Utils::Fbx
 		// TODO: Load() ->(then) Convert는 다른 스레드의 작업큐로 넣어야 함.
 		for (int32_t meshIndex = 0; meshIndex < mMeshList.size(); ++meshIndex)
 		{
-			auto mesh = mMeshList[meshIndex].get();
-			auto data = mesh->mVertexData.get();
+			auto& mesh = mMeshList[meshIndex];
+			auto& data = mesh->mVertexData;
 
-			mesh->mIndex   = meshIndex;
-			mesh->mFaceNum = data->FaceCount;
+			mesh->mIndex     = meshIndex;
+			mesh->mFaceCount = data->FaceCount;
 
 			// 부모 노드 존재시에 자식 노드로 등록
 			if (mesh->mParentMesh)
@@ -102,19 +117,19 @@ namespace Utils::Fbx
 				mesh->mParentMesh->mChildMesh.push_back(mesh);
 			}
 
-			// 메시 타입이 GEOM(Static Mesh)일 경우만 우선 처리
-			if (mesh->mClassType == EMeshType::GEOM)
+			// 메시 타입이 Static(Static Mesh)일 경우만 우선 처리
+			if (mesh->mClassType == EMeshType::Static)
 			{
 				const int32_t materialNum = mesh->mMaterialRefNum - 1;
 				assert(materialNum >= 0);
 
-				std::vector<Ptr<JMaterial>> materials = mMaterialList[materialNum];
-				if (mesh->mFaceNum > 0 && !materials.empty())
+				std::vector<JMaterial*> materials = mMaterialList[meshIndex];
+				if (mesh->mFaceCount > 0 && !materials.empty())
 				{
 					// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
 					if (materials.size() == 1)
 					{
-						const Ptr<JMaterial> subMaterial = materials[0];
+						JMaterial* subMaterial = materials[0];
 
 						// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
 						data->GenerateIndexArray(data->TriangleList);
@@ -125,7 +140,7 @@ namespace Utils::Fbx
 						}
 						else
 						{
-							mesh->mMaterial = Utils::Material::s_DefaultMaterial;
+							mesh->mMaterial = IManager.MaterialManager.GetDefaultMaterial();
 						}
 
 						mNumVertex += data->VertexArray.size();
@@ -133,36 +148,37 @@ namespace Utils::Fbx
 					}
 					else
 					{
-						int iAddCount = 0;
-						// for (int iSub = 0; iSub < materials.size(); iSub++)
-						// {
-						// 	auto pSubMesh = mesh->SubMesh[iSub].get();
-						// 	auto pSubData = data->SubMesh[iSub].get();
-						//
-						// 	// 2번 인자값=-1 이면 Face Count(_countof )를 계산하지 않는다.
-						// 	pSubData->GenerateIndexArray(pSubData->TriangleList, -1, 0);
-						// 	pSubMesh->DiffuseTex = -1;
-						//
-						// 	CFbxMaterial* pSubMtrl = materials[iSub];
-						// 	if (pSubMtrl->mParams.size() > 0)
-						// 	{
-						// 		JWText name;
-						// 		name = String2WString(pSubMtrl->mParams[0].StringValue);
-						// 		// pSubMesh->DiffuseTex = I_Texture.Add(
-						// 		// 									 g_pd3dDevice,
-						// 		// 									 name.c_str(),
-						// 		// 									 m_szDirName.c_str());
-						// 	}
-						// 	mNumVertex += pSubData->VertexArray.size();
-						// 	mNumIndex += pSubData->IndexArray.size();
-						//
-						// 	pSubData->FaceCount = pSubData->IndexArray.size() / 3;
-						// 	pSubMesh->FaceNum   = pSubData->IndexArray.size() / 3;
-						// }
+						for (int subMeshIndex = 0; subMeshIndex < materials.size(); ++subMeshIndex)
+						{
+							JMaterial* subMaterial = materials[subMeshIndex];
+
+							auto& subMesh = mesh->mSubMesh[subMeshIndex];
+							auto& subData = subMesh->mVertexData;
+
+							subData->GenerateIndexArray(subData->TriangleList);
+
+							if (subMaterial->HasMaterial())
+							{
+								subMesh->mMaterial = subMaterial;
+							}
+							else
+							{
+								subMesh->mMaterial = IManager.MaterialManager.GetDefaultMaterial();
+							}
+							mNumVertex += data->VertexArray.size();
+							mNumIndex += data->IndexArray.size();
+
+							const int32_t faceCount = subData->IndexArray.size() / 3;
+							subData->FaceCount      = faceCount;
+							subMesh->mFaceCount     = faceCount;
+
+							mesh->mFaceCount += faceCount;
+						}
 					}
 				}
 			}
 		}
+
 		return true;
 	}
 
@@ -172,15 +188,15 @@ namespace Utils::Fbx
 		assert(root, "empty scene(node x)");
 
 		// Parse Skeleton 
-		ParseNode_Recursive(root, FbxNodeAttribute::EType::eSkeleton);
+		// ParseNode_Recursive(root, FbxNodeAttribute::EType::eSkeleton);
 		// Parse Mesh
 		ParseNode_Recursive(root, FbxNodeAttribute::EType::eMesh);
 
 		// TODO: ParseAnimation();
 	}
 
-	void FbxFile::ParseNode_Recursive(FbxNode*          InNode, FbxNodeAttribute::EType NodeAttribute,
-									  const Ptr<JMesh>& InParentMeshData)
+	void FbxFile::ParseNode_Recursive(FbxNode*              InNode, FbxNodeAttribute::EType  NodeAttribute,
+									  const Ptr<JMeshData>& InParentMeshData, const FMatrix& InParentMatrix)
 	{
 		if (!InNode)
 			return;
@@ -190,28 +206,33 @@ namespace Utils::Fbx
 		/// 개체를 얻으려면 GetAttribute로 구하여 reinterpret_cast로 캐스팅하면 된다.
 		const FbxNodeAttribute* attribute = InNode->GetNodeAttribute();
 
+		/// 노드가 다른 타입이라도 자식 노드의 타입이 일치한다면 부모노드의 변환 행렬을 전달한다.
+		FMatrix worldMat = ParseTransform(InNode, InParentMatrix);
+
 		/// 현재 노드가 파싱하려는 노드 타입과 일치하면 파싱을 시작한다.
 		/// 즉, 파싱된 정보를 담을 MeshData를 생성
-		const Ptr<JMesh> meshData = MakePtr<JMesh>();
+		Ptr<JMeshData> meshData = nullptr;
 		if (attribute && attribute->GetAttributeType() == NodeAttribute)
 		{
+			meshData = MakePtr<JMeshData>();
 			{
-				meshData->mName           = InNode->GetName();
-				meshData->mParentMesh     = InParentMeshData;
-				meshData->mMaterialRefNum = 0;
-				meshData->mFaceNum        = 0;
-				meshData->mVertexData     = MakePtr<JData<Vertex::FVertexInfo_Base>>();;
+				meshData->mName                  = InNode->GetName();
+				meshData->mParentMesh            = InParentMeshData;
+				meshData->mMaterialRefNum        = 0;
+				meshData->mFaceCount             = 0;
+				meshData->mVertexData            = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();
+				meshData->mInitialModelTransform = worldMat;
 			}
 			mMeshList.push_back(meshData);
 
 			switch (NodeAttribute)
 			{
 			case FbxNodeAttribute::eSkeleton:
-				meshData->mClassType = EMeshType::BONE;
-			// TODO: ParseSkeleton();
+				meshData->mClassType = EMeshType::Skeletal;
+				ParseSkeleton(InNode, meshData);
 				break;
 			case FbxNodeAttribute::eMesh:
-				meshData->mClassType = EMeshType::GEOM;
+				meshData->mClassType = EMeshType::Static;
 				ParseMesh(InNode, meshData);
 				break;
 			default:
@@ -222,11 +243,11 @@ namespace Utils::Fbx
 		// 자식 노드를 재귀적으로 파싱
 		for (int32_t i = 0; i < InNode->GetChildCount(); ++i)
 		{
-			ParseNode_Recursive(InNode->GetChild(i), NodeAttribute, meshData);
+			ParseNode_Recursive(InNode->GetChild(i), NodeAttribute, meshData, worldMat);
 		}
 	}
 
-	void FbxFile::ParseMesh(FbxNode* InNode, Ptr<JMesh> InMeshData)
+	void FbxFile::ParseMesh(FbxNode* InNode, Ptr<JMeshData> InMeshData)
 	{
 		if (!InNode || !InNode->GetMesh())
 			return;
@@ -236,6 +257,29 @@ namespace Utils::Fbx
 
 		// 레이어 정보(Geometry (UV, Tangents, Normal, Material, Color...))부터 해석하자.
 		FLayer layer = ParseMeshLayer(InNode->GetMesh(), InMeshData);
+
+		FbxAMatrix vertexMat; // 정점의 변환 행렬
+		FbxAMatrix normalMat; // 노말의 변환 행렬
+		{
+			// 노드의 기하학적 변환 행렬을 가져온다.
+			// 노드의 기하학적 변환 행렬을 가져오는 이유는 노드의 기하학적 변환에 따라 정점도 변환되어야 하기 때문이다.
+			FbxVector4 translation = InNode->GetGeometricTranslation(FbxNode::eSourcePivot); // 노드의 기하학적 변환
+			FbxVector4 rotation    = InNode->GetGeometricRotation(FbxNode::eSourcePivot); // 노드의 기하학적 회전
+			FbxVector4 scale       = InNode->GetGeometricScaling(FbxNode::eSourcePivot); // 노드의 기하학적 스케일
+
+			FbxAMatrix geometryMat; // 노드의 기하학적 변환 행렬
+			geometryMat.SetT(translation); // 변환 행렬 설정
+			geometryMat.SetR(rotation); // 회전 행렬 설정
+			geometryMat.SetS(scale); // 스케일 행렬 설정
+
+			// 노드의 기하학적 변환 행렬을 가져와서 정점의 위치, 노말의 방향 정보에 변환 행렬을 적용하면 노드의 기하학적 변환에 따라 정점의 위치, 노말의 방향이 변환된다.
+			vertexMat = geometryMat; // 정점의 변환 행렬설정
+			// 노말(법선)의 변환 행렬은 기하학적 변환 행렬의 역행렬전치하면 된다.
+			normalMat = vertexMat; // 노말의 변환 행렬 설정
+			normalMat = normalMat.Inverse(); // 역행렬로 변환
+			normalMat = normalMat.Transpose(); // 전치행렬로 변환
+		}
+
 
 		const int32_t     polygonCount = fbxMesh->GetPolygonCount(); //  삼각 or 사각 poly 
 		const int32_t     vertexCount  = fbxMesh->GetControlPointsCount(); // 정점 개수 반환
@@ -308,28 +352,6 @@ namespace Utils::Fbx
 
 				FTriangle<Vertex::FVertexInfo_Base> triangle;
 				triangle.SubIndex = materialIndex;
-
-				FbxAMatrix vertexMat; // 정점의 변환 행렬
-				FbxAMatrix normalMat; // 노말의 변환 행렬
-				{
-					// 노드의 기하학적 변환 행렬을 가져온다.
-					// 노드의 기하학적 변환 행렬을 가져오는 이유는 노드의 기하학적 변환에 따라 정점도 변환되어야 하기 때문이다.
-					FbxVector4 translation = InNode->GetGeometricTranslation(FbxNode::eSourcePivot); // 노드의 기하학적 변환
-					FbxVector4 rotation    = InNode->GetGeometricRotation(FbxNode::eSourcePivot); // 노드의 기하학적 회전
-					FbxVector4 scale       = InNode->GetGeometricScaling(FbxNode::eSourcePivot); // 노드의 기하학적 스케일
-
-					FbxAMatrix geometryMat; // 노드의 기하학적 변환 행렬
-					geometryMat.SetT(translation); // 변환 행렬 설정
-					geometryMat.SetR(rotation); // 회전 행렬 설정
-					geometryMat.SetS(scale); // 스케일 행렬 설정
-
-					// 노드의 기하학적 변환 행렬을 가져와서 정점의 위치, 노말의 방향 정보에 변환 행렬을 적용하면 노드의 기하학적 변환에 따라 정점의 위치, 노말의 방향이 변환된다.
-					vertexMat = geometryMat; // 정점의 변환 행렬설정
-					// 노말(법선)의 변환 행렬은 기하학적 변환 행렬의 역행렬전치하면 된다.
-					normalMat = vertexMat; // 노말의 변환 행렬 설정
-					normalMat = normalMat.Inverse(); // 역행렬로 변환
-					normalMat = normalMat.Transpose(); // 전치행렬로 변환
-				}
 
 
 				// 삼각형의 각 정점을 순회하면서 정점 정보를 파싱
@@ -443,18 +465,68 @@ namespace Utils::Fbx
 		}
 	}
 
-	FLayer FbxFile::ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMesh>& InMeshData)
+	void FbxFile::ParseSkeleton(FbxNode* InNode, Ptr<JMeshData> InMeshData)
+	{
+		if (!InNode || !InNode->GetSkeleton())
+			return;
+
+		// 스켈레톤 정보를 가져오자.
+		FbxSkeleton* skeleton = InNode->GetSkeleton();
+
+		// 스켈레톤의 이름을 가져온다.
+		JText skeletonName = skeleton->GetName();
+
+		// 스켈레톤의 타입을 가져온다.
+		const FbxSkeleton::EType skeletonType = skeleton->GetSkeletonType();
+
+		// 스켈레톤의 타입에 따라 처리
+		switch (skeletonType)
+		{
+		/// 루트 본
+		/// 일반적으로 캐릭터의 중심 점 (전체적인 움직임을 관리)
+		case FbxSkeleton::eRoot:
+			LOG_CORE_INFO("Root Skeleton: {0}", skeletonName);
+			break;
+		/// 팔, 다리 본
+		/// 중간 단계의 본
+		case FbxSkeleton::eLimb:
+			LOG_CORE_INFO("Limb Skeleton: {0}", skeletonName);
+			break;
+		/// 제어 본 (손목, 발목)
+		/// 세밀한 제어
+		case FbxSkeleton::eLimbNode:
+			LOG_CORE_INFO("Limb Node Skeleton: {0}", skeletonName);
+			break;
+		/// IK 본
+		case FbxSkeleton::eEffector:
+			LOG_CORE_INFO("Effector Skeleton: {0}", skeletonName);
+			break;
+		default:
+			LOG_CORE_WARN("Unknown Skeleton Type: {0}", skeletonName);
+			break;
+		}
+
+		// 스켈레톤의 변환 행렬을 가져온다.
+
+		// FbxAMatrix skeletonTransform = skeleton->EvaluateGlobalTransform();
+
+		// 변환 행렬을 사용하여 필요한 작업 수행
+		// 예: 스켈레톤의 위치, 회전, 스케일 등을 추출하여 사용
+	}
+
+	FLayer FbxFile::ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData)
 	{
 		FLayer layer;
 
 		if (!InMesh)
 			return layer;
-
+		
 		const int32_t layerCount = InMesh->GetLayerCount();
 
 		// Normal없으면 Normal 데이터 생성
 		if (layerCount == 0 || !InMesh->GetLayer(0)->GetNormals())
 		{
+			// 2015 이상 버전에서만 사용 가능
 			assert(FBXSDK_VERSION_MAJOR >= 2015);
 
 			InMesh->InitNormals();
@@ -469,7 +541,7 @@ namespace Utils::Fbx
 			InMesh->GenerateTangentsData(0);
 		}
 
-		std::vector<Ptr<JMaterial>> materials;
+		std::vector<JMaterial*> materials;
 
 		/// 레이어별로 Normal, Tangent, Color, UV, 머티리얼(정점에 다수의 텍스처가 매핑 되어있을 경우) 있으면 정보를 넣어놓는다.
 		/// 보통은 Layer0에만 존재하는데, 
@@ -510,19 +582,26 @@ namespace Utils::Fbx
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						Ptr<JMaterial> fbxMat = Utils::Fbx::ParseLayerMaterial(InMesh, i);
+						JMaterial* fbxMat = ParseLayerMaterial(InMesh, i);
 						materials.push_back(fbxMat);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
 						// 현재는 머티리얼이 여러개 있으니 서브메시를 머티리얼 개수만큼 생성한다.
-						auto subMesh = MakePtr<JMesh>();
+						auto subMesh = MakePtr<JMeshData>();
+
+						// subMesh의 이름을 정하는게 좀 애매한데
+						// 우선 메시 이름 + 머티리얼 이름 으로 설정
+						subMesh->mName = std::format("{0}_{1}",
+													 InMeshData->mName,
+													 WString2String(fbxMat->GetMaterialName()));
+
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
-						subMesh->mVertexData = MakePtr<JData<Vertex::FVertexInfo_Base>>();
+						subMesh->mVertexData = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();
 
 						// 현재 메시에 서브메시를 추가한다.
 						InMeshData->mSubMesh.push_back(subMesh);
 
-						// 머티리얼이 몇개나 있는거여?
+						// 머티리얼 수 만큼 증가
 						InMeshData->mMaterialRefNum++;
 					}
 				}
@@ -532,7 +611,7 @@ namespace Utils::Fbx
 					InMeshData->mMaterialRefNum = 1;
 
 					// 머티리얼 정보만 가져와서 저장해놓자.
-					Ptr<JMaterial> fbxMat = Utils::Fbx::ParseLayerMaterial(InMesh, 0);
+					JMaterial* fbxMat = ParseLayerMaterial(InMesh, 0);
 					materials.push_back(fbxMat);
 				}
 			}

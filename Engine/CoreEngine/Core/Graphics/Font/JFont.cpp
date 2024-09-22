@@ -1,7 +1,6 @@
-﻿#include "common_pch.h"
-#include "JFont.h"
+﻿#include "JFont.h"
 
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Utils/Math/Color.h"
 
 JFont::JFont(ID2D1RenderTarget* InRenderTarget)
@@ -31,7 +30,7 @@ void JFont::PreRender()
 
 void JFont::Render()
 {
-	ID2D1SolidColorBrush* brush = GraphicDevice::GetBrush();
+	ID2D1SolidColorBrush* brush = DeviceRSC.GetBrush();
 	assert(brush, "invalid brush");
 
 	D2D1_COLOR_F brushColor;
@@ -51,7 +50,7 @@ void JFont::Render()
 								 mScreenPosition.x + 600.f,
 								 mScreenPosition.y + 600.f
 							 },
-							 GraphicDevice::GetBrush()
+							 DeviceRSC.GetBrush()
 							);
 }
 
@@ -128,15 +127,15 @@ void JFont::AdjustTextFormat()
 
 	// DWrite에서는 Format만 관리
 	CheckResult(
-				GraphicDevice::GetWriteFactory()->
-				CreateTextFormat(
-								 mFontFamily.c_str(),
-								 nullptr,
-								 mFontWeight,
-								 mFontStyle,
-								 mFontStretch,
-								 mFontSize,
-								 L"en-us",
-								 mTextFormat.GetAddressOf()
-								));
+				DeviceRSC.GetWriteFactory()->
+						  CreateTextFormat(
+										   mFontFamily.c_str(),
+										   nullptr,
+										   mFontWeight,
+										   mFontStyle,
+										   mFontStretch,
+										   mFontSize,
+										   L"en-us",
+										   mTextFormat.GetAddressOf()
+										  ));
 }

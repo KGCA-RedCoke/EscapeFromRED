@@ -18,7 +18,7 @@ public:
 public:
 #pragma region Core Interface
 	void Initialize() override;
-	void Update(float_t DeltaTime) override;
+	void Update(float DeltaTime) override;
 	void Release() override;
 #pragma endregion
 
@@ -39,6 +39,8 @@ public:
 	 */
 	virtual void SetProjParams(float InFOV, float InAspect, float InNearPlane, float InFarPlane);
 	//---------------------------------------------- Camera ---------------------------------------------------------------
+
+	void SetCameraConstantBuffer(uint32_t InSlot);
 
 
 	//--------------------------------------------- Set State -------------------------------------------------------------
@@ -159,6 +161,8 @@ protected:
 	bool bEnableYAxisMovement;
 	bool bClipToBoundary;
 	bool bResetCursorAfterMove;
+
+	ComPtr<ID3D11Buffer> mCameraConstantBuffer;
 
 	static uint32_t s_CameraNum;
 };

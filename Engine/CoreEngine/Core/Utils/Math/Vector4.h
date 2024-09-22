@@ -30,6 +30,7 @@ namespace JMath
 
 		TVector4() noexcept {}
 		constexpr explicit TVector4(float x) {}
+		TVector4(TVector X, float Y);
 
 		constexpr TVector4(float _x, float _y, float _z, float _w)
 		{

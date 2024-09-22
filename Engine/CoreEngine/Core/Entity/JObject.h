@@ -1,45 +1,46 @@
 ﻿#pragma once
 
 #include "common_include.h"
+#include "Core/Utils/FileIO/JSerialization.h"
 
-CLASS_PTR(JObject)
-
-class JObject
+class JObject : public ISerializable, public std::enable_shared_from_this<JObject>
 {
 public:
 	JObject();
 	explicit JObject(JTextView InName);
-	virtual  ~JObject() {}
+	~JObject() override = default;
 
 	virtual void Initialize() {}
 	virtual void BeginPlay() {}
 	virtual void Tick(float DeltaTime) {}
 
-	[[nodiscard]] FORCEINLINE JText GetName() const { return mName; }
+	void Serialize(std::ofstream& FileStream) override;
+	void DeSerialize(std::ifstream& InFileStream) override;
 
 	template <class ObjectType, typename... Args>
 	ObjectType* CreateDefaultSubObject(Args... args)
 	{
-		static_assert(std::is_base_of_v<JObject, ObjectType>, "ObjectType is not derived from JObject");
+		static_assert(std::is_base_of_v<ObjectType, JObject>, "ObjectType is not derived from JObject");
 
-		JObjectUPtr obj    = std::make_unique<ObjectType>(args);
-		ObjectType* rawPtr = obj.get();
+		Ptr<JObject> obj    = std::make_shared<ObjectType>(args);
+		ObjectType*  rawPtr = obj.get();
 
 		mChildObjs.emplace_back(std::move(obj));
 
 		return rawPtr;
 	}
 
-	// TODO: 클래스 생성시 CDO 생성
-	JObject* GetComponentByID(JTextView InTextView);
-	JObject* GetComponentByClass();
+	[[nodiscard]] FORCEINLINE JText GetName() const { return mName; }
+	[[nodiscard]] FORCEINLINE Ptr<JObject> GetParentObject() const { return mParentObj; }
+	[[nodiscard]] FORCEINLINE const std::vector<Ptr<JObject>>& GetChildObjects() const { return mChildObjs; }
+	[[nodiscard]] FORCEINLINE size_t GetChildCount() const { return mChildObjs.empty() ? mChildObjs.size() : 0; }
 
 protected:
 	JText    mName;
 	uint32_t mPrimaryKey;
 
-	JObject*                   mParentObj;
-	std::vector<UPtr<JObject>> mChildObjs;
+	Ptr<JObject>              mParentObj;
+	std::vector<Ptr<JObject>> mChildObjs;
 
 	static uint32_t g_DefaultObjectNum;
 

@@ -13,7 +13,7 @@ public:
 	JTexture();
 	explicit JTexture(JWTextView InName);
 	explicit JTexture(JTextView InName);
-	~JTexture() = default;
+	~JTexture() override = default;
 
 public:
 	void Serialize(std::ofstream& FileStream) override;
@@ -32,6 +32,7 @@ public:
 	FORCEINLINE void SetShaderSlot(const uint32_t InSlotIndex) { mSlot = InSlotIndex; }
 
 private:
+	/** 경로String으로 텍스처를 생성 */
 	void LoadFromFile();
 
 private:

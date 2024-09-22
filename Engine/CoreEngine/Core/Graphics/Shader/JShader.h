@@ -12,9 +12,12 @@ class JTexture;
 class JShader
 {
 public:
-	explicit JShader(const JText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
-	explicit JShader(const JWText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
-	~JShader() = default;
+	JShader(const JText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
+	JShader(const JWText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
+	virtual ~JShader();
+
+public:
+	void ApplyShader(ID3D11DeviceContext* InDeviceContext) const;
 
 public:
 	void LoadVertexShader(LPCSTR FuncName);
@@ -28,6 +31,8 @@ private:
 	void CreateInputLayout();
 
 public:
+	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
+
 	[[nodiscard]] FORCEINLINE ID3D11InputLayout*    GetInputLayout() const { return mInputLayout.Get(); }
 	[[nodiscard]] FORCEINLINE ID3D11VertexShader*   GetVertexShader() const { return mVertexShader.Get(); }
 	[[nodiscard]] FORCEINLINE ID3D11PixelShader*    GetPixelShader() const { return mPixelShader.Get(); }
@@ -41,17 +46,12 @@ public:
 	[[nodiscard]] FORCEINLINE ID3DBlob*             GetHullShaderBuf() const { return mHullShaderBuf.Get(); }
 	[[nodiscard]] FORCEINLINE ID3DBlob*             GetDomainShaderBuf() const { return mDomainShaderBuf.Get(); }
 	[[nodiscard]] FORCEINLINE ID3DBlob*             GetComputeShaderBuf() const { return mComputeShaderBuf.Get(); }
-	[[nodiscard]] JTexture*                         GetDefaultAlbedoTexture() const { return mDefaultAlbedoTexture; }
-	[[nodiscard]] JTexture*                         GetDefaultNormalTexture() const { return mDefaultNormalTexture; }
 
-private:
+protected:
 	JWText mShaderFile;
 
 	ComPtr<ID3D11InputLayout> mInputLayout;
 
-public:
-
-private:
 	ComPtr<ID3D11VertexShader>   mVertexShader;
 	ComPtr<ID3D11PixelShader>    mPixelShader;
 	ComPtr<ID3D11GeometryShader> mGeometryShader;
@@ -65,7 +65,4 @@ private:
 	ComPtr<ID3DBlob> mHullShaderBuf;
 	ComPtr<ID3DBlob> mDomainShaderBuf;
 	ComPtr<ID3DBlob> mComputeShaderBuf;
-
-	JTexture* mDefaultAlbedoTexture;
-	JTexture* mDefaultNormalTexture;
 };

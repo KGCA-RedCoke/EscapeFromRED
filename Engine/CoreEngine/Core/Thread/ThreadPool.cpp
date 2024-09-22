@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "ThreadPool.h"
+﻿#include "ThreadPool.h"
 
 namespace Thread
 {

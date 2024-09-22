@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "GUI_Base.h"
+#include "Core/Utils/Math/Vector2.h"
 
 class JCamera;
 
@@ -8,7 +9,7 @@ class GUI_Viewport : public GUI_Base
 {
 public:
 	explicit GUI_Viewport(const std::string& InTitle);
-	~GUI_Viewport();
+	~GUI_Viewport() override;
 
 public:
 	void Initialize() override;
@@ -23,4 +24,5 @@ protected:
 	bool bIsHovered;
 
 	JCamera* mEditorCameraRef;
+	FVector2 mCachedViewportSize;
 };

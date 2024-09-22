@@ -1,5 +1,4 @@
-﻿// #include "common_pch.h"
-// #include "XController.h"
+﻿// #include "XController.h"
 //
 // void XController::CheckConnected()
 // {

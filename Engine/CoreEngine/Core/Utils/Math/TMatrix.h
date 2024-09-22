@@ -16,10 +16,10 @@ namespace JMath
     public:
         TMatrix() noexcept;
 
-        constexpr TMatrix(float m00, float m01, float m02, float m03,
+        TMatrix(float m00, float m01, float m02, float m03,
                           float m10, float m11, float m12, float m13,
                           float m20, float m21, float m22, float m23,
-                          float m30, float m31, float m32, float m33) {};
+                          float m30, float m31, float m32, float m33);
 
         explicit TMatrix(const TVector& r0, const TVector& r1, const TVector& r2);
         explicit TMatrix(const TVector4 r0, const TVector4& r1, const TVector4& r2, const TVector4& r3);

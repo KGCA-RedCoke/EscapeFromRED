@@ -1,2 +1,1 @@
-﻿#include "common_pch.h"
-#include "JActor.h"
+﻿#include "JActor.h"

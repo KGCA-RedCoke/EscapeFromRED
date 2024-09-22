@@ -1,8 +1,7 @@
-﻿#include "common_pch.h"
-#include "GUI_Viewport.h"
+﻿#include "GUI_Viewport.h"
 
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/MManagerInterface.h"
 
@@ -10,7 +9,9 @@
 GUI_Viewport::GUI_Viewport(const std::string& InTitle)
 	: GUI_Base(InTitle),
 	  bIsFocused(false),
-	  bIsHovered(false) {}
+	  bIsHovered(false),
+	  mEditorCameraRef(nullptr),
+	  mCachedViewportSize(FVector2::ZeroVector) {}
 
 GUI_Viewport::~GUI_Viewport()
 {}
@@ -28,8 +29,6 @@ void GUI_Viewport::Update(float DeltaTime)
 		bIsFocused = ImGui::IsWindowFocused();
 		bIsHovered = ImGui::IsWindowHovered();
 
-		ImVec2 curSize = ImGui::GetContentRegionAvail();
-
 		FViewportData* viewportData = IManager.ViewportManager.FetchResource(Name_Editor_Viewport);
 		if (!viewportData)
 		{
@@ -37,7 +36,35 @@ void GUI_Viewport::Update(float DeltaTime)
 			LOG_CORE_FATAL("Invalid Viewport");
 		}
 
-		ImGui::Image(viewportData->SRV.Get(), curSize);
+		if (mCachedViewportSize == FVector2::ZeroVector)
+		{
+			mCachedViewportSize = FVector2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+		}
+
+		// FVector2 curSize = FVector2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+		//
+		// constexpr float targetAspectRatio  = 16.f / 9.f;
+		// float           currentAspectRatio = curSize.x / curSize.y;
+		//
+		// if (currentAspectRatio > targetAspectRatio)
+		// {
+		// 	curSize.x = curSize.y * targetAspectRatio;
+		// }
+		// else
+		// {
+		// 	curSize.y = curSize.x / targetAspectRatio;
+		// }
+		//
+		// float offsetX = (ImGui::GetContentRegionAvail().x - curSize.x) * 0.5f;
+		// float offsetY = (ImGui::GetContentRegionAvail().y - curSize.y) * 0.5f;
+		//
+		// if (!mCachedViewportSize.IsNearlyEqual(curSize))
+		// {
+		// 	IManager.ViewportManager.ResizeViewport(Name_Editor_Viewport, curSize.x, curSize.y, offsetX, offsetY);
+		// 	mCachedViewportSize = curSize;
+		// }
+
+		ImGui::Image(viewportData->SRV.Get(), ImGui::GetContentRegionAvail());
 
 		if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
 		{

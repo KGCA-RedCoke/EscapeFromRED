@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "Core/Graphics/Texture/JTexture.h"
-#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
@@ -55,53 +54,47 @@ struct FMaterialParams : public ISerializable
 	EMaterialParamType ParamType      = EMaterialParamType::String; /** 머티리얼 변수 타입 */
 	EMaterialFlag      Flags          = EMaterialFlag::Diffuse; /** 머티리얼 변수 플래그 */
 	JTexture*          TextureValue   = nullptr;
+	JText              StringValue;
 
 	union
 	{
-		bool        BooleanValue = false;
-		int32_t     IntegerValue;
-		float       FloatValue;
-		FVector2    Float2Value;
-		FVector     Float3Value;
-		FVector4    Float4Value;
-		const char* StringValue;
+		bool     BooleanValue = false;
+		int32_t  IntegerValue;
+		float    FloatValue;
+		FVector2 Float2Value;
+		FVector  Float3Value;
+		FVector4 Float4Value;
 	};
 
 	void Serialize(std::ofstream& FileStream) override
 	{
 		// Name
-		size_t nameSize = Name.size();
-		FileStream.write(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
-		FileStream.write(reinterpret_cast<char*>(Name.data()), nameSize);
+		Utils::Serialization::Serialize_Text(Name, FileStream);
 
 		// bInstanceParam
-		FileStream.write(reinterpret_cast<char*>(&bInstanceParam), sizeof(bInstanceParam));
+		Utils::Serialization::Serialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), FileStream);
 
 		// Key
-		FileStream.write(reinterpret_cast<char*>(&Key), sizeof(Key));
+		Utils::Serialization::Serialize_Primitive(&Key, sizeof(Key), FileStream);
 
 		// ParamType
-		FileStream.write(reinterpret_cast<char*>(&ParamType), sizeof(ParamType));
+		Utils::Serialization::Serialize_Primitive(&ParamType, sizeof(ParamType), FileStream);
 
 		// Flags
-		FileStream.write(reinterpret_cast<char*>(&Flags), sizeof(Flags));
-
-		// TextureValue
-		TextureValue->Serialize(FileStream);
+		Utils::Serialization::Serialize_Primitive(&Flags, sizeof(Flags), FileStream);
 
 		switch (ParamType)
 		{
 		case EMaterialParamType::Boolean:
-			FileStream.write(reinterpret_cast<char*>(&BooleanValue), sizeof(BooleanValue));
+			Utils::Serialization::Serialize_Primitive(&BooleanValue, sizeof(BooleanValue), FileStream);
 			break;
 		case EMaterialParamType::Integer:
-			FileStream.write(reinterpret_cast<char*>(&IntegerValue), sizeof(IntegerValue));
+			Utils::Serialization::Serialize_Primitive(&IntegerValue, sizeof(IntegerValue), FileStream);
 			break;
 		case EMaterialParamType::String:
+		case EMaterialParamType::Texture2D:
 			{
-				size_t stringSize = strlen(StringValue);
-				FileStream.write(reinterpret_cast<char*>(&stringSize), sizeof(stringSize));
-				FileStream.write(StringValue, stringSize);
+				Utils::Serialization::Serialize_Text(StringValue, FileStream);
 			}
 		default:
 			break;
@@ -111,42 +104,35 @@ struct FMaterialParams : public ISerializable
 	void DeSerialize(std::ifstream& InFileStream) override
 	{
 		// Name
-		size_t nameSize;
-		InFileStream.read(reinterpret_cast<char*>(&nameSize), sizeof(nameSize));
-		Name.resize(nameSize);
-		InFileStream.read(reinterpret_cast<char*>(Name.data()), nameSize);
+		Utils::Serialization::DeSerialize_Text(Name, InFileStream);
 
 		// bInstanceParam
-		InFileStream.read(reinterpret_cast<char*>(&bInstanceParam), sizeof(bInstanceParam));
+		Utils::Serialization::DeSerialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), InFileStream);
 
 		// Key
-		InFileStream.read(reinterpret_cast<char*>(&Key), sizeof(Key));
+		Utils::Serialization::DeSerialize_Primitive(&Key, sizeof(Key), InFileStream);
 
 		// ParamType
-		InFileStream.read(reinterpret_cast<char*>(&ParamType), sizeof(ParamType));
+		Utils::Serialization::DeSerialize_Primitive(&ParamType, sizeof(ParamType), InFileStream);
 
 		// Flags
-		InFileStream.read(reinterpret_cast<char*>(&Flags), sizeof(Flags));
-
-		JTexture texture;
-		texture.DeSerialize(InFileStream);
-		// TextureValue
-		TextureValue = IManager.TextureManager.CreateOrLoad(texture.GetPath());
+		Utils::Serialization::DeSerialize_Primitive(&Flags, sizeof(Flags), InFileStream);
 
 		// Value
 		switch (ParamType)
 		{
 		case EMaterialParamType::Boolean:
-			InFileStream.read(reinterpret_cast<char*>(&BooleanValue), sizeof(BooleanValue));
+			Utils::Serialization::DeSerialize_Primitive(&BooleanValue, sizeof(BooleanValue), InFileStream);
 			break;
 		case EMaterialParamType::Integer:
-			InFileStream.read(reinterpret_cast<char*>(&IntegerValue), sizeof(IntegerValue));
+			Utils::Serialization::DeSerialize_Primitive(&IntegerValue, sizeof(IntegerValue), InFileStream);
 			break;
 		case EMaterialParamType::String:
-			size_t stringSize;
-			InFileStream.read(reinterpret_cast<char*>(&stringSize), sizeof(stringSize));
-			StringValue = new char[stringSize];
-			InFileStream.read(const_cast<char*>(StringValue), stringSize);
+		case EMaterialParamType::Texture2D:
+			{
+				Utils::Serialization::DeSerialize_Text(StringValue, InFileStream);
+			}
+
 			break;
 		default:
 			break;
@@ -163,32 +149,48 @@ public:
 	JMaterial();
 	explicit JMaterial(JTextView InMaterialName);
 	explicit JMaterial(JWTextView InMaterialName);
-	~JMaterial() = default;
+	~JMaterial() override = default;
 
 public:
 	void Serialize(std::ofstream& FileStream) override;
 	void DeSerialize(std::ifstream& InFileStream) override;
 
 public:
-	[[nodiscard]] const FMaterialParams*              GetMaterialParam(const JText& InParamName) const;
-	[[nodiscard]] const FMaterialParams*              GetMaterialParam(const JWText& InParamName) const;
-	[[nodiscard]] FMaterialParams*                    GetMaterialParam(const JText& InParamName);
-	[[nodiscard]] FMaterialParams*                    GetMaterialParam(const JWText& InParamName);
-	[[nodiscard]] const std::vector<FMaterialParams>& GetMaterialParams() const { return mMaterialParams; }
-	[[nodiscard]] uint32_t                            GetMaterialID() const { return mMaterialID; }
-	[[nodiscard]] bool                                HasMaterial() const { return !mMaterialParams.empty(); }
-	void                                              AddMaterialParam(const FMaterialParams& InMaterialParam);
+	/**
+	 * 셰이더, (머티리얼) 활성화
+	 */
+	void BindMaterial(ID3D11DeviceContext* InDeviceContext);
+	/**
+	 * 필요한 파라미터(텍스처, 색상 등)를 추가
+	 * @param InMaterialParam 추가할 파라미터
+	 */
+	void AddMaterialParam(const FMaterialParams& InMaterialParam);
 
-	FORCEINLINE void               SetTransparent(bool bInTransparent) { bTransparent = bInTransparent; }
-	[[nodiscard]] FORCEINLINE bool IsTransparent() const { return bTransparent; }
+public:
+	[[nodiscard]] const FMaterialParams* GetMaterialParam(const JText& InParamName) const;
+	[[nodiscard]] const FMaterialParams* GetMaterialParam(const JWText& InParamName) const;
+	[[nodiscard]] FMaterialParams*       GetMaterialParam(const JText& InParamName);
+	[[nodiscard]] FMaterialParams*       GetMaterialParam(const JWText& InParamName);
+
+	[[nodiscard]] FORCEINLINE const std::vector<FMaterialParams>& GetMaterialParams() const { return mMaterialParams; }
+	[[nodiscard]] FORCEINLINE const JWText&                       GetMaterialName() const { return mMaterialName; }
+	[[nodiscard]] FORCEINLINE bool                                HasMaterial() const { return !mMaterialParams.empty(); }
+	[[nodiscard]] FORCEINLINE bool                                IsTransparent() const { return bTransparent; }
+
+	FORCEINLINE void SetShader(class JShader* InShader) { mShader = InShader; }
+	FORCEINLINE void SetTransparent(bool bInTransparent) { bTransparent = bInTransparent; }
 
 private:
-	JWText   mMaterialName;
-	uint32_t mMaterialID;
+	void ApplyTextures();
+
+private:
+	JWText                       mMaterialName;
+	uint32_t                     mMaterialID;
+	std::vector<FMaterialParams> mMaterialParams;
+
+	class JShader* mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 
 	bool bTransparent;
-
-	std::vector<FMaterialParams> mMaterialParams;
 };
 
 namespace Utils::Material
@@ -200,65 +202,8 @@ namespace Utils::Material
 	 * @param FileName 텍스처 파일 경로
 	 * @param Flag 텍스처 파일 플래그(종류)
 	 */
-	inline FMaterialParams CreateTextureParam(const char*   ParamName, const char* FileName, int32_t Index,
-											  EMaterialFlag Flag)
-	{
-		FMaterialParams materialParams;
-
-		if (Index == 0)
-		{
-			materialParams.Name.assign(ParamName);
-		}
-		else
-		{
-			materialParams.Name = std::format("{0}_{1}", ParamName, Index);
-		}
-
-		materialParams.Key            = StringHash(materialParams.Name.c_str());
-		materialParams.ParamType      = EMaterialParamType::Texture2D;
-		materialParams.StringValue    = FileName;
-		materialParams.bInstanceParam = true;
-		materialParams.Flags          = Flag;
-
-		materialParams.TextureValue = IManager.TextureManager.CreateOrLoad(FileName);
-
-		return materialParams;
-	}
-
-	inline Ptr<JMaterial> CreateDefaultMaterial(const char* MaterialName)
-	{
-		Ptr<JMaterial> returnValue = std::make_shared<JMaterial>(MaterialName);
-		struct Temp_TextureParams
-		{
-			const char*   FbxPropertyName;
-			const char*   FilePath;
-			EMaterialFlag ParamFlags;
-		};
-
-		Temp_TextureParams materialProperties[] =
-		{
-			{"DiffuseColor", "rsc/Engine/Material/Default/Default_Albedo.png", EMaterialFlag::Diffuse},
-			{"NormalMap", "rsc/Engine/Material/Default/Default_Normal.png", EMaterialFlag::Normal},
-			{"Displacement", "rsc/Engine/Material/Default/Default_DP.tiff", EMaterialFlag::Diffuse},
-			{"Ambient", "rsc/Engine/Material/Default/Default_AO.png", EMaterialFlag::Ambient},
-			{"ORM", "rsc/Engine/Material/Default/Default_ORM.png", EMaterialFlag::Diffuse},
-			{"RoughnessMap", "rsc/Engine/Material/Default/Default_Roughness.png", EMaterialFlag::Diffuse}
-		};
-		for (int32_t i = 0; i < ARRAYSIZE(materialProperties); ++i)
-		{
-			FMaterialParams materialParams = CreateTextureParam(
-																materialProperties[i].FbxPropertyName,
-																materialProperties[i].FilePath,
-																0,
-																materialProperties[i].ParamFlags);
-
-			returnValue->AddMaterialParam(materialParams);
-		}
-
-		return returnValue;
-	}
-
-	static Ptr<JMaterial> s_DefaultMaterial;
+	FMaterialParams CreateTextureParam(const char*   ParamName, const char* FileName, int32_t Index,
+									   EMaterialFlag Flag);
 
 
 }

@@ -71,7 +71,7 @@ namespace JMath
 		// ------------------------ 생성자 ----------------------------
 		TVector() noexcept;
 		TVector(float InF);
-		constexpr TVector(float InX, float InY, float InZ);
+		TVector(float InX, float InY, float InZ);
 
 		explicit TVector(const TVector2 V, float InZ);
 		explicit TVector(const DirectX::XMFLOAT3& InVector);
@@ -83,6 +83,7 @@ namespace JMath
 
 		// ------------------------ 대입 연산자 ----------------------------
 		TVector& operator=(const DirectX::XMVECTORF32& InVector);
+		TVector& operator=(const DirectX::FXMVECTOR& InVector);
 		TVector& operator=(const TVector&) = default;
 		TVector& operator=(TVector&&)      = default;
 

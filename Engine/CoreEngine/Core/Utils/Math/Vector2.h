@@ -43,8 +43,8 @@ namespace JMath
 		inline TVector2 operator*(float Scale) const;
 		TVector2        operator/(float Scale) const;
 
-		inline bool operator==(const TVector2& V) const;
-		inline bool operator!=(const TVector2& V) const;
+		bool operator==(const TVector2& V) const;
+		bool operator!=(const TVector2& V) const;
 
 		inline bool operator<(const TVector2& Other) const;
 		inline bool operator<=(const TVector2& Other) const;

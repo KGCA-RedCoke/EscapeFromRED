@@ -13,6 +13,7 @@ public:
 	ComPtr<ID3D11ShaderResourceView> SRV;			// 이미지
 	ComPtr<ID2D1RenderTarget>        RTV_2D;		// DWrite Draw RTV
 	ComPtr<ID3D11DepthStencilView>   DepthStencilView;			// 깊이 스텐실
+	ComPtr<ID3D11DepthStencilState>  DepthStencilState;			// 깊이 스텐실 상태
 	D3D11_VIEWPORT                   ViewportDesc;	// 뷰포트 정보
 
 public:
@@ -35,8 +36,8 @@ private:
 private:
 	friend class TSingleton<MViewportManager>;
 	friend class MManagerInterface;
-	MViewportManager();
-	~MViewportManager();
+	MViewportManager()  = default;
+	~MViewportManager() = default;
 
 public:
 	MViewportManager(const MViewportManager&)            = delete;

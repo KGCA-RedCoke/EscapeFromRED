@@ -45,14 +45,22 @@ struct FLinearColor
 	static FLinearColor Cyan;
 	static FLinearColor Magenta;
 
+	static FLinearColor Blender_Grid_Gray;
+
 	/** sRGB -> Linear ��� ���̺� */
 	static float s_RGBToLinearTable[256];
 
 	inline explicit FLinearColor()
-		: R(0), G(0), B(0), A(0) {}
+		: R(0),
+		  G(0),
+		  B(0),
+		  A(0) {}
 
 	constexpr inline FLinearColor(float InR, float InG, float InB, float InA = 1.f)
-		: R(InR), G(InG), B(InB), A(InA) {}
+		: R(InR),
+		  G(InG),
+		  B(InB),
+		  A(InA) {}
 
 	constexpr inline FLinearColor(const FColor& Color);
 
@@ -65,11 +73,11 @@ struct FLinearColor
 	inline FLinearColor operator+(const FLinearColor& Other) const
 	{
 		return FLinearColor(
-			this->R + Other.R,
-			this->G + Other.G,
-			this->B + Other.B,
-			this->A + Other.A
-		);
+							this->R + Other.R,
+							this->G + Other.G,
+							this->B + Other.B,
+							this->A + Other.A
+						   );
 	}
 
 	inline FLinearColor& operator+=(const FLinearColor& Other)
@@ -84,11 +92,11 @@ struct FLinearColor
 	inline FLinearColor operator-(const FLinearColor& Other) const
 	{
 		return FLinearColor(
-			this->R - Other.R,
-			this->G - Other.G,
-			this->B - Other.B,
-			this->A - Other.A
-		);
+							this->R - Other.R,
+							this->G - Other.G,
+							this->B - Other.B,
+							this->A - Other.A
+						   );
 	}
 
 	inline FLinearColor& operator-=(const FLinearColor& Other)
@@ -103,11 +111,11 @@ struct FLinearColor
 	inline FLinearColor operator*(float Scalar) const
 	{
 		return FLinearColor(
-			this->R * Scalar,
-			this->G * Scalar,
-			this->B * Scalar,
-			this->A * Scalar
-		);
+							this->R * Scalar,
+							this->G * Scalar,
+							this->B * Scalar,
+							this->A * Scalar
+						   );
 	}
 
 	inline FLinearColor& operator*=(float Scalar)
@@ -122,11 +130,11 @@ struct FLinearColor
 	inline FLinearColor operator/(const FLinearColor& Other) const
 	{
 		return FLinearColor(
-			this->R / Other.R,
-			this->G / Other.G,
-			this->B / Other.B,
-			this->A / Other.A
-		);
+							this->R / Other.R,
+							this->G / Other.G,
+							this->B / Other.B,
+							this->A / Other.A
+						   );
 	}
 
 	inline FLinearColor& operator/=(const FLinearColor& Other)
@@ -142,11 +150,11 @@ struct FLinearColor
 	{
 		const float invScalar = 1.0f / Scalar;
 		return FLinearColor(
-			this->R * invScalar,
-			this->G * invScalar,
-			this->B * invScalar,
-			this->A * invScalar
-		);
+							this->R * invScalar,
+							this->G * invScalar,
+							this->B * invScalar,
+							this->A * invScalar
+						   );
 	}
 
 	inline FLinearColor& operator/=(float Scalar)
@@ -214,7 +222,10 @@ public:
 	const uint32_t& DWColor() const { return RGBA; }
 
 	constexpr inline FColor(uint8_t InR, uint8_t InG, uint8_t InB, uint8_t InA = 255)
-		: R(InR), G(InG), B(InB), A(InA) {}
+		: R(InR),
+		  G(InG),
+		  B(InB),
+		  A(InA) {}
 
 	inline bool operator==(const FColor& Other) const
 	{

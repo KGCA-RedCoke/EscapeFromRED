@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "JSerialization.h"
+﻿#include "JSerialization.h"
 
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Utils.h"
@@ -176,3 +175,74 @@
 // 		Serializables.Members[i]->ResetState();
 // 	}
 // }
+
+namespace Utils::Serialization
+{
+
+	bool Serialize(const char* InFilePath, ISerializable* InData)
+	{
+
+		std::ofstream archive(InFilePath, std::ios::binary);
+		if (!archive.is_open())
+			return false;
+
+		InData->Serialize(archive);
+
+		archive.flush();
+		archive.close();
+		return true;
+
+	}
+
+	bool DeSerialize(const char* InFilePath, ISerializable* OutData)
+	{
+		std::ifstream archive(InFilePath, std::ios::binary);
+		if (!archive.is_open())
+			return false;
+
+		OutData->DeSerialize(archive);
+
+		archive.close();
+		return true;
+
+	}
+
+	void Serialize_Text(JText& Text, std::ofstream& FileStream)
+	{
+		size_t textSize = Text.size();
+		FileStream.write(reinterpret_cast<char*>(&textSize), sizeof(textSize));
+		FileStream.write(reinterpret_cast<char*>(Text.data()), textSize);
+	}
+
+	void Serialize_Text(JWText& Text, std::ofstream& FileStream)
+	{
+		JText text = WString2String(Text);
+		Serialize_Text(text, FileStream);
+	}
+
+	void Serialize_Primitive(void* Data, size_t Size, std::ofstream& FileStream)
+	{
+		FileStream.write(reinterpret_cast<char*>(Data), Size);
+	}
+
+	void DeSerialize_Text(JText& Text, std::ifstream& InFileStream)
+	{
+		size_t textSize;
+		InFileStream.read(reinterpret_cast<char*>(&textSize), sizeof(textSize));
+		Text.resize(textSize);
+		InFileStream.read(reinterpret_cast<char*>(Text.data()), textSize);
+	}
+
+	void DeSerialize_Text(JWText& Text, std::ifstream& InFileStream)
+	{
+		JText text;
+		DeSerialize_Text(text, InFileStream);
+		Text = String2WString(text);
+	}
+
+
+	void DeSerialize_Primitive(void* Data, size_t Size, std::ifstream& InFileStream)
+	{
+		InFileStream.read(reinterpret_cast<char*>(Data), Size);
+	}
+}

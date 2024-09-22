@@ -1,10 +1,7 @@
-﻿#include "common_pch.h"
-#include "GUI_Base.h"
-
-#include "common_include.h"
+﻿#include "GUI_Base.h"
 #include "imgui/imgui_internal.h"
 
-GUI_Base::GUI_Base(const std::string& InTitle)
+GUI_Base::GUI_Base(const JText& InTitle)
 	: mTitle(InTitle),
 	  bIsWindowOpen(true)
 {}

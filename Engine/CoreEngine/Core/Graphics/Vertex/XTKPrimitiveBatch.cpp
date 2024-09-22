@@ -1,7 +1,6 @@
-﻿#include "common_pch.h"
-#include "XTKPrimitiveBatch.h"
+﻿#include "XTKPrimitiveBatch.h"
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/MManagerInterface.h"
 
 XTKPrimitiveBatch::XTKPrimitiveBatch() = default;
@@ -13,8 +12,8 @@ XTKPrimitiveBatch::~XTKPrimitiveBatch()
 
 void XTKPrimitiveBatch::Initialize()
 {
-	mBatch       = std::make_unique<PrimitiveBatch<VertexPositionColor>>(G_Context.GetImmediateDeviceContext());
-	mBatchEffect = std::make_unique<BasicEffect>(G_Context.GetDevice());
+	mBatch       = std::make_unique<PrimitiveBatch<VertexPositionColor>>(DeviceRSC.GetImmediateDeviceContext());
+	mBatchEffect = std::make_unique<BasicEffect>(DeviceRSC.GetDevice());
 	mBatchEffect->SetVertexColorEnabled(true);
 
 	{
@@ -23,7 +22,7 @@ void XTKPrimitiveBatch::Initialize()
 
 		mBatchEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
 
-		CheckResult(G_Context.GetDevice()->
+		CheckResult(DeviceRSC.GetDevice()->
 							  CreateInputLayout(
 												VertexPositionColor::InputElements, // Pos, Color
 												VertexPositionColor::InputElementCount, // 2
@@ -52,12 +51,12 @@ void XTKPrimitiveBatch::Release()
 
 void XTKPrimitiveBatch::PreRender()
 {
-	mBatchEffect->Apply(G_Context.GetImmediateDeviceContext());
+	mBatchEffect->Apply(DeviceRSC.GetImmediateDeviceContext());
 }
 
 void XTKPrimitiveBatch::Render()
 {
-	G_Context.GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
+	DeviceRSC.GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
 
 	mBatch->Begin();
 }

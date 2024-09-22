@@ -1,5 +1,4 @@
-﻿#include "common_pch.h"
-#include "MCameraManager.h"
+﻿#include "MCameraManager.h"
 
 void MCameraManager::Initialize()
 {
@@ -8,4 +7,11 @@ void MCameraManager::Initialize()
 	mCurrentCamera->Initialize();
 }
 
-void MCameraManager::SetCurrentMainCam(JWTextView InName) {}
+void MCameraManager::SetCurrentMainCam(JWTextView InName)
+{}
+
+void MCameraManager::SetCameraConstantBuffer(uint32_t InSlot) const
+{
+	assert(mCurrentCamera);
+	mCurrentCamera->SetCameraConstantBuffer(InSlot);
+}

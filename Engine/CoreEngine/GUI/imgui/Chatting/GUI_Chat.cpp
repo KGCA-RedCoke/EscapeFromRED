@@ -1,11 +1,10 @@
-﻿#include "common_pch.h"
-#include "GUI_Chat.h"
+﻿#include "GUI_Chat.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx11.h>
 
-#include "Core/Graphics/GraphicDevice.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Window/Window.h"
 
 void GUI_Chat::Initialize()
@@ -22,7 +21,7 @@ void GUI_Chat::Initialize()
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
-    ImGui_ImplDX11_Init(G_Context.GetDevice(), G_Context.GetImmediateDeviceContext());
+    ImGui_ImplDX11_Init(DeviceRSC.GetDevice(), DeviceRSC.GetImmediateDeviceContext());
 }
 
 void GUI_Chat::Update(float DeltaTime)

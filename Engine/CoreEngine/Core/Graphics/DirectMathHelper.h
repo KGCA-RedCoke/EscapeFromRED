@@ -2,24 +2,24 @@
 #include "graphics_common_include.h"
 #include "Core/Utils/Math/Vector2.h"
 
-inline Matrix TranslationMatrix(float InX, float InY, float InZ = 0.f)
+inline FMatrix TranslationMatrix(float InX, float InY, float InZ = 0.f)
 {
 	return XMMatrixTranslation(InX, InY, InZ);
 }
 
-inline Matrix RotationMatrix(float InDegree)
+inline FMatrix RotationMatrix(float InDegree)
 {
 	float radians = XMConvertToRadians(InDegree);
 	return XMMatrixRotationZ(radians);
 }
 
-inline Matrix ScaleMatrix(float InX, float InY)
+inline FMatrix ScaleMatrix(float InX, float InY)
 {
 	return XMMatrixScaling(InX, InY, 1.0f);
 }
 
 /** 4x4 행렬 -> 위치벡터 반환 */
-inline FVector Mat2LocVector(const Matrix& InMatrix)
+inline FVector Mat2LocVector(const FMatrix& InMatrix)
 {
 	XMFLOAT4X4 locationVec;
 	XMStoreFloat4x4(&locationVec, InMatrix);
@@ -27,7 +27,7 @@ inline FVector Mat2LocVector(const Matrix& InMatrix)
 }
 
 /** 4x4 행렬 -> 회전 각 반환 */
-inline float Mat2RotDegree(const Matrix& InMatrix)
+inline float Mat2RotDegree(const FMatrix& InMatrix)
 {
 	XMFLOAT4X4 matrixValues;
 	XMStoreFloat4x4(&matrixValues, InMatrix);
@@ -36,7 +36,7 @@ inline float Mat2RotDegree(const Matrix& InMatrix)
 }
 
 /** 4x4 행렬 -> 크기벡터 반환 */
-inline FVector Mat2ScaleVector(const Matrix& InMatrix)
+inline FVector Mat2ScaleVector(const FMatrix& InMatrix)
 {
 	XMFLOAT4X4 matrixValues;
 	XMStoreFloat4x4(&matrixValues, InMatrix);

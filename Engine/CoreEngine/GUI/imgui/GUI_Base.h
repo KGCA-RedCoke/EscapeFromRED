@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include <imgui/imgui.h>
+#include "common_include.h"
 #include "Core/Interface/ICoreInterface.h"
 
 class GUI_Base : public ICoreInterface
 {
 public:
-	explicit GUI_Base(const std::string& InTitle);
+	explicit GUI_Base(const JText& InTitle);
 	~GUI_Base() override = default;
 
 public:
