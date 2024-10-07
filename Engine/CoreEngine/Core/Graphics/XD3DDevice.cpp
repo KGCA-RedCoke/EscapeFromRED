@@ -1,22 +1,25 @@
 ﻿#include "XD3DDevice.h"
+
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Utils/Math/Color.h"
 #include "Core/Window/Window.h"
 #include "Debug/Assert.h"
-#include "Viewport/MViewportManager.h"
 
 XD3DDevice::XD3DDevice()
 	: mSwapChainDesc(),
 	  mViewport(),
-	  mVideoCardDescription{} {}
+	  mVideoCardDescription{}
+{
+	Initialize_Internal();
+}
 
 XD3DDevice::~XD3DDevice()
 {
 	Release();
 }
 
-void XD3DDevice::Initialize()
+void XD3DDevice::Initialize_Internal()
 {
 	if (!XMVerifyCPUSupport())
 	{
@@ -39,7 +42,6 @@ void XD3DDevice::Initialize()
 	Window::GetWindow()->ResizeCallbacks.emplace_back([this](UINT InWidth, UINT InHeight){
 		OnResize(InWidth, InHeight);
 	});
-
 }
 
 
@@ -108,11 +110,11 @@ void XD3DDevice::CreateDevice()
 								  featureLevels,                    // 기능 수준
 								  ARRAYSIZE(featureLevels),         // 기능 배열 개수
 								  D3D11_SDK_VERSION,                // DX Version
-								  mDevice.GetAddressOf(),           // (Out) Device
+								  mDevice.GetAddressOf(),           // (Out) RenderManager
 								  &outFeatureLevel,                 // (Out) Features
 								  mImmediateContext.GetAddressOf() // (Out) DeviceContext
 								 ));
-	mCommonStates = std::make_unique<CommonStates>(DeviceRSC.GetDevice());
+	mCommonStates = std::make_unique<CommonStates>(mDevice.Get());
 
 	CheckResult(mDevice->CreateDeferredContext(FALSE, mDeferredContext_1.GetAddressOf()));
 
@@ -138,8 +140,12 @@ void XD3DDevice::CreateGIFactory()
 	DXGI_ADAPTER_DESC desc;
 	CheckResult(DXGIAdapter->GetDesc(&desc));
 
-	size_t stringLength;
-	wcstombs_s(&stringLength, mVideoCardDescription, 128, desc.Description, 128);
+	size_t  stringLength;
+	errno_t err = wcstombs_s(&stringLength, mVideoCardDescription, 128, desc.Description, 128);
+	if (err != 0)
+	{
+		LOG_CORE_ERROR("wcstombs_s failed");
+	}
 
 	LOG_CORE_INFO("그래픽카드: {}, 메모리: {:d}", mVideoCardDescription, desc.DedicatedVideoMemory / (1 << 20));
 
@@ -166,7 +172,7 @@ void XD3DDevice::CreateSwapChain()
 		mSwapChainDesc.SwapEffect         = DXGI_SWAP_EFFECT_FLIP_DISCARD; // Swap이 일어난 이후 버퍼를 Discard
 		mSwapChainDesc.Scaling            = DXGI_SCALING_NONE; // Scaling 없음
 		mSwapChainDesc.Stereo             = FALSE; // 스테레오 사용하지 않음
-		mSwapChainDesc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+		mSwapChainDesc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING | DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	}
 
 	CheckResult(
@@ -198,6 +204,8 @@ void XD3DDevice::Create2DResources()
 
 void XD3DDevice::CreateRasterizerState()
 {
+	
+	
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 	{

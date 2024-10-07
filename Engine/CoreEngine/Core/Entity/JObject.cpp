@@ -6,23 +6,31 @@ uint32_t JObject::g_DefaultObjectNum = 0;
 
 JObject::JObject()
 	: mName(std::format("JObject_{}", g_DefaultObjectNum++))
-{
-	mPrimaryKey = StringHash(mName.data());
-}
+{}
 
 JObject::JObject(JTextView InName)
 	: mName(InName)
+{}
+
+uint32_t JObject::GetHash() const
 {
-	mPrimaryKey = StringHash(mName.data());
+	return StringHash(ParseFile(mName).c_str());
 }
 
-void JObject::Serialize(std::ofstream& FileStream)
+uint32_t JObject::GetType() const
 {
+	return StringHash("JObject");
+}
+
+bool JObject::Serialize_Implement(std::ofstream& FileStream)
+{
+	if (!Utils::Serialization::SerializeMetaData(FileStream, this))
+	{
+		return false;
+	}
+
 	// Name
 	Utils::Serialization::Serialize_Text(mName, FileStream);
-
-	// Primary Key
-	mPrimaryKey = StringHash(mName.data());
 
 	// Child Count
 	size_t childCount = mChildObjs.size();
@@ -31,28 +39,35 @@ void JObject::Serialize(std::ofstream& FileStream)
 	// Child Objects
 	for (int32_t i = 0; i < childCount; ++i)
 	{
-		mChildObjs[i]->Serialize(FileStream);
+		mChildObjs[i]->Serialize_Implement(FileStream);
 	}
+
+	return true;
 }
 
-void JObject::DeSerialize(std::ifstream& InFileStream)
+bool JObject::DeSerialize_Implement(std::ifstream& InFileStream)
 {
+	JAssetMetaData metaData;
+	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
+	{
+		return false;
+	}
+
 	// Name
 	Utils::Serialization::DeSerialize_Text(mName, InFileStream);
 
-	// Primary Key
-	mPrimaryKey = StringHash(mName.data());
-
 	// Child Count
 	size_t childCount;
-	InFileStream.read(reinterpret_cast<char*>(&childCount), sizeof(childCount));
+	Utils::Serialization::DeSerialize_Primitive(&childCount, sizeof(childCount), InFileStream);
 
 	// Child Objects
 	mChildObjs.reserve(childCount);
 	for (int32_t i = 0; i < childCount; ++i)
 	{
-		mChildObjs.push_back(std::make_shared<JObject>());
+		mChildObjs.emplace_back(MakeUPtr<JObject>());
 		mChildObjs[i]->mParentObj = shared_from_this();
-		mChildObjs[i]->DeSerialize(InFileStream);
+		mChildObjs[i]->DeSerialize_Implement(InFileStream);
 	}
+
+	return true;
 }

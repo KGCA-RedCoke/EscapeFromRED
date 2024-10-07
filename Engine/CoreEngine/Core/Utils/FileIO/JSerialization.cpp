@@ -2,196 +2,98 @@
 
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Utils.h"
-//
-// size_t AutoSerializer::GetSerializationBufferSize() const
-// {
-// 	size_t size{};
-// 	size += sizeof(size_t);   // total size.
-// 	size += sizeof(int);      // total count size.
-// 	for (int i = 0; i < Serializables.Members.size(); ++i)
-// 	{
-// 		size += sizeof(int);    // index size.
-// 		size += Serializables.Members[i]->GetDataSize();
-// 	}
-//
-// 	return size;
-// }
-//
-// size_t AutoSerializer::GetModifiedSerializationBufferSize() const
-// {
-// 	size_t size{};
-// 	size += sizeof(size_t);   // total size.
-// 	size += sizeof(int);      // total count size.
-// 	for (int i = 0; i < Serializables.Members.size(); ++i)
-// 	{
-// 		if (Serializables.Members[i]->IsModified())
-// 		{
-// 			size += sizeof(int);    // index size.
-// 			size += Serializables.Members[i]->GetDataSize();
-// 		}
-// 	}
-//
-// 	return size;
-// }
-//
-// void AutoSerializer::Serialize(char* Buffer)
-// {
-// 	// total size.
-// 	size_t totalSize{};
-// 	totalSize += sizeof(size_t);
-// 	char* ptrTotalSize = Buffer;
-// 	Buffer += sizeof(totalSize);
-//
-// 	// total count.
-// 	int   totalCount{};
-// 	char* ptrTotalCount = Buffer;
-// 	Buffer += sizeof(totalCount);
-// 	totalSize += sizeof(totalCount);
-//
-// 	// members.
-// 	for (int i = 0; i < Serializables.Members.size(); ++i)
-// 	{
-// 		ISerializable* p = Serializables.Members[i];
-//
-// 		// position of vector.
-// 		memcpy_s(Buffer, sizeof(i), &i, sizeof(i));
-// 		Buffer += sizeof(i);
-// 		totalSize += sizeof(i);
-//
-// 		// data.
-// 		memcpy_s(Buffer, p->GetDataSize(), p->GetData(), p->GetDataSize());
-// 		Buffer += p->GetDataSize();
-// 		totalSize += p->GetDataSize();
-//
-// 		++totalCount;
-//
-// 	}
-//
-// 	// total count.
-// 	memcpy_s(ptrTotalCount, sizeof(totalCount), &totalCount, sizeof(totalCount));
-//
-// 	// total size.
-// 	memcpy_s(ptrTotalSize, sizeof(ptrTotalSize), &totalSize, sizeof(ptrTotalSize));
-//
-// 	// Set 'isModified' state to false after serialized once.
-// 	ResetModifiedState();
-//
-// 	JText         fileName = "Game/test.txt";
-// 	std::ofstream outFile(fileName, std::ios::binary);
-// 	outFile.write(Buffer, totalSize);
-// }
-//
-// void AutoSerializer::Serialize(std::ofstream& OutFileStream) const
-// {
-// 	JAssetHeader header;
-//
-//
-// 	header.DataSize = 0;
-//
-// 	// header.DataSize += (sizeof(JAssetHeader) + sizeof(JAssetMetaData) + sizeof(metadata.InstanceCount));
-//
-// 	OutFileStream.write(reinterpret_cast<char*>(&header), sizeof(JAssetHeader));
-//
-// 	for (int32_t i = 0; i < Serializables.Members.size(); ++i)
-// 	{
-// 		ISerializable* variable = Serializables.Members[i];
-//
-// 		OutFileStream.write(reinterpret_cast<char*>(&i), sizeof(i));
-// 		header.DataSize += sizeof(i);
-//
-// 		void*    data     = variable->GetData();
-// 		uint32_t dataSize = variable->GetDataSize();
-//
-// 		OutFileStream.write(static_cast<char*>(data), dataSize);
-// 		header.DataSize += dataSize;
-//
-// 		// ++metadata.InstanceCount;
-// 	}
-//
-// 	OutFileStream.seekp(0);
-//
-// 	OutFileStream.write(reinterpret_cast<char*>(&header), sizeof(JAssetHeader));
-//
-// 	OutFileStream.flush();
-// 	OutFileStream.close();
-// }
-//
-// void AutoSerializer::DeSerialize(const char* Buffer) const
-// {
-// 	// total size.
-// 	size_t totalSize{};
-// 	memcpy_s(&totalSize, sizeof(totalSize), Buffer, sizeof(totalSize));
-// 	Buffer += sizeof(totalSize);
-//
-// 	// total count.
-// 	int totalCount{};
-// 	memcpy_s(&totalCount, sizeof(totalCount), Buffer, sizeof(totalCount));
-// 	Buffer += sizeof(totalCount);
-//
-// 	// Members.
-// 	for (int i = 0; i < totalCount; ++i)
-// 	{
-// 		// position of vector.
-// 		int index{};
-// 		memcpy_s(&index, sizeof(index), Buffer, sizeof(index));
-// 		Buffer += sizeof(index);
-//
-// 		// Data.
-// 		ISerializable* p = Serializables.Members[index];
-// 		memcpy_s(p->GetData(), p->GetDataSize(), Buffer, p->GetDataSize());
-// 		Buffer += p->GetDataSize();
-// 	}
-// }
-//
-// void AutoSerializer::DeSerialize(std::ifstream& InFileStream) const
-// {
-// 	JAssetHeader header{};
-//
-// 	InFileStream.read(reinterpret_cast<char*>(&header), sizeof(header));
-//
-// 	if (StringHash(header.Signature) != JAssetHash)
-// 	{
-// 		LOG_CORE_ERROR("Invalid jasset header");
-//
-// 		InFileStream.close();
-// 		return;
-// 	}
-//
-// 	for (int32_t i = 0; i < header.InstanceCount; ++i)
-// 	{
-// 		int32_t index{};
-// 		InFileStream.read(reinterpret_cast<char*>(&index), sizeof(index));
-//
-// 		ISerializable* dataStream = Serializables.Members[index];
-// 		InFileStream.read(static_cast<char*>(dataStream->GetData()),
-// 						  static_cast<long long>(dataStream->GetDataSize()));
-// 	}
-// }
-//
-// void AutoSerializer::ResetModifiedState()
-// {
-// 	for (int i = 0; i < Serializables.Members.size(); ++i)
-// 	{
-// 		Serializables.Members[i]->ResetState();
-// 	}
-// }
 
 namespace Utils::Serialization
 {
 
+	bool SerializeHeader(std::ofstream& FileStream)
+	{
+		if (FileStream.is_open())
+		{
+			FileStream.seekp(0, std::ios::beg);
+
+			JAssetHeader header;
+
+			Serialize_Primitive(&header, sizeof(header), FileStream);
+			return true;
+		}
+
+		return false;
+	}
+
+	bool DeserializeHeader(std::ifstream& InFileStream, JAssetHeader& OutHeader)
+	{
+		if (InFileStream.is_open())
+		{
+			InFileStream.seekg(0, std::ios::beg);
+
+			DeSerialize_Primitive(&OutHeader, sizeof(OutHeader), InFileStream);
+			return true;
+		}
+		ShowErrorPopup("File is not opened.");
+		return false;
+	}
+
+	bool SerializeMetaData(std::ofstream& FileStream, const ISerializable* InData)
+	{
+		if (FileStream.is_open())
+		{
+			JAssetMetaData metaData;
+			metaData.AssetType     = InData->GetType();
+			metaData.DataSize      = 0;
+			metaData.InstanceCount = 0;
+
+			Serialize_Primitive(&metaData, sizeof(metaData), FileStream);
+
+			return true;
+		}
+		return false;
+	}
+
+	bool DeserializeMetaData(std::ifstream& InFileStream, JAssetMetaData& OutMetaData, uint32_t InType)
+	{
+		if (InFileStream.is_open())
+		{
+			DeSerialize_Primitive(&OutMetaData, sizeof(OutMetaData), InFileStream);
+
+			return OutMetaData.AssetType == InType;
+
+		}
+		ShowErrorPopup("File is not opened.");
+		return false;
+	}
+
+	bool CheckAssetType(std::ifstream& InFileStream, uint32_t InType)
+	{
+		if (InFileStream)
+		{
+			InFileStream.seekg(sizeof(JAssetHeader), std::ios::beg);
+
+			JAssetMetaData metaData;
+			return DeserializeMetaData(InFileStream, metaData, InType);
+		}
+
+		return false;
+	}
+
 	bool Serialize(const char* InFilePath, ISerializable* InData)
 	{
-
 		std::ofstream archive(InFilePath, std::ios::binary);
 		if (!archive.is_open())
 			return false;
 
-		InData->Serialize(archive);
+		archive.clear();
 
-		archive.flush();
-		archive.close();
-		return true;
+		SerializeHeader(archive);
 
+		if (InData->Serialize_Implement(archive))
+		{
+			archive.flush();
+			archive.close();
+			return true;
+		}
+
+		return false;
 	}
 
 	bool DeSerialize(const char* InFilePath, ISerializable* OutData)
@@ -200,11 +102,16 @@ namespace Utils::Serialization
 		if (!archive.is_open())
 			return false;
 
-		OutData->DeSerialize(archive);
+		JAssetHeader header;
 
-		archive.close();
-		return true;
+		DeserializeHeader(archive, header);
 
+		if (OutData->DeSerialize_Implement(archive))
+		{
+			archive.close();
+			return true;
+		}
+		return false;
 	}
 
 	void Serialize_Text(JText& Text, std::ofstream& FileStream)
@@ -225,6 +132,26 @@ namespace Utils::Serialization
 		FileStream.write(reinterpret_cast<char*>(Data), Size);
 	}
 
+	void Serialize_Container(void* Data, size_t Size, std::ofstream& FileStream)
+	{
+		// 컨테이너 사이즈
+		Serialize_Primitive(&Size, sizeof(Size), FileStream);
+
+		// 컨테이너 데이터
+		for (size_t i = 0; i < Size; ++i)
+		{
+			if constexpr (bIsSerializable<decltype(Data)>)
+			{
+				auto* serializable = static_cast<ISerializable*>(Data);
+				serializable->Serialize_Implement(FileStream);
+			}
+			else
+			{
+				Serialize_Primitive(Data, sizeof(decltype(Data)), FileStream);
+			}
+		}
+	}
+
 	void DeSerialize_Text(JText& Text, std::ifstream& InFileStream)
 	{
 		size_t textSize;
@@ -238,6 +165,28 @@ namespace Utils::Serialization
 		JText text;
 		DeSerialize_Text(text, InFileStream);
 		Text = String2WString(text);
+	}
+
+	
+	void DeSerialize_Container(void* Data, std::ifstream& InFileStream)
+	{
+		// 컨테이너 사이즈
+		size_t containerSize;
+		DeSerialize_Primitive(&containerSize, sizeof(containerSize), InFileStream);
+
+		// 컨테이너 데이터
+		for (size_t i = 0; i < containerSize; ++i)
+		{
+			if constexpr (bIsSerializable<decltype(Data)>)
+			{
+				auto* serializable = static_cast<ISerializable*>(Data);
+				serializable->DeSerialize_Implement(InFileStream);
+			}
+			else
+			{
+				DeSerialize_Primitive(Data, sizeof(decltype(Data)), InFileStream);
+			}
+		}
 	}
 
 

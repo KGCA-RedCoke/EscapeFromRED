@@ -1,17 +1,30 @@
 ﻿#include "MCameraManager.h"
 
-void MCameraManager::Initialize()
+MCameraManager::MCameraManager()
 {
-	mCurrentCamera = CreateOrLoad(L"EditorCamera");
+	Initialize_Internal();
+}
+
+void MCameraManager::Initialize_Internal()
+{
+	mCurrentCamera = CreateOrLoad("EditorCamera");
 	assert(mCurrentCamera);
-	mCurrentCamera->Initialize();
 }
 
 void MCameraManager::SetCurrentMainCam(JWTextView InName)
 {}
 
-void MCameraManager::SetCameraConstantBuffer(uint32_t InSlot) const
+void MCameraManager::SetCameraConstantBuffer(uint32_t InSlot, JCamera* InCamera) const
 {
-	assert(mCurrentCamera);
-	mCurrentCamera->SetCameraConstantBuffer(InSlot);
+	if (InCamera)
+	{
+		InCamera->SetCameraConstantBuffer(InSlot);
+	}
+	else
+	{
+		assert(mCurrentCamera);
+		mCurrentCamera->SetCameraConstantBuffer(InSlot);
+	}
 }
+
+

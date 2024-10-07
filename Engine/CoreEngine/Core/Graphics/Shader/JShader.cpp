@@ -18,6 +18,12 @@ JShader::JShader(const JWText& InShaderFile, LPCSTR VSEntryPoint, LPCSTR PSEntry
 
 JShader::~JShader() = default;
 
+uint32_t JShader::GetHash() const
+{
+	JWText fileRawName = ParseFile(mShaderFile);
+	return StringHash(fileRawName.c_str());
+}
+
 void JShader::ApplyShader(ID3D11DeviceContext* InDeviceContext) const
 {
 	if (!InDeviceContext)
@@ -27,22 +33,22 @@ void JShader::ApplyShader(ID3D11DeviceContext* InDeviceContext) const
 	}
 
 	// 입력 레이아웃 설정
-	InDeviceContext->IASetInputLayout(mInputLayout.Get());
+	InDeviceContext->IASetInputLayout(mShaderData.InputLayout.Get());
 
 	// 버텍스 셰이더 설정
-	InDeviceContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+	InDeviceContext->VSSetShader(mShaderData.VertexShader.Get(), nullptr, 0);
 
 	// 헐 셰이더 설정
-	InDeviceContext->HSSetShader(mHullShader.Get(), nullptr, 0);
+	InDeviceContext->HSSetShader(mShaderData.HullShader.Get(), nullptr, 0);
 
 	// 도메인 셰이더 설정
-	InDeviceContext->DSSetShader(mDomainShader.Get(), nullptr, 0);
+	InDeviceContext->DSSetShader(mShaderData.DomainShader.Get(), nullptr, 0);
 
 	// 지오메트리 셰이더 설정
-	InDeviceContext->GSSetShader(mGeometryShader.Get(), nullptr, 0);
+	InDeviceContext->GSSetShader(mShaderData.GeometryShader.Get(), nullptr, 0);
 
 	// 픽셀 셰이더 설정
-	InDeviceContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
+	InDeviceContext->PSSetShader(mShaderData.PixelShader.Get(), nullptr, 0);
 
 }
 
@@ -50,10 +56,10 @@ void JShader::LoadVertexShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadVertexShader(
-											DeviceRSC.GetDevice(),
+											IManager.RenderManager->GetDevice(),
 											mShaderFile.data(),
-											mVertexShader.GetAddressOf(),
-											mVertexShaderBuf.GetAddressOf(),
+											mShaderData.VertexShader.GetAddressOf(),
+											mShaderData.VertexShaderBuf.GetAddressOf(),
 											FuncName
 										   ));
 
@@ -64,10 +70,10 @@ void JShader::LoadPixelShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadPixelShader(
-										   DeviceRSC.GetDevice(),
+										   IManager.RenderManager->GetDevice(),
 										   mShaderFile.data(),
-										   mPixelShader.GetAddressOf(),
-										   mPixelShaderBuf.GetAddressOf(),
+										   mShaderData.PixelShader.GetAddressOf(),
+										   mShaderData.PixelShaderBuf.GetAddressOf(),
 										   FuncName
 										  ));
 }
@@ -76,10 +82,10 @@ void JShader::LoadGeometryShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadGeometryShader(
-											  DeviceRSC.GetDevice(),
+											  IManager.RenderManager->GetDevice(),
 											  mShaderFile.data(),
-											  mGeometryShader.GetAddressOf(),
-											  mGeometryShaderBuf.GetAddressOf(),
+											  mShaderData.GeometryShader.GetAddressOf(),
+											  mShaderData.GeometryShaderBuf.GetAddressOf(),
 											  FuncName));
 }
 
@@ -87,10 +93,10 @@ void JShader::LoadHullShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadHullShaderFile(
-											  DeviceRSC.GetDevice(),
+											  IManager.RenderManager->GetDevice(),
 											  mShaderFile.data(),
-											  mHullShader.GetAddressOf(),
-											  mHullShaderBuf.GetAddressOf(),
+											  mShaderData.HullShader.GetAddressOf(),
+											  mShaderData.HullShaderBuf.GetAddressOf(),
 											  FuncName));
 }
 
@@ -98,10 +104,10 @@ void JShader::LoadDomainShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadDomainShaderFile(
-												DeviceRSC.GetDevice(),
+												IManager.RenderManager->GetDevice(),
 												mShaderFile.data(),
-												mDomainShader.GetAddressOf(),
-												mDomainShaderBuf.GetAddressOf(),
+												mShaderData.DomainShader.GetAddressOf(),
+												mShaderData.DomainShaderBuf.GetAddressOf(),
 												FuncName));
 }
 
@@ -109,25 +115,25 @@ void JShader::LoadComputeShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadComputeShaderFile(
-												 DeviceRSC.GetDevice(),
+												 IManager.RenderManager->GetDevice(),
 												 mShaderFile.data(),
-												 mComputeShader.GetAddressOf(),
-												 mComputeShaderBuf.GetAddressOf(),
+												 mShaderData.ComputeShader.GetAddressOf(),
+												 mShaderData.ComputeShaderBuf.GetAddressOf(),
 												 FuncName));
 }
 
+
 void JShader::CreateInputLayout()
 {
-	uint32_t hash = StringHash(mShaderFile.c_str());
-	assert(InputLayout::HASH_INPUT_LAYOUT_MAP_DESC.contains(hash));
-	assert(InputLayout::HASH_INPUT_LAYOUT_MAP_NUMELEMENT.contains(hash));
+	assert(InputLayout::HASH_INPUT_LAYOUT_MAP_DESC.contains(GetHash()));
+	assert(InputLayout::HASH_INPUT_LAYOUT_MAP_NUMELEMENT.contains(GetHash()));
 
 	CheckResult(
-				DeviceRSC.GetDevice()->CreateInputLayout(
-														 InputLayout::HASH_INPUT_LAYOUT_MAP_DESC[hash],
-														 InputLayout::HASH_INPUT_LAYOUT_MAP_NUMELEMENT[hash],
-														 mVertexShaderBuf->GetBufferPointer(),
-														 mVertexShaderBuf->GetBufferSize(),
-														 mInputLayout.GetAddressOf()
+				IManager.RenderManager->GetDevice()->CreateInputLayout(
+														 InputLayout::HASH_INPUT_LAYOUT_MAP_DESC[GetHash()],
+														 InputLayout::HASH_INPUT_LAYOUT_MAP_NUMELEMENT[GetHash()],
+														 mShaderData.VertexShaderBuf->GetBufferPointer(),
+														 mShaderData.VertexShaderBuf->GetBufferSize(),
+														 mShaderData.InputLayout.GetAddressOf()
 														));
 }

@@ -12,8 +12,8 @@ XTKPrimitiveBatch::~XTKPrimitiveBatch()
 
 void XTKPrimitiveBatch::Initialize()
 {
-	mBatch       = std::make_unique<PrimitiveBatch<VertexPositionColor>>(DeviceRSC.GetImmediateDeviceContext());
-	mBatchEffect = std::make_unique<BasicEffect>(DeviceRSC.GetDevice());
+	mBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(IManager.RenderManager->GetImmediateDeviceContext());
+	mBatchEffect = std::make_unique<BasicEffect>(IManager.RenderManager->GetDevice());
 	mBatchEffect->SetVertexColorEnabled(true);
 
 	{
@@ -22,20 +22,20 @@ void XTKPrimitiveBatch::Initialize()
 
 		mBatchEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
 
-		CheckResult(DeviceRSC.GetDevice()->
-							  CreateInputLayout(
-												VertexPositionColor::InputElements, // Pos, Color
-												VertexPositionColor::InputElementCount, // 2
-												shaderByteCode,
-												byteCodeLength,
-												mBatchInputLayout.GetAddressOf()
-											   ));
+		CheckResult(IManager.RenderManager->GetDevice()->
+							 CreateInputLayout(
+											   VertexPositionColor::InputElements, // Pos, Color
+											   VertexPositionColor::InputElementCount, // 2
+											   shaderByteCode,
+											   byteCodeLength,
+											   mBatchInputLayout.GetAddressOf()
+											  ));
 	}
 }
 
 void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
-	const JCamera* cam = IManager.CameraManager.GetCurrentMainCam();
+	Ptr<JCamera> cam = IManager.CameraManager->GetCurrentMainCam();
 
 	mBatchEffect->SetWorld(cam->GetWorldMatrix());
 	mBatchEffect->SetView(cam->GetViewMatrix());
@@ -51,12 +51,12 @@ void XTKPrimitiveBatch::Release()
 
 void XTKPrimitiveBatch::PreRender()
 {
-	mBatchEffect->Apply(DeviceRSC.GetImmediateDeviceContext());
+	mBatchEffect->Apply(IManager.RenderManager->GetImmediateDeviceContext());
 }
 
 void XTKPrimitiveBatch::Render()
 {
-	DeviceRSC.GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
+	IManager.RenderManager->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
 
 	mBatch->Begin();
 }
@@ -65,6 +65,8 @@ void XTKPrimitiveBatch::PostRender()
 {
 	mBatch->End();
 }
+
+void XTKPrimitiveBatch::Draw() {}
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
 {
@@ -187,8 +189,8 @@ void XTKPrimitiveBatch::DrawCube(CXMMATRIX matWorld, FXMVECTOR color) const
 void XTKPrimitiveBatch::DrawGrid(FXMVECTOR InXAxis, FXMVECTOR InYAxis, FXMVECTOR InOrigin,
 								 size_t    InXdivs, size_t    InYdivs, GXMVECTOR InColor) const
 {
-	InXdivs = std::max<size_t>(1, InXdivs);
-	InYdivs = std::max<size_t>(1, InYdivs);
+	InXdivs = FMath::Max<size_t>(1, InXdivs);
+	InYdivs = FMath::Max<size_t>(1, InYdivs);
 
 	for (size_t i = 0; i <= InXdivs; ++i)
 	{

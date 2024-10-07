@@ -1,5 +1,24 @@
 ﻿#pragma once
 #include "Core/Graphics/graphics_common_include.h"
+#include "Core/Graphics/ShaderStructs.h"
+#include "Core/Manager/IManagedInterface.h"
+
+struct FShaderData
+{
+	ComPtr<ID3D11InputLayout>    InputLayout;
+	ComPtr<ID3D11VertexShader>   VertexShader;
+	ComPtr<ID3D11PixelShader>    PixelShader;
+	ComPtr<ID3D11GeometryShader> GeometryShader;
+	ComPtr<ID3D11HullShader>     HullShader;
+	ComPtr<ID3D11DomainShader>   DomainShader;
+	ComPtr<ID3D11ComputeShader>  ComputeShader;
+	ComPtr<ID3DBlob>             VertexShaderBuf;
+	ComPtr<ID3DBlob>             PixelShaderBuf;
+	ComPtr<ID3DBlob>             GeometryShaderBuf;
+	ComPtr<ID3DBlob>             HullShaderBuf;
+	ComPtr<ID3DBlob>             DomainShaderBuf;
+	ComPtr<ID3DBlob>             ComputeShaderBuf;
+};
 
 class JTexture;
 /**
@@ -9,12 +28,16 @@ class JTexture;
  * Shader, Blob Buffer(Vertex, Pixel), InputLayout에 대해서는 기본으로 가지고있다.
  * 파일내부의 실행함수를 변경하여 적용하려면 Load...Shader(FuncName)을 실행
  */
-class JShader
+class JShader : public IManagedInterface
 {
+
 public:
 	JShader(const JText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
 	JShader(const JWText& InShaderFile, LPCSTR VSEntryPoint = "VS", LPCSTR PSEntryPoint = "PS");
-	virtual ~JShader();
+	~JShader() override;
+
+public:
+	uint32_t GetHash() const override;
 
 public:
 	void ApplyShader(ID3D11DeviceContext* InDeviceContext) const;
@@ -33,36 +56,12 @@ private:
 public:
 	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
 
-	[[nodiscard]] FORCEINLINE ID3D11InputLayout*    GetInputLayout() const { return mInputLayout.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11VertexShader*   GetVertexShader() const { return mVertexShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11PixelShader*    GetPixelShader() const { return mPixelShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11GeometryShader* GetGeometryShader() const { return mGeometryShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11HullShader*     GetHullShader() const { return mHullShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11DomainShader*   GetDomainShader() const { return mDomainShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3D11ComputeShader*  GetComputeShader() const { return mComputeShader.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetVertexShaderBuf() const { return mVertexShaderBuf.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetPixelShaderBuf() const { return mPixelShaderBuf.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetGeometryShaderBuf() const { return mGeometryShaderBuf.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetHullShaderBuf() const { return mHullShaderBuf.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetDomainShaderBuf() const { return mDomainShaderBuf.Get(); }
-	[[nodiscard]] FORCEINLINE ID3DBlob*             GetComputeShaderBuf() const { return mComputeShaderBuf.Get(); }
+	// [[nodiscard]] FORCEINLINE FShaderData*       GetShaderData() { return &mShaderData; }
+	// [[nodiscard]] FORCEINLINE const FShaderData* GetShaderData() const { return &mShaderData; }
 
 protected:
 	JWText mShaderFile;
 
-	ComPtr<ID3D11InputLayout> mInputLayout;
+	FShaderData mShaderData;
 
-	ComPtr<ID3D11VertexShader>   mVertexShader;
-	ComPtr<ID3D11PixelShader>    mPixelShader;
-	ComPtr<ID3D11GeometryShader> mGeometryShader;
-	ComPtr<ID3D11HullShader>     mHullShader;
-	ComPtr<ID3D11DomainShader>   mDomainShader;
-	ComPtr<ID3D11ComputeShader>  mComputeShader;
-
-	ComPtr<ID3DBlob> mVertexShaderBuf;
-	ComPtr<ID3DBlob> mPixelShaderBuf;
-	ComPtr<ID3DBlob> mGeometryShaderBuf;
-	ComPtr<ID3DBlob> mHullShaderBuf;
-	ComPtr<ID3DBlob> mDomainShaderBuf;
-	ComPtr<ID3DBlob> mComputeShaderBuf;
 };

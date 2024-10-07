@@ -3,6 +3,7 @@
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 
+class JMaterial;
 namespace Utils::Fbx
 {
 	class FbxFile;
@@ -25,8 +26,9 @@ public:
 	JMeshData() = default;
 
 public:
-	void Serialize(std::ofstream& FileStream) override;
-	void DeSerialize(std::ifstream& InFileStream) override;
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
 	[[nodiscard]] bool ApplyMaterial() const;
@@ -37,11 +39,11 @@ public:
 	[[nodiscard]] EMeshType GetClassType() const { return mClassType; }
 	[[nodiscard]] int32_t GetMaterialRefNum() const { return mMaterialRefNum; }
 	[[nodiscard]] int32_t GetFaceNum() const { return mFaceCount; }
-	[[nodiscard]] Ptr<JMeshData> GetParentMesh() const { return mParentMesh; }
+	[[nodiscard]] Ptr<JMeshData> GetParentMesh() const { return mParentMesh.lock(); }
 	[[nodiscard]] const std::vector<Ptr<JMeshData>>& GetSubMesh() const { return mSubMesh; }
 	[[nodiscard]] const std::vector<Ptr<JMeshData>>& GetChildMesh() const { return mChildMesh; }
 	[[nodiscard]] const Ptr<JVertexData<Vertex::FVertexInfo_Base>>& GetVertexData() const { return mVertexData; }
-	[[nodiscard]] class JMaterial* GetMaterial() const { return mMaterial; }
+	[[nodiscard]] Ptr<JMaterial> GetMaterial() const { return mMaterial; }
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
 
 protected:
@@ -54,22 +56,23 @@ protected:
 	int32_t mFaceCount;
 
 	// -------------------------- Mesh Hierarchy --------------------------
-	Ptr<JMeshData>              mParentMesh;
-	std::vector<Ptr<JMeshData>> mSubMesh;
-	std::vector<Ptr<JMeshData>> mChildMesh;
+	WPtr<JMeshData>        mParentMesh;
+	JArray<Ptr<JMeshData>> mSubMesh;
+	JArray<Ptr<JMeshData>> mChildMesh;
 
 	// -------------------------- Vertex Data --------------------------
 	Ptr<JVertexData<Vertex::FVertexInfo_Base>> mVertexData;
 
 	// -------------------------- Material --------------------------
-	class JMaterial* mMaterial;
-	int32_t          mMaterialRefNum;
+	Ptr<JMaterial> mMaterial;
+	int32_t        mMaterialRefNum;
 
 	// -------------------------- Initial Model Transform --------------------------
 	FMatrix mInitialModelTransform;
 
 private:
 	friend class Utils::Fbx::FbxFile;
+	friend class GUI_Editor_Material;
 };
 
 /**

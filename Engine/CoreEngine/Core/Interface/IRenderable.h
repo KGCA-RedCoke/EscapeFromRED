@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cstdint>
 
 enum class ELayerType : uint32_t
 {
@@ -21,4 +22,6 @@ public:
 	virtual void Render() = 0;
 	/** Draw or DrawIndex 호출 */
 	virtual void PostRender() = 0;
+
+	virtual void Draw() = 0;
 };

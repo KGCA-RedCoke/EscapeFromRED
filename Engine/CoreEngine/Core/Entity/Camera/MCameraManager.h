@@ -4,21 +4,20 @@
 
 class MCameraManager : public Manager_Base<JCamera, MCameraManager>
 {
-public:
-	void Initialize();
+private:
+	void Initialize_Internal();
 
 public:
-	FORCEINLINE JCamera* GetCurrentMainCam() const { return mCurrentCamera; }
-	FORCEINLINE JCamera* GetCam(JWTextView InName) { return FetchResource<JCamera>(InName.data()); }
+	FORCEINLINE Ptr<JCamera> GetCurrentMainCam() const { return mCurrentCamera; }
 
 public:
 	void SetCurrentMainCam(JWTextView InName);
 
 public:
-	void SetCameraConstantBuffer(uint32_t InSlot) const;
+	void SetCameraConstantBuffer(uint32_t InSlot = 2, JCamera* InCamera = nullptr) const;
 
 private:
-	JCamera* mCurrentCamera;
+	Ptr<JCamera> mCurrentCamera;
 
 #pragma region Singleton Boilerplate
 
@@ -26,7 +25,7 @@ private:
 	friend class TSingleton<MCameraManager>;
 	friend class MManagerInterface;
 
-	MCameraManager() = default;
+	MCameraManager();
 
 public:
 	MCameraManager(const MCameraManager&)            = delete;

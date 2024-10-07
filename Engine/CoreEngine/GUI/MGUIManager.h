@@ -1,7 +1,8 @@
 ﻿#pragma once
-#include "Core/Interface/ICoreInterface.h"
+#include "GUI_Base.h"
 #include "Core/Manager/Manager_Base.h"
-#include "imgui/GUI_Base.h"
+
+class GUI_Editor_Material;
 
 enum class EGUIType : uint8_t
 {
@@ -18,12 +19,14 @@ enum class EGUIType : uint8_t
  * GUI Manager
  * 모든 GUI 개체 관리 및 렌더
  */
-class MGUIManager : public ICoreInterface, public Manager_Base<GUI_Base, MGUIManager>
+class MGUIManager : public Manager_Base<GUI_Base, MGUIManager>
 {
+private:
+	void Initialize_Initialize();
+
 public:
-	void Initialize() override;
-	void Update(float_t DeltaTime) override;
-	void Release() override;
+	void Update(float_t DeltaTime);
+	void Release();
 
 	void Render();
 
@@ -39,11 +42,19 @@ private:
 	 */
 	void InitializeStaticGUI();
 
+	void UpdateMainMenuBar();
+
 	/**
 	 * 엔진 필수 GUI들을 업데이트
 	 */
-	void UpdateStaticGUI(float DeltaTime);
+	void UpdateStaticGUI(float DeltaTime) const;
 
+	void UpdateEditorGUI(float DeltaTime) const;
+
+private:
+	std::vector<Ptr<GUI_Editor_Material>> mMaterialEditorList;
+	Ptr<GUI_Base>                         mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
+	bool                                  bOpenFileBrowser;
 
 #pragma region Singleton Boilerplate
 
@@ -52,7 +63,7 @@ private:
 	friend class MManagerInterface;
 
 	MGUIManager();
-	~MGUIManager() override;
+	~MGUIManager();
 
 public:
 	MGUIManager(const MGUIManager&)            = delete;

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 
-class J3DObject;
+class JActor;
 class XVertexMesh;
 class JFont;
 class Timer;
@@ -47,8 +47,8 @@ private:
 	int32_t     mFramesPerSec = 0;
 	int32_t     mFrameCounter = 0;
 
-	std::vector<UPtr<J3DObject>> mRenderObjects;
-	UPtr<JFont>                  mFpsText = nullptr;
+	std::vector<Ptr<JActor>> mActors;
+	UPtr<JFont>              mFpsText = nullptr;
 
 public:
 	Application();

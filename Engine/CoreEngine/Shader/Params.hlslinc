@@ -1,0 +1,13 @@
+struct MaterialProperties
+{
+	float4 BaseColor;
+	Texture2D TextureMap;
+	SamplerState Sampler;
+	bool bUseTextureMap;
+};
+
+
+float4 GetColor(MaterialProperties materialProperties, float2 uv)
+{
+	return materialProperties.bUseTextureMap ? materialProperties.TextureMap.Sample(materialProperties.Sampler, uv) : materialProperties.BaseColor;
+}

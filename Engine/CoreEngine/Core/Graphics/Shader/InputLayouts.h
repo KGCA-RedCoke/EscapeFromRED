@@ -1,12 +1,15 @@
 #pragma once
 #include <d3d11.h>
 
-const uint32_t HASH_SHADER_SKELETAL_MESH     = StringHash(L"Shader/Character.hlsl");
-const uint32_t HASH_SHADER_STATIC_MESH       = StringHash(L"Shader/Basic.hlsl");
-const uint32_t HASH_SHADER_WorldGridMaterial = StringHash(L"Shader/WorldGridMaterial.hlsl");
-const uint32_t HASH_SHADER_SIMPLE_MESH       = StringHash(L"Shader/SimpleShape.hlsl");
-const uint32_t HASH_SHADER_TOON              = StringHash(L"Shader/Toon.hlsl");
-const uint32_t HASH_UVANIM                   = StringHash(L"Shader/UVAnim.hlsl");
+#include "Core/Graphics/ShaderStructs.h"
+
+const uint32_t HASH_SHADER_SKELETAL_MESH     = StringHash(L"Character");
+const uint32_t HASH_SHADER_STATIC_MESH       = StringHash(L"Basic");
+const uint32_t HASH_SHADER_WorldGridMaterial = StringHash(L"WorldGridMaterial");
+const uint32_t HASH_SHADER_SIMPLE_MESH       = StringHash(L"SimpleShape");
+const uint32_t HASH_SHADER_TOON              = StringHash(L"Toon");
+const uint32_t HASH_SHADER_GNOMON            = StringHash(L"Gnomon");
+const uint32_t HASH_UVANIM                   = StringHash(L"UVAnim");
 
 const uint32_t HASH_SHADER_SFXAA = StringHash(L"Shader/FXAA.hlsl");
 
@@ -129,22 +132,39 @@ namespace InputLayout
 		Texture
 	};
 
-	inline std::unordered_map<uint32_t, const D3D11_INPUT_ELEMENT_DESC*> HASH_INPUT_LAYOUT_MAP_DESC =
+	constexpr D3D11_INPUT_ELEMENT_DESC GNOMON_LAYOUT[] =
+	{
+		Position
+	};
+
+	inline JHash<uint32_t, const D3D11_INPUT_ELEMENT_DESC*> HASH_INPUT_LAYOUT_MAP_DESC =
 	{
 		{HASH_SHADER_STATIC_MESH, LAYOUT_StaticMesh_Base},
 		{HASH_SHADER_WorldGridMaterial, LAYOUT_StaticMesh_Base},
 		{HASH_SHADER_TOON, LAYOUT_StaticMesh_Base},
 		{HASH_UVANIM, LAYOUT_StaticMesh_Base},
-		{HASH_SHADER_SFXAA, SIMPLE_SHAPE_LAYOUT}
+		{HASH_SHADER_SFXAA, SIMPLE_SHAPE_LAYOUT},
+		{HASH_SHADER_GNOMON, GNOMON_LAYOUT}
 	};
 
-	inline std::unordered_map<uint32_t, uint32_t> HASH_INPUT_LAYOUT_MAP_NUMELEMENT =
+	inline JHash<uint32_t, uint32_t> HASH_INPUT_LAYOUT_MAP_NUMELEMENT =
 	{
 		{HASH_SHADER_STATIC_MESH, 6},
 		{HASH_SHADER_WorldGridMaterial, 6},
 		{HASH_SHADER_TOON, 6},
 		{HASH_UVANIM, 6},
-		{HASH_SHADER_SFXAA, 2}
+		{HASH_SHADER_SFXAA, 2},
+		{HASH_SHADER_GNOMON, 1}
+	};
+
+	inline JHash<uint32_t, int32_t> HASH_VERTEX_SIZE_MAP =
+	{
+		{HASH_SHADER_STATIC_MESH, sizeof(Vertex::FVertexInfo_Base)},
+		{HASH_SHADER_WorldGridMaterial, sizeof(Vertex::FVertexInfo_Base)},
+		{HASH_SHADER_TOON, sizeof(Vertex::FVertexInfo_Base)},
+		{HASH_UVANIM, sizeof(Vertex::FVertexInfo_Base)},
+		{HASH_SHADER_SFXAA, sizeof(Vertex::FVertexInfo_Base)},
+		{HASH_SHADER_GNOMON, sizeof(Vertex::FVertexInfo_Base)}
 	};
 
 }

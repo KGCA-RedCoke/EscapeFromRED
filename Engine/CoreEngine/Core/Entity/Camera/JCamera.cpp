@@ -2,6 +2,7 @@
 
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Window/Application.h"
 
@@ -29,10 +30,18 @@ JCamera::JCamera() noexcept
 	JCamera::SetViewParams(mDefaultEye, mDefaultLookAt);
 
 	const float aspect =
-	static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
-	static_cast<float>(Application::s_AppInstance->GetWindowHeight());
+			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
+			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
 
 	JCamera::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+
+	JCamera::Initialize();
+}
+
+JCamera::JCamera(const JText& InName)
+	: JCamera()
+{
+	mName = String2WString(InName);
 }
 
 JCamera::JCamera(const JWText& InName)
@@ -45,7 +54,8 @@ void JCamera::Initialize()
 {
 	mInputKeyboard.Initialize();
 
-	Utils::DX::CreateBuffer(DeviceRSC.GetDevice(),
+	
+	Utils::DX::CreateBuffer(IManager.RenderManager->GetDevice(),
 							D3D11_BIND_CONSTANT_BUFFER,
 							nullptr,
 							sizeof(CBuffer::Camera),
@@ -99,7 +109,7 @@ void JCamera::Update(float_t DeltaTime)
 	// Update the camera constant buffer
 	CBuffer::Camera camPos;
 	camPos.CameraPos = FVector4(mEye, 1.f);
-	Utils::DX::UpdateDynamicBuffer(DeviceRSC.GetImmediateDeviceContext(),
+	Utils::DX::UpdateDynamicBuffer(IManager.RenderManager->GetImmediateDeviceContext(),
 								   mCameraConstantBuffer.Get(),
 								   &mEye,
 								   sizeof(CBuffer::Camera));
@@ -107,6 +117,11 @@ void JCamera::Update(float_t DeltaTime)
 
 void JCamera::Release()
 {}
+
+uint32_t JCamera::GetHash() const
+{
+	return StringHash(ParseFile(mName.data()).c_str());
+}
 
 void JCamera::Reset()
 {
@@ -169,7 +184,7 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 
 void JCamera::SetCameraConstantBuffer(uint32_t InSlot)
 {
-	DeviceRSC.GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot, 1, mCameraConstantBuffer.GetAddressOf());
+	IManager.RenderManager->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot, 1, mCameraConstantBuffer.GetAddressOf());
 }
 
 void JCamera::UpdateVelocity(float DeltaTime)

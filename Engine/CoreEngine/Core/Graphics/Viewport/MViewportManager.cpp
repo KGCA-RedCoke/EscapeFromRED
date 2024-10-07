@@ -1,5 +1,6 @@
 ﻿#include "MViewportManager.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
@@ -7,7 +8,7 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 {
 	Hash = StringHash(InName.c_str());
 
-	auto device = DeviceRSC.GetDevice();
+	auto device = IManager.RenderManager->GetDevice();
 
 	// ------------------------- RenderTarget -------------------------
 	ComPtr<ID3D11Texture2D> texBuffer;
@@ -39,7 +40,7 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 
 
 	// 2D Side RenderTarget (DWrite)
-	Utils::DX::CreateD2DRenderTarget(DeviceRSC.Get2DFactory(),
+	Utils::DX::CreateD2DRenderTarget(IManager.RenderManager->Get2DFactory(),
 									 texBuffer.Get(),
 									 RTV_2D.GetAddressOf());
 
@@ -47,7 +48,12 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 	depthBuffer = nullptr;
 }
 
-void MViewportManager::Initialize()
+MViewportManager::MViewportManager()
+{
+	Initialize_Internal();
+}
+
+void MViewportManager::Initialize_Internal()
 {
 	CreateOrLoad(Name_Editor_Viewport, 1920, 1080);
 }
@@ -72,33 +78,33 @@ void MViewportManager::SetRenderTarget(JTextView InViewportName, const FLinearCo
 
 	assert(mManagedList.contains(stringHash), "Invalid viewport ID");
 
-	ID3D11ShaderResourceView* nullSRV = nullptr;
-	DeviceRSC.GetImmediateDeviceContext()->
-			  PSSetShaderResources(0, 1, &nullSRV);
+	// ID3D11ShaderResourceView* nullSRV = nullptr;
+	// Renderer.GetImmediateDeviceContext()->
+	// 		  PSSetShaderResources(0, 1, &nullSRV);
 
-	DeviceRSC.GetImmediateDeviceContext()->
-			  ClearDepthStencilView(mManagedList[stringHash]->DepthStencilView.Get(),
-									D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-									1.0f,
-									0);
+	IManager.RenderManager->GetImmediateDeviceContext()->
+			 ClearDepthStencilView(mManagedList[stringHash]->DepthStencilView.Get(),
+								   D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+								   1.0f,
+								   0);
 
 	// RenderTarget 영역 설정 
-	DeviceRSC.GetImmediateDeviceContext()->
-			  OMSetRenderTargets(
-								 1,
-								 mManagedList[stringHash]->RTV.GetAddressOf(),
-								 mManagedList[stringHash]->DepthStencilView.Get());
+	IManager.RenderManager->GetImmediateDeviceContext()->
+			 OMSetRenderTargets(
+								1,
+								mManagedList[stringHash]->RTV.GetAddressOf(),
+								mManagedList[stringHash]->DepthStencilView.Get());
 
 	// 새 화면으로 Clear
-	DeviceRSC.GetImmediateDeviceContext()->
-			  ClearRenderTargetView(
-									mManagedList[stringHash]->RTV.Get(),
-									InClearColor.RGBA);
+	IManager.RenderManager->GetImmediateDeviceContext()->
+			 ClearRenderTargetView(
+								   mManagedList[stringHash]->RTV.Get(),
+								   InClearColor.RGBA);
 
 	// 각 뷰표트의 영역에 맞게 조절
-	DeviceRSC.GetImmediateDeviceContext()->
-			  RSSetViewports(
-							 1,
-							 &mManagedList[stringHash]->ViewportDesc);
+	Renderer.GetImmediateDeviceContext()->
+			 RSSetViewports(
+							1,
+							&mManagedList[stringHash]->ViewportDesc);
 
 }

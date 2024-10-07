@@ -1,24 +1,27 @@
 #pragma once
 
-#include <iostream>
-#include <memory>
-#include <utility>
 #include <algorithm>
-#include <functional>
-#include <format>
-#include <fstream>
-#include <filesystem>
 #include <assert.h>
 #include <atlconv.h>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <regex>
+#include <utility>
 
-#include <string>
-#include <sstream>
 #include <array>
-#include <vector>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
+#include <vector>
 
 #include <Windows.h>
 
 #include "Core/Utils/Math/MathFwd.h"
-

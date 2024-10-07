@@ -1,9 +1,10 @@
 ﻿#include "Application.h"
+
+#include "Core/Entity/Actor/JActor.h"
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
-#include "Core/Graphics/Shader/J3DObject.h"
-#include "Core/Graphics/Shader/SFXAAEffect.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Timer.h"
 #include "Core/Utils/Math/Color.h"
@@ -63,47 +64,59 @@ void Application::Initialize()
 	IManager.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 MManagerInterface.cpp 참조)
 
 	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
-	mFpsText = std::make_unique<JFont>(IManager.ViewportManager.FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
+	mFpsText = std::make_unique<JFont>(IManager.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
 	mFpsText->Initialize();
 	mFpsText->SetFontSize(48);
 	mFpsText->SetColor(FLinearColor::Orange);
 	mFpsText->SetScreenPosition({25, 25});
 
-	// // FIXME: Test Code
-	Utils::Fbx::FbxFile fbxLoader;
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cube.fbx");
+	// FIXME: Test Code
+	// Utils::Fbx::FbxFile fbxLoader;
 	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Sphere.fbx");
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cone.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cube.fbx");
 	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cylinder.fbx");
+	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cone.fbx");
 	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Plane.fbx");
-	// fbxLoader.Load("Game/Model/axis.fbx");
-	// fbxLoader.Load("Game/Model/Bot.fbx");
-	// fbxLoader.Load("Game/Model/CyberPunk_A.fbx");
-	// fbxLoader.Load("Game/Model/King.fbx");
-	// fbxLoader.Load("Game/Model/Male_Jacket.fbx");
-	mRenderObjects.reserve(10);
 
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cube.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Sphere.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cone.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Cylinder.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Plane.jasset"));
-	
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Bot.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/CyberPunk_A.jasset"));
-	// mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/King.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/Male_Jacket.jasset"));
-	mRenderObjects.push_back(MakeUPtr<J3DObject>(L"rsc/axis.jasset"));
-
-
-	// Utils::Serialization::DeSerialize("Game/Cube.jasset", mDXObject.get());
-	// Utils::Serialization::DeSerialize("rsc/Cylinder.jasset", mDXObject2.get());
-
-	size_t objHalfSize = mRenderObjects.size() / 2;
-	for (int32_t i = 0; i < mRenderObjects.size(); ++i)
+	mActors.reserve(10);
+	for (int32_t i = 0; i < 10; ++i)
 	{
-		mRenderObjects[i]->SetTranslation({/*-5 * objHalfSize +*/ i * 5.f, 0, 0});
+		// mRenderObjects.push_back(MakeUPtr<JMeshObject>());
 	}
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/CyberPunk_A.jasset");
+	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
+	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
+	sampleActor->Initialize();
+	// swordComponent->SetMeshObject(swordMesh);
+	// sampleActor->AttachSceneComponent(swordComponent);
+	mActors.push_back(sampleActor);
+	//
+	// sampleActor->SetLocalLocation({10, 0, 0});
+
+	// Utils::Serialization::DeSerialize("Game/Mesh/Cube.jasset", mRenderObjects[0].get());
+	// Utils::Serialization::DeSerialize("Game/Mesh/Sphere.jasset", mRenderObjects[1].get());
+	// Utils::Serialization::DeSerialize("Game/Mesh/Cone.jasset", mRenderObjects[2].get());
+	// Utils::Serialization::DeSerialize("Game/Mesh/Cylinder.jasset", mRenderObjects[3].get());
+	// Utils::Serialization::DeSerialize("Game/Mesh/Plane.jasset", mRenderObjects[4].get());
+	// Utils::Serialization::DeSerialize("Game/Mesh/SM_CP_Mid_Male_Body.jasset", mRenderObjects[5].get());
+
+
+	// // Utils::Serialization::DeSerialize("Game/Bot.jasset", mRenderObjects[5].get());
+	// Utils::Serialization::DeSerialize("Game/CyberPunk_A.jasset", mRenderObjects[6].get());
+	// // Utils::Serialization::DeSerialize("Game/King.jasset", mRenderObjects[7].get());
+	// Utils::Serialization::DeSerialize("Game/Male_Jacket.jasset", mRenderObjects[8].get());
+	// Utils::Serialization::DeSerialize("Game/axis.jasset", mRenderObjects[9].get());
+
+
+	// Utils::Serialization::DeSerialize_Implement("Game/Cube.jasset", mDXObject.get());
+	// Utils::Serialization::DeSerialize_Implement("rsc/Cylinder.jasset", mDXObject2.get());
+
+	// size_t objHalfSize = mRenderObjects.size() / 2;
+	// for (int32_t i = 0; i < mRenderObjects.size(); ++i)
+	// {
+	// 	mRenderObjects[i]->SetTranslation({/*-5 * objHalfSize +*/ i * 5.f, 0, 0});
+	// }
+
 }
 
 void Application::Run()
@@ -141,20 +154,21 @@ void Application::Update(float DeltaTime)
 
 void Application::Render()
 {
-	DeviceRSC.ClearColor(FLinearColor::EbonyClay);
+	IManager.RenderManager->ClearColor(FLinearColor::EbonyClay);
 
 	IManager.Render(); // GUI Render
 
-	for (int32_t i = 0; i < mRenderObjects.size(); ++i)
+	for (int32_t i = 0; i < mActors.size(); ++i)
 	{
-		mRenderObjects[i]->PreRender();
+		mActors[i]->Tick(mDeltaTime);
+		mActors[i]->Draw();
 	}
 
 	mFpsText->PreRender();
 	mFpsText->Render();
 	mFpsText->PostRender();
 
-	DeviceRSC.Present();
+	IManager.RenderManager->Present();
 }
 
 void Application::Release()

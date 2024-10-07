@@ -1,6 +1,7 @@
 ﻿#include "FbxFile.h"
 #include "FbxUtils.h"
-#include "Core/Graphics/Mesh/JSkeletalMesh.h"
+#include "Core/Graphics/DirectMathHelper.h"
+#include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Interface/MManagerInterface.h"
 
@@ -10,7 +11,7 @@ namespace Utils::Fbx
 
 	FbxFile::~FbxFile()
 	{
-		Release();
+		Release_Internal();
 	}
 
 	void FbxFile::Initialize(const char* InFilePath)
@@ -65,16 +66,19 @@ namespace Utils::Fbx
 		mNumIndex  = 0;
 	}
 
-	void FbxFile::Release() const
+	void FbxFile::Release_Internal() const
 	{
 		if (mFbxScene)
 			mFbxScene->Destroy();
 		if (mFbxImporter)
 			mFbxImporter->Destroy();
+	}
+
+	void FbxFile::Release()
+	{
 		if (g_fbx_manager)
 			g_fbx_manager->Destroy();
 	}
-
 
 	bool FbxFile::Load(const char* InFilePath)
 	{
@@ -84,20 +88,11 @@ namespace Utils::Fbx
 
 		Convert();
 
-		JText filePath = "rsc/";
-		filePath += std::format("{0}.jasset", ParseFile(InFilePath));
-		std::ofstream fileStream(filePath, std::ios::binary);
+		JText filePath = std::format("Game/Mesh/{0}.jasset", ParseFile(InFilePath));
 
-		size_t meshSize = mMeshList.size();
-		fileStream.write(reinterpret_cast<char*>(&meshSize), sizeof(size_t));
-		for (int32_t i = 0; i < meshSize; ++i)
-		{
-			mMeshList[i]->Serialize(fileStream);
-		}
-		fileStream.close();
+		Ptr<JMeshObject> object = MakePtr<JMeshObject>(filePath, mMeshList);
 
-
-		return true;
+		return Serialization::Serialize(filePath.c_str(), object.get());
 	}
 
 	bool FbxFile::Convert()
@@ -112,9 +107,9 @@ namespace Utils::Fbx
 			mesh->mFaceCount = data->FaceCount;
 
 			// 부모 노드 존재시에 자식 노드로 등록
-			if (mesh->mParentMesh)
+			if (Ptr<JMeshData> parentMesh = mesh->mParentMesh.lock())
 			{
-				mesh->mParentMesh->mChildMesh.push_back(mesh);
+				parentMesh->mChildMesh.push_back(mesh);
 			}
 
 			// 메시 타입이 Static(Static Mesh)일 경우만 우선 처리
@@ -123,13 +118,13 @@ namespace Utils::Fbx
 				const int32_t materialNum = mesh->mMaterialRefNum - 1;
 				assert(materialNum >= 0);
 
-				std::vector<JMaterial*> materials = mMaterialList[meshIndex];
+				std::vector<Ptr<JMaterial>> materials = mMaterialList[meshIndex];
 				if (mesh->mFaceCount > 0 && !materials.empty())
 				{
 					// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
 					if (materials.size() == 1)
 					{
-						JMaterial* subMaterial = materials[0];
+						Ptr<JMaterial> subMaterial = materials[0];
 
 						// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
 						data->GenerateIndexArray(data->TriangleList);
@@ -140,7 +135,7 @@ namespace Utils::Fbx
 						}
 						else
 						{
-							mesh->mMaterial = IManager.MaterialManager.GetDefaultMaterial();
+							mesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
 						}
 
 						mNumVertex += data->VertexArray.size();
@@ -150,7 +145,7 @@ namespace Utils::Fbx
 					{
 						for (int subMeshIndex = 0; subMeshIndex < materials.size(); ++subMeshIndex)
 						{
-							JMaterial* subMaterial = materials[subMeshIndex];
+							Ptr<JMaterial> subMaterial = materials[subMeshIndex];
 
 							auto& subMesh = mesh->mSubMesh[subMeshIndex];
 							auto& subData = subMesh->mVertexData;
@@ -163,7 +158,7 @@ namespace Utils::Fbx
 							}
 							else
 							{
-								subMesh->mMaterial = IManager.MaterialManager.GetDefaultMaterial();
+								subMesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
 							}
 							mNumVertex += data->VertexArray.size();
 							mNumIndex += data->IndexArray.size();
@@ -255,7 +250,7 @@ namespace Utils::Fbx
 		// fbx에서 정의된 메시를 가져오자.
 		FbxMesh* fbxMesh = InNode->GetMesh();
 
-		// 레이어 정보(Geometry (UV, Tangents, Normal, Material, Color...))부터 해석하자.
+		// 레이어 정보(Geometry (UV, Tangents, NormalMap, Material, Color...))부터 해석하자.
 		FLayer layer = ParseMeshLayer(InNode->GetMesh(), InMeshData);
 
 		FbxAMatrix vertexMat; // 정점의 변환 행렬
@@ -370,7 +365,8 @@ namespace Utils::Fbx
 					// Position
 					finalPosition = vertexMat.MultT(curVert);
 
-					// Normal
+
+					// NormalMap
 					if (!layer.VertexNormalSets.empty())
 						finalNormal = ReadNormal(fbxMesh,
 												 layer.VertexNormalSets.size(),
@@ -421,6 +417,9 @@ namespace Utils::Fbx
 						vertex.Position.x = static_cast<float>(finalPosition.mData[0]);
 						vertex.Position.y = static_cast<float>(finalPosition.mData[2]);
 						vertex.Position.z = static_cast<float>(finalPosition.mData[1]);
+						// Get Scale Info
+						FVector scale = Mat2ScaleVector(InMeshData->mInitialModelTransform);
+						vertex.Position *= scale;
 
 						vertex.Normal.x = static_cast<float>(finalNormal.mData[0]);
 						vertex.Normal.y = static_cast<float>(finalNormal.mData[2]);
@@ -520,10 +519,10 @@ namespace Utils::Fbx
 
 		if (!InMesh)
 			return layer;
-		
+
 		const int32_t layerCount = InMesh->GetLayerCount();
 
-		// Normal없으면 Normal 데이터 생성
+		// Normal없으면 NormalMap 데이터 생성
 		if (layerCount == 0 || !InMesh->GetLayer(0)->GetNormals())
 		{
 			// 2015 이상 버전에서만 사용 가능
@@ -541,9 +540,9 @@ namespace Utils::Fbx
 			InMesh->GenerateTangentsData(0);
 		}
 
-		std::vector<JMaterial*> materials;
+		std::vector<Ptr<JMaterial>> materials;
 
-		/// 레이어별로 Normal, Tangent, Color, UV, 머티리얼(정점에 다수의 텍스처가 매핑 되어있을 경우) 있으면 정보를 넣어놓는다.
+		/// 레이어별로 NormalMap, Tangent, Color, UV, 머티리얼(정점에 다수의 텍스처가 매핑 되어있을 경우) 있으면 정보를 넣어놓는다.
 		/// 보통은 Layer0에만 존재하는데, 
 		/// 예외로 머티리얼, UV는 Layer가 여러개일 수도 있다.
 		for (int32_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
@@ -582,7 +581,7 @@ namespace Utils::Fbx
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						JMaterial* fbxMat = ParseLayerMaterial(InMesh, i);
+						Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, i);
 						materials.push_back(fbxMat);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
@@ -593,7 +592,7 @@ namespace Utils::Fbx
 						// 우선 메시 이름 + 머티리얼 이름 으로 설정
 						subMesh->mName = std::format("{0}_{1}",
 													 InMeshData->mName,
-													 WString2String(fbxMat->GetMaterialName()));
+													 fbxMat->GetMaterialName());
 
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
 						subMesh->mVertexData = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();
@@ -611,7 +610,7 @@ namespace Utils::Fbx
 					InMeshData->mMaterialRefNum = 1;
 
 					// 머티리얼 정보만 가져와서 저장해놓자.
-					JMaterial* fbxMat = ParseLayerMaterial(InMesh, 0);
+					Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, 0);
 					materials.push_back(fbxMat);
 				}
 			}

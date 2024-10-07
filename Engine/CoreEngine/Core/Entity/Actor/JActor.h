@@ -1,15 +1,33 @@
 ﻿#pragma once
-#include "Core/Entity/Transform/JTransformComponent.h"
+#include "Core/Entity/JObject.h"
+#include "Core/Entity/Component/Scene/JSceneComponent.h"
 
 
-class JActor : public JTransformComponent
+class JActorComponent;
+class JTransformComponent;
+
+class JActor : public JSceneComponent
 {
 public:
-#pragma region Render Interface
-	void PreRender();
-	void Render();
-	void PostRender();
-#pragma endregion
+	JActor();
+	JActor(JTextView InName);
+	~JActor() override;
 
+	void Initialize() override;
+	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
+	void Destroy() override;
 
+	void Draw() override;
+
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+protected:
+	Ptr<JSceneComponent> mRootComponent;
+
+	WPtr<JActor>        mParentActor;
+	JArray<Ptr<JActor>> mChildActors;
+
+	JArray<JActorComponent*> mActorComponents;
 };

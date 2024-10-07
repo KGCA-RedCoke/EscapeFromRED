@@ -4,12 +4,14 @@
 #include "Core/Manager/Manager_Base.h"
 
 // 이 클래스 매크로 추천
-#define DeviceRSC XD3DDevice::Get()
+#define Renderer XD3DDevice::Get()
 
 class XD3DDevice final : public TSingleton<XD3DDevice>
 {
+private:
+	void Initialize_Internal();
+
 public:
-	void Initialize();
 	void Release();
 
 public:
@@ -74,6 +76,7 @@ private:
 
 private:
 	friend class TSingleton<XD3DDevice>;
+	friend class MManagerInterface;
 
 	XD3DDevice();
 	~XD3DDevice();

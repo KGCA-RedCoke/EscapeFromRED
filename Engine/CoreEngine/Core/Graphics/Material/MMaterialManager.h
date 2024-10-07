@@ -5,13 +5,11 @@
 class MMaterialManager : public Manager_Base<JMaterial, MMaterialManager>
 {
 public:
-	void Initialize();
-
 public:
-	[[nodiscard]] FORCEINLINE JMaterial* GetDefaultMaterial() const { return DefaultMaterial; }
+	[[nodiscard]] FORCEINLINE Ptr<JMaterial> GetDefaultMaterial() const { return DefaultMaterial; }
 
 private:
-	JMaterial* DefaultMaterial;
+	Ptr<JMaterial> DefaultMaterial;
 
 public:
 #pragma region Singleton Boilerplate

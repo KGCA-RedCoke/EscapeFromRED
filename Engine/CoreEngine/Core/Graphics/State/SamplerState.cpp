@@ -1,10 +1,13 @@
 ﻿#include "SamplerState.h"
 
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Interface/MManagerInterface.h"
 
 
 SamplerState::SamplerState(const UINT InSlot, const ESamplerType InSamplerType, const FLinearColor& InColor)
-	: mSlot(InSlot), mSamplerType(InSamplerType), mColor(InColor) {}
+	: mSlot(InSlot),
+	  mSamplerType(InSamplerType),
+	  mColor(InColor) {}
 
 SamplerState::~SamplerState() = default;
 
@@ -46,7 +49,7 @@ void SamplerState::Initialize()
 	}
 
 
-	CheckResult(DeviceRSC.GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
+	CheckResult(IManager.RenderManager->GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
 
 }
 
@@ -54,7 +57,7 @@ void SamplerState::Update(float DeltaTime) {}
 
 void SamplerState::Render()
 {
-	DeviceRSC.GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
+	IManager.RenderManager->GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
 }
 
 void SamplerState::Release()

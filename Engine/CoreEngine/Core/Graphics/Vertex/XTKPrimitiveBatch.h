@@ -25,6 +25,7 @@ public:
 	void PreRender() override;
 	void Render() override;
 	void PostRender() override;
+	void Draw() override;
 #pragma endregion
 
 public:

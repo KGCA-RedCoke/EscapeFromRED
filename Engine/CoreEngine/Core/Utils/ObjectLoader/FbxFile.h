@@ -28,7 +28,9 @@ namespace Utils::Fbx
 		/** Importer, Scene 생성 */
 		void Initialize(const char* InFilePath);
 		/** 존재하는 모든 fbx sdk destroy (프로세스 종료 전에 호출) */
-		void Release() const;
+		void Release_Internal() const;
+
+		static void Release();
 
 	public:
 		bool Load(const char* InFilePath);
@@ -45,9 +47,9 @@ namespace Utils::Fbx
 		 * @param InParentMeshData
 		 * @param InParentMatrix
 		 */
-		void ParseNode_Recursive(FbxNode*                InNode, FbxNodeAttribute::EType NodeAttribute,
+		void ParseNode_Recursive(FbxNode*              InNode, FbxNodeAttribute::EType NodeAttribute,
 								 const Ptr<JMeshData>& InParentMeshData = nullptr,
-								 const FMatrix&          InParentMatrix   = FMatrix::Identity);
+								 const FMatrix&        InParentMatrix   = FMatrix::Identity);
 
 		/**
 		 * @brief 메시노드의 속성을 파싱하는 함수
@@ -63,7 +65,7 @@ namespace Utils::Fbx
 		 * Fbx에서 geometry data는 layer로 표현된다.
 		 * 관련 클래스들은 FbxLayerElementTemplate로 표현
 		 * 보통 레이어는 1개에서 2개 정도가 일반적이다.
-		 * 주로 UV, Normal, Tangent, Binormal, Material 등을 파싱한다.
+		 * 주로 UV, NormalMap, Tangent, Binormal, Material 등을 파싱한다.
 		 * @param InMesh FbxMesh 개체
 		 * @param InMeshData JMesh 개체 (파싱된 데이터를 저장할 개체)
 		 */
@@ -76,7 +78,7 @@ namespace Utils::Fbx
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
 		std::vector<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
-		std::vector<std::vector<JMaterial*>> mMaterialList;
+		std::vector<std::vector<Ptr<JMaterial>>> mMaterialList;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

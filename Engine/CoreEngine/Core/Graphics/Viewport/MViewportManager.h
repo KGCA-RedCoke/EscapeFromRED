@@ -23,8 +23,8 @@ public:
 
 class MViewportManager : public Manager_Base<FViewportData, MViewportManager>
 {
-public:
-	void Initialize();
+private:
+	void Initialize_Internal();
 
 public:
 	void ResizeViewport(JTextView InViewportName, uint32_t InWidth, uint32_t InHeight, float InOriginX, float InOriginY);
@@ -36,7 +36,7 @@ private:
 private:
 	friend class TSingleton<MViewportManager>;
 	friend class MManagerInterface;
-	MViewportManager()  = default;
+	MViewportManager();
 	~MViewportManager() = default;
 
 public:

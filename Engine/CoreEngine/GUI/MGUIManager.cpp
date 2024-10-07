@@ -1,30 +1,31 @@
 ﻿#include "MGUIManager.h"
-
-#include <ranges>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx11.h>
-
+#include <imgui/imgui_impl_win32.h>
+#include "GUI_AssetBrowser.h"
+#include "GUI_Inspector.h"
+#include "GUI_Themes.h"
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
-#include "imgui/GUI_Inspector.h"
-#include "imgui/GUI_Themes.h"
-#include "imgui/GUI_Viewport.h"
+#include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
-#include "imgui/GUI_AssetBrowser.h"
+#include "Editor/GUI_Editor_Material.h"
+#include "Popup/GUI_Popup_FileBrowser.h"
+#include "Viewport/GUI_Viewport_Scene.h"
 
 constexpr char Name_Viewport[]     = "Editor Viewport";
 constexpr char Name_Inspector[]    = "Editor Inspector";
 constexpr char Name_AssetBrowser[] = "Asset Browser";
 
-MGUIManager::MGUIManager()  = default;
+MGUIManager::MGUIManager()
+{
+	Initialize_Initialize();
+};
 MGUIManager::~MGUIManager() = default;
 
 /**
  * ImGui는 기본적으로 렌더링을 위한 초기화가 필요.
  * ImGui 초기화는 ImGui 컨텍스트를 생성하고, 스타일을 설정하며, 플랫폼 및 백엔드를 초기화해야한다.
  */
-void MGUIManager::Initialize()
+void MGUIManager::Initialize_Initialize()
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -53,24 +54,84 @@ void MGUIManager::Initialize()
 
 	// 플랫폼, 백엔드 초기화
 	ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
-	ImGui_ImplDX11_Init(DeviceRSC.GetDevice(), DeviceRSC.GetImmediateDeviceContext());
+	ImGui_ImplDX11_Init(IManager.RenderManager->GetDevice(), IManager.RenderManager->GetImmediateDeviceContext());
 
 	InitializeStaticGUI();
-	ImGui::GetIO().FontGlobalScale = 1.5f; // 기본 글자 크기보다 1.5배로 확대
+	// ImGui::GetIO().FontGlobalScale = 1.5f; // 기본 글자 크기보다 1.5배로 확대
 }
 
 void MGUIManager::InitializeStaticGUI()
 {
-	CreateOrLoad<GUI_Viewport>(Name_Viewport)->Initialize();
-	CreateOrLoad<GUI_Inspector>(Name_Inspector)->Initialize();
-	CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser)->Initialize();
+	mStaticGUI[0] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
+	mStaticGUI[1] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
+	mStaticGUI[2] = CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser);
+
+	mStaticGUI[0]->Initialize();
+	mStaticGUI[1]->Initialize();
+	mStaticGUI[2]->Initialize();
 }
 
-void MGUIManager::UpdateStaticGUI(float DeltaTime)
+void MGUIManager::UpdateMainMenuBar()
 {
-	for (UPtr<GUI_Base>& gui : mManagedList | std::ranges::views::values)
+	if (ImGui::BeginMainMenuBar())
 	{
-		gui->Update(DeltaTime);
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New Scene"))
+			{
+				// New Scene
+			}
+			if (ImGui::MenuItem("Open Scene"))
+			{
+				// Open Scene
+			}
+			if (ImGui::MenuItem("Save Scene"))
+			{
+				// Save Scene
+			}
+			if (ImGui::MenuItem("Exit"))
+			{
+				// Exit
+			}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Utils"))
+		{
+			if (ImGui::MenuItem("Material Editor"))
+			{
+				JText title = std::format("Material Editor {}", GUI_Editor_Material::GetAvailableIndex());
+				if (Ptr<GUI_Editor_Material> materialEditor = CreateOrLoad<GUI_Editor_Material>(title))
+				{
+					mMaterialEditorList.push_back(materialEditor);
+				}
+			}
+
+			if (ImGui::MenuItem("Fbx Importer"))
+			{
+				bOpenFileBrowser = true;
+			}
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();  // Make sure to close the main menu bar
+	}
+}
+
+void MGUIManager::UpdateStaticGUI(float DeltaTime) const
+{
+	for (int32_t i = 0; i < 3; ++i)
+	{
+		mStaticGUI[i]->Update(DeltaTime);
+	}
+}
+
+void MGUIManager::UpdateEditorGUI(float DeltaTime) const
+{
+	// Material Editor
+	for (int32_t i = 0; i < mMaterialEditorList.size(); ++i)
+	{
+		mMaterialEditorList[i]->Update(DeltaTime);
 	}
 }
 
@@ -82,7 +143,34 @@ void MGUIManager::Update(float_t DeltaTime)
 
 	ImGui::DockSpaceOverViewport();
 
+	UpdateMainMenuBar();
+
 	UpdateStaticGUI(DeltaTime);
+
+	UpdateEditorGUI(DeltaTime);
+
+	if (bOpenFileBrowser)
+	{
+		JText path = "rsc/";
+		JText resultFile;
+		if (ImGui::OpenFileBrowser(path, ImGui::FileBrowserOption::FILE, {".fbx"}))
+		{
+			if (ImGui::FetchFileBrowserResult(path, resultFile))
+			{
+				if (std::filesystem::exists(resultFile) && std::filesystem::is_regular_file(resultFile))
+				{
+					// Import Fbx
+					Utils::Fbx::FbxFile fbxFile;
+					if (fbxFile.Load(resultFile.c_str()))
+					{
+						LOG_CORE_INFO("Fbx File Loaded: {}", resultFile);
+					}
+				}
+				bOpenFileBrowser = false;
+			}
+		}
+	}
+
 }
 
 void MGUIManager::Release()
@@ -107,6 +195,11 @@ void MGUIManager::Render()
 	{
 		ImGui::UpdatePlatformWindows(); // 새 뷰포트 생성 | 기존 뷰포트 상태, 위치 업데이트 | 필요없는 뷰포트 파괴 등
 		ImGui::RenderPlatformWindowsDefault(); // 각 뷰포트 렌더
+	}
+
+	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
+	{
+		it->second->Render();
 	}
 }
 

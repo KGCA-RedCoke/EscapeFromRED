@@ -1,19 +1,14 @@
 ﻿#include "MShaderManager.h"
 
-#include "SFXAAEffect.h"
-
-
-void MShaderManager::Initialize()
+MShaderManager::MShaderManager()
 {
-	CreateOrLoad(L"Shader/Basic.hlsl");
-	CreateOrLoad(L"Shader/WorldGridMaterial.hlsl");
-	CreateOrLoad(L"Shader/Toon.hlsl");
-	CreateOrLoad(L"Shader/UVAnim.hlsl");
-
-	// g_FXAAEffect = CreateOrLoad<SFXAAEffect>(L"Shader/FXAA.hlsl");
+	Initialize_Initialize();
 }
 
-JShader* MShaderManager::GetBasicShader()
+void MShaderManager::Initialize_Initialize()
 {
-	return FetchResource(L"Basic");
+	BasicShader = CreateOrLoad(L"Shader/Basic.hlsl");
+	CreateOrLoad(L"Shader/Gnomon.hlsl");
 }
+
+

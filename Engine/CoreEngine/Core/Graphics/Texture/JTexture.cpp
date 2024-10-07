@@ -1,22 +1,23 @@
 ﻿#include "JTexture.h"
-#include "Core/Graphics/XD3DDevice.h"
 #include <directxtk/WICTextureLoader.h>
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Interface/MManagerInterface.h"
 
 #include "Core/Utils/Utils.h"
 
 JTexture::JTexture()
 	: mSlot(0),
-	  mID(0),
 	  mSRVDesc(),
-	  mTextureDesc() {}
+	  mTextureDesc()
+{}
 
 JTexture::JTexture(JWTextView InName)
 	: mSlot(0),
-	  mID(StringHash(InName.data())),
 	  mTextureName(InName),
 	  mSRVDesc(),
 	  mTextureDesc()
 {
+
 	LoadFromFile();
 }
 
@@ -24,53 +25,55 @@ JTexture::JTexture(JTextView InName)
 	: JTexture(String2WString(InName.data())) {}
 
 
-void JTexture::Serialize(std::ofstream& FileStream)
+uint32_t JTexture::GetHash() const
 {
-	/*// Header
-	JAssetHeader header;
-	header.DataSize      = sizeof(JAssetHeader) + sizeof(uint32_t);
-	header.InstanceCount = 3;
-	FileStream.write(reinterpret_cast<const char*>(&header), sizeof(JAssetHeader));*/
+	return StringHash(ParseFile(mTextureName).c_str());
+}
 
-	// ID
-	FileStream.write(reinterpret_cast<const char*>(&mID), sizeof(mID));
+uint32_t JTexture::GetType() const
+{
+	return StringHash("JTexture");
+}
+
+bool JTexture::Serialize_Implement(std::ofstream& FileStream)
+{
+	if (!Utils::Serialization::SerializeMetaData(FileStream, this))
+	{
+		return false;
+	}
 
 	// Slot
-	FileStream.write(reinterpret_cast<const char*>(&mSlot), sizeof(mSlot));
+	Utils::Serialization::Serialize_Primitive(&mSlot, sizeof(mSlot), FileStream);
 
 	// Texture Name
 	Utils::Serialization::Serialize_Text(mTextureName, FileStream);
+
+	return true;
 }
 
-void JTexture::DeSerialize(std::ifstream& InFileStream)
+bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
 {
-	/*// Header
-	JAssetHeader header;
-	InFileStream.read(reinterpret_cast<char*>(&header), sizeof(JAssetHeader));
-
-	if (StringHash(header.Signature) != JAssetHash)
+	JAssetMetaData metaData;
+	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
 	{
-		LOG_CORE_ERROR("Header signature is not valid");
-		InFileStream.close();
-		return;
-	}*/
-
-	// ID
-	InFileStream.read(reinterpret_cast<char*>(&mID), sizeof(mID));
+		return false;
+	}
 
 	// Slot
-	InFileStream.read(reinterpret_cast<char*>(&mSlot), sizeof(mSlot));
+	Utils::Serialization::DeSerialize_Primitive(&mSlot, sizeof(mSlot), InFileStream);
 
 	// Texture Name
 	Utils::Serialization::DeSerialize_Text(mTextureName, InFileStream);
 
 	LoadFromFile();
+
+	return true;
 }
 
 void JTexture::PreRender(int32_t InSlot)
 {
 	if (mShaderResourceView.Get())
-		DeviceRSC.GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, mShaderResourceView.GetAddressOf());
+		IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, mShaderResourceView.GetAddressOf());
 }
 
 
@@ -80,11 +83,13 @@ void JTexture::LoadFromFile()
 	ComPtr<ID3D11Texture2D> texture;
 
 	// 여기서는 CheckResult를 하지 않는다. 텍스처 파일이 없을 경우 디폴트 텍스처 적용
-	if (FAILED(CreateWICTextureFromFile(DeviceRSC.GetDevice(),
+	if (FAILED(CreateWICTextureFromFile(Renderer.GetDevice(),
 				   mTextureName.c_str(),
 				   textureResource.GetAddressOf(),
 				   mShaderResourceView.GetAddressOf())))
 	{
+		JText errorText = WString2String(std::format(L"Texture Load Failed: {}", mTextureName));
+		// ShowErrorPopup(errorText);
 		return;
 	}
 

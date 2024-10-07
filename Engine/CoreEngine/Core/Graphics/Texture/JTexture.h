@@ -1,13 +1,14 @@
 ﻿#pragma once
+#include "common_include.h"
 #include "Core/Graphics/graphics_common_include.h"
+#include "Core/Manager/IManagedInterface.h"
 #include "Core/Utils/FileIO/JSerialization.h"
-
 
 /**
  * 텍스처 관련 리소스 집합
  * IManager->TextureManager로 관리된다.
  */
-class JTexture : public ISerializable
+class JTexture : public IManagedInterface, public ISerializable
 {
 public:
 	JTexture();
@@ -16,8 +17,10 @@ public:
 	~JTexture() override = default;
 
 public:
-	void Serialize(std::ofstream& FileStream) override;
-	void DeSerialize(std::ifstream& InFileStream) override;
+	uint32_t GetHash() const override;
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
 	void PreRender(int32_t InSlot = 0);
@@ -37,7 +40,6 @@ private:
 
 private:
 	uint32_t mSlot;
-	uint32_t mID /** Hashing된 Key값 */;
 	JWText   mTextureName /** 실제 텍스처 경로 */;
 
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;

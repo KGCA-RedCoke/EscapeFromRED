@@ -41,9 +41,9 @@ inline FVector Mat2ScaleVector(const FMatrix& InMatrix)
 	XMFLOAT4X4 matrixValues;
 	XMStoreFloat4x4(&matrixValues, InMatrix);
 
-	const float scaleX = sqrtf(matrixValues._11 * matrixValues._11 + matrixValues._12 * matrixValues._12);
-	const float scaleY = sqrtf(matrixValues._21 * matrixValues._21 + matrixValues._22 * matrixValues._22);
-	const float scaleZ = sqrtf(matrixValues._31 * matrixValues._31 + matrixValues._32 * matrixValues._32);
+	const float scaleX = sqrtf(matrixValues._11 * matrixValues._11 + matrixValues._12 * matrixValues._12 + matrixValues._13 * matrixValues._13);
+	const float scaleY = sqrtf(matrixValues._21 * matrixValues._21 + matrixValues._22 * matrixValues._22 + matrixValues._23 * matrixValues._23);
+	const float scaleZ = sqrtf(matrixValues._31 * matrixValues._31 + matrixValues._32 * matrixValues._32 + matrixValues._33 * matrixValues._33);
 
 	return FVector{scaleX, scaleY, scaleZ};
 }

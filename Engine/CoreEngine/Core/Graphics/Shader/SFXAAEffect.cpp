@@ -2,6 +2,7 @@
 
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
 SFXAAEffect::SFXAAEffect(const JWText& InFileName)
@@ -23,7 +24,7 @@ void SFXAAEffect::Initialize()
 	FVector4 ScreenSize = FVector4(1920, 1080, 0, 0);
 
 	Utils::DX::CreateBuffer(
-							DeviceRSC.GetDevice(),
+							IManager.RenderManager->GetDevice(),
 							D3D11_BIND_CONSTANT_BUFFER,
 							reinterpret_cast<void**>(&ScreenSize),
 							sizeof(FVector4),
@@ -41,7 +42,7 @@ void SFXAAEffect::Initialize()
 	mScreenQuadVertices[5] = {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}; // 우상
 
 	Utils::DX::CreateBuffer(
-							DeviceRSC.GetDevice(),
+							IManager.RenderManager->GetDevice(),
 							D3D11_BIND_VERTEX_BUFFER,
 							reinterpret_cast<void**>(&mScreenQuadVertices),
 							sizeof(Vertex::FVertexInfo_ScreenQuad),
@@ -60,8 +61,8 @@ void SFXAAEffect::PostProcess_FXAA(FViewportData& InViewportData)
 		return;
 	}
 
-	auto deviceContext = DeviceRSC.GetImmediateDeviceContext();
-	auto commonStates  = DeviceRSC.GetDXTKCommonStates();
+	auto deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	auto commonStates  = IManager.RenderManager->GetDXTKCommonStates();
 	assert(deviceContext);
 
 	// 도화지(Render Target View) 한장 더 꺼내자 (여기에 Anti Aliasing을 적용할 것이다)
@@ -73,10 +74,10 @@ void SFXAAEffect::PostProcess_FXAA(FViewportData& InViewportData)
 	uint32_t offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, mScreenQuadVertexBuffer.GetAddressOf(), &stride, &offset);
 
-	deviceContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+	deviceContext->VSSetShader(mShaderData.VertexShader.Get(), nullptr, 0);
 
 	// FXAA 적용 (셰이더)
-	deviceContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(mShaderData.PixelShader.Get(), nullptr, 0);
 
 	// 셰이더에 텍스처를 넘겨준다
 	deviceContext->PSSetShaderResources(0, 1, InViewportData.SRV.GetAddressOf());
@@ -88,7 +89,7 @@ void SFXAAEffect::PostProcess_FXAA(FViewportData& InViewportData)
 
 	deviceContext->Draw(6, 0);
 
-	
+
 }
 
 void SFXAAEffect::CreateRenderTarget()
@@ -106,13 +107,13 @@ void SFXAAEffect::CreateRenderTarget()
 	ComPtr<ID3D11Texture2D> rtvTexture;
 
 
-	CheckResult(DeviceRSC.GetDevice()->CreateTexture2D(&desc, nullptr, rtvTexture.GetAddressOf()));
-	CheckResult(DeviceRSC.GetDevice()->CreateRenderTargetView(rtvTexture.Get(),
-															  nullptr,
-															  mRenderTargetView.GetAddressOf()));
-	CheckResult(DeviceRSC.GetDevice()->CreateShaderResourceView(rtvTexture.Get(),
-																nullptr,
-																mShaderResourceView.GetAddressOf()));
+	CheckResult(IManager.RenderManager->GetDevice()->CreateTexture2D(&desc, nullptr, rtvTexture.GetAddressOf()));
+	CheckResult(IManager.RenderManager->GetDevice()->CreateRenderTargetView(rtvTexture.Get(),
+																	 nullptr,
+																	 mRenderTargetView.GetAddressOf()));
+	CheckResult(IManager.RenderManager->GetDevice()->CreateShaderResourceView(rtvTexture.Get(),
+																	   nullptr,
+																	   mShaderResourceView.GetAddressOf()));
 
 	rtvTexture.Reset();
 }

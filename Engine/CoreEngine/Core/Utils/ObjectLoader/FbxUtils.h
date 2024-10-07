@@ -2,7 +2,6 @@
 #include <fbxsdk.h>
 
 #include "Core/Graphics/Material/JMaterial.h"
-#include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Math/TMatrix.h"
 
@@ -26,6 +25,83 @@ namespace Utils::Fbx
 		std::vector<FbxLayerElementMaterial*>    VertexMaterialSets;
 		std::vector<FbxLayerElementTangent*>     VertexTangentSets;
 		std::vector<FbxLayerElementBinormal*>    VertexBinormalSets;
+	};
+
+	/** 임시 텍스처 추출 구조체 */
+	struct FFbxProperty
+	{
+		const char*        FbxPropertyName;
+		const char*        PropertyName;
+		uint8_t            PostOperations;
+		EMaterialFlag      ParamFlags;
+		EMaterialParamType ParamType;
+	};
+
+	inline const FFbxProperty FbxMaterialProperties[] =
+	{
+		// Diffuse
+		{FbxSurfaceMaterial::sDiffuse, NAME_MAT_Diffuse, 0, EMaterialFlag::DiffuseColor, EMaterialParamType::Texture2D},
+		{
+			FbxSurfaceMaterial::sDiffuseFactor, NAME_MAT_DiffuseF, 0, EMaterialFlag::DiffuseFactor,
+			EMaterialParamType::Float
+		},
+
+		// Emissive
+		{FbxSurfaceMaterial::sEmissive, NAME_MAT_Emissive, 0, EMaterialFlag::EmissiveColor, EMaterialParamType::Texture2D},
+		{
+			FbxSurfaceMaterial::sEmissiveFactor, NAME_MAT_EmissiveF, 0, EMaterialFlag::EmissiveFactor,
+			EMaterialParamType::Float
+		},
+
+		// Specular
+		{FbxSurfaceMaterial::sSpecular, NAME_MAT_Specular, 0, EMaterialFlag::SpecularColor, EMaterialParamType::Texture2D},
+		{
+			FbxSurfaceMaterial::sSpecularFactor, NAME_MAT_SpecularF, 0, EMaterialFlag::SpecularFactor,
+			EMaterialParamType::Float
+		},
+
+		// Reflection
+		{
+			FbxSurfaceMaterial::sReflection, NAME_MAT_Reflection, 0, EMaterialFlag::ReflectionColor,
+			EMaterialParamType::Texture2D
+		},
+		{
+			FbxSurfaceMaterial::sReflectionFactor, NAME_MAT_Reflection, 0, EMaterialFlag::ReflectionFactor,
+			EMaterialParamType::Float
+		},
+
+		// Ambient
+		{FbxSurfaceMaterial::sAmbient, NAME_MAT_Ambient, 0, EMaterialFlag::AmbientColor, EMaterialParamType::Texture2D},
+		{
+			FbxSurfaceMaterial::sAmbientFactor, NAME_MAT_AmbientF, 0, EMaterialFlag::AmbientFactor,
+			EMaterialParamType::Float
+		},
+
+		// Normal
+		{FbxSurfaceMaterial::sNormalMap, NAME_MAT_Normal, 0, EMaterialFlag::NormalMap, EMaterialParamType::Texture2D},
+
+		// Transparency
+		{
+			FbxSurfaceMaterial::sTransparentColor, NAME_MAT_Transparent, 1, EMaterialFlag::TransparentColor,
+			EMaterialParamType::Texture2D
+		},
+		{
+			FbxSurfaceMaterial::sTransparencyFactor, "NAME_MAT_TransparentF", 1, EMaterialFlag::TransparentFactor,
+			EMaterialParamType::Float
+		},
+
+		// Displacement
+		{
+			FbxSurfaceMaterial::sDisplacementColor, NAME_MAT_Displacement, 0, EMaterialFlag::DisplacementColor,
+			EMaterialParamType::Texture2D
+		},
+		{
+			FbxSurfaceMaterial::sDisplacementFactor, NAME_MAT_DisplacementF, 0, EMaterialFlag::DisplacementFactor,
+			EMaterialParamType::Float
+		},
+
+		// Shininess
+		{FbxSurfaceMaterial::sShininess, NAME_MAT_Shininess, 0, EMaterialFlag::Shininess, EMaterialParamType::Float},
 	};
 
 	[[nodiscard]] inline FbxMatrix GetNodeTransform(const FbxNode* InNode)
@@ -461,82 +537,72 @@ namespace Utils::Fbx
 		return world;
 	}
 
-	[[nodiscard]] inline JMaterial* ParseLayerMaterial(FbxMesh* InMesh, int32_t InMaterialIndex)
+	[[nodiscard]] inline Ptr<JMaterial> ParseLayerMaterial(FbxMesh* InMesh, int32_t InMaterialIndex)
 	{
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
 
-		auto fileName = std::format("{0}_{1}", InMesh->GetName(), fbxMaterial->GetName());
+		auto fileName = std::format("{}", fbxMaterial->GetName());
 		// 새 머티리얼 생성
-		auto materialSavePath = std::format("Game/Materials/{0}", fileName);
+		auto materialSavePath = std::format("Game/Materials/{0}", InMesh->GetName());
 
-		JMaterial* material = IManager.MaterialManager.CreateOrLoad(materialSavePath.c_str());
+		std::filesystem::create_directory(materialSavePath);
 
-		/** 임시 텍스처 추출 구조체 */
-		struct Temp_TextureParams
-		{
-			const char*   FbxPropertyName;
-			const char*   TextureName;
-			uint8_t       PostOperations;
-			EMaterialFlag ParamFlags;
-		};
+		auto fullPath = std::format("{0}/{1}.jasset", materialSavePath, fileName);
 
-		Temp_TextureParams materialProperties[] =
-		{
-			{FbxSurfaceMaterial::sDiffuse, "Diffuse", 0, EMaterialFlag::Diffuse},
-			{FbxSurfaceMaterial::sNormalMap, "Normal", 0, EMaterialFlag::Normal},
-			{FbxSurfaceMaterial::sAmbient, "Ambient", 0, EMaterialFlag::Ambient},
-			{FbxSurfaceMaterial::sSpecular, "Specular", 0, EMaterialFlag::Specular},
-			{FbxSurfaceMaterial::sEmissive, "Emissive", 0, EMaterialFlag::Emissive},
-			{FbxSurfaceMaterial::sTransparencyFactor, "Opacity", 1, EMaterialFlag::Opacity},
-			{FbxSurfaceMaterial::sTransparentColor, "Opacity", 1, EMaterialFlag::Alpha},
-			{FbxSurfaceMaterial::sBump, "Bump", 0, EMaterialFlag::Bump},
-		};
+		Ptr<JMaterial> material = MakePtr<JMaterial>(fullPath.c_str());
 
+		/** 셰이딩 모델은 거의 PhongShading */
 
-#if _DEBUG
-		FbxProperty prop = fbxMaterial->GetFirstProperty();
-		while (prop.IsValid())
-		{
-			FbxString propName  = prop.GetName();
-			FbxString propType  = prop.GetPropertyDataType().GetName();
-			FbxString propValue = prop.Get<FbxString>();
-
-			LOG_CORE_INFO("Property Name: {0}, Type: {1}, Value: {2}\n",
-						  propName.Buffer(),
-						  propType.Buffer(),
-						  propValue.Buffer());
-
-			if (prop.GetSrcObject<FbxTexture>())
-			{
-				LOG_CORE_INFO("Texture: {0}\n", prop.GetSrcObject<FbxFileTexture>()->GetFileName());
-			}
-
-			prop = fbxMaterial->GetNextProperty(prop);
-
-		}
-#endif
 
 		/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
-		for (int32_t i = 0; i < ARRAYSIZE(materialProperties); ++i)
+		for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
 		{
-			const Temp_TextureParams& textureParams = materialProperties[i];
+			const FFbxProperty& textureParams = FbxMaterialProperties[i];
 
+			// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
+			// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
 			FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
 			if (property.IsValid())
 			{
-				if (Utils::Fbx::ParseTexture_AddParamToMaterial(property,
-																textureParams.TextureName,
-																material,
-																textureParams.ParamFlags))
+				switch (textureParams.ParamType)
 				{
-					if (textureParams.PostOperations & 1)
+				case EMaterialParamType::Float:
+					material->AddMaterialParam(textureParams.PropertyName,
+											   EMaterialParamType::Float,
+											   textureParams.ParamFlags,
+											   static_cast<float>(property.Get<FbxDouble>()));
+					break;
+				case EMaterialParamType::Texture2D:
+				case EMaterialParamType::TextureCube:
+				case EMaterialParamType::TextureVolume:
+					if (!Utils::Fbx::ParseTexture_AddParamToMaterial(property,
+																	 textureParams.PropertyName,
+																	 material.get(),
+																	 textureParams.ParamFlags))
 					{
-						material->SetTransparent(true);
+						// 텍스처 매핑이 안되어있으면 Color값을 가져옴
+						FbxDouble3 colorProp = property.Get<FbxDouble3>(); // RGB Color
+
+						material->AddMaterialParam(textureParams.PropertyName,
+												   EMaterialParamType::Float3,
+												   textureParams.ParamFlags,
+												   FVector
+												   {
+													   static_cast<float>(colorProp.mData[0]),
+													   static_cast<float>(colorProp.mData[1]),
+													   static_cast<float>(colorProp.mData[2])
+												   });
 					}
+					break;
+				default:
+					LOG_CORE_ERROR("Invalid Material Param Type");
+					break;
 				}
 			}
 		}
+		
+		Utils::Serialization::Serialize(fullPath.c_str(), material.get());
 
 		return material;
 	}

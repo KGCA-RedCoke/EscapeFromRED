@@ -1,10 +1,15 @@
 ﻿#pragma once
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Utils/FileIO/JSerialization.h"
+#include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Utils/Math/Vector4.h"
 
 /**
  * @brief 셰이더에서 사용하는 상수 버퍼 구조체
+ * 상수 버퍼는 될 수 있으면 16바이트 단위로 정렬 시키는 것이 좋다.
+ * hlsl에서 12바이트를 사용하면 16바이트로 정렬되어 4바이트가 낭비된다.
+ *  그러니까 12바이트 뒤에 12바이트가 또 오면 4바이트 패딩을 넣어 16바이트로 정렬시킨다.
+ *  만약 12바이트를 연속적으로 넣으면 데이터를 잘못 읽어올 수 있다.
  */
 namespace CBuffer
 {
@@ -33,6 +38,42 @@ namespace CBuffer
 	{
 		FVector4 CameraPos;
 	};
+
+	// FVector(12)에 float값 하나 연결하면 딱 맞긴 한데...
+	struct Material
+	{
+		// sizeof(Fvector)(16) * 8 = 128
+		FVector4 DiffuseColor;
+		FVector4 EmissiveColor;
+		FVector4 SpecularColor;
+		FVector4 ReflectionColor;
+		FVector4 AmbientColor;
+		FVector4 TransparentColor;
+		FVector4 DisplacementColor;
+		FVector4 NormalMap;
+
+		// sizeof(float) * 9 = 36
+		float DiffuseFactor;
+		float EmissiveFactor;
+		float SpecularFactor;
+		float ReflectionFactor;
+		float AmbientFactor;
+		float TransparentFactor;
+		float DisplacementFactor;
+		float Shininess;
+		float Opacity;
+
+		// sizeof(BOOL) * 7 = 28
+		int32_t bUseDiffuseMap;
+		int32_t bUseEmissiveMap;
+		int32_t bUseSpecularMap;
+		int32_t bUseReflectionMap;
+		int32_t bUseAmbientMap;
+		int32_t bUseDisplacementMap;
+		int32_t bUseNormalMap;
+
+		// total = 128 + 36 + 28 = 192
+	};
 }
 
 /**
@@ -54,7 +95,7 @@ namespace Vertex
 
 
 		/// 구조체에 vtable이 없어야 하므로 가상함수 사용X (정점 버퍼에 넘길 때 크기가 다르면 문제가 생길 수 있음)
-		void Serialize(std::ofstream& FileStream)
+		void Serialize_Implement(std::ofstream& FileStream)
 		{
 			// Position
 			FileStream.write(reinterpret_cast<char*>(&Position), sizeof(Position));
@@ -64,7 +105,7 @@ namespace Vertex
 			FileStream.write(reinterpret_cast<char*>(&Color), sizeof(Color));
 		}
 
-		void DeSerialize(std::ifstream& InFileStream)
+		void DeSerialize_Implement(std::ifstream& InFileStream)
 		{
 			// Position
 			InFileStream.read(reinterpret_cast<char*>(&Position), sizeof(Position));
@@ -81,13 +122,12 @@ namespace Vertex
 		FVector Tangent;
 		FVector Binormal;
 
-		void Serialize(std::ofstream& FileStream)
+		void Serialize_Implement(std::ofstream& FileStream)
 		{
 			using Base = FVertexInfo_2D;
+			Base::Serialize_Implement(FileStream);
 
-			Base::Serialize(FileStream);
-
-			// Normal
+			// NormalMap
 			FileStream.write(reinterpret_cast<char*>(&Normal), sizeof(Normal));
 			// Tangent
 			FileStream.write(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
@@ -95,13 +135,12 @@ namespace Vertex
 			FileStream.write(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
 		}
 
-		void DeSerialize(std::ifstream& InFileStream)
+		void DeSerialize_Implement(std::ifstream& InFileStream)
 		{
 			using Base = FVertexInfo_2D;
+			Base::DeSerialize_Implement(InFileStream);
 
-			Base::DeSerialize(InFileStream);
-
-			// Normal
+			// NormalMap
 			InFileStream.read(reinterpret_cast<char*>(&Normal), sizeof(Normal));
 			// Tangent
 			InFileStream.read(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
@@ -117,23 +156,126 @@ namespace Vertex
  */
 namespace Buffer
 {
+	/**
+	 * 상수 버퍼 묶음 (기본이 되는 버퍼)
+	 */
+	struct FBufferSpaceLightTime
+	{
+		// --------------------- 버퍼 ---------------------
+		ComPtr<ID3D11Buffer> CBuffer_Space;	// World, View, Projection
+		ComPtr<ID3D11Buffer> CBuffer_Light;	// Light Direction
+		ComPtr<ID3D11Buffer> CBuffer_Time;		// Time
+
+		// --------------------- 실제 버퍼에 넘길 데이터 ---------------------
+		CBuffer::Space Space;
+		CBuffer::Light Light;
+		CBuffer::Time  Time;
+
+		void CreateBuffer(ID3D11Device* InDevice)
+		{
+			// 상수 버퍼 생성 (WVP)
+			Utils::DX::CreateBuffer(InDevice,
+									D3D11_BIND_CONSTANT_BUFFER,
+									nullptr,
+									sizeof(CBuffer::Space),
+									1,
+									CBuffer_Space.GetAddressOf(),
+									D3D11_USAGE_DYNAMIC,
+									D3D11_CPU_ACCESS_WRITE);
+
+
+			// 상수 버퍼 생성 (World Directional Light)
+			Utils::DX::CreateBuffer(InDevice,
+									D3D11_BIND_CONSTANT_BUFFER,
+									nullptr,
+									sizeof(CBuffer::Light),
+									1,
+									CBuffer_Light.GetAddressOf(),
+									D3D11_USAGE_DYNAMIC,
+									D3D11_CPU_ACCESS_WRITE);
+
+			// 상수 버퍼 생성 (Time)
+			Utils::DX::CreateBuffer(InDevice,
+									D3D11_BIND_CONSTANT_BUFFER,
+									nullptr,
+									sizeof(CBuffer::Time),
+									1,
+									CBuffer_Time.GetAddressOf(),
+									D3D11_USAGE_DYNAMIC,
+									D3D11_CPU_ACCESS_WRITE);
+		}
+
+		void UpdateSpace(ID3D11DeviceContext* InDeviceContext, const FMatrix& InModel, const FMatrix& InView,
+						 const FMatrix&       InProjection)
+		{
+			Space.Model      = InModel;
+			Space.View       = InView;
+			Space.Projection = InProjection;
+
+			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
+										   CBuffer_Space.Get(),
+										   &Space,
+										   sizeof(CBuffer::Space));
+		}
+
+		void UpdateLight(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightPos, const FVector4& InLightColor)
+		{
+			Light.LightPos   = InLightPos;
+			Light.LightColor = InLightColor;
+
+			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
+										   CBuffer_Light.Get(),
+										   &Light,
+										   sizeof(CBuffer::Light));
+		}
+
+		void UpdateTime(ID3D11DeviceContext* InDeviceContext, const FVector4& InWorldTime)
+		{
+			Time.WorldTime = InWorldTime;
+
+			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
+										   CBuffer_Time.Get(),
+										   &Time,
+										   sizeof(CBuffer::Time));
+		}
+
+		void PreRender(ID3D11DeviceContext* InDeviceContext)
+		{
+			// --------------------- Buffer Space ---------------------
+			InDeviceContext->VSSetConstantBuffers(0, 1, CBuffer_Space.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(0, 1, CBuffer_Space.GetAddressOf());
+
+			// --------------------- Buffer Light ---------------------
+			InDeviceContext->VSSetConstantBuffers(1, 1, CBuffer_Light.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(1, 1, CBuffer_Light.GetAddressOf());
+
+			// --------------------- Buffer Time ---------------------
+			InDeviceContext->VSSetConstantBuffers(3, 1, CBuffer_Time.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(3, 1, CBuffer_Time.GetAddressOf());
+		}
+
+	};
+
 	struct FBufferInstance
 	{
-		std::vector<ComPtr<ID3D11Buffer>> Buffer_Vertex;	// Vertex 
-		std::vector<ComPtr<ID3D11Buffer>> Buffer_Index;		// Index
-		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Space;	// World, View, Projection
-		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Light;	// Light Direction
-		std::vector<ComPtr<ID3D11Buffer>> CBuffer_Time;		// Time
+		std::vector<ComPtr<ID3D11Buffer>>  Buffer_Vertex;			// Vertex 
+		std::vector<ComPtr<ID3D11Buffer>>  Buffer_Index;			// Index
+		std::vector<FBufferSpaceLightTime> CBuffer_SpaceLightTime;	// Space, Light, Time
+
 
 		void Resize(const int32_t Size)
 		{
+			Buffer_Vertex.clear();
+			Buffer_Index.clear();
+			CBuffer_SpaceLightTime.clear();
+
 			Buffer_Vertex.resize(Size);
 			Buffer_Index.resize(Size);
-			CBuffer_Space.resize(Size);
-			CBuffer_Light.resize(Size);
-			CBuffer_Time.resize(Size);
+			CBuffer_SpaceLightTime.resize(Size);
 		}
 	};
+
+
 }
 
 /**
@@ -146,7 +288,7 @@ struct FTriangle
 	static_assert(std::is_base_of_v<Vertex::FVertexInfo_2D, T>, "T must be derived from FVertexInfo_2D");
 
 	T       Vertex[3];						// 0, 1, 2 
-	FVector Normal   = FVector::ZeroVector;	// Normal
+	FVector Normal   = FVector::ZeroVector;	// NormalMap
 	int32_t SubIndex = -1;					// SubIndex
 
 public:
@@ -202,53 +344,73 @@ struct JVertexData final : public ISerializable
 
 	int32_t                   FaceCount = 0;
 	std::vector<T>            VertexArray;
-	std::vector<WORD>         IndexArray;
+	std::vector<uint32_t>     IndexArray;
 	std::vector<FTriangle<T>> TriangleList;
 
-	void Serialize(std::ofstream& FileStream) override
+	uint32_t GetType() const override
 	{
+		return StringHash("VertexData");
+	}
+
+	bool Serialize_Implement(std::ofstream& FileStream) override
+	{
+		if (!Utils::Serialization::SerializeMetaData(FileStream, this))
+		{
+			return false;
+		}
+
 		// FaceCount
-		FileStream.write(reinterpret_cast<char*>(&FaceCount), sizeof(FaceCount));
+		Utils::Serialization::Serialize_Primitive(&FaceCount, sizeof(FaceCount), FileStream);
 
 		// VertexArray
 		size_t vertexSize = VertexArray.size();
-		FileStream.write(reinterpret_cast<char*>(&vertexSize), sizeof(vertexSize));
+		Utils::Serialization::Serialize_Primitive(&vertexSize, sizeof(vertexSize), FileStream);
 		for (int32_t i = 0; i < vertexSize; ++i)
 		{
-			VertexArray[i].Serialize(FileStream);
+			VertexArray[i].Serialize_Implement(FileStream);
 		}
 
 		// IndexArray
 		size_t indexSize = IndexArray.size();
-		FileStream.write(reinterpret_cast<char*>(&indexSize), sizeof(indexSize));
+		Utils::Serialization::Serialize_Primitive(&indexSize, sizeof(indexSize), FileStream);
 		for (int32_t i = 0; i < indexSize; ++i)
 		{
-			FileStream.write(reinterpret_cast<char*>(&IndexArray[i]), sizeof(IndexArray[i]));
+			Utils::Serialization::Serialize_Primitive(&IndexArray[i], sizeof(IndexArray[i]), FileStream);
 		}
+
+		return true;
 	}
 
-	void DeSerialize(std::ifstream& InFileStream) override
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override
 	{
+		JAssetMetaData metaData;
+		if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
+		{
+			return false;
+		}
+
 		// FaceCount
-		InFileStream.read(reinterpret_cast<char*>(&FaceCount), sizeof(FaceCount));
+		Utils::Serialization::DeSerialize_Primitive(&FaceCount, sizeof(FaceCount), InFileStream);
 
 		// VertexArray
 		size_t vertexSize;
-		InFileStream.read(reinterpret_cast<char*>(&vertexSize), sizeof(vertexSize));
+		Utils::Serialization::DeSerialize_Primitive(&vertexSize, sizeof(vertexSize), InFileStream);
 		VertexArray.resize(vertexSize);
 		for (int32_t i = 0; i < vertexSize; ++i)
 		{
-			VertexArray[i].DeSerialize(InFileStream);
+			VertexArray[i].DeSerialize_Implement(InFileStream);
 		}
 
 		// IndexArray
 		size_t indexSize;
-		InFileStream.read(reinterpret_cast<char*>(&indexSize), sizeof(indexSize));
+		Utils::Serialization::DeSerialize_Primitive(&indexSize, sizeof(indexSize), InFileStream);
 		IndexArray.resize(indexSize);
 		for (int32_t i = 0; i < indexSize; ++i)
 		{
-			InFileStream.read(reinterpret_cast<char*>(&IndexArray[i]), sizeof(IndexArray[i]));
+			Utils::Serialization::DeSerialize_Primitive(&IndexArray[i], sizeof(IndexArray[i]), InFileStream);
 		}
+
+		return true;
 	}
 
 

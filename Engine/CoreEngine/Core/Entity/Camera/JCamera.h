@@ -4,15 +4,17 @@
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Interface/ICoreInterface.h"
 #include "Core/Input/XKeyboardMouse.h"
+#include "Core/Manager/IManagedInterface.h"
 
 /**
  * directx11 sdk example - DXUTcamera 참고
  * https://github.com/microsoft/DXUT/blob/main/Optional/DXUTcamera.h
  */
-class JCamera : public ICoreInterface
+class JCamera : public IManagedInterface,  public ICoreInterface
 {
 public:
 	JCamera() noexcept;
+	explicit JCamera(const JText& InName);
 	explicit JCamera(const JWText& InName);
 
 public:
@@ -21,6 +23,8 @@ public:
 	void Update(float DeltaTime) override;
 	void Release() override;
 #pragma endregion
+
+	uint32_t GetHash() const override;
 
 	//---------------------------------------------- Camera ---------------------------------------------------------------
 	virtual void Reset();
