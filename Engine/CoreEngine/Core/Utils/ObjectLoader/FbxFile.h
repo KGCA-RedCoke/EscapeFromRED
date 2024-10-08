@@ -4,6 +4,7 @@
 #include "FbxUtils.h"
 #include "Core/Utils/Math/TMatrix.h"
 
+class JSkinnedMeshData;
 class JSkeletalMesh;
 class JMeshData;
 class JMaterial;
@@ -11,6 +12,8 @@ class JMaterial;
 // Fbx 파일 구조에 대해 자세하게 나와있는 링크
 // https://ics.uci.edu/~djp3/classes/2014_03_ICS163/tasks/arMarker/Unity/arMarker/Assets/CactusPack/Meshes/Sprites/Rock_Medium_SPR.fbx
 // https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
+// (Parsing tutorial)
+// GameDev : https://www.gamedev.net/tutorials/_/technical/graphics-programming-and-theory/how-to-work-with-fbx-sdk-r3582/
 namespace Utils::Fbx
 {
 	/**
@@ -40,6 +43,8 @@ namespace Utils::Fbx
 		/** 내부적으로 Parsing함수들을 실행 */
 		void ProcessLoad();
 
+		void ProcessSkeleton(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex);
+
 		/**
 		 * @brief 노드를 파싱하는 함수 (재귀 호출)
 		 * @param InNode 탐색할 노드
@@ -51,6 +56,7 @@ namespace Utils::Fbx
 								 const Ptr<JMeshData>& InParentMeshData = nullptr,
 								 const FMatrix&        InParentMatrix   = FMatrix::Identity);
 
+
 		/**
 		 * @brief 메시노드의 속성을 파싱하는 함수
 		 * @param InNode 메시노드 InNode->GetMesh()
@@ -58,7 +64,14 @@ namespace Utils::Fbx
 		 */
 		void ParseMesh(FbxNode* InNode, Ptr<JMeshData> InMeshData);
 
-		void ParseSkeleton(FbxNode* InNode, Ptr<JMeshData> InMeshData);
+		/**
+		 * @brief 메시노드의 속성을 파싱, 특히 스킨을 파싱하는 함수
+		 * @param InMesh 메시노드 
+		 * @param InSkinData 메시 스킨 데이터
+		 */
+		void ParseMeshSkin(const FbxMesh* InMesh, Ptr<JSkinnedMeshData> InSkinData);
+
+		void ParseAnimation(FbxScene* InScene);
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -71,10 +84,12 @@ namespace Utils::Fbx
 		 */
 		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData);
 
+		void CaptureBindPoseMatrix(const std::shared_ptr<JSkinnedMeshData>& Ptr, FbxNode* Joint, const FbxAMatrix& InBindPosMat);
 	public:
 		FbxImporter* mFbxImporter;
 		FbxScene*    mFbxScene;
 
+		FSkeletonData mSkeletonData;
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
 		std::vector<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용

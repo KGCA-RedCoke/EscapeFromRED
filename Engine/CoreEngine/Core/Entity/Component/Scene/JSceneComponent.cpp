@@ -59,16 +59,22 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JSceneComponent::Tick(float DeltaTime)
 {
-	JActorComponent::Tick(DeltaTime);
-
 	UpdateTransform();
+
+	for (int32_t i = 0; i < mChildObjs.size(); ++i)
+	{
+		if (auto childComp = mChildObjs[i])
+		{
+			childComp->Tick(DeltaTime);
+		}
+	}
 }
 
 void JSceneComponent::Draw()
 {
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
-		if (auto childComp = mChildSceneComponents[i])
+		if (auto childComp = mChildSceneComponents[i].lock())
 		{
 			childComp->Draw();
 		}
@@ -82,46 +88,84 @@ void JSceneComponent::AddChildSceneComponent(const Ptr<JSceneComponent>& Ptr)
 
 void JSceneComponent::SetupAttachment(const Ptr<JSceneComponent>& InParentComponent)
 {
+	auto thisPtr = GetThisPtr<JSceneComponent>();
+
+	if (!InParentComponent->mChildObjHash.contains(GetHash()))
+	{
+		mParentObj = InParentComponent;
+		InParentComponent->mChildObjs.push_back(thisPtr);
+		InParentComponent->mChildObjHash.insert({GetHash(), InParentComponent->mChildObjs.size()});
+	}
 	mParentSceneComponent = InParentComponent;
-	InParentComponent->mChildSceneComponents.push_back(GetThisPtr<JSceneComponent>());
+	InParentComponent->mChildSceneComponents.push_back(thisPtr);
+
 }
 
-bool JSceneComponent::AttachSceneComponent(JSceneComponent* InParentComponent)
+void JSceneComponent::AttachComponent(const Ptr<JSceneComponent>& InChildComponent)
+{
+	assert(InChildComponent);
+
+	InChildComponent->DetachFromComponent();
+
+	InChildComponent->SetupAttachment(GetThisPtr<JSceneComponent>());
+}
+
+void JSceneComponent::AttachToComponent(const Ptr<JSceneComponent>& InParentComponent)
 {
 	assert(InParentComponent);
 
-	// JActor* ownerActor = mOwnerActor;
-	// // 컴포넌트는 항상 액터에 속해야 하므로, 액터가 존재하지 않으면 실패
-	// assert(ownerActor);
-	//
-	// UPtr<JObject> objToAttach = nullptr;
-	//
-	// auto it = std::ranges::find_if(ownerActor->mChildObjs,
-	// 							   [&](const auto& comp){
-	// 								   return comp->GetHash() == GetHash();
-	// 							   });
-	//
-	// if (it != ownerActor->mChildObjs.end())
-	// {
-	// 	objToAttach = std::move(*it);
-	// 	ownerActor->mChildObjs.erase(it);
-	//
-	// 	JActor* newOwnerActor = InParentComponent->GetOwnerActor();
-	// 	assert(newOwnerActor);
-	//
-	// 	newOwnerActor->mChildObjs.push_back(std::move(objToAttach));
-	//
-	// 	mOwnerActor = newOwnerActor;
-	//
-	// 	SetupAttachment(InParentComponent);
-	// }
-	// else
-	// {
-	// 	LOG_CORE_ERROR("Failed to attach scene component to actor");
-	// 	return false;
-	// }
+	Ptr<JActor> parentActor = InParentComponent->GetOwnerActor();
+	assert(parentActor);
 
-	return true;
+	DetachFromComponent();
+
+	SetupAttachment(InParentComponent);
+}
+
+void JSceneComponent::AttachToActor(const Ptr<JActor>& InParentActor, const JText& InComponentAttachTo)
+{
+	assert(InParentActor);
+
+	const uint32_t componentHash = StringHash(InComponentAttachTo.c_str());
+
+	// 붙일 액터에 컴포넌트 유무 확인 (액터 내부에 최소한 RootComponent는 존재)
+	assert(InParentActor->mChildObjHash.contains(componentHash));
+
+	// 오브젝트 해시 테이블에서 컴포넌트 인덱스를 가져옴
+	const int32_t index = InParentActor->mChildObjHash[componentHash];
+
+	// 오브젝트를 씬 컴포넌트로 캐스팅
+	const Ptr<JSceneComponent> componentToAttach = std::dynamic_pointer_cast<
+		JSceneComponent>(InParentActor->mChildObjs[index]);
+
+	assert(componentToAttach);
+
+	// 부모 컴포넌트에 부착
+	componentToAttach->AttachComponent(GetThisPtr<JSceneComponent>());
+}
+
+void JSceneComponent::AttachToActor(const Ptr<JActor>& InParentActor, const Ptr<JSceneComponent>& InComponentAttachTo)
+{
+	assert(InParentActor);
+
+
+}
+
+void JSceneComponent::DetachFromComponent()
+{
+	if (Ptr<JSceneComponent> parentPtr = mParentSceneComponent.lock())
+	{
+		// 부모 씬 컴포넌트의 자식 목록에서 제거
+		auto it = std::ranges::find(parentPtr->mChildObjs, GetThisPtr<JSceneComponent>());
+		if (it != parentPtr->mChildObjs.end())
+		{
+			parentPtr->mChildObjs.erase(it);
+		}
+
+		//  부모 씬 컴포넌트와의 연결을 해제
+		mParentObj.reset();
+		mParentSceneComponent.reset();
+	}
 }
 
 void JSceneComponent::UpdateTransform()

@@ -178,3 +178,35 @@ bool JMeshData::ApplyMaterial() const
 
 	return true;
 }
+
+void JSkinnedMeshData::Initialize()
+{
+	if (mVertexCount == 0 || mVertexStride == 0)
+	{
+		return;
+	}
+
+	const int32_t bufferSize = mVertexCount * mVertexStride;
+
+	mBoneIndices.reset(new uint32_t[bufferSize]);
+	mBoneWeights.reset(new float[bufferSize]);
+
+	ZeroMemory(mBoneIndices.get(), sizeof(float) * bufferSize);
+	ZeroMemory(mBoneWeights.get(), sizeof(float) * bufferSize);
+}
+
+void JSkinnedMeshData::Initialize(int32_t InVertexCount, int32_t InVertexStride)
+{
+	SetVertexCount(InVertexCount);
+	SetVertexStride(InVertexStride);
+
+	Initialize();
+}
+
+void JSkinnedMeshData::AddInfluenceBone(const JText& InBoneName)
+{
+	mInfluenceBones.push_back(InBoneName);
+}
+
+void JSkinnedMeshData::PushWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight)
+{}

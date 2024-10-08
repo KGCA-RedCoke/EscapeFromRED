@@ -37,6 +37,39 @@ namespace Utils::Fbx
 		EMaterialParamType ParamType;
 	};
 
+	/**
+	 * 애니메이션 키 프레임 데이터 단위 (Linked List)
+	 * 기본적인 구조로 월드 상의 위치 데이터 및 시간 데이터를 가지고 있다.
+	 */
+	struct FKeyFrameData
+	{
+		int64_t             Time;
+		FbxAMatrix          WorldTransform;
+		UPtr<FKeyFrameData> NextKeyFrameData = nullptr;
+	};
+
+	/**
+	 * 관절 데이터
+	 */
+	struct FJointData
+	{
+		JText               Name;					// 조인트 이름
+		int32_t             ParentIndex = -1;		// 부모 본
+		FbxAMatrix          GlobalBindPoseInverse;	// 전역 바인드 포즈 역행렬
+		UPtr<FKeyFrameData> Animation = nullptr;	// 애니메이션 데이터
+		FbxNode*            Node      = nullptr;	// FbxNode
+
+		FJointData()
+		{
+			GlobalBindPoseInverse.SetIdentity();
+		}
+	};
+
+	struct FSkeletonData
+	{
+		JArray<FJointData> Joints;
+	};
+
 	inline const FFbxProperty FbxMaterialProperties[] =
 	{
 		// Diffuse
@@ -601,7 +634,7 @@ namespace Utils::Fbx
 				}
 			}
 		}
-		
+
 		Utils::Serialization::Serialize(fullPath.c_str(), material.get());
 
 		return material;

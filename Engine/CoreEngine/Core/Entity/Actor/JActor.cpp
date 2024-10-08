@@ -25,9 +25,9 @@ void JActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 
-	for (int32_t i = 0; i < mActorComponents.size(); ++i)
+	for (int32_t i = 0; i < mChildObjs.size(); ++i)
 	{
-		mActorComponents[i]->Tick(DeltaTime);
+		mChildObjs[i]->Tick(DeltaTime);
 	}
 }
 
@@ -38,9 +38,12 @@ void JActor::Destroy()
 
 void JActor::Draw()
 {
-	for (auto& SceneComponent : mChildSceneComponents)
+	for (auto& sceneComponent : mChildSceneComponents)
 	{
-		SceneComponent->Draw();
+		if (auto ptr = sceneComponent.lock())
+		{
+			ptr->Draw();
+		}
 	}
 }
 

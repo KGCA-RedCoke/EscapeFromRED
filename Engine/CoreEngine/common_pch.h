@@ -9,7 +9,6 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <regex>
 #include <utility>
 
 #include <array>
@@ -19,7 +18,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <variant>
 #include <vector>
 
 #include <Windows.h>

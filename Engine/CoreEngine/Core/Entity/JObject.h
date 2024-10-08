@@ -51,7 +51,18 @@ public:
 
 		Ptr<ObjectType> obj = MakePtr<ObjectType>(std::forward<Args>(args)...);
 
-		mChildObjs.push_back(obj);
+		uint32_t nameHash = obj->GetHash();
+		if (!mChildObjHash.contains(nameHash))
+		{
+			obj->mParentObj = shared_from_this();
+			mChildObjHash.insert({obj->GetHash(), mChildObjs.size()});
+			mChildObjs.push_back(obj);
+		}
+		else
+		{
+			const int32_t index = mChildObjHash[nameHash];
+			obj                 = std::dynamic_pointer_cast<ObjectType>(mChildObjs[index]);
+		}
 
 		return obj;
 	}
@@ -82,8 +93,9 @@ protected:
 	JText    mName;
 	uint32_t mObjectFlags = 0;
 
-	WPtr<JObject>        mParentObj;
-	JArray<Ptr<JObject>> mChildObjs;
+	WPtr<JObject>            mParentObj;
+	JArray<Ptr<JObject>>     mChildObjs;
+	JHash<uint32_t, int32_t> mChildObjHash;
 
 protected:
 	static uint32_t g_DefaultObjectNum;

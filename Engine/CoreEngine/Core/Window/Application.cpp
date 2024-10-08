@@ -87,11 +87,11 @@ void Application::Initialize()
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();
-	// swordComponent->SetMeshObject(swordMesh);
-	// sampleActor->AttachSceneComponent(swordComponent);
+	swordComponent->SetMeshObject(swordMesh);
+	swordComponent->AttachToActor(sampleActor);
 	mActors.push_back(sampleActor);
 	//
-	// sampleActor->SetLocalLocation({10, 0, 0});
+	sampleActor->SetLocalLocation({10, 0, 0});
 
 	// Utils::Serialization::DeSerialize("Game/Mesh/Cube.jasset", mRenderObjects[0].get());
 	// Utils::Serialization::DeSerialize("Game/Mesh/Sphere.jasset", mRenderObjects[1].get());

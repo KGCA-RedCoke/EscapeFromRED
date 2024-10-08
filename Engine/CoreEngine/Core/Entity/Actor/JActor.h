@@ -23,6 +23,8 @@ public:
 	bool Serialize_Implement(std::ofstream& FileStream) override;
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
+	Ptr<JSceneComponent> GetRootComponent() const { return mRootComponent; }
+
 protected:
 	Ptr<JSceneComponent> mRootComponent;
 

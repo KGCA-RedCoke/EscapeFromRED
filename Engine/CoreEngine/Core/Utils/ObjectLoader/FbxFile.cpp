@@ -182,12 +182,33 @@ namespace Utils::Fbx
 		FbxNode* root = mFbxScene->GetRootNode();
 		assert(root, "empty scene(node x)");
 
-		// Parse Skeleton 
-		// ParseNode_Recursive(root, FbxNodeAttribute::EType::eSkeleton);
+		// Check Skeleton
+		ProcessSkeleton(root, 0, -1);
+
 		// Parse Mesh
 		ParseNode_Recursive(root, FbxNodeAttribute::EType::eMesh);
 
 		// TODO: ParseAnimation();
+		ParseAnimation(mFbxScene);
+	}
+
+
+	void FbxFile::ProcessSkeleton(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex)
+	{
+		if (!InNode || !InNode->GetSkeleton())
+			return;
+
+		FJointData jointData;
+		{
+			jointData.Name        = InNode->GetName();
+			jointData.ParentIndex = InParentIndex;
+		}
+		mSkeletonData.Joints.push_back(jointData);
+
+		for (int32_t i = 0; i < InNode->GetChildCount(); ++i)
+		{
+			ProcessSkeleton(InNode->GetChild(i), mSkeletonData.Joints.size(), InIndex);
+		}
 	}
 
 	void FbxFile::ParseNode_Recursive(FbxNode*              InNode, FbxNodeAttribute::EType  NodeAttribute,
@@ -222,10 +243,6 @@ namespace Utils::Fbx
 
 			switch (NodeAttribute)
 			{
-			case FbxNodeAttribute::eSkeleton:
-				meshData->mClassType = EMeshType::Skeletal;
-				ParseSkeleton(InNode, meshData);
-				break;
 			case FbxNodeAttribute::eMesh:
 				meshData->mClassType = EMeshType::Static;
 				ParseMesh(InNode, meshData);
@@ -242,6 +259,7 @@ namespace Utils::Fbx
 		}
 	}
 
+
 	void FbxFile::ParseMesh(FbxNode* InNode, Ptr<JMeshData> InMeshData)
 	{
 		if (!InNode || !InNode->GetMesh())
@@ -249,6 +267,10 @@ namespace Utils::Fbx
 
 		// fbx에서 정의된 메시를 가져오자.
 		FbxMesh* fbxMesh = InNode->GetMesh();
+
+		// Deformer & Skin
+		ParseMeshSkin(fbxMesh);
+
 
 		// 레이어 정보(Geometry (UV, Tangents, NormalMap, Material, Color...))부터 해석하자.
 		FLayer layer = ParseMeshLayer(InNode->GetMesh(), InMeshData);
@@ -464,54 +486,77 @@ namespace Utils::Fbx
 		}
 	}
 
-	void FbxFile::ParseSkeleton(FbxNode* InNode, Ptr<JMeshData> InMeshData)
+	void FbxFile::ParseMeshSkin(const FbxMesh* InMesh, Ptr<JSkinnedMeshData> InSkinData)
 	{
-		if (!InNode || !InNode->GetSkeleton())
+		// 스켈레톤 데이터가 없으면 스키닝 정보를 파싱할 필요가 없다.
+		if (mSkeletonData.Joints.empty())
 			return;
 
-		// 스켈레톤 정보를 가져오자.
-		FbxSkeleton* skeleton = InNode->GetSkeleton();
+		/// 메시에 붙어있는 스킨을 가져오자.
+		/// 메시 안에는 여러개의 스킨이 붙어있을 수 있으므로 순회하면서 스킨을 가져온다.
 
-		// 스켈레톤의 이름을 가져온다.
-		JText skeletonName = skeleton->GetName();
+		// deformer는 Fbx와 관련된 것.
+		// deformer는 메시의 변형을 관리하는 객체로, 스킨, 클러스터, 블렌드쉐이프 등이 있다.(여기서는 스킨만 사용)
+		int32_t deformerCount = InMesh->GetDeformerCount(FbxDeformer::eSkin);
+		if (deformerCount == 0)
+			return;
 
-		// 스켈레톤의 타입을 가져온다.
-		const FbxSkeleton::EType skeletonType = skeleton->GetSkeletonType();
+		// 영향을 받는 정점의 개수 등록
+		const int32_t     vertexCount  = InMesh->GetControlPointsCount(); // 정점 개수
+		constexpr int32_t vertexStride = 8; // 가중치
 
-		// 스켈레톤의 타입에 따라 처리
-		switch (skeletonType)
+		InSkinData->Initialize(vertexCount, vertexStride);
+
+		// 스킨 갯수 만큼 순회
+		for (int32_t deformerIndex = 0; deformerIndex < deformerCount; ++deformerIndex)
 		{
-		/// 루트 본
-		/// 일반적으로 캐릭터의 중심 점 (전체적인 움직임을 관리)
-		case FbxSkeleton::eRoot:
-			LOG_CORE_INFO("Root Skeleton: {0}", skeletonName);
-			break;
-		/// 팔, 다리 본
-		/// 중간 단계의 본
-		case FbxSkeleton::eLimb:
-			LOG_CORE_INFO("Limb Skeleton: {0}", skeletonName);
-			break;
-		/// 제어 본 (손목, 발목)
-		/// 세밀한 제어
-		case FbxSkeleton::eLimbNode:
-			LOG_CORE_INFO("Limb Node Skeleton: {0}", skeletonName);
-			break;
-		/// IK 본
-		case FbxSkeleton::eEffector:
-			LOG_CORE_INFO("Effector Skeleton: {0}", skeletonName);
-			break;
-		default:
-			LOG_CORE_WARN("Unknown Skeleton Type: {0}", skeletonName);
-			break;
+			// 우리는 디포머에서 스킨만 사용할 것이다.
+			FbxSkin* skin = static_cast<FbxSkin*>(InMesh->GetDeformer(deformerIndex, FbxDeformer::eSkin));
+
+			// 클러스터에는 link(joint)와 weight가 있다.
+			const int32_t clusterCount = skin->GetClusterCount();
+
+			// 각 joint(관절) 순회
+			for (int32_t clusterIndex = 0; clusterIndex < clusterCount; ++clusterIndex)
+			{
+				FbxCluster* cluster   = skin->GetCluster(clusterIndex);
+				JText       jointName = cluster->GetLink()->GetName();
+
+				const int32_t clusterSize = cluster->GetControlPointIndicesCount();
+				if (clusterSize == 0)
+					continue;
+
+				FbxNode* joint = cluster->GetLink();
+
+				const int32_t boneIndex = InSkinData->GetBoneCount();
+				InSkinData->AddInfluenceBone(joint->GetName());
+
+				FbxAMatrix bindPoseMat;
+				FbxAMatrix globalInitPos;
+
+				cluster->GetTransformLinkMatrix(bindPoseMat);
+				cluster->GetTransformMatrix(globalInitPos);
+
+				FbxMatrix bindPosMat = globalInitPos.Inverse() * bindPoseMat;
+				CaptureBindPoseMatrix(InSkinData, joint, bindPoseMat);
+
+				int32_t* indices = cluster->GetControlPointIndices();
+				double*  weights = cluster->GetControlPointWeights();
+
+				for (int32_t i = 0; i < clusterSize; ++i)
+				{
+					const int32_t vertexIndex = indices[i];
+					const float   weight      = static_cast<float>(weights[i]);
+					InSkinData->PushWeight(vertexIndex, boneIndex, weight);
+				}
+			}
 		}
 
-		// 스켈레톤의 변환 행렬을 가져온다.
 
-		// FbxAMatrix skeletonTransform = skeleton->EvaluateGlobalTransform();
-
-		// 변환 행렬을 사용하여 필요한 작업 수행
-		// 예: 스켈레톤의 위치, 회전, 스케일 등을 추출하여 사용
 	}
+
+	void FbxFile::ParseAnimation(FbxScene* InScene)
+	{}
 
 	FLayer FbxFile::ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData)
 	{
@@ -624,6 +669,13 @@ namespace Utils::Fbx
 		// InMeshData->mMaterialRefNum = mMaterialList.size();
 
 		return layer;
+	}
+
+	void FbxFile::CaptureBindPoseMatrix(const std::shared_ptr<JSkinnedMeshData>& Ptr, FbxNode* Joint,
+										const FbxAMatrix&                        InBindPosMat)
+	{
+		FMatrix bindPoseInverse = Utils::Fbx::Maya2DXMat(FMat2JMat(InBindPosMat));
+
 	}
 
 }

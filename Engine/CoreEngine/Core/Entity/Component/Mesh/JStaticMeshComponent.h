@@ -22,9 +22,9 @@ public:
 	void Draw() override;
 
 public:
-	FORCEINLINE void         SetMeshObject(JMeshObject* InMeshObject) { mMeshObject = InMeshObject; }
-	FORCEINLINE JMeshObject* GetMeshObject() const { return mMeshObject; }
+	FORCEINLINE void             SetMeshObject(const Ptr<JMeshObject>& InMeshObject) { mMeshObject = InMeshObject; }
+	FORCEINLINE Ptr<JMeshObject> GetMeshObject() const { return mMeshObject; }
 
 protected:
-	JMeshObject* mMeshObject = nullptr;
+	Ptr<JMeshObject> mMeshObject = nullptr;
 };

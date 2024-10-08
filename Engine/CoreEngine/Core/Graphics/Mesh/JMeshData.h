@@ -75,8 +75,43 @@ private:
 	friend class GUI_Editor_Material;
 };
 
+
 /**
  * Skin Mesh
  */
-class JSkinnedMesh
-{};
+class JSkinnedMeshData
+{
+public:
+	JSkinnedMeshData()  = default;
+	~JSkinnedMeshData() = default;
+
+public:
+	void Initialize();
+	void Initialize(int32_t InVertexCount, int32_t InVertexStride);
+
+	void AddInfluenceBone(const JText& InBoneName);
+	void PushWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight);
+
+	FORCEINLINE void SetVertexCount(int32_t InVertexCount) { mVertexCount = InVertexCount; }
+	FORCEINLINE void SetVertexStride(int32_t InVertexStride) { mVertexStride = InVertexStride; }
+
+	[[nodiscard]] FORCEINLINE int32_t  GetBoneCount() const { return mInfluenceBones.size(); }
+	[[nodiscard]] FORCEINLINE uint32_t GetBoneIndex(int32_t InIndex) const { return mBoneIndices[InIndex]; }
+	[[nodiscard]] FORCEINLINE float    GetBoneWeight(int32_t InIndex) const { return mBoneWeights[InIndex]; }
+
+public:
+	enum { MAX_BONE_INFLUENCES = 4 };
+
+private:
+	JArray<JText> mInfluenceBones;
+
+	JHash<JText, FMatrix> mBindPoseMap;
+	JHash<JText, FMatrix> mInverseBindPoseMap;
+
+	int32_t mVertexCount  = 0;
+	int32_t mVertexStride = 0;
+
+	UPtr<uint32_t[]> mBoneIndices;
+	UPtr<float[]>    mBoneWeights;
+
+};

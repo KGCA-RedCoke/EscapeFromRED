@@ -59,19 +59,26 @@ public:
 	 */
 	void SetupAttachment(const Ptr<JSceneComponent>& InParentComponent);
 
+	void AttachComponent(const Ptr<JSceneComponent>& InChildComponent);
+
 	/**
 	 * 씬 컴포넌트를 다른 씬 컴포넌트에 부착
 	 * @param InParentComponent 부착 될(부모) 씬 컴포넌트
 	 */
-	bool AttachSceneComponent(JSceneComponent* InParentComponent);
+	void AttachToComponent(const Ptr<JSceneComponent>& InParentComponent);
+
+	void AttachToActor(const Ptr<JActor>& InParentActor, const JText& InComponentAttachTo = "RootComponent");
+	void AttachToActor(const Ptr<JActor>& InParentActor, const Ptr<JSceneComponent>& InComponentAttachTo);
+
+	void DetachFromComponent();
 
 public:
 	void UpdateTransform();
 
 protected:
 	// ----------------------------- Scene Component Data -----------------------------
-	WPtr<JSceneComponent>        mParentSceneComponent;
-	JArray<Ptr<JSceneComponent>> mChildSceneComponents;
+	WPtr<JSceneComponent>         mParentSceneComponent;
+	JArray<WPtr<JSceneComponent>> mChildSceneComponents;
 
 	// ----------------------------- World Transform Data -----------------------------
 	FVector mWorldLocation = FVector::ZeroVector;
