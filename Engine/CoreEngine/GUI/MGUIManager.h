@@ -2,6 +2,7 @@
 #include "GUI_Base.h"
 #include "Core/Manager/Manager_Base.h"
 
+class GUI_Inspector;
 class GUI_Editor_Material;
 
 enum class EGUIType : uint8_t
@@ -35,6 +36,8 @@ public:
 	void HideGUI(EGUIType InType);
 	void DeleteGUI(EGUIType InType);
 	void ScaleAllSize(float InScale);
+
+	Ptr<GUI_Inspector> GetInspector() const;
 
 private:
 	/**

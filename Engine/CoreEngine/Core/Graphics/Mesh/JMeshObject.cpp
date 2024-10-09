@@ -67,11 +67,12 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Primitive Mesh Data
 	int32_t meshDataSize;
 	Utils::Serialization::DeSerialize_Primitive(&meshDataSize, sizeof(meshDataSize), InFileStream);
-	mPrimitiveMeshData.resize(meshDataSize, MakePtr<JMeshData>());
 
 	for (int32_t i = 0; i < meshDataSize; ++i)
 	{
-		mPrimitiveMeshData[i]->DeSerialize_Implement(InFileStream);
+		auto archivedData = MakePtr<JMeshData>();
+		archivedData->DeSerialize_Implement(InFileStream);
+		mPrimitiveMeshData.push_back(archivedData);
 	}
 
 	// Model Data

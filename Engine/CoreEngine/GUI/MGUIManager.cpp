@@ -62,9 +62,9 @@ void MGUIManager::Initialize_Initialize()
 
 void MGUIManager::InitializeStaticGUI()
 {
-	mStaticGUI[0] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
-	mStaticGUI[1] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
-	mStaticGUI[2] = CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser);
+	mStaticGUI[0] = CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser);
+	mStaticGUI[1] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
+	mStaticGUI[2] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
 
 	mStaticGUI[0]->Initialize();
 	mStaticGUI[1]->Initialize();
@@ -216,4 +216,9 @@ void MGUIManager::ScaleAllSize(float InScale)
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.ScaleAllSizes(InScale);
+}
+
+Ptr<GUI_Inspector> MGUIManager::GetInspector() const
+{
+	return std::dynamic_pointer_cast<GUI_Inspector>(mStaticGUI[2]);
 }

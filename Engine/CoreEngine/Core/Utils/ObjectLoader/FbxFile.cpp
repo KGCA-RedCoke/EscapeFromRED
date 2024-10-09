@@ -1,5 +1,6 @@
 ﻿#include "FbxFile.h"
 #include "FbxUtils.h"
+#include "Core/Entity/Animation/JAnimation.h"
 #include "Core/Graphics/DirectMathHelper.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
@@ -56,6 +57,9 @@ namespace Utils::Fbx
 			return;
 		}
 
+		// Importer같은경우 Import이후에는 FbxScene메모리에 데이터가 존재하므로 Destroy해도 무방
+		mFbxImporter->Destroy();
+
 		// front -> y | right -> x | up -> z (y, z 축이 바뀐 형태) 
 		FbxAxisSystem::MayaZUp.ConvertScene(mFbxScene);
 		FbxSystemUnit::m.ConvertScene(mFbxScene);
@@ -70,8 +74,6 @@ namespace Utils::Fbx
 	{
 		if (mFbxScene)
 			mFbxScene->Destroy();
-		if (mFbxImporter)
-			mFbxImporter->Destroy();
 	}
 
 	void FbxFile::Release()
@@ -183,7 +185,7 @@ namespace Utils::Fbx
 		assert(root, "empty scene(node x)");
 
 		// Check Skeleton
-		ProcessSkeleton(root, 0, -1);
+		ParseSkeleton_Recursive(root, 0, -1);
 
 		// Parse Mesh
 		ParseNode_Recursive(root, FbxNodeAttribute::EType::eMesh);
@@ -193,21 +195,26 @@ namespace Utils::Fbx
 	}
 
 
-	void FbxFile::ProcessSkeleton(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex)
+	void FbxFile::ParseSkeleton_Recursive(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex)
 	{
-		if (!InNode || !InNode->GetSkeleton())
+		if (!InNode)
 			return;
 
-		FJointData jointData;
+		if (InNode->GetSkeleton())
 		{
-			jointData.Name        = InNode->GetName();
-			jointData.ParentIndex = InParentIndex;
+			FJointData jointData;
+			{
+				jointData.Name        = InNode->GetName();
+				jointData.ParentIndex = InParentIndex;
+			}
+			mSkeletonData.Joints.push_back(jointData);
 		}
-		mSkeletonData.Joints.push_back(jointData);
+		
+	
 
 		for (int32_t i = 0; i < InNode->GetChildCount(); ++i)
 		{
-			ProcessSkeleton(InNode->GetChild(i), mSkeletonData.Joints.size(), InIndex);
+			ParseSkeleton_Recursive(InNode->GetChild(i), mSkeletonData.Joints.size(), InIndex);
 		}
 	}
 
@@ -244,7 +251,6 @@ namespace Utils::Fbx
 			switch (NodeAttribute)
 			{
 			case FbxNodeAttribute::eMesh:
-				meshData->mClassType = EMeshType::Static;
 				ParseMesh(InNode, meshData);
 				break;
 			default:
@@ -268,9 +274,26 @@ namespace Utils::Fbx
 		// fbx에서 정의된 메시를 가져오자.
 		FbxMesh* fbxMesh = InNode->GetMesh();
 
-		// Deformer & Skin
-		ParseMeshSkin(fbxMesh);
+		// DeFormer & Skin
+		JSkinnedMeshData skinData;
+		ParseMeshSkin(fbxMesh, &skinData);
 
+		int32_t boneCount = skinData.GetBoneCount();
+		if (boneCount > 0)
+		{
+			InMeshData->mClassType = EMeshType::Skeletal;
+
+			for (int32_t i = 0; i < boneCount; ++i)
+			{
+				JText boneName = skinData.GetInfluenceBoneName(i);
+				InMeshData->AddInfluenceBone(boneName, skinData.GetInfluenceBoneInverseBindPose(boneName));
+			}
+		}
+		else
+		{
+			InMeshData->mClassType = EMeshType::Static;
+			InMeshData->AddInfluenceBone("Self", FMatrix::Identity);
+		}
 
 		// 레이어 정보(Geometry (UV, Tangents, NormalMap, Material, Color...))부터 해석하자.
 		FLayer layer = ParseMeshLayer(InNode->GetMesh(), InMeshData);
@@ -434,7 +457,8 @@ namespace Utils::Fbx
 											   dccIndex);
 
 					// 저장될 vertexInfo
-					Vertex::FVertexInfo_Base vertex;
+					Vertex::FVertexInfo_Base     vertex;
+					Vertex::FVertexInfo_Skeletal vertexS;
 					{
 						vertex.Position.x = static_cast<float>(finalPosition.mData[0]);
 						vertex.Position.y = static_cast<float>(finalPosition.mData[2]);
@@ -486,24 +510,30 @@ namespace Utils::Fbx
 		}
 	}
 
-	void FbxFile::ParseMeshSkin(const FbxMesh* InMesh, Ptr<JSkinnedMeshData> InSkinData)
+	void FbxFile::ParseMeshSkin(const FbxMesh* InMesh, JSkinnedMeshData* InSkinData)
 	{
 		// 스켈레톤 데이터가 없으면 스키닝 정보를 파싱할 필요가 없다.
 		if (mSkeletonData.Joints.empty())
 			return;
 
 		/// 메시에 붙어있는 스킨을 가져오자.
+		/// 스킨(skinning)이라는게 뭘까?
+		/// 쉽게 말하면 메시(Mesh)의 정점(Vertex)이 어떤 관절(Bone)에 영향을 받는지를 나타내는 정보이다.
+		/// 그러니까 이전에 파싱한 스켈레톤과 정점과의 관계를 파악하는 것이다.
+		/// 캐릭터 스켈레톤의 Hip본의 경우 어느 메시에 그리고 어느 정점에 영향을 주는지 알아야 한다.
+		/// 그리고 정점마다 Hip본에 대한 영향을 가중치로 표현한다. (내가 Hip을 움직이면 Hip을 따라서 척추, 상체 등이 움직인다.)
+		/// (따라서 가중치는 여러 본에서 영향을 받을 수 있다.)
 		/// 메시 안에는 여러개의 스킨이 붙어있을 수 있으므로 순회하면서 스킨을 가져온다.
 
 		// deformer는 Fbx와 관련된 것.
 		// deformer는 메시의 변형을 관리하는 객체로, 스킨, 클러스터, 블렌드쉐이프 등이 있다.(여기서는 스킨만 사용)
-		int32_t deformerCount = InMesh->GetDeformerCount(FbxDeformer::eSkin);
+		int32_t deformerCount = InMesh->GetDeformerCount(FbxDeformer::eSkin); // 보통 메시당 스킨이 하나만 붙어있을 것이다.
 		if (deformerCount == 0)
 			return;
 
-		// 영향을 받는 정점의 개수 등록
-		const int32_t     vertexCount  = InMesh->GetControlPointsCount(); // 정점 개수
-		constexpr int32_t vertexStride = 8; // 가중치
+		// SkinData에 메시 정보를 집어넣자
+		const int32_t     vertexCount  = InMesh->GetControlPointsCount();	// 영향을 받는 정점 개수
+		constexpr int32_t vertexStride = 8;									// 가중치 용량
 
 		InSkinData->Initialize(vertexCount, vertexStride);
 
@@ -513,41 +543,46 @@ namespace Utils::Fbx
 			// 우리는 디포머에서 스킨만 사용할 것이다.
 			FbxSkin* skin = static_cast<FbxSkin*>(InMesh->GetDeformer(deformerIndex, FbxDeformer::eSkin));
 
+			// 클러스터는 특정본에 의해 영향을 받는 정점들의 집합이다.
 			// 클러스터에는 link(joint)와 weight가 있다.
-			const int32_t clusterCount = skin->GetClusterCount();
+			const int32_t clusterCount = skin->GetClusterCount(); // 본(관절) 개수
 
 			// 각 joint(관절) 순회
 			for (int32_t clusterIndex = 0; clusterIndex < clusterCount; ++clusterIndex)
 			{
 				FbxCluster* cluster   = skin->GetCluster(clusterIndex);
-				JText       jointName = cluster->GetLink()->GetName();
+				FbxNode*    joint     = cluster->GetLink();
+				JText       jointName = joint->GetName();
 
-				const int32_t clusterSize = cluster->GetControlPointIndicesCount();
-				if (clusterSize == 0)
-					continue;
+				const int32_t  clusterSize = cluster->GetControlPointIndicesCount();	// 이 본에 영향을 받는 인덱스 배열 크기
+				const int32_t* indices     = cluster->GetControlPointIndices();			// 이 본에 영향을 받는 인덱스 배열
+				const double*  weights     = cluster->GetControlPointWeights();			// 이 본에 영향을 받는 가중치 배열
+				const int32_t  boneIndex   = InSkinData->GetBoneCount();				// 이 본의 인덱스
 
-				FbxNode* joint = cluster->GetLink();
 
-				const int32_t boneIndex = InSkinData->GetBoneCount();
+				/// BindPose?
+				/// 이 FbxSdk는 autodesk Maya에서 사용되는 기능으로 용어가 정립이 되어있는거같은데
+				/// 보통 스켈레톤(본)과 메시를 연결되기 위한 기본 포즈이다.
+				/// 예로 캐릭터 메시가 T-Pose로 되어있다면 본 또한 T-Pose로 되어있을 때 이걸 연결시키고 둘을 Binding한다.
+				FbxAMatrix boneBindPose;
+				FbxAMatrix vertexGroupBindPose;
+
+				cluster->GetTransformLinkMatrix(boneBindPose);		// 본의 변환 행렬
+				cluster->GetTransformMatrix(vertexGroupBindPose);	// 메시(VertexGroup, 클러스터)의 변환 행렬
+
+				// BindPoseMatrix를 저장한다.
+				FbxMatrix bindPosMat = vertexGroupBindPose.Inverse() *
+						boneBindPose; // 클러스터가 영향을 미치기 전의 변환 행렬 과 본 변환 행렬을 곱한다.
+				CaptureBindPoseMatrix(InSkinData, joint, boneBindPose);
+
 				InSkinData->AddInfluenceBone(joint->GetName());
 
-				FbxAMatrix bindPoseMat;
-				FbxAMatrix globalInitPos;
-
-				cluster->GetTransformLinkMatrix(bindPoseMat);
-				cluster->GetTransformMatrix(globalInitPos);
-
-				FbxMatrix bindPosMat = globalInitPos.Inverse() * bindPoseMat;
-				CaptureBindPoseMatrix(InSkinData, joint, bindPoseMat);
-
-				int32_t* indices = cluster->GetControlPointIndices();
-				double*  weights = cluster->GetControlPointWeights();
-
+				// 영향받는 정점들을 순회하면서 가중치를 넣는다.
 				for (int32_t i = 0; i < clusterSize; ++i)
 				{
 					const int32_t vertexIndex = indices[i];
 					const float   weight      = static_cast<float>(weights[i]);
-					InSkinData->PushWeight(vertexIndex, boneIndex, weight);
+					InSkinData->AddWeight(vertexIndex, boneIndex, weight);
 				}
 			}
 		}
@@ -556,7 +591,56 @@ namespace Utils::Fbx
 	}
 
 	void FbxFile::ParseAnimation(FbxScene* InScene)
-	{}
+	{
+		assert(InScene);
+
+		// 애니메이션 스택(여러개 애니메이션을 가질 수 있다.)
+		// 근데 대부분 우리가 사용할 Fbx에서는 개별적인 애니메이션을 임포트 할 거긴하다.
+		// 게세키로를 변환하면 그렇게 됨...
+		FbxArray<FbxString*> animStackNameArray;
+		InScene->FillAnimStackNameArray(animStackNameArray);
+
+		int32_t animStackCount = animStackNameArray.GetCount();
+		for (int32_t i = 0; i < animStackCount; ++i)
+		{
+			ParseAnimationStack(InScene, animStackNameArray.GetAt(i));
+		}
+	}
+
+	void FbxFile::ParseAnimationStack(FbxScene* Scene, FbxString* Buffer)
+	{
+		FbxAnimStack* animStack = Scene->FindMember<FbxAnimStack>(Buffer->Buffer());
+		if (!animStack)
+			return;
+
+		Scene->GetAnimationEvaluator()->Reset();
+
+		FbxTakeInfo* takeInfo = Scene->GetTakeInfo(animStack->GetName());
+
+		// animList.clear();
+
+		// 1프레임을 기준으로 시간을 설정
+		FbxTime frameTime;
+		frameTime.SetTime(0, 0, 0, 1, 0, Scene->GetGlobalSettings().GetTimeMode());
+		// 1프레임의 길이를 초 단위로 변환
+		float frameTimeSec = static_cast<float>(frameTime.GetSecondDouble());
+		// 1 프레임 간격
+		float frameStep = 1.f;
+
+		float sampleTime = frameTimeSec * frameStep;
+
+		// 애니메이션의 시작, 끝 시간을 가져온다.
+		float startTime = static_cast<float>(takeInfo->mLocalTimeSpan.GetStart().GetSecondDouble());
+		float endTime   = static_cast<float>(takeInfo->mLocalTimeSpan.GetStop().GetSecondDouble());
+
+		// Ptr<JAnimation> anim          = MakePtr<JAnimation>();
+		// anim->mName                   = Buffer->Buffer();
+		// anim->mStartTime              = startTime;
+		// anim->mEndTime                = endTime;
+		// anim->mSourceSamplingInterval = sampleTime;
+
+
+	}
 
 	FLayer FbxFile::ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData)
 	{
@@ -671,11 +755,15 @@ namespace Utils::Fbx
 		return layer;
 	}
 
-	void FbxFile::CaptureBindPoseMatrix(const std::shared_ptr<JSkinnedMeshData>& Ptr, FbxNode* Joint,
-										const FbxAMatrix&                        InBindPosMat)
+	void FbxFile::CaptureBindPoseMatrix(JSkinnedMeshData* Ptr, const FbxNode* Joint,
+										const FbxAMatrix& InBindPosMat)
 	{
-		FMatrix bindPoseInverse = Utils::Fbx::Maya2DXMat(FMat2JMat(InBindPosMat));
+		FMatrix bindPoseMat = Utils::Fbx::Maya2DXMat(FMat2JMat(InBindPosMat));
+		FMatrix bindPoseInvMat;
+		bindPoseMat.Invert(bindPoseInvMat);
 
+		Ptr->AddBindPose(Joint->GetName(), bindPoseMat);
+		Ptr->AddInverseBindPose(Joint->GetName(), bindPoseInvMat);
 	}
 
 }

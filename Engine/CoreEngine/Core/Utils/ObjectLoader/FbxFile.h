@@ -21,8 +21,6 @@ namespace Utils::Fbx
 	*/
 	class FbxFile
 	{
-		// FIXME: FbxImporter, FbxScene을 개체마다 하나씩 가져야 할 필요가 있을까?
-
 	public:
 		FbxFile() = default;
 		~FbxFile();
@@ -36,14 +34,42 @@ namespace Utils::Fbx
 		static void Release();
 
 	public:
+		/**
+		 * 실질적인 Fbx 파일 로드
+		 * @param InFilePath 파일 경로
+		 */
 		bool Load(const char* InFilePath);
+		/**
+		 * FBX 파일을 파싱하여 Raw 데이터로 변환
+		 * FIXME: 인덱스 버퍼를 생성하는 과정에서 시간이 많이 소요됨 최적화 필요
+		 */
 		bool Convert();
 
 	private:
 		/** 내부적으로 Parsing함수들을 실행 */
 		void ProcessLoad();
 
-		void ProcessSkeleton(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex);
+		/// ---------------------------- Step1. 스켈레톤 정보를 파싱 ----------------------------
+		/// 이 과정은 가장 먼저 선행된다. 스켈레톤 정보가 있으면 추후 메시 파싱시 스킨 정보를 파싱할 수 있음
+		/// 또 우리가 사용할 애니메이션은 모두 캐릭터(본을 가지는 객체)이므로 스켈레톤 정보가 필수적이다.
+		/// 따라서 스켈레톤이 없으면 스킨과 애니메이션을 파싱 할 필요가 없어짐
+
+		/**
+		 * @brief 스켈레톤을 파싱하는 함수
+		 * 전체적인 파싱 과정중 첫번째 과정
+		 * 스켈레톤(본) 정보가 있으면 추후 메시 파싱시 스킨 정보를 파싱할 수 있음
+		 * @param InNode 파싱 노드
+		 * @param InIndex 본 인덱스
+		 * @param InParentIndex 부모 본 인덱스
+		 */
+		void ParseSkeleton_Recursive(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex);
+
+
+		/// ---------------------------- Step2. 메시 정보를 파싱 ----------------------------
+		/// 메시가 있다면 메시정보를 파싱한다.
+		/// Case 1. 스켈레톤 정보가 없다면 메시 정보만 파싱한다.
+		/// Case 2. 스켈레톤 정보가 있다면 스킨 정보도 파싱한다.
+		/// Case 3. 메시가 없다면 아무것도 하지 않는다.
 
 		/**
 		 * @brief 노드를 파싱하는 함수 (재귀 호출)
@@ -55,7 +81,6 @@ namespace Utils::Fbx
 		void ParseNode_Recursive(FbxNode*              InNode, FbxNodeAttribute::EType NodeAttribute,
 								 const Ptr<JMeshData>& InParentMeshData = nullptr,
 								 const FMatrix&        InParentMatrix   = FMatrix::Identity);
-
 
 		/**
 		 * @brief 메시노드의 속성을 파싱하는 함수
@@ -69,9 +94,16 @@ namespace Utils::Fbx
 		 * @param InMesh 메시노드 
 		 * @param InSkinData 메시 스킨 데이터
 		 */
-		void ParseMeshSkin(const FbxMesh* InMesh, Ptr<JSkinnedMeshData> InSkinData);
+		void ParseMeshSkin(const FbxMesh* InMesh, JSkinnedMeshData* InSkinData);
 
+		/// ---------------------------- Step3. 애니메이션 정보를 파싱 ----------------------------
+		/// Check List
+		///  스켈레톤 정보가 있나?
+		/// 스켈레톤이 있을 때만 애니메이션 정보를 파싱한다.
 		void ParseAnimation(FbxScene* InScene);
+
+		void ParseAnimationStack(FbxScene* Scene, FbxString* Buffer);
+		
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -84,16 +116,18 @@ namespace Utils::Fbx
 		 */
 		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData);
 
-		void CaptureBindPoseMatrix(const std::shared_ptr<JSkinnedMeshData>& Ptr, FbxNode* Joint, const FbxAMatrix& InBindPosMat);
-	public:
+		void CaptureBindPoseMatrix(JSkinnedMeshData* Ptr, const FbxNode* Joint,
+								   const FbxAMatrix& InBindPosMat);
+
+	private:
 		FbxImporter* mFbxImporter;
 		FbxScene*    mFbxScene;
 
 		FSkeletonData mSkeletonData;
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
-		std::vector<Ptr<JMeshData>> mMeshList;
+		JArray<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
-		std::vector<std::vector<Ptr<JMaterial>>> mMaterialList;
+		JArray<JArray<Ptr<JMaterial>>> mMaterialList;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

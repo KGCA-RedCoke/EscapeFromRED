@@ -317,7 +317,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 					ImGui::SetKeyboardFocusHere(-1);
 
 				// Drag and drop
-				UpdateDragDrop(bIsItemSelected, itemData->ID);
+				UpdateDragDrop(bIsItemSelected, itemData->FilePath.string());
 
 				// Icon
 				UpdateIcon(pos, bIsItemSelected, itemData);
@@ -330,7 +330,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 	ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
 }
 
-void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, ImGuiID payLoadID)
+void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, JText ItemPath)
 {
 	if (ImGui::BeginDragDropSource())
 	{
@@ -338,23 +338,24 @@ void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, ImGuiID payLoadID)
 		// (the later is only possible when using ImGuiMultiSelectFlags_SelectOnClickRelease)
 		if (ImGui::GetDragDropPayload() == NULL)
 		{
-			ImVector<ImGuiID> payload_items;
-			void*             it = NULL;
-			ImGuiID           id = 0;
-			if (!bIsItemSelected)
-				payload_items.push_back(payLoadID);
-			else
-				while (mSelection.GetNextSelectedItem(&it, &id))
-					payload_items.push_back(id);
+			ImVector<JText> payload_items;
+			void*           it = NULL;
+			ImGuiID         id = 0;
+			payload_items.push_back(ItemPath);
+			// if (!bIsItemSelected)
+			// 	payload_items.push_back(ItemPath);
+			// else
+			// 	while (mSelection.GetNextSelectedItem(&it, &id))
+			// 		payload_items.push_back(id);
 			ImGui::SetDragDropPayload("ASSETS_BROWSER_ITEMS",
-									  payload_items.Data,
-									  (size_t)payload_items.size_in_bytes());
+									  ItemPath.c_str(),
+									  ItemPath.size() + 1);
 		}
 
 		// Display payload content in tooltip, by extracting it from the payload data
 		// (we could read from selection, but it is more correct and reusable to read from payload)
 		const ImGuiPayload* payload       = ImGui::GetDragDropPayload();
-		const int           payload_count = (int)payload->DataSize / (int)sizeof(ImGuiID);
+		const int           payload_count = (int)payload->DataSize / (int)sizeof(JText);
 		ImGui::Text("%d assets", payload_count);
 
 		ImGui::EndDragDropSource();

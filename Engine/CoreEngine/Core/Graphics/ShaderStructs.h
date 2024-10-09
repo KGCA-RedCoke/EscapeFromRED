@@ -149,6 +149,34 @@ namespace Vertex
 		}
 	};
 
+	struct FVertexInfo_Skeletal : public FVertexInfo_Base
+	{
+		FVector4 BoneIndices;
+		FVector4 BoneWeights;
+
+		void Serialize_Implement(std::ofstream& FileStream)
+		{
+			using Base = FVertexInfo_Base;
+			Base::Serialize_Implement(FileStream);
+
+			// BoneIndices
+			FileStream.write(reinterpret_cast<char*>(&BoneIndices), sizeof(BoneIndices));
+			// BoneWeights
+			FileStream.write(reinterpret_cast<char*>(&BoneWeights), sizeof(BoneWeights));
+		}
+
+		void DeSerialize_Implement(std::ifstream& InFileStream)
+		{
+			using Base = FVertexInfo_Base;
+			Base::DeSerialize_Implement(InFileStream);
+
+			// BoneIndices
+			InFileStream.read(reinterpret_cast<char*>(&BoneIndices), sizeof(BoneIndices));
+			// BoneWeights
+			InFileStream.read(reinterpret_cast<char*>(&BoneWeights), sizeof(BoneWeights));
+		}
+	};
+
 }
 
 /**

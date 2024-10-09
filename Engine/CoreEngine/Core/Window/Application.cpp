@@ -78,21 +78,21 @@ void Application::Initialize()
 	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cone.fbx");
 	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Plane.fbx");
 
-	mActors.reserve(10);
+	Actors.reserve(10);
 	for (int32_t i = 0; i < 10; ++i)
 	{
 		// mRenderObjects.push_back(MakeUPtr<JMeshObject>());
 	}
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/CyberPunk_A.jasset");
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Gwyn.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();
 	swordComponent->SetMeshObject(swordMesh);
 	swordComponent->AttachToActor(sampleActor);
-	mActors.push_back(sampleActor);
+	Actors.push_back(sampleActor);
 	//
 	sampleActor->SetLocalLocation({10, 0, 0});
-
+	
 	// Utils::Serialization::DeSerialize("Game/Mesh/Cube.jasset", mRenderObjects[0].get());
 	// Utils::Serialization::DeSerialize("Game/Mesh/Sphere.jasset", mRenderObjects[1].get());
 	// Utils::Serialization::DeSerialize("Game/Mesh/Cone.jasset", mRenderObjects[2].get());
@@ -158,10 +158,10 @@ void Application::Render()
 
 	IManager.Render(); // GUI Render
 
-	for (int32_t i = 0; i < mActors.size(); ++i)
+	for (int32_t i = 0; i < Actors.size(); ++i)
 	{
-		mActors[i]->Tick(mDeltaTime);
-		mActors[i]->Draw();
+		Actors[i]->Tick(mDeltaTime);
+		Actors[i]->Draw();
 	}
 
 	mFpsText->PreRender();

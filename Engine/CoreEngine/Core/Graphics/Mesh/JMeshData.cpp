@@ -135,6 +135,11 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
+void JMeshData::AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose)
+{
+	mBindPoseMap.try_emplace(InBoneName, InBindPose);
+}
+
 bool JMeshData::ApplyMaterial() const
 {
 	auto material = GetMaterial();
@@ -208,5 +213,15 @@ void JSkinnedMeshData::AddInfluenceBone(const JText& InBoneName)
 	mInfluenceBones.push_back(InBoneName);
 }
 
-void JSkinnedMeshData::PushWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight)
+void JSkinnedMeshData::AddBindPose(const JText& InBoneName, const FMatrix& InBindPose)
+{
+	mBindPoseMap.try_emplace(InBoneName, InBindPose);
+}
+
+void JSkinnedMeshData::AddInverseBindPose(const JText& InBoneName, const FMatrix& InInverseBindPose)
+{
+	mInverseBindPoseMap.try_emplace(InBoneName, InInverseBindPose);
+}
+
+void JSkinnedMeshData::AddWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight)
 {}

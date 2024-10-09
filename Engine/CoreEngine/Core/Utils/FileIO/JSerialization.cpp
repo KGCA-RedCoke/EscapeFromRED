@@ -6,6 +6,22 @@
 namespace Utils::Serialization
 {
 
+	JAssetMetaData GetType(const char* InFilePath)
+	{
+
+		std::ifstream archive(InFilePath, std::ios::binary);
+		if (!archive.is_open())
+			return JAssetMetaData();
+
+		JAssetHeader   header;
+		JAssetMetaData metaData;
+
+		DeserializeHeader(archive, header);
+		DeSerialize_Primitive(&metaData, sizeof(metaData), archive);
+
+		return metaData;
+	}
+
 	bool SerializeHeader(std::ofstream& FileStream)
 	{
 		if (FileStream.is_open())
@@ -167,7 +183,7 @@ namespace Utils::Serialization
 		Text = String2WString(text);
 	}
 
-	
+
 	void DeSerialize_Container(void* Data, std::ifstream& InFileStream)
 	{
 		// 컨테이너 사이즈

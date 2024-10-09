@@ -1,6 +1,9 @@
 ﻿#include "GUI_Viewport_Scene.h"
 
+#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Interface/MManagerInterface.h"
+#include "Core/Window/Application.h"
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -28,11 +31,29 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSETS_BROWSER_ITEMS"))
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+		// if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSETS_BROWSER_ITEMS"))
 		{
+			
 			const char* str = (const char*)payload->Data;
-			// mSelectedAsset  = str;
+
+			auto metaData = Utils::Serialization::GetType(str);
+			if (metaData.AssetType == StringHash("J3DObject"))
+			{
+				auto newActor = std::make_shared<JActor>(ParseFile(str));
+				newActor->Initialize();
+
+				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrLoad(str);
+				Ptr<JStaticMeshComponent> meshComponent = MakePtr<JStaticMeshComponent>(ParseFile(str));
+				meshComponent->SetMeshObject(mesh);
+				meshComponent->AttachToActor(newActor);
+
+				Application::s_AppInstance->Actors.push_back(newActor);
+
+			}
+
 		}
+		ImGui::EndDragDropTarget();
 	}
 }
 

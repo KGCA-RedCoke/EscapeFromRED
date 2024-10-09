@@ -117,7 +117,7 @@ private:
 	void SetMultiFlagOptions();
 	void UpdateLayoutSizes(float InAvailWidth);
 	void UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImVec2 startPos, int currentItemIndexToFocus);
-	void UpdateDragDrop(bool bIsItemSelected, ImGuiID payLoadID);
+	void UpdateDragDrop(bool bIsItemSelected, JText ItemPath);
 	void UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData) const;
 	void UpdateZoom(ImVec2 startPos, float availableWidth);
 	void UpdateProgressBar() const;

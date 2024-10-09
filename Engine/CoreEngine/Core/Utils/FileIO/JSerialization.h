@@ -106,6 +106,8 @@ public:
 
 namespace Utils::Serialization
 {
+	JAssetMetaData GetType(const char* InFilePath);
+
 	bool SerializeHeader(std::ofstream& FileStream);
 	bool DeserializeHeader(std::ifstream& InFileStream, JAssetHeader& OutHeader);
 	bool SerializeMetaData(std::ofstream& FileStream, const ISerializable* InData);

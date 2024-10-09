@@ -31,6 +31,9 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose);
+
+public:
 	[[nodiscard]] bool ApplyMaterial() const;
 
 public:
@@ -63,6 +66,9 @@ protected:
 	// -------------------------- Vertex Data --------------------------
 	Ptr<JVertexData<Vertex::FVertexInfo_Base>> mVertexData;
 
+	// -------------------------- Skin Mesh Data --------------------------
+	JHash<JText, FMatrix> mBindPoseMap;
+
 	// -------------------------- Material --------------------------
 	Ptr<JMaterial> mMaterial;
 	int32_t        mMaterialRefNum;
@@ -90,11 +96,19 @@ public:
 	void Initialize(int32_t InVertexCount, int32_t InVertexStride);
 
 	void AddInfluenceBone(const JText& InBoneName);
-	void PushWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight);
+	void AddBindPose(const JText& InBoneName, const FMatrix& InBindPose);
+	void AddInverseBindPose(const JText& InBoneName, const FMatrix& InInverseBindPose);
+	void AddWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight);
 
 	FORCEINLINE void SetVertexCount(int32_t InVertexCount) { mVertexCount = InVertexCount; }
 	FORCEINLINE void SetVertexStride(int32_t InVertexStride) { mVertexStride = InVertexStride; }
 
+	[[nodiscard]] FORCEINLINE JText    GetInfluenceBoneName(int32_t InIndex) const { return mInfluenceBones.at(InIndex); }
+	[[nodiscard]] FORCEINLINE FMatrix GetInfluenceBoneBindPose(const JText& InBoneName) const { return mBindPoseMap.at(InBoneName); }
+	[[nodiscard]] FORCEINLINE FMatrix GetInfluenceBoneInverseBindPose(const JText& InBoneName) const { return mInverseBindPoseMap.at(InBoneName); }
+
+	[[nodiscard]] FORCEINLINE int32_t  GetVertexCount() const { return mVertexCount; }
+	[[nodiscard]] FORCEINLINE int32_t  GetVertexStride() const { return mVertexStride; }
 	[[nodiscard]] FORCEINLINE int32_t  GetBoneCount() const { return mInfluenceBones.size(); }
 	[[nodiscard]] FORCEINLINE uint32_t GetBoneIndex(int32_t InIndex) const { return mBoneIndices[InIndex]; }
 	[[nodiscard]] FORCEINLINE float    GetBoneWeight(int32_t InIndex) const { return mBoneWeights[InIndex]; }

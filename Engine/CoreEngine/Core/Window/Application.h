@@ -47,8 +47,10 @@ private:
 	int32_t     mFramesPerSec = 0;
 	int32_t     mFrameCounter = 0;
 
-	std::vector<Ptr<JActor>> mActors;
-	UPtr<JFont>              mFpsText = nullptr;
+	UPtr<JFont> mFpsText = nullptr;
+
+public:
+	JArray<Ptr<JActor>> Actors;
 
 public:
 	Application();
