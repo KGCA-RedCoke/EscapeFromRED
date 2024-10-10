@@ -16,10 +16,10 @@ FVector4 g_DirectionalLightColor = {1.f, 0.976f, 0.992f, 1}; // 6500k 주광색 
 
 
 Application* Application::s_AppInstance = nullptr;
+
 /**
  * 기본생성자의 경우 Renderer라는 이름의 창을 생성하고 1600x900의 크기로 생성한다.
  */
-
 Application::Application()
 	: Application(L"Renderer", FBasicWindowData(1600, 900, false, false)) {}
 
@@ -70,53 +70,17 @@ void Application::Initialize()
 	mFpsText->SetColor(FLinearColor::Orange);
 	mFpsText->SetScreenPosition({25, 25});
 
-	// FIXME: Test Code
-	// Utils::Fbx::FbxFile fbxLoader;
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Sphere.fbx");
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cube.fbx");
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cylinder.fbx");
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Cone.fbx");
-	// fbxLoader.Load("rsc/Engine/Mesh/Primitive/Plane.fbx");
-
 	Actors.reserve(10);
-	for (int32_t i = 0; i < 10; ++i)
-	{
-		// mRenderObjects.push_back(MakeUPtr<JMeshObject>());
-	}
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Gwyn.jasset");
+	
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/CyberPunk_A.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();
 	swordComponent->SetMeshObject(swordMesh);
 	swordComponent->AttachToActor(sampleActor);
 	Actors.push_back(sampleActor);
-	//
-	sampleActor->SetLocalLocation({10, 0, 0});
 	
-	// Utils::Serialization::DeSerialize("Game/Mesh/Cube.jasset", mRenderObjects[0].get());
-	// Utils::Serialization::DeSerialize("Game/Mesh/Sphere.jasset", mRenderObjects[1].get());
-	// Utils::Serialization::DeSerialize("Game/Mesh/Cone.jasset", mRenderObjects[2].get());
-	// Utils::Serialization::DeSerialize("Game/Mesh/Cylinder.jasset", mRenderObjects[3].get());
-	// Utils::Serialization::DeSerialize("Game/Mesh/Plane.jasset", mRenderObjects[4].get());
-	// Utils::Serialization::DeSerialize("Game/Mesh/SM_CP_Mid_Male_Body.jasset", mRenderObjects[5].get());
-
-
-	// // Utils::Serialization::DeSerialize("Game/Bot.jasset", mRenderObjects[5].get());
-	// Utils::Serialization::DeSerialize("Game/CyberPunk_A.jasset", mRenderObjects[6].get());
-	// // Utils::Serialization::DeSerialize("Game/King.jasset", mRenderObjects[7].get());
-	// Utils::Serialization::DeSerialize("Game/Male_Jacket.jasset", mRenderObjects[8].get());
-	// Utils::Serialization::DeSerialize("Game/axis.jasset", mRenderObjects[9].get());
-
-
-	// Utils::Serialization::DeSerialize_Implement("Game/Cube.jasset", mDXObject.get());
-	// Utils::Serialization::DeSerialize_Implement("rsc/Cylinder.jasset", mDXObject2.get());
-
-	// size_t objHalfSize = mRenderObjects.size() / 2;
-	// for (int32_t i = 0; i < mRenderObjects.size(); ++i)
-	// {
-	// 	mRenderObjects[i]->SetTranslation({/*-5 * objHalfSize +*/ i * 5.f, 0, 0});
-	// }
-
+	sampleActor->SetLocalLocation({10, 0, 0});
 }
 
 void Application::Run()

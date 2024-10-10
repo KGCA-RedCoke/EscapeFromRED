@@ -77,7 +77,7 @@ public:
 	[[nodiscard]] bool IsValid() const { return mObjectFlags & EObjectFlags::IsValid; }
 	[[nodiscard]] bool IsPendingKill() const { return mObjectFlags & EObjectFlags::IsPendingKill; }
 	[[nodiscard]] bool IsMarkedAsDirty() const { return mObjectFlags & EObjectFlags::MarkAsDirty; }
-
+ 
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
 
 	void SetVisible(bool bVisible)

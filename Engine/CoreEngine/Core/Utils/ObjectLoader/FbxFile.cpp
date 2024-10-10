@@ -115,65 +115,64 @@ namespace Utils::Fbx
 			}
 
 			// 메시 타입이 Static(Static Mesh)일 경우만 우선 처리
-			if (mesh->mClassType == EMeshType::Static)
+
+			const int32_t materialNum = mesh->mMaterialRefNum - 1;
+			assert(materialNum >= 0);
+
+			std::vector<Ptr<JMaterial>> materials = mMaterialList[meshIndex];
+			if (mesh->mFaceCount > 0 && !materials.empty())
 			{
-				const int32_t materialNum = mesh->mMaterialRefNum - 1;
-				assert(materialNum >= 0);
-
-				std::vector<Ptr<JMaterial>> materials = mMaterialList[meshIndex];
-				if (mesh->mFaceCount > 0 && !materials.empty())
+				// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
+				if (materials.size() == 1)
 				{
-					// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
-					if (materials.size() == 1)
+					Ptr<JMaterial> subMaterial = materials[0];
+
+					// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
+					data->GenerateIndexArray(data->TriangleList);
+
+					if (subMaterial->HasMaterial())
 					{
-						Ptr<JMaterial> subMaterial = materials[0];
-
-						// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
-						data->GenerateIndexArray(data->TriangleList);
-
-						if (subMaterial->HasMaterial())
-						{
-							mesh->mMaterial = subMaterial;
-						}
-						else
-						{
-							mesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
-						}
-
-						mNumVertex += data->VertexArray.size();
-						mNumIndex += data->IndexArray.size();
+						mesh->mMaterial = subMaterial;
 					}
 					else
 					{
-						for (int subMeshIndex = 0; subMeshIndex < materials.size(); ++subMeshIndex)
+						mesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
+					}
+
+					mNumVertex += data->VertexArray.size();
+					mNumIndex += data->IndexArray.size();
+				}
+				else
+				{
+					for (int subMeshIndex = 0; subMeshIndex < materials.size(); ++subMeshIndex)
+					{
+						Ptr<JMaterial> subMaterial = materials[subMeshIndex];
+
+						auto& subMesh = mesh->mSubMesh[subMeshIndex];
+						auto& subData = subMesh->mVertexData;
+
+						subData->GenerateIndexArray(subData->TriangleList);
+
+						if (subMaterial->HasMaterial())
 						{
-							Ptr<JMaterial> subMaterial = materials[subMeshIndex];
-
-							auto& subMesh = mesh->mSubMesh[subMeshIndex];
-							auto& subData = subMesh->mVertexData;
-
-							subData->GenerateIndexArray(subData->TriangleList);
-
-							if (subMaterial->HasMaterial())
-							{
-								subMesh->mMaterial = subMaterial;
-							}
-							else
-							{
-								subMesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
-							}
-							mNumVertex += data->VertexArray.size();
-							mNumIndex += data->IndexArray.size();
-
-							const int32_t faceCount = subData->IndexArray.size() / 3;
-							subData->FaceCount      = faceCount;
-							subMesh->mFaceCount     = faceCount;
-
-							mesh->mFaceCount += faceCount;
+							subMesh->mMaterial = subMaterial;
 						}
+						else
+						{
+							subMesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
+						}
+						mNumVertex += data->VertexArray.size();
+						mNumIndex += data->IndexArray.size();
+
+						const int32_t faceCount = subData->IndexArray.size() / 3;
+						subData->FaceCount      = faceCount;
+						subMesh->mFaceCount     = faceCount;
+
+						mesh->mFaceCount += faceCount;
 					}
 				}
 			}
+
 		}
 
 		return true;
@@ -209,8 +208,7 @@ namespace Utils::Fbx
 			}
 			mSkeletonData.Joints.push_back(jointData);
 		}
-		
-	
+
 
 		for (int32_t i = 0; i < InNode->GetChildCount(); ++i)
 		{
@@ -617,17 +615,18 @@ namespace Utils::Fbx
 
 		FbxTakeInfo* takeInfo = Scene->GetTakeInfo(animStack->GetName());
 
-		// animList.clear();
+		mAnimNodeList.clear();
 
 		// 1프레임을 기준으로 시간을 설정
 		FbxTime frameTime;
 		frameTime.SetTime(0, 0, 0, 1, 0, Scene->GetGlobalSettings().GetTimeMode());
+
 		// 1프레임의 길이를 초 단위로 변환
 		float frameTimeSec = static_cast<float>(frameTime.GetSecondDouble());
 		// 1 프레임 간격
-		float frameStep = 1.f;
-
+		float frameStep  = 1.f;
 		float sampleTime = frameTimeSec * frameStep;
+		assert(sampleTime > 0);
 
 		// 애니메이션의 시작, 끝 시간을 가져온다.
 		float startTime = static_cast<float>(takeInfo->mLocalTimeSpan.GetStart().GetSecondDouble());

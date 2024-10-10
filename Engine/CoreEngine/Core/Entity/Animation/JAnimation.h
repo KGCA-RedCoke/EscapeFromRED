@@ -7,6 +7,10 @@ namespace Utils::Fbx
 	class FbxFile;
 }
 
+/**
+ * 특정 키(시간) 에 추가 될 데이터 
+ * @tparam T 키 프레임에 추가 될 데이터
+ */
 template <typename T>
 struct JAnimationKey
 {
@@ -17,6 +21,16 @@ struct JAnimationKey
 template <typename T>
 using JAnimationKeyList = JArray<JAnimationKey<T>>;
 
+/**
+ * 변환 정보를 가지는 키 프레임 데이터
+ */
+struct FAnimKeyDataTransform
+{
+	JAnimationKeyList<FVector> PositionKeys;
+	JAnimationKeyList<FVector> RotationKeys;
+	JAnimationKeyList<FVector> ScaleKeys;
+};
+
 struct JAnimDataTransform
 {
 	FMatrix TransformMatrix;
@@ -25,51 +39,23 @@ struct JAnimDataTransform
 	FVector Scale;
 };
 
+struct JKeyFrame
+{
+	JText                  Name;		// 이름
+	JAnimDataTransform     Transform;	// 변환 정보
+	JArray<Ptr<JKeyFrame>> ChildFrames;	// 자식 프레임
+};
 
 struct JAnimationTrack
 {
-	JAnimationKeyList<FVector> PositionKeys;
-	JAnimationKeyList<FVector> RotationKeys;
-	JAnimationKeyList<FVector> ScaleKeys;
-	class JKeyFrame*           SourceFrame;
-};
+	void AddKey(float InTime, const JAnimDataTransform& InTransformData);
+	void AddKey(float InTime, const FMatrix& InTransformMatrix);
+	void AddKey(float InTime, const FVector& InPosition, const FVector& InRotation, const FVector& InScale);
 
-struct JKeyFrame
-{
-	JText                  Name;
-	JAnimDataTransform     Transform;
-	JArray<Ptr<JKeyFrame>> ChildFrames;
+	void OptimizeKeys();
+	void SortKeys();
+	void EndianSwap();
+
+	FAnimKeyDataTransform TransformKeys;
+	Ptr<JKeyFrame>        SourceFrame;
 };
-//
-// class JAnimation
-// {
-// public:
-// 	JAnimation();
-// 	~JAnimation();
-//
-// 	void AddTrack(JAnimationTrack& Track);
-// 	void RemoveTrack(JAnimationTrack& Track);
-// 	void RemoveTrack(uint32_t Index);
-// 	void RemoveAllTracks();
-//
-// 	void SetStartTime(float Time);
-// 	void SetEndTime(float Time);
-// 	void SetSourceSamplingInterval(float Interval);
-//
-// 	float GetStartTime() const;
-// 	float GetEndTime() const;
-// 	float GetSourceSamplingInterval() const;
-//
-// 	JArray<JAnimationTrack>& GetTracks();
-//
-// 	void Evaluate(float Time, JArray<JAnimDataTransform>& OutTransforms);
-//
-// protected:
-// 	JText                   mName;
-// 	float                   mStartTime;
-// 	float                   mEndTime;
-// 	float                   mSourceSamplingInterval;
-// 	JArray<JAnimationTrack> mTracks;
-//
-// 	friend class Utils::Fbx::FbxFile;
-// };

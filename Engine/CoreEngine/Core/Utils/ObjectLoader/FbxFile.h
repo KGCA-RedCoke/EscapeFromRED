@@ -103,7 +103,7 @@ namespace Utils::Fbx
 		void ParseAnimation(FbxScene* InScene);
 
 		void ParseAnimationStack(FbxScene* Scene, FbxString* Buffer);
-		
+
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -128,6 +128,8 @@ namespace Utils::Fbx
 		JArray<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
 		JArray<JArray<Ptr<JMaterial>>> mMaterialList;
+
+		JArray<FAnimationNode> mAnimNodeList;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

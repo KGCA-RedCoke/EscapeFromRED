@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <fbxsdk.h>
 
+#include "Core/Entity/Animation/JAnimation.h"
 #include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Math/TMatrix.h"
@@ -35,6 +36,15 @@ namespace Utils::Fbx
 		uint8_t            PostOperations;
 		EMaterialFlag      ParamFlags;
 		EMaterialParamType ParamType;
+	};
+
+	struct FAnimationNode
+	{
+		int32_t              ParentIndex;
+		FbxNode*             Node;
+		Ptr<JAnimationTrack> AnimationTrack;
+		uint32_t             Flags;
+		FMatrix              Transform;
 	};
 
 	/**
