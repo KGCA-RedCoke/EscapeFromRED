@@ -102,8 +102,10 @@ namespace Utils::Fbx
 		/// 스켈레톤이 있을 때만 애니메이션 정보를 파싱한다.
 		void ParseAnimation(FbxScene* InScene);
 
+		
 		void ParseAnimationStack(FbxScene* Scene, FbxString* Buffer);
 
+		void ParseAnimNode(FbxNode* InNode, int32_t InParentIndex);
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -119,6 +121,10 @@ namespace Utils::Fbx
 		void CaptureBindPoseMatrix(JSkinnedMeshData* Ptr, const FbxNode* Joint,
 								   const FbxAMatrix& InBindPosMat);
 
+		void CaptureAnimation(const std::shared_ptr<JAnimation>& Ptr, FbxScene* Scene);
+
+		void AddKey(FAnimationNode& InNode, FAnimationNode* InParentNode, const FbxAMatrix& InGlobalMat, float InTime);
+
 	private:
 		FbxImporter* mFbxImporter;
 		FbxScene*    mFbxScene;
@@ -129,7 +135,8 @@ namespace Utils::Fbx
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
 		JArray<JArray<Ptr<JMaterial>>> mMaterialList;
 
-		JArray<FAnimationNode> mAnimNodeList;
+		JArray<FAnimationNode>  mScanList;
+		JArray<Ptr<JAnimation>> mAnimations;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

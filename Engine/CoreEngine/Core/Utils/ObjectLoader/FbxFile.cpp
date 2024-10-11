@@ -569,8 +569,9 @@ namespace Utils::Fbx
 				cluster->GetTransformMatrix(vertexGroupBindPose);	// 메시(VertexGroup, 클러스터)의 변환 행렬
 
 				// BindPoseMatrix를 저장한다.
-				FbxMatrix bindPosMat = vertexGroupBindPose.Inverse() *
-						boneBindPose; // 클러스터가 영향을 미치기 전의 변환 행렬 과 본 변환 행렬을 곱한다.
+				FbxMatrix bindPosMat =
+						vertexGroupBindPose.Inverse() // 메시 로컬 좌표계로 변환위해 역행렬
+						* boneBindPose; // 본의 변환 행렬을 메시 로컬 좌표계로 변환
 				CaptureBindPoseMatrix(InSkinData, joint, boneBindPose);
 
 				InSkinData->AddInfluenceBone(joint->GetName());
@@ -615,7 +616,7 @@ namespace Utils::Fbx
 
 		FbxTakeInfo* takeInfo = Scene->GetTakeInfo(animStack->GetName());
 
-		mAnimNodeList.clear();
+		mScanList.clear();
 
 		// 1프레임을 기준으로 시간을 설정
 		FbxTime frameTime;
@@ -632,13 +633,45 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(takeInfo->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(takeInfo->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		// Ptr<JAnimation> anim          = MakePtr<JAnimation>();
-		// anim->mName                   = Buffer->Buffer();
-		// anim->mStartTime              = startTime;
-		// anim->mEndTime                = endTime;
-		// anim->mSourceSamplingInterval = sampleTime;
+		Ptr<JAnimation> anim          = MakePtr<JAnimation>();
+		anim->mName                   = Buffer->Buffer();
+		anim->mStartTime              = startTime;
+		anim->mEndTime                = endTime;
+		anim->mSourceSamplingInterval = sampleTime;
 
+		mAnimations.push_back(anim);
 
+		ParseAnimNode(Scene->GetRootNode(), -1);
+
+		int32_t trackNum = mScanList.size();
+		for (int32_t i = 0; i < trackNum; ++i)
+		{
+			const char*          trackName = mScanList[i].Node->GetName();
+			Ptr<JAnimationTrack> animTrack = MakePtr<JAnimationTrack>();
+			animTrack->Name                = trackName;
+			anim->AddTrack(animTrack);
+			mScanList[i].AnimationTrack = animTrack;
+		}
+
+		CaptureAnimation(anim, Scene);
+		// anim->Optimize();
+	}
+
+	void FbxFile::ParseAnimNode(FbxNode* InNode, int32_t InParentIndex)
+	{
+		FAnimationNode animNode{};
+		animNode.ParentIndex = InParentIndex;
+		animNode.Node        = InNode;
+
+		int32_t parentIndex = mScanList.size();
+
+		mScanList.push_back(animNode);
+
+		int32_t childNum = InNode->GetChildCount();
+		for (int32_t i = 0; i < childNum; ++i)
+		{
+			ParseAnimNode(InNode->GetChild(i), parentIndex);
+		}
 	}
 
 	FLayer FbxFile::ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData)
@@ -763,6 +796,68 @@ namespace Utils::Fbx
 
 		Ptr->AddBindPose(Joint->GetName(), bindPoseMat);
 		Ptr->AddInverseBindPose(Joint->GetName(), bindPoseInvMat);
+	}
+
+	void FbxFile::CaptureAnimation(const std::shared_ptr<JAnimation>& Ptr, FbxScene* Scene)
+	{
+		const float deltaTime = Ptr->mSourceSamplingInterval;
+		const float startTime = Ptr->mStartTime;
+		const float endTime   = Ptr->mEndTime;
+
+		float currentTime = startTime;
+
+		int32_t nodeNum = mScanList.size();
+
+		while (currentTime <= endTime)
+		{
+			FbxTime time;
+			time.SetSecondDouble(currentTime);
+
+			for (int32_t i = 0; i < nodeNum; ++i)
+			{
+				FAnimationNode& animNode = mScanList[i];
+
+				auto animEvaluator = Scene->GetAnimationEvaluator();
+
+				auto            globalMat  = animEvaluator->GetNodeGlobalTransform(animNode.Node, time);
+				FAnimationNode* parentNode = nullptr;
+				if (animNode.ParentIndex >= 0)
+				{
+					parentNode = &mScanList[animNode.ParentIndex];
+				}
+
+				AddKey(animNode, parentNode, globalMat, currentTime - startTime);
+			}
+			currentTime += deltaTime;
+		}
+	}
+
+	void FbxFile::AddKey(FAnimationNode&   InNode, FAnimationNode* InParentNode,
+						 const FbxAMatrix& InGlobalMat, float      InTime)
+	{
+		FMatrix globalMat = Utils::Fbx::Maya2DXMat(FMat2JMat(InGlobalMat));
+		InNode.Transform  = globalMat;
+
+		FMatrix localMat = globalMat;
+		if (InParentNode)
+		{
+			localMat = InParentNode->Transform.Invert() * globalMat;
+		}
+		XMVECTOR scale;
+		XMVECTOR rotation;
+		XMVECTOR translation;
+
+		XMMatrixDecompose(&scale, &rotation, &translation, localMat);
+
+		FVector  scaleVec;
+		FVector4 rotationVec;
+		FVector  translationVec;
+
+		XMStoreFloat3(&scaleVec, scale);
+		XMStoreFloat4(&rotationVec, rotation);
+		XMStoreFloat3(&translationVec, translation);
+
+		InNode.AnimationTrack->AddKey(InTime, translationVec, rotationVec, scaleVec);
 	}
 
 }

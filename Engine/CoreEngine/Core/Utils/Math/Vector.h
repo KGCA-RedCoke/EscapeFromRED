@@ -48,7 +48,7 @@ namespace JMath
 		TVector& operator-=(const TVector&);
 		TVector& operator*=(float Scale);
 		TVector& operator*=(const TVector&);
-		TVector& operator/=(float Scale);
+		TVector& operator/=(const float Scale);
 
 		// ------------------------ 단항 연산자 ----------------------------
 
@@ -76,7 +76,7 @@ namespace JMath
 		explicit TVector(const TVector2 V, float InZ);
 		explicit TVector(const DirectX::XMFLOAT3& InVector);
 		explicit TVector(const DirectX::XMVECTORF32& InVector);
-		
+
 
 		// ------------------------ 복사,이동 생성자 ----------------------------
 		TVector(const TVector&) = default;

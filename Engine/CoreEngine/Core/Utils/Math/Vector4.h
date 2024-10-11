@@ -69,8 +69,8 @@ namespace JMath
 		TVector4 operator+() const { return *this; }
 		TVector4 operator-() const;
 
-		float Length() const;
-		float LengthSquared() const;
+		float    Length() const;
+		float    LengthSquared() const;
 
 		float    Dot(const TVector4& V) const;
 		void     Cross(const TVector4& v1, const TVector4& v2, TVector4& result) const;

@@ -130,7 +130,7 @@ namespace JMath
 		return *this;
 	}
 
-	TVector& TVector::operator/=(float Scale)
+	TVector& TVector::operator/=(const float Scale)
 	{
 		assert(Scale != 0.0f);
 

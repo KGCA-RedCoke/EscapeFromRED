@@ -43,7 +43,6 @@ namespace Utils::Fbx
 		int32_t              ParentIndex;
 		FbxNode*             Node;
 		Ptr<JAnimationTrack> AnimationTrack;
-		uint32_t             Flags;
 		FMatrix              Transform;
 	};
 
