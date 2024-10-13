@@ -1,6 +1,6 @@
 ﻿#include "FbxFile.h"
 #include "FbxUtils.h"
-#include "Core/Entity/Animation/JAnimation.h"
+#include "Core/Entity/Animation/JAnimationClip.h"
 #include "Core/Graphics/DirectMathHelper.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
@@ -144,12 +144,18 @@ namespace Utils::Fbx
 				}
 				else
 				{
-					for (int subMeshIndex = 0; subMeshIndex < materials.size(); ++subMeshIndex)
+					for (int subMeshIndex = 0; subMeshIndex < mesh->mSubMesh.size(); )
 					{
 						Ptr<JMaterial> subMaterial = materials[subMeshIndex];
 
 						auto& subMesh = mesh->mSubMesh[subMeshIndex];
 						auto& subData = subMesh->mVertexData;
+
+						if (subData->TriangleList.empty())
+						{
+							mesh->mSubMesh.erase(mesh->mSubMesh.begin() + subMeshIndex);
+							continue;
+						}
 
 						subData->GenerateIndexArray(subData->TriangleList);
 
@@ -169,6 +175,8 @@ namespace Utils::Fbx
 						subMesh->mFaceCount     = faceCount;
 
 						mesh->mFaceCount += faceCount;
+
+						++subMeshIndex;
 					}
 				}
 			}
@@ -199,13 +207,24 @@ namespace Utils::Fbx
 		if (!InNode)
 			return;
 
-		if (InNode->GetSkeleton())
+		if (InNode->GetNodeAttribute() && InNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
 		{
 			FJointData jointData;
 			{
 				jointData.Name        = InNode->GetName();
 				jointData.ParentIndex = InParentIndex;
 			}
+			if (mSkeletonData.Joints.empty())
+			{
+				FJointData rootJoint;
+				{
+					rootJoint.Name        = "Root";
+					rootJoint.ParentIndex = -1;
+				}
+				mSkeletonData.Joints.push_back(rootJoint);
+
+			}
+
 			mSkeletonData.Joints.push_back(jointData);
 		}
 
@@ -294,7 +313,7 @@ namespace Utils::Fbx
 		}
 
 		// 레이어 정보(Geometry (UV, Tangents, NormalMap, Material, Color...))부터 해석하자.
-		FLayer layer = ParseMeshLayer(InNode->GetMesh(), InMeshData);
+		FLayer layer = ParseMeshLayer(fbxMesh, InMeshData);
 
 		FbxAMatrix vertexMat; // 정점의 변환 행렬
 		FbxAMatrix normalMat; // 노말의 변환 행렬
@@ -633,7 +652,7 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(takeInfo->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(takeInfo->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		Ptr<JAnimation> anim          = MakePtr<JAnimation>();
+		Ptr<JAnimationClip> anim          = MakePtr<JAnimationClip>();
 		anim->mName                   = Buffer->Buffer();
 		anim->mStartTime              = startTime;
 		anim->mEndTime                = endTime;
@@ -647,7 +666,7 @@ namespace Utils::Fbx
 		for (int32_t i = 0; i < trackNum; ++i)
 		{
 			const char*          trackName = mScanList[i].Node->GetName();
-			Ptr<JAnimationTrack> animTrack = MakePtr<JAnimationTrack>();
+			Ptr<JAnimBoneTrack> animTrack = MakePtr<JAnimBoneTrack>();
 			animTrack->Name                = trackName;
 			anim->AddTrack(animTrack);
 			mScanList[i].AnimationTrack = animTrack;
@@ -734,7 +753,7 @@ namespace Utils::Fbx
 			{
 				layer.VertexMaterialSets.push_back(material);
 
-				const int32_t layerMaterialNum = material->mDirectArray->GetCount();
+				const int32_t layerMaterialNum = InMesh->GetNode()->GetMaterialCount();
 
 				/// 다수의 머티리얼이 존재하면 sub-mesh(기존과 다른 vertexBuffer를 생성)가 필요하다.
 				/// SubMesh를 통해 서로 다른 머티리얼을 가진 메시를 하나의 메시로 표현할 수 있다.
@@ -798,7 +817,7 @@ namespace Utils::Fbx
 		Ptr->AddInverseBindPose(Joint->GetName(), bindPoseInvMat);
 	}
 
-	void FbxFile::CaptureAnimation(const std::shared_ptr<JAnimation>& Ptr, FbxScene* Scene)
+	void FbxFile::CaptureAnimation(const std::shared_ptr<JAnimationClip>& Ptr, FbxScene* Scene)
 	{
 		const float deltaTime = Ptr->mSourceSamplingInterval;
 		const float startTime = Ptr->mStartTime;
@@ -841,7 +860,7 @@ namespace Utils::Fbx
 		FMatrix localMat = globalMat;
 		if (InParentNode)
 		{
-			localMat = InParentNode->Transform.Invert() * globalMat;
+			localMat = globalMat * InParentNode->Transform.Invert();
 		}
 		XMVECTOR scale;
 		XMVECTOR rotation;

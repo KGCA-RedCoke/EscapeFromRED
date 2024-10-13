@@ -73,14 +73,14 @@ void MManagerInterface::Render()
 
 	G_DebugBatch.Render();
 
-	G_DebugBatch.DrawGrid(
-						  {100.f, 0.f, 0.f, 0.f},
-						  {0.f, 0.f, 100.f, 0.f},
-						  {0.f, 0.f, 0.f, 0.f},
-						  100.f,
-						  100.f,
-						  {0.33f, 0.33f, 0.33f, 1.f}
-						 );
+	// G_DebugBatch.DrawGrid(
+	// 					  {100.f, 0.f, 0.f, 0.f},
+	// 					  {0.f, 0.f, 100.f, 0.f},
+	// 					  {0.f, 0.f, 0.f, 0.f},
+	// 					  100.f,
+	// 					  100.f,
+	// 					  {0.33f, 0.33f, 0.33f, 1.f}
+	// 					 );
 
 	// Draw X Axis (Infinity Line)
 	G_DebugBatch.DrawRay(

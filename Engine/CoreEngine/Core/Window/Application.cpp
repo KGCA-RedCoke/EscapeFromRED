@@ -71,7 +71,7 @@ void Application::Initialize()
 	mFpsText->SetScreenPosition({25, 25});
 
 	Actors.reserve(10);
-	
+
 	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/CyberPunk_A.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
@@ -79,7 +79,7 @@ void Application::Initialize()
 	swordComponent->SetMeshObject(swordMesh);
 	swordComponent->AttachToActor(sampleActor);
 	Actors.push_back(sampleActor);
-	
+
 	sampleActor->SetLocalLocation({10, 0, 0});
 }
 
@@ -96,7 +96,7 @@ void Application::Run()
 		HandleFrame();
 
 		// 1초마다 작동
-		if (mTimer->Elapsed() - mTime > 1.f)
+		if (mTimer->Elapsed() >= mTime + 1.f)
 		{
 			// 매 초마다 작동
 			HandleTick();
@@ -145,6 +145,7 @@ void Application::Release()
 void Application::HandleFrame()
 {
 	Timer frameTimer;
+	frameTimer.Reset();
 	{
 		Update(mDeltaTime);
 

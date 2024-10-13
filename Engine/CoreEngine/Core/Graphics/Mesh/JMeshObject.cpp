@@ -107,6 +107,11 @@ void JMeshObject::CreateBuffers()
 							 ? mesh->GetVertexData()
 							 : subMeshes[j]->GetVertexData();
 
+			if (data->FaceCount == 0)
+			{
+				continue;
+			}
+
 			// Vertex 버퍼 생성
 			Utils::DX::CreateBuffer(device,
 									D3D11_BIND_VERTEX_BUFFER,
@@ -124,6 +129,7 @@ void JMeshObject::CreateBuffers()
 									instanceBuffer.Buffer_Index[j].GetAddressOf());
 
 			instanceBuffer.CBuffer_SpaceLightTime[j].CreateBuffer(device);
+
 		}
 	}
 }
@@ -145,8 +151,13 @@ void JMeshObject::UpdateBuffer(const FMatrix&  InWorldMatrix, const Ptr<JCamera>
 	for (int32_t i = 0; i < mInstanceBuffer.size(); ++i)
 	{
 		auto& instanceBuffer = mInstanceBuffer[i];
+
 		for (int32_t j = 0; j < instanceBuffer.CBuffer_SpaceLightTime.size(); ++j)
 		{
+			if (instanceBuffer.Buffer_Index[j] == nullptr)
+			{
+				continue;
+			}
 
 			instanceBuffer.CBuffer_SpaceLightTime[j].UpdateSpace(deviceContext,
 																 XMMatrixTranspose(InWorldMatrix),
@@ -177,8 +188,18 @@ void JMeshObject::Render()
 		auto& meshData       = mPrimitiveMeshData[i];
 		auto& subMeshes      = meshData->GetSubMesh();
 
+		if (instanceBuffer.Buffer_Vertex.empty())
+		{
+			continue;
+		}
+
 		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
 		{
+			if (!subMeshes.empty() && subMeshes[j]->GetVertexData()->FaceCount == 0)
+			{
+				continue;
+			}
+			
 			uint32_t offset = 0;
 
 			// Topology 설정
@@ -200,6 +221,8 @@ void JMeshObject::Render()
 			else
 			{
 				subMeshes[j]->GetMaterial()->ApplyMaterialParams(deviceContext);
+				if (subMeshes[j]->GetVertexData()->FaceCount == 0)
+					continue;
 			}
 
 			// 레스터라이저 상태 설정
@@ -207,19 +230,18 @@ void JMeshObject::Render()
 
 			// 픽셀 셰이더 설정
 			auto* sampler = IManager.RenderManager->GetDXTKCommonStates()->LinearWrap();
-
+			
 			deviceContext->PSSetSamplers(0, 1, &sampler); // diffuse(albedo) 텍스처 샘플러 설정
-
+			
 			deviceContext->OMSetBlendState(IManager.RenderManager->GetDXTKCommonStates()->AlphaBlend(),
 										   nullptr,
 										   0xFFFFFFFF);
 			deviceContext->OMSetDepthStencilState(IManager.RenderManager->GetDXTKCommonStates()->DepthDefault(), 0);
-
+			
 			const int32_t indexNum = subMeshes.empty()
 										 ? meshData->GetVertexData()->IndexArray.size()
 										 : subMeshes[j]->GetVertexData()->IndexArray.size();
 			deviceContext->DrawIndexed(indexNum, 0, 0);
-
 		}
 	}
 }

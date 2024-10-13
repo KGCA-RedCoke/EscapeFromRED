@@ -1,8 +1,9 @@
 ﻿#pragma once
 #include <fbxsdk.h>
 
-#include "Core/Entity/Animation/JAnimation.h"
+#include "Core/Entity/Animation/JAnimationClip.h"
 #include "Core/Graphics/Material/JMaterial.h"
+#include "Core/Graphics/Material/MMaterialManager.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Math/TMatrix.h"
 
@@ -42,7 +43,7 @@ namespace Utils::Fbx
 	{
 		int32_t              ParentIndex;
 		FbxNode*             Node;
-		Ptr<JAnimationTrack> AnimationTrack;
+		Ptr<JAnimBoneTrack> AnimationTrack;
 		FMatrix              Transform;
 	};
 
@@ -592,7 +593,7 @@ namespace Utils::Fbx
 
 		auto fullPath = std::format("{0}/{1}.jasset", materialSavePath, fileName);
 
-		Ptr<JMaterial> material = MakePtr<JMaterial>(fullPath.c_str());
+		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fullPath.c_str());
 
 		/** 셰이딩 모델은 거의 PhongShading */
 
@@ -601,6 +602,12 @@ namespace Utils::Fbx
 		for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
 		{
 			const FFbxProperty& textureParams = FbxMaterialProperties[i];
+
+			if (material->GetMaterialParam(textureParams.PropertyName))
+			{
+				continue;
+			}
+
 
 			// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
 			// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)

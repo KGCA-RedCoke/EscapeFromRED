@@ -5,7 +5,6 @@
 class MMaterialManager : public Manager_Base<JMaterial, MMaterialManager>
 {
 public:
-public:
 	[[nodiscard]] FORCEINLINE Ptr<JMaterial> GetDefaultMaterial() const { return DefaultMaterial; }
 
 private:

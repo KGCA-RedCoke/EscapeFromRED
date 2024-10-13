@@ -103,7 +103,8 @@
     <ClInclude Include="common_include.h" />
     <ClInclude Include="common_pch.h" />
     <ClInclude Include="Core\Entity\Actor\JActor.h" />
-    <ClInclude Include="Core\Entity\Animation\JAnimation.h" />
+    <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
+    <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
     <ClInclude Include="Core\Entity\Camera\JCamera.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
@@ -188,7 +189,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Entity\Actor\JActor.cpp" />
-    <ClCompile Include="Core\Entity\Animation\JAnimation.cpp" />
+    <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
+    <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />

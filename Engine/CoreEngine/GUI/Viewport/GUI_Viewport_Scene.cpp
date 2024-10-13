@@ -34,13 +34,15 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
 		// if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSETS_BROWSER_ITEMS"))
 		{
-			
+
 			const char* str = (const char*)payload->Data;
 
-			auto metaData = Utils::Serialization::GetType(str);
+			auto  metaData = Utils::Serialization::GetType(str);
+			JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
+
 			if (metaData.AssetType == StringHash("J3DObject"))
 			{
-				auto newActor = std::make_shared<JActor>(ParseFile(str));
+				auto newActor = std::make_shared<JActor>();
 				newActor->Initialize();
 
 				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrLoad(str);

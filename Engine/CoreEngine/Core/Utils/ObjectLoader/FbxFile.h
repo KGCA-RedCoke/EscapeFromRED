@@ -121,7 +121,7 @@ namespace Utils::Fbx
 		void CaptureBindPoseMatrix(JSkinnedMeshData* Ptr, const FbxNode* Joint,
 								   const FbxAMatrix& InBindPosMat);
 
-		void CaptureAnimation(const std::shared_ptr<JAnimation>& Ptr, FbxScene* Scene);
+		void CaptureAnimation(const std::shared_ptr<JAnimationClip>& Ptr, FbxScene* Scene);
 
 		void AddKey(FAnimationNode& InNode, FAnimationNode* InParentNode, const FbxAMatrix& InGlobalMat, float InTime);
 
@@ -136,7 +136,7 @@ namespace Utils::Fbx
 		JArray<JArray<Ptr<JMaterial>>> mMaterialList;
 
 		JArray<FAnimationNode>  mScanList;
-		JArray<Ptr<JAnimation>> mAnimations;
+		JArray<Ptr<JAnimationClip>> mAnimations;
 
 		int32_t mNumVertex = 0;
 		int32_t mNumIndex  = 0;

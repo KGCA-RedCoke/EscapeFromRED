@@ -236,6 +236,10 @@ namespace Buffer
 		void UpdateSpace(ID3D11DeviceContext* InDeviceContext, const FMatrix& InModel, const FMatrix& InView,
 						 const FMatrix&       InProjection)
 		{
+			if (CBuffer_Space == nullptr)
+			{
+				return;
+			}
 			Space.Model      = InModel;
 			Space.View       = InView;
 			Space.Projection = InProjection;
@@ -248,6 +252,10 @@ namespace Buffer
 
 		void UpdateLight(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightPos, const FVector4& InLightColor)
 		{
+			if (CBuffer_Light == nullptr)
+			{
+				return;
+			}
 			Light.LightPos   = InLightPos;
 			Light.LightColor = InLightColor;
 
@@ -259,6 +267,10 @@ namespace Buffer
 
 		void UpdateTime(ID3D11DeviceContext* InDeviceContext, const FVector4& InWorldTime)
 		{
+			if (CBuffer_Time == nullptr)
+			{
+				return;
+			}
 			Time.WorldTime = InWorldTime;
 
 			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
