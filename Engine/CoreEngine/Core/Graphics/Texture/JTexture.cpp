@@ -11,18 +11,25 @@ JTexture::JTexture()
 	  mTextureDesc()
 {}
 
-JTexture::JTexture(JWTextView InName)
+JTexture::JTexture(JWTextView InName, bool bEnableEdit)
 	: mSlot(0),
 	  mTextureName(InName),
 	  mSRVDesc(),
 	  mTextureDesc()
 {
 
-	LoadFromFile();
+	if (bEnableEdit)
+	{
+		LoadFromFileEx();
+	}
+	else
+	{
+		LoadFromFile();
+	}
 }
 
-JTexture::JTexture(JTextView InName)
-	: JTexture(String2WString(InName.data())) {}
+JTexture::JTexture(JTextView InName, bool bEnableEdit)
+	: JTexture(String2WString(InName.data()), bEnableEdit) {}
 
 
 uint32_t JTexture::GetHash() const
@@ -73,9 +80,19 @@ bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
 void JTexture::PreRender(int32_t InSlot)
 {
 	if (mShaderResourceView.Get())
-		IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, mShaderResourceView.GetAddressOf());
+		IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot,
+																					  1,
+																					  mShaderResourceView.GetAddressOf());
 }
 
+
+void JTexture::SetEditable()
+{
+	mShaderResourceView = nullptr;
+	mRGBAData.clear();
+
+	LoadFromFileEx();
+}
 
 void JTexture::LoadFromFile()
 {
@@ -83,7 +100,8 @@ void JTexture::LoadFromFile()
 	ComPtr<ID3D11Texture2D> texture;
 
 	// 여기서는 CheckResult를 하지 않는다. 텍스처 파일이 없을 경우 디폴트 텍스처 적용
-	if (FAILED(CreateWICTextureFromFile(Renderer.GetDevice(),
+	if (FAILED(CreateWICTextureFromFile(
+				   Renderer.GetDevice(),
 				   mTextureName.c_str(),
 				   textureResource.GetAddressOf(),
 				   mShaderResourceView.GetAddressOf())))
@@ -101,4 +119,64 @@ void JTexture::LoadFromFile()
 
 	textureResource = nullptr;
 	texture         = nullptr;
+}
+
+void JTexture::LoadFromFileEx()
+{
+	ComPtr<ID3D11Resource>  textureResource;
+	ComPtr<ID3D11Texture2D> texture;
+
+	if (FAILED(CreateWICTextureFromFileEx(
+				   Renderer.GetDevice(),
+				   mTextureName.c_str(),
+				   0,
+				   D3D11_USAGE_STAGING,
+				   0,
+				   D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ,
+				   0,
+				   WIC_LOADER_DEFAULT,
+				   textureResource.GetAddressOf(),
+				   nullptr
+			   )))
+	{
+		JText errorText = WString2String(std::format(L"Texture Load Failed: {}", mTextureName));
+		// ShowErrorPopup(errorText);
+		return;
+	}
+
+	CheckResult(textureResource->QueryInterface(__uuidof(ID3D11Texture2D),
+												reinterpret_cast<void**>(texture.GetAddressOf())));
+
+	// mShaderResourceView->GetDesc(&mSRVDesc);
+	texture->GetDesc(&mTextureDesc);
+
+	CacheRGBAData(texture);
+
+	textureResource = nullptr;
+	texture         = nullptr;
+}
+
+void JTexture::CacheRGBAData(const ComPtr<ID3D11Texture2D>& InTex2D)
+{
+	auto context = IManager.RenderManager->GetImmediateDeviceContext();
+	assert(context);
+
+	mRGBAData.resize(mTextureDesc.Width * mTextureDesc.Height);
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	if (SUCCEEDED(context->Map(InTex2D.Get(), D3D11CalcSubresource(0, 0, 1), D3D11_MAP_READ, 0, &mappedResource)))
+	{
+		unsigned char* data = static_cast<unsigned char*>(mappedResource.pData);
+
+		for (int32_t row = 0; row < mTextureDesc.Height; ++row)
+		{
+			uint32_t rowStart = row * mappedResource.RowPitch;
+			for (int32_t column = 0; column < mTextureDesc.Width; ++column)
+			{
+				uint32_t columnStart                         = column * 4;
+				mRGBAData[row * mTextureDesc.Width + column] = data[rowStart + columnStart];
+			};
+		}
+		context->Unmap(InTex2D.Get(), D3D11CalcSubresource(0, 0, 1));
+	}
 }

@@ -47,7 +47,7 @@ void XD3DDevice::Initialize_Internal()
 
 void XD3DDevice::Release()
 {
-	mCommonStates      = nullptr;
+	mToolKitStates     = nullptr;
 	mDevice            = nullptr;
 	mImmediateContext  = nullptr;
 	mDeferredContext_1 = nullptr;
@@ -78,13 +78,117 @@ void XD3DDevice::Present()
 								   ));
 }
 
-void XD3DDevice::SetBlendState(D3D11_BLEND InBlend) const
-{}
+void XD3DDevice::SetPrimitiveTopology(const D3D11_PRIMITIVE_TOPOLOGY InTopology) const
+{
+	mImmediateContext->IASetPrimitiveTopology(InTopology);
+}
 
-void XD3DDevice::SetRasterizerState(D3D11_CULL_MODE InCullMode) const {}
+void XD3DDevice::SetBlendState(EBlendState InState) const
+{
+	ID3D11BlendState* newBlendState = nullptr;
 
-void XD3DDevice::SetSamplerState(D3D11_FILTER InFilter, D3D11_TEXTURE_ADDRESS_MODE InAddressMode) const
-{}
+	switch (InState)
+	{
+	case EBlendState::Opaque:
+		newBlendState = mToolKitStates->Opaque();
+		break;
+	case EBlendState::AlphaBlend:
+		newBlendState = mToolKitStates->AlphaBlend();
+		break;
+	case EBlendState::Additive:
+		newBlendState = mToolKitStates->Additive();
+		break;
+	case EBlendState::NonPremultiplied:
+		newBlendState = mToolKitStates->NonPremultiplied();
+		break;
+	}
+
+	mImmediateContext->OMSetBlendState(newBlendState, nullptr, 0xFFFFFFFF);
+}
+
+void XD3DDevice::SetDepthStencilState(const EDepthStencilState InState) const
+{
+	ID3D11DepthStencilState* newDepthStencilState = nullptr;
+
+	switch (InState)
+	{
+	case EDepthStencilState::DepthNone:
+		newDepthStencilState = mToolKitStates->DepthNone();
+		break;
+	case EDepthStencilState::DepthDefault:
+		newDepthStencilState = mToolKitStates->DepthDefault();
+		break;
+	case EDepthStencilState::DepthRead:
+		newDepthStencilState = mToolKitStates->DepthRead();
+		break;
+	case EDepthStencilState::DepthReverseZ:
+		newDepthStencilState = mToolKitStates->DepthReverseZ();
+		break;
+	case EDepthStencilState::DepthReadReverseZ:
+		newDepthStencilState = mToolKitStates->DepthReadReverseZ();
+		break;
+	}
+
+	mImmediateContext->OMSetDepthStencilState(newDepthStencilState, 0);
+}
+
+void XD3DDevice::SetSamplerState(const ESamplerState InState, int32_t* InSlots, int32_t InSize) const
+{
+	ID3D11SamplerState* newSamplerState = nullptr;
+	switch (InState)
+	{
+	case ESamplerState::PointWrap:
+		newSamplerState = mToolKitStates->PointWrap();
+		break;
+	case ESamplerState::PointClamp:
+		newSamplerState = mToolKitStates->PointClamp();
+		break;
+	case ESamplerState::LinearWrap:
+		newSamplerState = mToolKitStates->LinearWrap();
+		break;
+	case ESamplerState::LinearClamp:
+		newSamplerState = mToolKitStates->LinearClamp();
+		break;
+	case ESamplerState::AnisotropicWrap:
+		newSamplerState = mToolKitStates->AnisotropicWrap();
+		break;
+	case ESamplerState::AnisotropicClamp:
+		newSamplerState = mToolKitStates->AnisotropicClamp();
+		break;
+	}
+
+	for (int32_t i = 0; i < InSize; ++i)
+	{
+		int32_t slot = InSlots[i];
+		mImmediateContext->PSSetSamplers(slot, 1, &newSamplerState);
+	}
+
+
+}
+
+void XD3DDevice::SetRasterState(const ERasterState InState) const
+{
+	ID3D11RasterizerState* newRasterState = nullptr;
+
+	switch (InState)
+	{
+	case ERasterState::CullNone:
+		newRasterState = mToolKitStates->CullNone();
+		break;
+	case ERasterState::CW:
+		newRasterState = mToolKitStates->CullClockwise();
+		break;
+	case ERasterState::CCW:
+		newRasterState = mToolKitStates->CullCounterClockwise();
+		break;
+	case ERasterState::WireFrame:
+		newRasterState = mToolKitStates->Wireframe();
+		break;
+	}
+
+	assert(newRasterState);
+	mImmediateContext->RSSetState(newRasterState);
+}
 
 void XD3DDevice::CreateDevice()
 {
@@ -114,7 +218,7 @@ void XD3DDevice::CreateDevice()
 								  &outFeatureLevel,                 // (Out) Features
 								  mImmediateContext.GetAddressOf() // (Out) DeviceContext
 								 ));
-	mCommonStates = std::make_unique<CommonStates>(mDevice.Get());
+	mToolKitStates = std::make_unique<CommonStates>(mDevice.Get());
 
 	CheckResult(mDevice->CreateDeferredContext(FALSE, mDeferredContext_1.GetAddressOf()));
 
@@ -204,8 +308,8 @@ void XD3DDevice::Create2DResources()
 
 void XD3DDevice::CreateRasterizerState()
 {
-	
-	
+
+
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 	{

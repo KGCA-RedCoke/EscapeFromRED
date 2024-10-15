@@ -2,6 +2,8 @@
 #include "Core/Entity/Actor/JActor.h"
 #include "Core/Graphics/ShaderStructs.h"
 
+class JTexture;
+
 struct FMapDesc
 {
 	int32_t Column;
@@ -34,13 +36,19 @@ private:
 	void GenerateLandScape();
 	void GenVertex();
 	void GenIndex();
+	void ApplyMap();
 
 protected:
 	FMapDesc mMapDescription;
 
 	JArray<Vertex::FVertexInfo_Base>  mVertexInfo;
-	JArray<uint32_t>                   mIndexInfo;
+	JArray<uint32_t>                  mIndexInfo;
 	Buffer::FBufferInstance_LandScape mInstanceBuffer;
+
+	Ptr<class JMaterial> mMaterial;
+
+	Ptr<JTexture> mAlbedoMap;
+	Ptr<JTexture> mHeightMap;
 
 	friend class GUI_Editor_LandScape;
 };

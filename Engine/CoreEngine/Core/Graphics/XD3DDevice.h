@@ -3,6 +3,42 @@
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Manager/Manager_Base.h"
 
+enum class EBlendState : uint8_t
+{
+	Opaque,
+	AlphaBlend,
+	Additive,
+	NonPremultiplied
+};
+
+enum class EDepthStencilState : uint8_t
+{
+	DepthNone,
+	DepthDefault,
+	DepthRead,
+	DepthReverseZ,
+	DepthReadReverseZ
+};
+
+enum class ERasterState : uint8_t
+{
+	CullNone,
+	CW,
+	CCW,
+	WireFrame
+};
+
+enum class ESamplerState : uint8_t
+{
+	PointWrap,
+	PointClamp,
+	LinearWrap,
+	LinearClamp,
+	AnisotropicWrap,
+	AnisotropicClamp
+};
+
+
 // 이 클래스 매크로 추천
 #define Renderer XD3DDevice::Get()
 
@@ -19,9 +55,11 @@ public:
 	void Present();
 
 public:
-	void SetBlendState(D3D11_BLEND InBlend) const;
-	void SetRasterizerState(D3D11_CULL_MODE InCullMode) const;
-	void SetSamplerState(D3D11_FILTER InFilter, D3D11_TEXTURE_ADDRESS_MODE InAddressMode) const;
+	void SetPrimitiveTopology(const D3D11_PRIMITIVE_TOPOLOGY InTopology) const;
+	void SetBlendState(const EBlendState InState) const;
+	void SetDepthStencilState(const EDepthStencilState InState) const;
+	void SetSamplerState(const ESamplerState InState, int32_t* InSlots, int32_t InSize) const;
+	void SetRasterState(const ERasterState InState) const;
 
 public:
 #pragma region Get
@@ -33,7 +71,7 @@ public:
 	FORCEINLINE ID2D1SolidColorBrush*   GetBrush() const { return mColorBrush.Get(); }
 	FORCEINLINE ID3D11RenderTargetView* GetRTV() const { return mRenderTargetView.Get(); }
 	FORCEINLINE ID2D1RenderTarget*      GetSurface1() const { return mRenderTarget_2D.Get(); }
-	FORCEINLINE CommonStates*           GetDXTKCommonStates() const { return mCommonStates.get(); }
+	FORCEINLINE CommonStates*           GetDXTKCommonStates() const { return mToolKitStates.get(); }
 	FORCEINLINE ID3D11RasterizerState*  GetRasterizerState() const { return mRasterizerState.Get(); }
 
 
@@ -66,7 +104,7 @@ private:
 	ComPtr<ID3D11RenderTargetView> mRenderTargetView;           /** 화면에 보여지는 버퍼 개체 (RTV) */
 	ComPtr<ID3D11RasterizerState>  mRasterizerState;			/** 래스터라이저 상태 관리 개체 인터페이스 */
 
-	std::unique_ptr<CommonStates> mCommonStates;
+	UPtr<CommonStates> mToolKitStates;
 
 	DXGI_SWAP_CHAIN_DESC1 mSwapChainDesc;             /** 스왑체인 구조체 */
 	D3D11_VIEWPORT        mViewport;                  /** 렌더링 뷰포트 */

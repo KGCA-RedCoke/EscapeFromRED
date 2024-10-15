@@ -40,6 +40,8 @@ public:
 
 	Ptr<GUI_Inspector> GetInspector() const;
 
+	bool IsRenderWireFrame() const { return bRenderWireFrame; }
+
 private:
 	/**
 	 * 엔진 필수 GUI를 생성하고 초기화
@@ -60,6 +62,7 @@ private:
 	Ptr<GUI_Editor_LandScape>             mLandScapeEditor;
 	Ptr<GUI_Base>                         mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
 	bool                                  bOpenFileBrowser;
+	bool                                  bRenderWireFrame = false;
 
 #pragma region Singleton Boilerplate
 

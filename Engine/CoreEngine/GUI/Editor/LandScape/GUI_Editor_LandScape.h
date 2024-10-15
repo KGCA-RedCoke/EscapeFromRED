@@ -19,4 +19,6 @@ public:
 
 private:
 	FMapDesc mLandScapeDesc;
+	JWText   mAlbedoTexture;
+	JWText   mHeightTexture;
 };

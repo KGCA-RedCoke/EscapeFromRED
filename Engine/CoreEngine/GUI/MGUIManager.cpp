@@ -124,6 +124,20 @@ void MGUIManager::UpdateMainMenuBar()
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("RenderState"))
+		{
+			if (ImGui::MenuItem("WireFrame"))
+			{
+				bRenderWireFrame = true;
+			}
+			if (ImGui::MenuItem("Material"))
+			{
+				bRenderWireFrame = false;
+			}
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndMainMenuBar();  // Make sure to close the main menu bar
 	}
 }

@@ -32,8 +32,6 @@ void JLandScape::Destroy()
 
 void JLandScape::Draw()
 {
-	// JActor::Draw();
-
 	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 	assert(deviceContext);
 
@@ -60,14 +58,19 @@ void JLandScape::Draw()
 	deviceContext->VSSetConstantBuffers(0, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
 	deviceContext->PSSetConstantBuffers(0, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
 
-	deviceContext->RSSetState(IManager.RenderManager->GetDXTKCommonStates()->Wireframe());
-
 	IManager.CameraManager->SetCameraConstantBuffer();
+
+	IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame()
+											   ? ERasterState::WireFrame
+											   : ERasterState::CullNone);
 
 	uint32_t indexCount    = mIndexInfo.size(); // 총 인덱스 수
 	uint32_t instanceCount = mMapDescription.Column * mMapDescription.Row; // 인스턴스 수
 
-	deviceContext->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
+	ApplyMap();
+
+	deviceContext->DrawIndexed(indexCount, 0, 0);
+	// deviceContext->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
 }
 
 bool JLandScape::Serialize_Implement(std::ofstream& FileStream)
@@ -86,6 +89,19 @@ void JLandScape::GenerateLandScape()
 
 	GenVertex();
 	GenIndex();
+
+	mMaterial = IManager.MaterialManager->CreateOrLoad("Game/LandScape/Material/TestMaterial.jasset");
+
+	FMaterialParams albedoParams;
+	albedoParams.Name         = "AlbedoMap";
+	albedoParams.ParamType    = EMaterialParamType::Texture2D;
+	albedoParams.Key          = StringHash("AlbedoMap");
+	albedoParams.Flags        = EMaterialFlag::DiffuseColor;
+	albedoParams.TextureValue = mAlbedoMap;
+
+	mMaterial->AddMaterialParam(albedoParams);
+
+
 }
 
 void JLandScape::GenVertex()
@@ -110,7 +126,7 @@ void JLandScape::GenVertex()
 			// 버텍스 정보 설정
 			mVertexInfo[index].Position = FVector(
 												  (column - halfColumn) * mMapDescription.CellDistance,
-												  0.0f,
+												  mHeightMap->GetRGBAData()[index] * mMapDescription.ScaleHeight,
 												  -(row - halfRow) * mMapDescription.CellDistance);
 
 			mVertexInfo[index].UV     = FVector2(column * textureOffsetU, row * textureOffsetV);
@@ -170,4 +186,20 @@ void JLandScape::GenIndex()
 							mInstanceBuffer.CBuffer_Space[0].GetAddressOf(),
 							D3D11_USAGE_DYNAMIC,
 							D3D11_CPU_ACCESS_WRITE);
+}
+
+void JLandScape::ApplyMap()
+{
+
+	// assert(mAlbedoMap);
+	// assert(mHeightMap);
+
+	// Texture Mapping
+
+	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	assert(deviceContext);
+
+	mMaterial->ApplyMaterialParams(deviceContext);
+
+
 }

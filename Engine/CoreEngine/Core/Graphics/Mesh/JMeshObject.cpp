@@ -5,7 +5,6 @@
 #include "Core/Utils/Graphics/DXUtils.h"
 
 
-
 JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData)
 	: mVertexSize(sizeof(Vertex::FVertexInfo_Base)),
 	  mIndexSize(sizeof(uint32_t))
@@ -187,22 +186,18 @@ void JMeshObject::Render()
 		auto& meshData       = mPrimitiveMeshData[i];
 		auto& subMeshes      = meshData->GetSubMesh();
 
-		if (instanceBuffer.Buffer_Vertex.empty())
-		{
-			continue;
-		}
-
 		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
 		{
 			if (!subMeshes.empty() && subMeshes[j]->GetVertexData()->FaceCount == 0)
 			{
 				continue;
 			}
-			
-			uint32_t offset = 0;
+
+			uint32_t offset   = 0;
+			int32_t  indexNum = 0;
 
 			// Topology 설정
-			deviceContext->IASetPrimitiveTopology(mPrimitiveType);
+			IManager.RenderManager->SetPrimitiveTopology(mPrimitiveType);
 
 			// 버퍼 설정
 			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
@@ -216,30 +211,24 @@ void JMeshObject::Render()
 			if (subMeshes.empty())
 			{
 				meshData->GetMaterial()->ApplyMaterialParams(deviceContext);
+
+				indexNum = meshData->GetVertexData()->IndexArray.size();
 			}
 			else
 			{
 				subMeshes[j]->GetMaterial()->ApplyMaterialParams(deviceContext);
+
+				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
 				if (subMeshes[j]->GetVertexData()->FaceCount == 0)
 					continue;
 			}
 
-			// 레스터라이저 상태 설정
-			// deviceContext->RSSetState(IManager.RenderManager->GetDXTKCommonStates()->CullNone());
+			int32_t slots[2] = {0, 1};
+			IManager.RenderManager->SetSamplerState(ESamplerState::LinearWrap, slots, 2);
+			IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame() ? ERasterState::WireFrame : ERasterState::CullNone);
+			IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
+			IManager.RenderManager->SetDepthStencilState(EDepthStencilState::DepthDefault);
 
-			// 픽셀 셰이더 설정
-			auto* sampler = IManager.RenderManager->GetDXTKCommonStates()->LinearWrap();
-			
-			deviceContext->PSSetSamplers(0, 1, &sampler); // diffuse(albedo) 텍스처 샘플러 설정
-			
-			deviceContext->OMSetBlendState(IManager.RenderManager->GetDXTKCommonStates()->AlphaBlend(),
-										   nullptr,
-										   0xFFFFFFFF);
-			deviceContext->OMSetDepthStencilState(IManager.RenderManager->GetDXTKCommonStates()->DepthDefault(), 0);
-			
-			const int32_t indexNum = subMeshes.empty()
-										 ? meshData->GetVertexData()->IndexArray.size()
-										 : subMeshes[j]->GetVertexData()->IndexArray.size();
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
 	}
