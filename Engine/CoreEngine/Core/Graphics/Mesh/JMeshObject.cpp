@@ -4,8 +4,7 @@
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
-extern FVector4 g_DirectionalLightPos;
-extern FVector4 g_DirectionalLightColor;
+
 
 JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData)
 	: mVertexSize(sizeof(Vertex::FVertexInfo_Base)),

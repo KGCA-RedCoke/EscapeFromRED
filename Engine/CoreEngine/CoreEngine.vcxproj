@@ -21,7 +21,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableUnitySupport>true</EnableUnitySupport>
@@ -111,6 +111,7 @@
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\JSceneComponent.h" />
     <ClInclude Include="Core\Entity\JObject.h" />
+    <ClInclude Include="Core\Entity\LandScape\JLandScape.h" />
     <ClInclude Include="Core\Entity\Level\JLevel.h" />
     <ClInclude Include="Core\Entity\Level\MLevelManager.h" />
     <ClInclude Include="Core\Entity\Light\JLightComponent.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
     <ClInclude Include="GUI\Editor\GUI_Editor_Material.h" />
+    <ClInclude Include="GUI\Editor\LandScape\GUI_Editor_LandScape.h" />
     <ClInclude Include="GUI\GUI_AssetBrowser.h" />
     <ClInclude Include="GUI\GUI_Base.h" />
     <ClInclude Include="GUI\GUI_Inspector.h" />
@@ -197,6 +199,7 @@
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\JSceneComponent.cpp" />
     <ClCompile Include="Core\Entity\JObject.cpp" />
+    <ClCompile Include="Core\Entity\LandScape\JLandScape.cpp" />
     <ClCompile Include="Core\Entity\Level\JLevel.cpp" />
     <ClCompile Include="Core\Entity\Level\MLevelManager.cpp" />
     <ClCompile Include="Core\Entity\Light\JLightComponent.cpp" />
@@ -243,6 +246,7 @@
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="GUI\Editor\GUI_Editor_Material.cpp" />
+    <ClCompile Include="GUI\Editor\LandScape\GUI_Editor_LandScape.cpp" />
     <ClCompile Include="GUI\GUI_AssetBrowser.cpp" />
     <ClCompile Include="GUI\GUI_Base.cpp" />
     <ClCompile Include="GUI\GUI_Inspector.cpp" />

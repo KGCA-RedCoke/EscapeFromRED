@@ -8,6 +8,7 @@
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
 #include "Editor/GUI_Editor_Material.h"
+#include "Editor/LandScape/GUI_Editor_LandScape.h"
 #include "Popup/GUI_Popup_FileBrowser.h"
 #include "Viewport/GUI_Viewport_Scene.h"
 
@@ -107,6 +108,15 @@ void MGUIManager::UpdateMainMenuBar()
 				}
 			}
 
+			if (ImGui::MenuItem("LandScape Editor"))
+			{
+				// LandScape Editor
+				if (Ptr<GUI_Editor_LandScape> landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
+				{
+					mLandScapeEditor = landScapeEditor;
+				}
+			}
+
 			if (ImGui::MenuItem("Fbx Importer"))
 			{
 				bOpenFileBrowser = true;
@@ -132,6 +142,11 @@ void MGUIManager::UpdateEditorGUI(float DeltaTime) const
 	for (int32_t i = 0; i < mMaterialEditorList.size(); ++i)
 	{
 		mMaterialEditorList[i]->Update(DeltaTime);
+	}
+
+	if (mLandScapeEditor)
+	{
+		mLandScapeEditor->Update(DeltaTime);
 	}
 }
 

@@ -43,10 +43,10 @@ public:
 
 private:
 	// -------------------------------- Buffers --------------------------------------
-	std::vector<Buffer::FBufferInstance> mInstanceBuffer;
+	JArray<Buffer::FBufferInstance> mInstanceBuffer;
 
 	// ----------------------------- Model Primitive Data -----------------------------
-	std::vector<Ptr<JMeshData>> mPrimitiveMeshData;
+	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
 
 	// ----------------------------- Model Data -----------------------------
 	uint32_t mVertexSize;

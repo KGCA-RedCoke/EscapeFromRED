@@ -2,6 +2,7 @@
 #include "GUI_Base.h"
 #include "Core/Manager/Manager_Base.h"
 
+class GUI_Editor_LandScape;
 class GUI_Inspector;
 class GUI_Editor_Material;
 
@@ -56,6 +57,7 @@ private:
 
 private:
 	std::vector<Ptr<GUI_Editor_Material>> mMaterialEditorList;
+	Ptr<GUI_Editor_LandScape>             mLandScapeEditor;
 	Ptr<GUI_Base>                         mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
 	bool                                  bOpenFileBrowser;
 

@@ -48,6 +48,15 @@ namespace JMath
 		return *this;
 	}
 
+	TVector4& TVector4::operator=(const FLinearColor& InColor)
+	{
+		x = InColor.R;
+		y = InColor.G;
+		z = InColor.B;
+		w = InColor.A;
+		return *this;
+	}
+
 	TVector4& TVector4::operator+=(const TVector4& V)
 	{
 		XMVECTOR v1 = XMLoadFloat4(this);

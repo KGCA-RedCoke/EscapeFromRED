@@ -42,7 +42,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 			if (metaData.AssetType == StringHash("J3DObject"))
 			{
-				auto newActor = std::make_shared<JActor>();
+				auto newActor = MakePtr<JActor>();
 				newActor->Initialize();
 
 				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrLoad(str);

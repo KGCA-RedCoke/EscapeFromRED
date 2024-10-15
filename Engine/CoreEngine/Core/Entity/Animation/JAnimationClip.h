@@ -72,7 +72,7 @@ public:
 	void Pause();
 	void Stop();
 
-	void TickAnim(const float DeltaTime);
+	void TickAnim(const float DeltaSeconds);
 
 public:
 	void AddTrack(const Ptr<JAnimBoneTrack>& Track);
@@ -94,15 +94,19 @@ protected:
 	JText mName;						// 애니메이션 클립 이름
 
 	// ------------ ReadOnly Variable (기본 값) ------------
-	float mStartTime;				// 시작 시간
-	float mEndTime;					// 끝 시간
-	float mSourceSamplingInterval;	// 샘플링 간격
+	float   mStartTime;					// 시작 시간
+	float   mEndTime;					// 끝 시간
+	float   mSourceSamplingInterval;	// 샘플링 간격
+	int32_t mStartFrame; 				// 시작 프레임
+	int32_t mEndFrame;					// 끝 프레임
+	int32_t mFramePerSecond;			// 초당 프레임 수
+	int32_t mTickPerFrame;				// 프레임당 틱 수
 
 	// ------------ Editable Variable ------------
-	bool  mLooping;					// 루프 여부
+	bool  bLooping;					// 루프 여부
 	bool  bPlaying;					// 재생 여부
 	bool  bRootMotion;				// 루트 모션 여부 (어떻게 처리할지 고민해봐야 함 자연스러운 공격 모션을 위해선 필수적)
-	float mCurrentTime;				// 현재 시간
+	float mElapsedTime;				// 경과 시간
 
 	// ------------ Animation Data ------------
 	JArray<Ptr<JAnimBoneTrack>> mTracks;					// 본별로 트랙을 가지고 있는 배열

@@ -218,7 +218,7 @@ void XD3DDevice::CreateRasterizerState()
 		rasterizerDesc.DepthClipEnable       = true;
 		rasterizerDesc.ScissorEnable         = false;
 		rasterizerDesc.MultisampleEnable     = false;
-		rasterizerDesc.AntialiasedLineEnable = true;
+		rasterizerDesc.AntialiasedLineEnable = false;
 	}
 
 	CheckResult(
@@ -317,5 +317,5 @@ void XD3DDevice::OnResize(uint32_t InWidth, uint32_t InHeight)
 	ResizeSwapChain(InWidth, InHeight);
 
 	SetRenderTarget();
-	SetViewportSize(InWidth, InWidth);
+	SetViewportSize(InWidth, InHeight);
 }

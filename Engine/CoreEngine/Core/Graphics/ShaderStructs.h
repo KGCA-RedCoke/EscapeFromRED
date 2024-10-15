@@ -296,11 +296,31 @@ namespace Buffer
 
 	};
 
+	// Landscape 버퍼 인스턴스
+	struct FBufferInstance_LandScape
+	{
+		JArray<ComPtr<ID3D11Buffer>> Buffer_Vertex;			// Vertex 
+		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;			// Index
+		JArray<ComPtr<ID3D11Buffer>> CBuffer_Space;			// Space
+
+		void Resize(int32_t Size)
+		{
+			Buffer_Vertex.clear();
+			Buffer_Index.clear();
+			CBuffer_Space.clear();
+
+			Buffer_Vertex.resize(Size);
+			Buffer_Index.resize(Size);
+			CBuffer_Space.resize(Size);
+		}
+	};
+
+	// Basic 버퍼 인스턴스
 	struct FBufferInstance
 	{
-		std::vector<ComPtr<ID3D11Buffer>>  Buffer_Vertex;			// Vertex 
-		std::vector<ComPtr<ID3D11Buffer>>  Buffer_Index;			// Index
-		std::vector<FBufferSpaceLightTime> CBuffer_SpaceLightTime;	// Space, Light, Time
+		JArray<ComPtr<ID3D11Buffer>>  Buffer_Vertex;			// Vertex 
+		JArray<ComPtr<ID3D11Buffer>>  Buffer_Index;				// Index
+		JArray<FBufferSpaceLightTime> CBuffer_SpaceLightTime;	// Space, Light, Time
 
 
 		void Resize(const int32_t Size)

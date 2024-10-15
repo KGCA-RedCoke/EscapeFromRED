@@ -65,10 +65,10 @@ bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 	Utils::Serialization::Serialize_Primitive(&mSourceSamplingInterval, sizeof(mSourceSamplingInterval), FileStream);
 
 	// Editor Settings
-	Utils::Serialization::Serialize_Primitive(&mLooping, sizeof(mLooping), FileStream);
+	Utils::Serialization::Serialize_Primitive(&bLooping, sizeof(bLooping), FileStream);
 	Utils::Serialization::Serialize_Primitive(&bPlaying, sizeof(bPlaying), FileStream);
 	Utils::Serialization::Serialize_Primitive(&bRootMotion, sizeof(bRootMotion), FileStream);
-	Utils::Serialization::Serialize_Primitive(&mCurrentTime, sizeof(mCurrentTime), FileStream);
+	Utils::Serialization::Serialize_Primitive(&mElapsedTime, sizeof(mElapsedTime), FileStream);
 
 	// Tracks
 	int32_t trackSize = mTracks.size();
@@ -139,10 +139,10 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Primitive(&mSourceSamplingInterval, sizeof(mSourceSamplingInterval), InFileStream);
 
 	// Editor Settings
-	Utils::Serialization::DeSerialize_Primitive(&mLooping, sizeof(mLooping), InFileStream);
+	Utils::Serialization::DeSerialize_Primitive(&bLooping, sizeof(bLooping), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&bPlaying, sizeof(bPlaying), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&bRootMotion, sizeof(bRootMotion), InFileStream);
-	Utils::Serialization::DeSerialize_Primitive(&mCurrentTime, sizeof(mCurrentTime), InFileStream);
+	Utils::Serialization::DeSerialize_Primitive(&mElapsedTime, sizeof(mElapsedTime), InFileStream);
 
 	// Tracks
 	int32_t trackSize;
@@ -217,17 +217,38 @@ void JAnimationClip::Pause()
 void JAnimationClip::Stop()
 {
 	bPlaying     = false;
-	mCurrentTime = 0.0f;
+	mElapsedTime = 0.0f;
 }
 
-void JAnimationClip::TickAnim(const float DeltaTime)
+void JAnimationClip::TickAnim(const float DeltaSeconds)
 {
 	if (!bPlaying)
 	{
 		return;
 	}
 
-	mCurrentTime += DeltaTime * mSourceSamplingInterval;
+	// 경과시간 계산
+	mElapsedTime += DeltaSeconds * mFramePerSecond * mTickPerFrame;
+
+	// 경과 시간이 애니메이션의 시작 시간을 초과
+	if (mElapsedTime >= mEndFrame * mTickPerFrame)
+	{
+		if (bLooping)
+		{
+			// 시작 시간으로 초기화
+			mElapsedTime = mStartFrame * mTickPerFrame;
+		}
+		else
+		{
+			// 끝 시간으로 초기화 및 정지
+			mElapsedTime = mEndFrame * mTickPerFrame;
+			Stop();
+		}
+	}
+
+	
+
+
 }
 
 void JAnimationClip::AddTrack(const Ptr<JAnimBoneTrack>& Track)

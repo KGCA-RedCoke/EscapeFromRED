@@ -12,7 +12,7 @@
 #include "Core/Window/Window.h"
 
 FVector4 g_DirectionalLightPos   = {500, 1200, 1000, 1};
-FVector4 g_DirectionalLightColor = {1.f, 0.976f, 0.992f, 1}; // 6500k 주광색 (완벽히 같진 않음)
+FVector4 g_DirectionalLightColor = {1.f, 0.605063f, 0.224581f, 1}; // 6500k 주광색 (완벽히 같진 않음)
 
 
 Application* Application::s_AppInstance = nullptr;
@@ -72,7 +72,7 @@ void Application::Initialize()
 
 	Actors.reserve(10);
 
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/CyberPunk_A.jasset");
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Cube.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();

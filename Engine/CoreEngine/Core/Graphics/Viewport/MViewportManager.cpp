@@ -55,7 +55,7 @@ MViewportManager::MViewportManager()
 
 void MViewportManager::Initialize_Internal()
 {
-	CreateOrLoad(Name_Editor_Viewport, 1920, 1080);
+	CreateOrLoad(Name_Editor_Viewport, 1280 , 720 );
 }
 
 void MViewportManager::ResizeViewport(JTextView InViewportName,

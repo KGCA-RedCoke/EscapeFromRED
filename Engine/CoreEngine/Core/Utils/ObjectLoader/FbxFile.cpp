@@ -869,11 +869,11 @@ namespace Utils::Fbx
 		XMMatrixDecompose(&scale, &rotation, &translation, localMat);
 
 		FVector  scaleVec;
-		FVector4 rotationVec;
+		FVector rotationVec;
 		FVector  translationVec;
 
 		XMStoreFloat3(&scaleVec, scale);
-		XMStoreFloat4(&rotationVec, rotation);
+		XMStoreFloat3(&rotationVec, rotation);
 		XMStoreFloat3(&translationVec, translation);
 
 		InNode.AnimationTrack->AddKey(InTime, translationVec, rotationVec, scaleVec);

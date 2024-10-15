@@ -81,7 +81,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
 	float3 lightDir = normalize(Input.LightDir);
 	float  NdotL    = saturate(dot(worldNormal, -lightDir));
-	float3 diffuse  = NdotL * albedoColor.rgb;
+	float3 diffuse  = NdotL * albedoColor.rgb * LightColor.rgb;
 	/*
 		// Specular 계산 (Cook-Torrance 모델 적용 가능)
 		float3 viewDir = normalize(Input.ViewDir);
@@ -122,7 +122,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = float3(0.1f, 0.1f, 0.1f) * albedoColor.rgb;
+	float3 ambient = float3(0.4f, 0.4f, 0.4f) * albedoColor.rgb;
 	//
 	float3 finalColor = float3(diffuse +  ambient +specular);
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
