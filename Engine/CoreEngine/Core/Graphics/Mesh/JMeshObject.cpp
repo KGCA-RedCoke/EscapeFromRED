@@ -23,7 +23,7 @@ JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>&
 	}
 }
 
-JMeshObject::JMeshObject(const JWText& InName, std::vector<Ptr<JMeshData>> InData)
+JMeshObject::JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
 	: JMeshObject(WString2String(InName), InData) {}
 
 uint32_t JMeshObject::GetType() const
@@ -225,7 +225,9 @@ void JMeshObject::Render()
 
 			int32_t slots[2] = {0, 1};
 			IManager.RenderManager->SetSamplerState(ESamplerState::LinearWrap, slots, 2);
-			IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame() ? ERasterState::WireFrame : ERasterState::CullNone);
+			IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame()
+													   ? ERasterState::WireFrame
+													   : ERasterState::CullNone);
 			IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
 			IManager.RenderManager->SetDepthStencilState(EDepthStencilState::DepthDefault);
 

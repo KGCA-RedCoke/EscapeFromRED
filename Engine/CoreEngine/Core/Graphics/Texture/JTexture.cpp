@@ -173,8 +173,13 @@ void JTexture::CacheRGBAData(const ComPtr<ID3D11Texture2D>& InTex2D)
 			uint32_t rowStart = row * mappedResource.RowPitch;
 			for (int32_t column = 0; column < mTextureDesc.Width; ++column)
 			{
-				uint32_t columnStart                         = column * 4;
-				mRGBAData[row * mTextureDesc.Width + column] = data[rowStart + columnStart];
+				uint32_t columnStart = column * 4;
+
+				unsigned char r = data[rowStart + columnStart];
+				unsigned char g = data[rowStart + columnStart + 1];
+				unsigned char b = data[rowStart + columnStart + 2];
+
+				mRGBAData[row * mTextureDesc.Width + column] = static_cast<float>(r + g + b) / 3.0f;
 			};
 		}
 		context->Unmap(InTex2D.Get(), D3D11CalcSubresource(0, 0, 1));

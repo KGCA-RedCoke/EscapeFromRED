@@ -14,7 +14,7 @@ class JMeshObject : public ISerializable, public IRenderable
 {
 public:
 	JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
-	JMeshObject(const JWText& InName, std::vector<Ptr<JMeshData>> InData = {});
+	JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
 	~JMeshObject() override = default;
 
 public:

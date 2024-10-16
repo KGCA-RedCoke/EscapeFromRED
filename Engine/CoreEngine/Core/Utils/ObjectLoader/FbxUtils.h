@@ -41,10 +41,10 @@ namespace Utils::Fbx
 
 	struct FAnimationNode
 	{
-		int32_t              ParentIndex;
-		FbxNode*             Node;
+		int32_t             ParentIndex;
+		FbxNode*            Node;
 		Ptr<JAnimBoneTrack> AnimationTrack;
-		FMatrix              Transform;
+		FMatrix             Transform;
 	};
 
 	/**
@@ -580,78 +580,73 @@ namespace Utils::Fbx
 		return world;
 	}
 
-	[[nodiscard]] inline Ptr<JMaterial> ParseLayerMaterial(FbxMesh* InMesh, int32_t InMaterialIndex)
+	[[nodiscard]] inline Ptr<JMaterial> ParseLayerMaterial(const FbxMesh* InMesh, const int32_t InMaterialIndex,
+														   bool&          bShouldSerialize)
 	{
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
 
-		auto fileName = std::format("{}", fbxMaterial->GetName());
-		// 새 머티리얼 생성
-		auto materialSavePath = std::format("Game/Materials/{0}", InMesh->GetName());
+		const char* fileName = fbxMaterial->GetName();
+			/** 셰이딩 모델은 거의 PhongShading */
 
-		std::filesystem::create_directory(materialSavePath);
-
-		auto fullPath = std::format("{0}/{1}.jasset", materialSavePath, fileName);
-
-		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fullPath.c_str());
-
-		/** 셰이딩 모델은 거의 PhongShading */
-
-
-		/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
-		for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
+		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fileName);
+		if (!material->HasMaterial())
 		{
-			const FFbxProperty& textureParams = FbxMaterialProperties[i];
-
-			if (material->GetMaterialParam(textureParams.PropertyName))
+			/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
+			for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
 			{
-				continue;
-			}
+				const FFbxProperty& textureParams = FbxMaterialProperties[i];
 
-
-			// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
-			// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
-			FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
-			if (property.IsValid())
-			{
-				switch (textureParams.ParamType)
+				if (material->GetMaterialParam(textureParams.PropertyName))
 				{
-				case EMaterialParamType::Float:
-					material->AddMaterialParam(textureParams.PropertyName,
-											   EMaterialParamType::Float,
-											   textureParams.ParamFlags,
-											   static_cast<float>(property.Get<FbxDouble>()));
-					break;
-				case EMaterialParamType::Texture2D:
-				case EMaterialParamType::TextureCube:
-				case EMaterialParamType::TextureVolume:
-					if (!Utils::Fbx::ParseTexture_AddParamToMaterial(property,
-																	 textureParams.PropertyName,
-																	 material.get(),
-																	 textureParams.ParamFlags))
-					{
-						// 텍스처 매핑이 안되어있으면 Color값을 가져옴
-						FbxDouble3 colorProp = property.Get<FbxDouble3>(); // RGB Color
+					continue;
+				}
 
+
+				// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
+				// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
+				FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
+				if (property.IsValid())
+				{
+					switch (textureParams.ParamType)
+					{
+					case EMaterialParamType::Float:
 						material->AddMaterialParam(textureParams.PropertyName,
-												   EMaterialParamType::Float3,
+												   EMaterialParamType::Float,
 												   textureParams.ParamFlags,
-												   FVector
-												   {
-													   static_cast<float>(colorProp.mData[0]),
-													   static_cast<float>(colorProp.mData[1]),
-													   static_cast<float>(colorProp.mData[2])
-												   });
+												   static_cast<float>(property.Get<FbxDouble>()));
+						break;
+					case EMaterialParamType::Texture2D:
+					case EMaterialParamType::TextureCube:
+					case EMaterialParamType::TextureVolume:
+						if (!Utils::Fbx::ParseTexture_AddParamToMaterial(property,
+																		 textureParams.PropertyName,
+																		 material.get(),
+																		 textureParams.ParamFlags))
+						{
+							// 텍스처 매핑이 안되어있으면 Color값을 가져옴
+							FbxDouble3 colorProp = property.Get<FbxDouble3>(); // RGB Color
+
+							material->AddMaterialParam(textureParams.PropertyName,
+													   EMaterialParamType::Float3,
+													   textureParams.ParamFlags,
+													   FVector
+													   {
+														   static_cast<float>(colorProp.mData[0]),
+														   static_cast<float>(colorProp.mData[1]),
+														   static_cast<float>(colorProp.mData[2])
+													   });
+						}
+						break;
+					default:
+						LOG_CORE_ERROR("Invalid Material Param Type");
+						break;
 					}
-					break;
-				default:
-					LOG_CORE_ERROR("Invalid Material Param Type");
-					break;
 				}
 			}
-		}
 
-		Utils::Serialization::Serialize(fullPath.c_str(), material.get());
+			bShouldSerialize = true;
+		}
 
 		return material;
 	}

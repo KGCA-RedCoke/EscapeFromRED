@@ -144,7 +144,7 @@ namespace Utils::Fbx
 				}
 				else
 				{
-					for (int subMeshIndex = 0; subMeshIndex < mesh->mSubMesh.size(); )
+					for (int subMeshIndex = 0; subMeshIndex < mesh->mSubMesh.size();)
 					{
 						Ptr<JMaterial> subMaterial = materials[subMeshIndex];
 
@@ -652,7 +652,7 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(takeInfo->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(takeInfo->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		Ptr<JAnimationClip> anim          = MakePtr<JAnimationClip>();
+		Ptr<JAnimationClip> anim      = MakePtr<JAnimationClip>();
 		anim->mName                   = Buffer->Buffer();
 		anim->mStartTime              = startTime;
 		anim->mEndTime                = endTime;
@@ -665,9 +665,9 @@ namespace Utils::Fbx
 		int32_t trackNum = mScanList.size();
 		for (int32_t i = 0; i < trackNum; ++i)
 		{
-			const char*          trackName = mScanList[i].Node->GetName();
+			const char*         trackName = mScanList[i].Node->GetName();
 			Ptr<JAnimBoneTrack> animTrack = MakePtr<JAnimBoneTrack>();
-			animTrack->Name                = trackName;
+			animTrack->Name               = trackName;
 			anim->AddTrack(animTrack);
 			mScanList[i].AnimationTrack = animTrack;
 		}
@@ -755,13 +755,16 @@ namespace Utils::Fbx
 
 				const int32_t layerMaterialNum = InMesh->GetNode()->GetMaterialCount();
 
+				const JText saveFilePath = std::format("Game/Materials/{0}", InMeshData->mName);
+				bool bShouldSerialize = false;
+
 				/// 다수의 머티리얼이 존재하면 sub-mesh(기존과 다른 vertexBuffer를 생성)가 필요하다.
 				/// SubMesh를 통해 서로 다른 머티리얼을 가진 메시를 하나의 메시로 표현할 수 있다.
 				if (layerMaterialNum > 1)
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, i);
+						Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, i, bShouldSerialize);
 						materials.push_back(fbxMat);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
@@ -782,6 +785,16 @@ namespace Utils::Fbx
 
 						// 머티리얼 수 만큼 증가
 						InMeshData->mMaterialRefNum++;
+
+						if (bShouldSerialize)
+						{
+							JText finalPath = std::format("{0}/{1}.jasset", saveFilePath, fbxMat->GetMaterialName());
+							if (!std::filesystem::exists(saveFilePath))
+							{
+								std::filesystem::create_directories(saveFilePath);
+							}
+							Utils::Serialization::Serialize(finalPath.c_str(), fbxMat.get());
+						}
 					}
 				}
 				// 메시당 하나의 머티리얼만을 사용한다면 submesh를 만들 필요가 없어진다.
@@ -790,8 +803,18 @@ namespace Utils::Fbx
 					InMeshData->mMaterialRefNum = 1;
 
 					// 머티리얼 정보만 가져와서 저장해놓자.
-					Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, 0);
+					Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
 					materials.push_back(fbxMat);
+
+					if (bShouldSerialize)
+					{
+						JText finalPath = std::format("{0}/{1}.jasset", saveFilePath, fbxMat->GetMaterialName());
+						if (!std::filesystem::exists(saveFilePath))
+						{
+							std::filesystem::create_directories(saveFilePath);
+						}
+						Utils::Serialization::Serialize(finalPath.c_str(), fbxMat.get());
+					}
 				}
 			}
 
@@ -868,9 +891,9 @@ namespace Utils::Fbx
 
 		XMMatrixDecompose(&scale, &rotation, &translation, localMat);
 
-		FVector  scaleVec;
+		FVector scaleVec;
 		FVector rotationVec;
-		FVector  translationVec;
+		FVector translationVec;
 
 		XMStoreFloat3(&scaleVec, scale);
 		XMStoreFloat3(&rotationVec, rotation);

@@ -114,7 +114,11 @@ void JLandScape::GenVertex()
 	const float textureOffsetU = 1.0f / (mMapDescription.Column - 1);
 	const float textureOffsetV = 1.0f / (mMapDescription.Row - 1);
 
+	const float albedoMapUScale = static_cast<float>(mMapDescription.Column) / mAlbedoMap->GetTextureDesc().Width;
+	const float albedoMapVScale = static_cast<float>(mMapDescription.Row) / mAlbedoMap->GetTextureDesc().Height;
+
 	mVertexInfo.resize(mMapDescription.Row * mMapDescription.Column);
+	JArray<float> rgbaData = mHeightMap->GetRGBAData();
 
 	for (int32_t row = 0; row < mMapDescription.Row; ++row)
 	{
@@ -126,10 +130,11 @@ void JLandScape::GenVertex()
 			// 버텍스 정보 설정
 			mVertexInfo[index].Position = FVector(
 												  (column - halfColumn) * mMapDescription.CellDistance,
-												  mHeightMap->GetRGBAData()[index] * mMapDescription.ScaleHeight,
+												  rgbaData[index] * mMapDescription.ScaleHeight,
 												  -(row - halfRow) * mMapDescription.CellDistance);
 
-			mVertexInfo[index].UV     = FVector2(column * textureOffsetU, row * textureOffsetV);
+			mVertexInfo[index].UV = FVector2(column * textureOffsetU ,
+											 row * textureOffsetV );
 			mVertexInfo[index].Normal = FVector(0.0f, 1.0f, 0.0f);
 			mVertexInfo[index].Color  = FLinearColor::Green;
 		}
