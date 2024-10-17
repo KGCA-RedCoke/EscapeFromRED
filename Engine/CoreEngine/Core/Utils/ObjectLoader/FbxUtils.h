@@ -586,8 +586,8 @@ namespace Utils::Fbx
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
 
-		const char* fileName = fbxMaterial->GetName();
-			/** 셰이딩 모델은 거의 PhongShading */
+		JText fileName = std::format("Game/Materials/{0}/{1}.jasset", InMesh->GetName(), fbxMaterial->GetName());
+		/** 셰이딩 모델은 거의 PhongShading */
 
 		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fileName);
 		if (!material->HasMaterial())
@@ -601,7 +601,6 @@ namespace Utils::Fbx
 				{
 					continue;
 				}
-
 
 				// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
 				// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)

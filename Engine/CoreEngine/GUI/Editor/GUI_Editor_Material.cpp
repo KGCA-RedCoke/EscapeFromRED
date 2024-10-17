@@ -9,6 +9,8 @@
 GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	: GUI_Base(InTitle),
 	  bOpenFileBrowser(false),
+	  bOpenFolder(false),
+	  mFilePath{"Game/Materials"},
 	  mDeltaTime(0)
 {
 	mWindowFlags |= ImGuiWindowFlags_MenuBar;
@@ -24,7 +26,7 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	assert(mCamera);
 
 	// 3. 구체 메시를 생성 (굳이 구체가 아니어도 상관없음, 대부분의 엔진에서는 구체를 사용)
-	mSphere = IManager.MeshManager->CreateOrLoad("Game/Mesh/SM_CP_Mid_Male_Body.jasset");
+	mSphere = IManager.MeshManager->CreateOrLoad("Game/Mesh/Cube.jasset");
 	assert(mSphere);
 	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
 	mMaterialToEdit = mSphere->mPrimitiveMeshData[0]->mMaterial;
@@ -171,20 +173,10 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	ImGui::Separator();
 
-	// if (ImGui::CollapsingHeader("Textures"))
-	// {
-	// 	// 구체는 메시가 하나만 있으므로 0번째 메시를 가져온다.
-	// 	JMeshData* meshData     = mSphere->mPrimitiveMeshData[0].get();
-	// 	JMaterial* materialData = meshData->mMaterial;
-	//
-	// 	// Texture Params
-	// 	if (!materialData)
-	// 	{
-	// 		materialData = mMaterialToEdit;
-	// 	}
-	// 	ShowTextureSlot(materialData, TODO, NAME_MAT_Diffuse);
-	// 	ShowTextureSlot(materialData, TODO, NAME_MAT_Normal);
-	// }
+	if (ImGui::Button("##Add New Param"))
+	{
+		bShowNewParam = true;
+	}
 
 	ImGui::InputText("##SavePath", mFilePath, 256);
 	ImGui::SameLine();
@@ -201,11 +193,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	if (ImGui::Button("Save"))
 	{
-		auto fileName = std::format("Game/Materials/{}.jasset", mMaterialToEdit->mMaterialName.c_str());
-		Utils::Serialization::Serialize(mMaterialToEdit->mMaterialName.c_str(), mMaterialToEdit.get());
-
-		// mMaterialToEdit = nullptr;
-
+		Utils::Serialization::Serialize(mMaterialToEdit->mMaterialPath.c_str(), mMaterialToEdit.get());
 	}
 
 	ImGui::EndChild();
@@ -221,11 +209,16 @@ void GUI_Editor_Material::ShowFileBrowser()
 		JText filePath;
 		if (ImGui::FetchFileBrowserResult(mFilePath, filePath))
 		{
-			// Utils::Serialization::DeSerialize(filePath.c_str(), mMaterialToEdit.get());
+			Utils::Serialization::DeSerialize(filePath.c_str(), mMaterialToEdit.get());
 			bOpenFileBrowser = false;
 			bOpenFolder      = false;
 		}
 	}
+}
+
+void GUI_Editor_Material::ShowParamPopup()
+{
+	
 }
 
 void GUI_Editor_Material::ShowTextureSlot(const Ptr<JMaterial>& InMaterialData, EMaterialFlag Flags,
@@ -292,5 +285,10 @@ void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 	if (bOpenFileBrowser)
 	{
 		ShowFileBrowser();
+	}
+
+	if (bShowNewParam)
+	{
+		ShowParamPopup();
 	}
 }

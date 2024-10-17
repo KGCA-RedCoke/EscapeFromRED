@@ -57,7 +57,7 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 	Utils::Serialization::Serialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), FileStream);
 	if (bMaterialValid)
 	{
-		auto matName = mMaterial->GetMaterialName();
+		auto matName = mMaterial->GetMaterialPath();
 		Utils::Serialization::Serialize_Text(matName, FileStream);
 		// mMaterial->Serialize_Implement(FileStream);
 	}
@@ -123,9 +123,9 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), InFileStream);
 	if (bMaterialValid)
 	{
-		JText matName;
-		Utils::Serialization::DeSerialize_Text(matName, InFileStream);
-		mMaterial = IManager.MaterialManager->CreateOrLoad(matName);
+		JText matPath;
+		Utils::Serialization::DeSerialize_Text(matPath, InFileStream);
+		mMaterial = IManager.MaterialManager->CreateOrLoad(matPath);
 		// mMaterial->DeSerialize_Implement(InFileStream);
 	}
 

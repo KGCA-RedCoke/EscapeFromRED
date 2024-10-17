@@ -33,6 +33,8 @@ private:
 	void ShowMaterialEditor();
 	void ShowFileBrowser();
 
+	void ShowParamPopup();
+
 	void ShowTextureSlot(const Ptr<JMaterial>& InMaterialData, EMaterialFlag Flags, const char* TextureType) const;
 
 private:
@@ -40,6 +42,7 @@ private:
 	inline static int32_t s_CachedMaterialEditorIndex = 0; // 캐시된 Material Editor  
 
 	bool bOpenFileBrowser;
+	bool bShowNewParam;
 	bool bOpenFolder;
 
 	char mFilePath[256];

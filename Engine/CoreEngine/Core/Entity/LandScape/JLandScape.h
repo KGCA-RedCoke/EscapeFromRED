@@ -36,7 +36,6 @@ private:
 	void GenerateLandScape();
 	void GenVertex();
 	void GenIndex();
-	void ApplyMap();
 
 protected:
 	FMapDesc mMapDescription;
@@ -49,6 +48,7 @@ protected:
 
 	Ptr<JTexture> mAlbedoMap;
 	Ptr<JTexture> mHeightMap;
+	Ptr<JTexture> mNormalMap;
 
 	friend class GUI_Editor_LandScape;
 };

@@ -10,6 +10,9 @@ Texture2D g_ReflectionTexture : register(t3);
 Texture2D g_AmbientOcclusionTexture : register(t4);
 Texture2D g_NormalTexture : register(t5);
 Texture2D g_DisplacementTexture : register(t6);
+Texture2D g_RoughnessTexture : register(t7);
+Texture2D g_MetallicTexture : register(t8);
+
 
 SamplerState g_DiffuseSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
@@ -56,31 +59,42 @@ PixelInput_Base VS(VertexInput_Base Input)
 
 float4 PS(PixelInput_Base Input) : SV_TARGET
 {
+
+	// Texture Map
     float3 albedoColor = g_DiffuseTexture.Sample(g_DiffuseSampler, Input.UV);
-	if (bUseDiffuseMap != 1)
-	{
-		albedoColor = DiffuseColor;
-	}
-
-	// float  specularColor = specularTexture.Sample(g_DiffuseSampler, Input.UV).r;
 	float3 normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
-
 	// 	R (Red): Ambient Occlusion (AO)
 	//  G (Green): Roughness
 	//  B (Blue): Metallic
-	// float  ambientColor  = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
-	// float  roughness     = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
-	// float  metallic      = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
+	float  ambientColor  = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
+	float  roughness     = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
+	float  metallic      = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
+
+	ambientColor = 0.1;
+	roughness = 0.5;
+ 	metallic = 0.5;    
+
+	if (bUseDiffuseMap != 1)
+	{
+		albedoColor.rgb = DiffuseColor.rgb;
+	}
 
 	normalColor = normalize(normalColor * 2.0f - 1.0f); // -1 ~ 1 사이로 정규화
+	if (bUseNormalMap != 1)
+	{
+		normalColor = Input.Normal;
+	}
 
-	float3x3 TBN       = float3x3(Input.Tangent, Input.Binormal, Input.Normal);
-	TBN                = transpose(TBN);
-	float3 worldNormal = mul(TBN, normalColor);
+	if (bUseAmbientMap != 1)
+    {
+        ambientColor = AmbientColor;
+    }
+
+	float3 worldNormal = mul( Input.Normal, normalColor);
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
 	float3 lightDir = normalize(Input.LightDir);
-	float  NdotL    = saturate(dot(worldNormal, -lightDir));
+	float  NdotL    = saturate(dot(normalColor, -lightDir));
 	float3 diffuse  = NdotL * albedoColor.rgb * LightColor.rgb;
 	/*
 		// Specular 계산 (Cook-Torrance 모델 적용 가능)
@@ -113,20 +127,20 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	if (diffuse.x > 0)
 	{
 		// 노말과 라이트의 반사각
-		float3 reflection = reflect(lightDir, worldNormal);
+		float3 reflection = reflect(lightDir, normalColor);
 		float3 viewDir    = normalize(Input.ViewDir);
 
 		// Specular는 카메라뷰와 반사각의 내적값을 제곱(할수록 광 나는 부분이 줄어듦) 사용
 		specular = saturate(dot(reflection, -viewDir));
-		specular = pow(specular, 20.0f);
+		specular = pow(specular, 1 / roughness);
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = float3(0.4f, 0.4f, 0.4f) * albedoColor.rgb;
+	float3 ambient = ambientColor * albedoColor.rgb;
 	//
-	float3 finalColor = float3(diffuse +  ambient +specular);
+	float3 finalColor = float3(diffuse +  ambient + (specular * metallic));
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
 
-	return float4(finalColor, 1.0f);
+	return float4(finalColor, 1.f);
 
 }

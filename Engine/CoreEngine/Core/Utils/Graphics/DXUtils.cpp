@@ -406,5 +406,17 @@ namespace Utils::DX
 		}
 	}
 
+	FVector ComputeFaceNormal(int32_t Index0, int32_t Index1, int32_t Index2, const float* InHeightMap)
+	{
+
+		FVector v0 = InHeightMap[Index1] - InHeightMap[Index0];
+		FVector v1 = InHeightMap[Index2] - InHeightMap[Index0];
+
+		FVector normal = v0.Cross(v1);
+		normal.Normalize();
+
+		return normal;
+	}
+
 
 }

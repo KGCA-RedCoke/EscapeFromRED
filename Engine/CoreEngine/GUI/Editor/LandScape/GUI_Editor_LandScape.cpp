@@ -48,6 +48,20 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 		ImGui::EndCombo();
 	}
 
+	if (ImGui::BeginCombo("##NormalMap", WString2String(mNormalTexture).c_str()))
+	{
+		const JArray<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+		for (auto& loadedTexture : loaded)
+		{
+			JText texPath = WString2String(loadedTexture->GetPath());
+			if (ImGui::Selectable(texPath.c_str()))
+			{
+				mNormalTexture = loadedTexture->GetPath();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
 	ImGui::Separator();
 
 	if (ImGui::Button("Generate LandScape"))
@@ -63,9 +77,19 @@ void GUI_Editor_LandScape::GenerateLandScape()
 
 	newLandScape->Initialize();
 
-	newLandScape->mAlbedoMap = IManager.TextureManager->CreateOrLoad(mAlbedoTexture);
-	newLandScape->mHeightMap = IManager.TextureManager->CreateOrLoad(mHeightTexture);
-	newLandScape->mHeightMap->SetEditable();
+	if (!mAlbedoTexture.empty())
+	{
+		newLandScape->mAlbedoMap = IManager.TextureManager->CreateOrLoad(mAlbedoTexture);
+	}
+	if (!mHeightTexture.empty())
+	{
+		newLandScape->mHeightMap = IManager.TextureManager->CreateOrLoad(mHeightTexture);
+		newLandScape->mHeightMap->SetEditable();
+	}
+	if (!mNormalTexture.empty())
+	{
+		newLandScape->mNormalMap = IManager.TextureManager->CreateOrLoad(mNormalTexture);
+	}
 
 	newLandScape->GenerateLandScape();
 

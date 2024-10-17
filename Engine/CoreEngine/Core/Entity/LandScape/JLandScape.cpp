@@ -64,10 +64,12 @@ void JLandScape::Draw()
 											   ? ERasterState::WireFrame
 											   : ERasterState::CullNone);
 
+	IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
+
 	uint32_t indexCount    = mIndexInfo.size(); // 총 인덱스 수
 	uint32_t instanceCount = mMapDescription.Column * mMapDescription.Row; // 인스턴스 수
 
-	ApplyMap();
+	mMaterial->ApplyMaterialParams(deviceContext);
 
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 	// deviceContext->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
@@ -92,16 +94,27 @@ void JLandScape::GenerateLandScape()
 
 	mMaterial = IManager.MaterialManager->CreateOrLoad("Game/LandScape/Material/TestMaterial.jasset");
 
-	FMaterialParams albedoParams;
-	albedoParams.Name         = "AlbedoMap";
-	albedoParams.ParamType    = EMaterialParamType::Texture2D;
-	albedoParams.Key          = StringHash("AlbedoMap");
-	albedoParams.Flags        = EMaterialFlag::DiffuseColor;
-	albedoParams.TextureValue = mAlbedoMap;
+	if (mAlbedoMap)
+	{
+		FMaterialParams albedoParams;
+		albedoParams.Name         = "AlbedoMap";
+		albedoParams.ParamType    = EMaterialParamType::Texture2D;
+		albedoParams.Key          = StringHash("AlbedoMap");
+		albedoParams.Flags        = EMaterialFlag::DiffuseColor;
+		albedoParams.TextureValue = mAlbedoMap;
+		mMaterial->AddMaterialParam(albedoParams);
+	}
 
-	mMaterial->AddMaterialParam(albedoParams);
-
-
+	if (mNormalMap)
+	{
+		FMaterialParams normalParams;
+		normalParams.Name         = "NormalMap";
+		normalParams.ParamType    = EMaterialParamType::Texture2D;
+		normalParams.Key          = StringHash("NormalMap");
+		normalParams.Flags        = EMaterialFlag::NormalMap;
+		normalParams.TextureValue = mNormalMap;
+		mMaterial->AddMaterialParam(normalParams);
+	}
 }
 
 void JLandScape::GenVertex()
@@ -114,9 +127,6 @@ void JLandScape::GenVertex()
 	const float textureOffsetU = 1.0f / (mMapDescription.Column - 1);
 	const float textureOffsetV = 1.0f / (mMapDescription.Row - 1);
 
-	const float albedoMapUScale = static_cast<float>(mMapDescription.Column) / mAlbedoMap->GetTextureDesc().Width;
-	const float albedoMapVScale = static_cast<float>(mMapDescription.Row) / mAlbedoMap->GetTextureDesc().Height;
-
 	mVertexInfo.resize(mMapDescription.Row * mMapDescription.Column);
 	JArray<float> rgbaData = mHeightMap->GetRGBAData();
 
@@ -127,16 +137,21 @@ void JLandScape::GenVertex()
 			// 배열의 인덱스 계산 
 			const int32_t index = row * mMapDescription.Column + column;
 
+			// 페이스 노말
+			// FVector faceNormal = Utils::DX::ComputeFaceNormal()
+
 			// 버텍스 정보 설정
 			mVertexInfo[index].Position = FVector(
 												  (column - halfColumn) * mMapDescription.CellDistance,
 												  rgbaData[index] * mMapDescription.ScaleHeight,
 												  -(row - halfRow) * mMapDescription.CellDistance);
 
-			mVertexInfo[index].UV = FVector2(column * textureOffsetU ,
-											 row * textureOffsetV );
-			mVertexInfo[index].Normal = FVector(0.0f, 1.0f, 0.0f);
-			mVertexInfo[index].Color  = FLinearColor::Green;
+			mVertexInfo[index].UV = FVector2(column * textureOffsetU,
+											 row * textureOffsetV);
+			mVertexInfo[index].Normal   = FVector(0.0f, 1.0f, 0.0f);
+			mVertexInfo[index].Binormal = FVector(1.0f, 0.0f, 0.0f);
+			mVertexInfo[index].Tangent  = FVector(0.0f, 0.0f, 1.0f);
+			mVertexInfo[index].Color    = FLinearColor::Green;
 		}
 	}
 
@@ -191,20 +206,4 @@ void JLandScape::GenIndex()
 							mInstanceBuffer.CBuffer_Space[0].GetAddressOf(),
 							D3D11_USAGE_DYNAMIC,
 							D3D11_CPU_ACCESS_WRITE);
-}
-
-void JLandScape::ApplyMap()
-{
-
-	// assert(mAlbedoMap);
-	// assert(mHeightMap);
-
-	// Texture Mapping
-
-	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
-	assert(deviceContext);
-
-	mMaterial->ApplyMaterialParams(deviceContext);
-
-
 }

@@ -6,8 +6,7 @@
 
 
 JMaterial::JMaterial()
-	:
-	  mMaterial(),
+	: mMaterial(),
 	  bTransparent(false)
 {
 	// mShader = IManager.ShaderManager.BasicShader;
@@ -27,7 +26,8 @@ JMaterial::JMaterial()
 JMaterial::JMaterial(JTextView InMaterialName)
 	: JMaterial()
 {
-	mMaterialName = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialPath = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialName = ParseFile(mMaterialPath);
 
 	if (std::filesystem::is_regular_file(InMaterialName))
 	{
@@ -142,8 +142,8 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 	// 파라미터들을 셰이더에 넘겨준다.
 	for (int32_t i = 0; i < mMaterialParams.size(); ++i)
 	{
-		FMaterialParams param      = mMaterialParams[i];
-		const FVector4  colorValue = FVector4(param.Float3Value, 1.f);
+		const FMaterialParams param      = mMaterialParams[i];
+		const FVector4        colorValue = FVector4(param.Float3Value, 1.f);
 
 		switch (param.Flags)
 		{
@@ -151,15 +151,13 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.DiffuseColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::DiffuseColor));
-				mMaterial.bUseDiffuseMap = 1;
+				mMaterial.bUseDiffuseMap = true;
 			}
 			break;
 		case EMaterialFlag::EmissiveColor:
 			mMaterial.EmissiveColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::EmissiveColor));
 				mMaterial.bUseEmissiveMap = true;
 			}
 			break;
@@ -168,7 +166,6 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.SpecularColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::SpecularColor));
 				mMaterial.bUseSpecularMap = true;
 			}
 			break;
@@ -176,7 +173,6 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.ReflectionColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::ReflectionColor));
 				mMaterial.bUseReflectionMap = true;
 			}
 			break;
@@ -185,7 +181,6 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.AmbientColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::AmbientColor));
 				mMaterial.bUseAmbientMap = true;
 			}
 			break;
@@ -198,7 +193,6 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.DisplacementColor = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::DisplacementColor));
 				mMaterial.bUseDisplacementMap = true;
 			}
 			break;
@@ -207,7 +201,6 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			mMaterial.NormalMap = colorValue;
 			if (param.ParamType == EMaterialParamType::Texture2D)
 			{
-				param.TextureValue->PreRender(EnumAsByte(EMaterialFlag::NormalMap));
 				mMaterial.bUseNormalMap = true;
 			}
 			break;
@@ -252,6 +245,16 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			break;
 		}
 
+		if (param.ParamType == EMaterialParamType::Texture2D && param.TextureValue)
+		{
+			param.TextureValue->PreRender(EnumAsByte(param.Flags));
+		}
+		else
+		{
+			ID3D11ShaderResourceView* nullSRV = nullptr;
+			IManager.RenderManager->GetImmediateDeviceContext()->
+					 PSSetShaderResources(EnumAsByte(param.Flags), 1, &nullSRV);
+		}
 
 	}
 	Utils::DX::UpdateDynamicBuffer(InDeviceContext,

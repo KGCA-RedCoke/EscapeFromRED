@@ -110,7 +110,6 @@ struct FMaterialParams : public ISerializable
 			return false;
 		}
 
-
 		// Name
 		Utils::Serialization::Serialize_Text(Name, FileStream);
 
@@ -133,6 +132,12 @@ struct FMaterialParams : public ISerializable
 			break;
 		case EMaterialParamType::Integer:
 			Utils::Serialization::Serialize_Primitive(&IntegerValue, sizeof(IntegerValue), FileStream);
+			break;
+		case EMaterialParamType::Float:
+			Utils::Serialization::Serialize_Primitive(&FloatValue, sizeof(FloatValue), FileStream);
+			break;
+		case EMaterialParamType::Float2:
+			Utils::Serialization::Serialize_Primitive(&Float2Value, sizeof(Float2Value), FileStream);
 			break;
 		case EMaterialParamType::Float3:
 			Utils::Serialization::Serialize_Primitive(&Float3Value, sizeof(Float3Value), FileStream);
@@ -180,6 +185,12 @@ struct FMaterialParams : public ISerializable
 			break;
 		case EMaterialParamType::Integer:
 			Utils::Serialization::DeSerialize_Primitive(&IntegerValue, sizeof(IntegerValue), InFileStream);
+			break;
+		case EMaterialParamType::Float:
+			Utils::Serialization::DeSerialize_Primitive(&FloatValue, sizeof(FloatValue), InFileStream);
+			break;
+		case EMaterialParamType::Float2:
+			Utils::Serialization::DeSerialize_Primitive(&Float2Value, sizeof(Float2Value), InFileStream);
 			break;
 		case EMaterialParamType::Float3:
 			Utils::Serialization::DeSerialize_Primitive(&Float3Value, sizeof(Float3Value), InFileStream);
@@ -287,6 +298,7 @@ public:
 	[[nodiscard]] FORCEINLINE uint32_t                            GetMaterialID() const { return mMaterialID; }
 	[[nodiscard]] FORCEINLINE ComPtr<ID3D11Buffer>                GetMaterialBuffer() const { return mMaterialBuffer; }
 	[[nodiscard]] FORCEINLINE const CBuffer::Material&            GetMaterial() const { return mMaterial; }
+	[[nodiscard]] FORCEINLINE const JText&                        GetMaterialPath() const { return mMaterialPath; }
 	[[nodiscard]] FORCEINLINE const JText&                        GetMaterialName() const { return mMaterialName; }
 	[[nodiscard]] FORCEINLINE bool                                HasMaterial() const { return !mMaterialParams.empty(); }
 	[[nodiscard]] FORCEINLINE bool                                IsTransparent() const { return bTransparent; }
@@ -300,6 +312,7 @@ private:
 	void ApplyTextures();
 
 private:
+	JText                        mMaterialPath;
 	JText                        mMaterialName;
 	uint32_t                     mMaterialID;
 	std::vector<FMaterialParams> mMaterialParams;

@@ -104,4 +104,6 @@ namespace Utils::DX
 							 const void*          InData,
 							 UINT                 InSize);
 
+
+	FVector ComputeFaceNormal(int32_t Index0, int32_t Index1, int32_t Index2, const float* InHeightMap);
 }

@@ -72,7 +72,7 @@ void Application::Initialize()
 
 	Actors.reserve(10);
 
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Cube.jasset");
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Robot.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();
