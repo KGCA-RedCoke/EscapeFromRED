@@ -145,6 +145,27 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 		const FMaterialParams param      = mMaterialParams[i];
 		const FVector4        colorValue = FVector4(param.Float3Value, 1.f);
 
+
+		switch (param.ParamType)
+		{
+		case EMaterialParamType::Boolean:
+			break;
+		case EMaterialParamType::Integer:
+			break;
+		case EMaterialParamType::Float:
+			break;
+		case EMaterialParamType::Float2:
+			break;
+		case EMaterialParamType::Float3:
+			break;
+		case EMaterialParamType::Float4:
+			break;
+		// 텍스처 적용
+		case EMaterialParamType::String:
+		case EMaterialParamType::Texture2D:
+			break;
+		}
+
 		switch (param.Flags)
 		{
 		case EMaterialFlag::DiffuseColor:
@@ -245,23 +266,13 @@ void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
 			break;
 		}
 
-		if (param.ParamType == EMaterialParamType::Texture2D && param.TextureValue)
-		{
-			param.TextureValue->PreRender(EnumAsByte(param.Flags));
-		}
-		else
-		{
-			ID3D11ShaderResourceView* nullSRV = nullptr;
-			IManager.RenderManager->GetImmediateDeviceContext()->
-					 PSSetShaderResources(EnumAsByte(param.Flags), 1, &nullSRV);
-		}
-
+		JTexture::SetShaderTexture2D(EnumAsByte(param.Flags), param.TextureValue);
 	}
 	Utils::DX::UpdateDynamicBuffer(InDeviceContext,
 								   mMaterialBuffer.Get(),
 								   &mMaterial,
 								   sizeof(CBuffer::Material));
-	InDeviceContext->PSSetConstantBuffers(4, 1, mMaterialBuffer.GetAddressOf());
+	InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_MATERIAL, 1, mMaterialBuffer.GetAddressOf());
 }
 
 const FMaterialParams* JMaterial::GetMaterialParam(const JText& InParamName) const

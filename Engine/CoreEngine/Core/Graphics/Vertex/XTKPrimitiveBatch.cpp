@@ -37,7 +37,7 @@ void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
 	Ptr<JCamera> cam = IManager.CameraManager->GetCurrentMainCam();
 
-	mBatchEffect->SetWorld(cam->GetWorldMatrix());
+	mBatchEffect->SetWorld(FMatrix::Identity);
 	mBatchEffect->SetView(cam->GetViewMatrix());
 	mBatchEffect->SetProjection(cam->GetProjMatrix());
 }

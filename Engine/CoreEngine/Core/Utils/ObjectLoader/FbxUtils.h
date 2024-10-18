@@ -89,6 +89,9 @@ namespace Utils::Fbx
 			EMaterialParamType::Float
 		},
 
+		// Normal
+		{FbxSurfaceMaterial::sNormalMap, NAME_MAT_Normal, 0, EMaterialFlag::NormalMap, EMaterialParamType::Texture2D},
+
 		// Emissive
 		{FbxSurfaceMaterial::sEmissive, NAME_MAT_Emissive, 0, EMaterialFlag::EmissiveColor, EMaterialParamType::Texture2D},
 		{
@@ -109,7 +112,7 @@ namespace Utils::Fbx
 			EMaterialParamType::Texture2D
 		},
 		{
-			FbxSurfaceMaterial::sReflectionFactor, NAME_MAT_Reflection, 0, EMaterialFlag::ReflectionFactor,
+			FbxSurfaceMaterial::sReflectionFactor, NAME_MAT_ReflectionF, 0, EMaterialFlag::ReflectionFactor,
 			EMaterialParamType::Float
 		},
 
@@ -120,16 +123,13 @@ namespace Utils::Fbx
 			EMaterialParamType::Float
 		},
 
-		// Normal
-		{FbxSurfaceMaterial::sNormalMap, NAME_MAT_Normal, 0, EMaterialFlag::NormalMap, EMaterialParamType::Texture2D},
-
 		// Transparency
 		{
 			FbxSurfaceMaterial::sTransparentColor, NAME_MAT_Transparent, 1, EMaterialFlag::TransparentColor,
 			EMaterialParamType::Texture2D
 		},
 		{
-			FbxSurfaceMaterial::sTransparencyFactor, "NAME_MAT_TransparentF", 1, EMaterialFlag::TransparentFactor,
+			FbxSurfaceMaterial::sTransparencyFactor, NAME_MAT_TransparentF, 1, EMaterialFlag::TransparentFactor,
 			EMaterialParamType::Float
 		},
 
@@ -497,13 +497,25 @@ namespace Utils::Fbx
 
 #pragma endregion
 
-	[[nodiscard]] inline bool ParseTexture_AddParamToMaterial(FbxProperty&  Property,
-															  const char*   ParamName,
-															  JMaterial*    Material,
-															  EMaterialFlag ParamFlags)
+	inline void ParseMaterialProps(FbxProperty&  Property,
+								   const char*   ParamName,
+								   JMaterial*    Material,
+								   EMaterialFlag ParamFlags)
 	{
-		bool          bResult             = false;
+		/// 텍스처가 일반 텍스처인지 레이어드 텍스처인지 확인
+		/// 레이어드 텍스처?
+		///  - 여러개의 텍스처를 하나로 합쳐서 사용하는 방식
+		///  - 더 복잡한 방식으로 텍스처들이 혼합되었기 때문에 여러 텍스처가 있을 수 있음
+		FMaterialParams materialParams;
+		{
+			materialParams.Name         = ParamName;
+			materialParams.Key          = StringHash(ParamName);
+			materialParams.TextureValue = nullptr;
+			materialParams.Flags        = ParamFlags;
+		}
+
 		const int32_t layeredTextureCount = Property.GetSrcObjectCount<FbxLayeredTexture>();
+		const int32_t textureCount        = Property.GetSrcObjectCount<FbxTexture>();
 
 		// 텍스처 레이어가 여러개 일 경우
 		if (layeredTextureCount > 0)
@@ -513,44 +525,85 @@ namespace Utils::Fbx
 			for (int32_t i = 0; i < layeredTextureCount; ++i)
 			{
 				FbxLayeredTexture* fbxLayeredTexture = Property.GetSrcObject<FbxLayeredTexture>(i);
-				int32_t            textureCount      = fbxLayeredTexture->GetSrcObjectCount<FbxTexture>();
+				int32_t            layeredTextureNum = fbxLayeredTexture->GetSrcObjectCount<FbxTexture>();
 
-				for (int32_t j = 0; j < textureCount; ++j)
+				for (int32_t j = 0; j < layeredTextureNum; ++j)
 				{
 					if (Property.GetSrcObject<FbxTexture>(j))
 					{
-						const FbxFileTexture* fileTexture    = Property.GetSrcObject<FbxFileTexture>(j);
-						FMaterialParams       materialParams = Utils::Material::CreateTextureParam(
-							 ParamName,
-							 fileTexture->GetFileName(),
-							 textureIndex++,
-							 ParamFlags);
-						Material->AddMaterialParam(materialParams);
-						bResult = true;
+						const FbxFileTexture* fileTexture = Property.GetSrcObject<FbxFileTexture>(j);
+						materialParams                    = Material::CreateTextureParam(
+																	  ParamName,
+																	  fileTexture->GetFileName(),
+																	  textureIndex++,
+																	  ParamFlags);
 					}
 				}
 			}
 		}
-		else
-		{
-			const int32_t textureCount = Property.GetSrcObjectCount<FbxTexture>();
 
+		// 텍스처 레이어가 없고 단일 텍스처일 경우
+		else if (textureCount > 0)
+		{
 			for (int32_t i = 0; i < textureCount; ++i)
 			{
 				if (Property.GetSrcObject<FbxTexture>(i))
 				{
-					const FbxFileTexture* fileTexture    = Property.GetSrcObject<FbxFileTexture>(i);
-					FMaterialParams       materialParams = Material::CreateTextureParam(ParamName,
-																					  fileTexture->GetFileName(),
-																					  i,
-																					  ParamFlags);
-					Material->AddMaterialParam(materialParams);
-					bResult = true;
+					const FbxFileTexture* fileTexture = Property.GetSrcObject<FbxFileTexture>(i);
+					materialParams                    = Material::CreateTextureParam(ParamName,
+																  fileTexture->GetFileName(),
+																  i,
+																  ParamFlags);
 				}
 			}
 		}
 
-		return bResult;
+		// 텍스처가 없을 경우 숫자값을 파싱
+		else
+		{
+			switch (Property.GetPropertyDataType().GetType())
+			{
+			case eFbxBool:
+				materialParams.ParamType = EMaterialParamType::Boolean;
+				materialParams.BooleanValue = Property.Get<FbxBool>();
+				break;
+			case eFbxInt:
+				materialParams.ParamType = EMaterialParamType::Integer;
+				materialParams.IntegerValue = Property.Get<FbxInt>();
+				break;
+			case eFbxFloat:
+				materialParams.ParamType = EMaterialParamType::Float;
+				materialParams.FloatValue = Property.Get<FbxFloat>();
+				break;
+			case eFbxDouble:
+				materialParams.ParamType = EMaterialParamType::Float;
+				materialParams.FloatValue = Property.Get<FbxDouble>();
+				break;
+			case eFbxDouble2:
+				materialParams.ParamType = EMaterialParamType::Float2;
+				materialParams.Float2Value.x = Property.Get<FbxDouble2>().mData[0];
+				materialParams.Float2Value.y = Property.Get<FbxDouble2>().mData[1];
+				break;
+			case eFbxDouble3:
+				materialParams.ParamType = EMaterialParamType::Float3;
+				materialParams.Float3Value.x = Property.Get<FbxDouble3>().mData[0];
+				materialParams.Float3Value.y = Property.Get<FbxDouble3>().mData[1];
+				materialParams.Float3Value.z = Property.Get<FbxDouble3>().mData[2];
+				break;
+			case eFbxDouble4:
+				materialParams.ParamType = EMaterialParamType::Float4;
+				materialParams.Float4Value.x = Property.Get<FbxDouble4>().mData[0];
+				materialParams.Float4Value.y = Property.Get<FbxDouble4>().mData[1];
+				materialParams.Float4Value.z = Property.Get<FbxDouble4>().mData[2];
+				materialParams.Float4Value.w = Property.Get<FbxDouble4>().mData[3];
+				break;
+			default:
+				LOG_CORE_TRACE("Unknown Property Type");
+				break;
+			}
+		}
+
+		Material->AddMaterialParam(materialParams);
 	}
 
 	[[nodiscard]] inline FMatrix ParseTransform(FbxNode* InNode, const FMatrix& ParentWorldMat)
@@ -590,8 +643,16 @@ namespace Utils::Fbx
 		/** 셰이딩 모델은 거의 PhongShading */
 
 		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fileName);
+		// 머티리얼이 이미 존재할 경우 아래 파싱 과정 생략
 		if (!material->HasMaterial())
 		{
+			/// 머티리얼 파싱
+			/// FBX SDK에서 정확히 Property Name이 어떻게 설정되어있는지 모르겠다.
+			/// Metallic에 관련된 텍스처를 뽑고 싶어도 FBX SDK에서는 Metallic이라는 이름을 찾을 수 없다.
+			/// (Metallic뿐 아니라 PBR(Pyshically Based Rendering)에 관련된 텍스처이름들을 찾을 수 없다.)
+			/// 수동으로 모든 프로퍼티들을 파싱해보니 다른 프로퍼티로 저장되어 있을 수 있음
+			/// 따라서 머티리얼 내에 존재하는 모든 텍스처(우리에게 필수적인)부터 파싱하고, 없을 경우 Color값을 파싱한다.
+
 			/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
 			for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
 			{
@@ -607,40 +668,10 @@ namespace Utils::Fbx
 				FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
 				if (property.IsValid())
 				{
-					switch (textureParams.ParamType)
-					{
-					case EMaterialParamType::Float:
-						material->AddMaterialParam(textureParams.PropertyName,
-												   EMaterialParamType::Float,
-												   textureParams.ParamFlags,
-												   static_cast<float>(property.Get<FbxDouble>()));
-						break;
-					case EMaterialParamType::Texture2D:
-					case EMaterialParamType::TextureCube:
-					case EMaterialParamType::TextureVolume:
-						if (!Utils::Fbx::ParseTexture_AddParamToMaterial(property,
-																		 textureParams.PropertyName,
-																		 material.get(),
-																		 textureParams.ParamFlags))
-						{
-							// 텍스처 매핑이 안되어있으면 Color값을 가져옴
-							FbxDouble3 colorProp = property.Get<FbxDouble3>(); // RGB Color
-
-							material->AddMaterialParam(textureParams.PropertyName,
-													   EMaterialParamType::Float3,
-													   textureParams.ParamFlags,
-													   FVector
-													   {
-														   static_cast<float>(colorProp.mData[0]),
-														   static_cast<float>(colorProp.mData[1]),
-														   static_cast<float>(colorProp.mData[2])
-													   });
-						}
-						break;
-					default:
-						LOG_CORE_ERROR("Invalid Material Param Type");
-						break;
-					}
+					ParseMaterialProps(property,
+									   textureParams.PropertyName,
+									   material.get(),
+									   textureParams.ParamFlags);
 				}
 			}
 

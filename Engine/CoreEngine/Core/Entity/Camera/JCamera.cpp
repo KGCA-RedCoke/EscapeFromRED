@@ -54,7 +54,7 @@ void JCamera::Initialize()
 {
 	mInputKeyboard.Initialize();
 
-	
+
 	Utils::DX::CreateBuffer(IManager.RenderManager->GetDevice(),
 							D3D11_BIND_CONSTANT_BUFFER,
 							nullptr,
@@ -103,8 +103,9 @@ void JCamera::Update(float_t DeltaTime)
 	XMMATRIX view = XMMatrixLookAtLH(vEye, vLookAt, worldUp);
 	XMStoreFloat4x4(&mView, view);
 
-	XMMATRIX mTrans = XMMatrixTranslation(0, 0, mVelocity.z * DeltaTime);
-	XMStoreFloat4x4(&mWorld, mTrans);
+	mWorld = XMMatrixInverse(nullptr, view);
+	// XMMATRIX mTrans = XMMatrixTranslation(0, 0, mVelocity.z * DeltaTime);
+	// XMStoreFloat4x4(&mWorld, mTrans);
 
 	// Update the camera constant buffer
 	CBuffer::Camera camPos;
@@ -184,7 +185,12 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 
 void JCamera::SetCameraConstantBuffer(uint32_t InSlot)
 {
-	IManager.RenderManager->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot, 1, mCameraConstantBuffer.GetAddressOf());
+	IManager.RenderManager->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot,
+																			  1,
+																			  mCameraConstantBuffer.GetAddressOf());
+	IManager.RenderManager->GetImmediateDeviceContext()->PSSetConstantBuffers(InSlot,
+																			  1,
+																			  mCameraConstantBuffer.GetAddressOf());
 }
 
 void JCamera::UpdateVelocity(float DeltaTime)

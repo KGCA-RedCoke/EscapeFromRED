@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "JCamera.h"
+#include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/Manager_Base.h"
 
 class MCameraManager : public Manager_Base<JCamera, MCameraManager>
@@ -14,7 +15,7 @@ public:
 	void SetCurrentMainCam(JWTextView InName);
 
 public:
-	void SetCameraConstantBuffer(uint32_t InSlot = 2, JCamera* InCamera = nullptr) const;
+	void SetCameraConstantBuffer(uint32_t InSlot = CBuffer::SLOT_CAMERA, JCamera* InCamera = nullptr) const;
 
 private:
 	Ptr<JCamera> mCurrentCamera;

@@ -13,6 +13,12 @@
  */
 namespace CBuffer
 {
+	constexpr uint32_t SLOT_SPACE    = 0;
+	constexpr uint32_t SLOT_LIGHT    = 1;
+	constexpr uint32_t SLOT_CAMERA   = 2;
+	constexpr uint32_t SLOT_TIME     = 3;
+	constexpr uint32_t SLOT_MATERIAL = 4;
+
 	/**
 	 * Model, View, Projection
 	 */
@@ -282,16 +288,16 @@ namespace Buffer
 		void PreRender(ID3D11DeviceContext* InDeviceContext)
 		{
 			// --------------------- Buffer Space ---------------------
-			InDeviceContext->VSSetConstantBuffers(0, 1, CBuffer_Space.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(0, 1, CBuffer_Space.GetAddressOf());
+			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, CBuffer_Space.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, CBuffer_Space.GetAddressOf());
 
 			// --------------------- Buffer Light ---------------------
-			InDeviceContext->VSSetConstantBuffers(1, 1, CBuffer_Light.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(1, 1, CBuffer_Light.GetAddressOf());
+			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_LIGHT, 1, CBuffer_Light.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_LIGHT, 1, CBuffer_Light.GetAddressOf());
 
 			// --------------------- Buffer Time ---------------------
-			InDeviceContext->VSSetConstantBuffers(3, 1, CBuffer_Time.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(3, 1, CBuffer_Time.GetAddressOf());
+			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_TIME, 1, CBuffer_Time.GetAddressOf());
+			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_TIME, 1, CBuffer_Time.GetAddressOf());
 		}
 
 	};

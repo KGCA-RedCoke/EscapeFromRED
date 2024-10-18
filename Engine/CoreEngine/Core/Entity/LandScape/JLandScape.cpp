@@ -55,8 +55,8 @@ void JLandScape::Draw()
 	deviceContext->IASetVertexBuffers(0, 1, mInstanceBuffer.Buffer_Vertex[0].GetAddressOf(), &stride, &offset);
 	deviceContext->IASetIndexBuffer(mInstanceBuffer.Buffer_Index[0].Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	deviceContext->VSSetConstantBuffers(0, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
-	deviceContext->PSSetConstantBuffers(0, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
+	deviceContext->VSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
+	deviceContext->PSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
 
 	IManager.CameraManager->SetCameraConstantBuffer();
 

@@ -77,12 +77,16 @@ bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JTexture::PreRender(int32_t InSlot)
+void JTexture::SetShaderTexture2D(const int32_t InSlot, const Ptr<JTexture>& InTexture)
 {
-	if (mShaderResourceView.Get())
-		IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot,
-																					  1,
-																					  mShaderResourceView.GetAddressOf());
+	ID3D11ShaderResourceView* srv = nullptr;
+	if (InTexture)
+	{
+		srv = InTexture->mShaderResourceView.Get();
+	}
+
+	IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, &srv);
+
 }
 
 

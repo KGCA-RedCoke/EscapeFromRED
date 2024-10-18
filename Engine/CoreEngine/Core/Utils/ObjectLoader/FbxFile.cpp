@@ -755,8 +755,8 @@ namespace Utils::Fbx
 
 				const int32_t layerMaterialNum = InMesh->GetNode()->GetMaterialCount();
 
-				const JText saveFilePath = std::format("Game/Materials/{0}", InMeshData->mName);
-				bool bShouldSerialize = false;
+				const JText saveFilePath     = std::format("Game/Materials/{0}", InMesh->GetName());
+				bool        bShouldSerialize = false;
 
 				/// 다수의 머티리얼이 존재하면 sub-mesh(기존과 다른 vertexBuffer를 생성)가 필요하다.
 				/// SubMesh를 통해 서로 다른 머티리얼을 가진 메시를 하나의 메시로 표현할 수 있다.
@@ -788,12 +788,11 @@ namespace Utils::Fbx
 
 						if (bShouldSerialize)
 						{
-							JText finalPath = std::format("{0}/{1}.jasset", saveFilePath, fbxMat->GetMaterialName());
 							if (!std::filesystem::exists(saveFilePath))
 							{
 								std::filesystem::create_directories(saveFilePath);
 							}
-							Utils::Serialization::Serialize(finalPath.c_str(), fbxMat.get());
+							Utils::Serialization::Serialize(fbxMat->GetMaterialPath().c_str(), fbxMat.get());
 						}
 					}
 				}
@@ -808,12 +807,11 @@ namespace Utils::Fbx
 
 					if (bShouldSerialize)
 					{
-						JText finalPath = std::format("{0}/{1}.jasset", saveFilePath, fbxMat->GetMaterialName());
 						if (!std::filesystem::exists(saveFilePath))
 						{
 							std::filesystem::create_directories(saveFilePath);
 						}
-						Utils::Serialization::Serialize(finalPath.c_str(), fbxMat.get());
+						Utils::Serialization::Serialize(fbxMat->GetMaterialPath().c_str(), fbxMat.get());
 					}
 				}
 			}
