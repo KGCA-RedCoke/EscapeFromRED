@@ -17,6 +17,9 @@ public:
 	~JTexture() override = default;
 
 public:
+	Ptr<IManagedInterface> Clone() const override;
+
+public:
 	uint32_t GetHash() const override;
 	uint32_t GetType() const override;
 	bool     Serialize_Implement(std::ofstream& FileStream) override;

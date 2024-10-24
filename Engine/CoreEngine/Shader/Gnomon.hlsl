@@ -1,5 +1,5 @@
 // GnomonMaterial.hlsl
-#include "ConstantBuffers.hlslinc"
+#include "CommonConstantBuffers.hlslinc"
 
 cbuffer GnomonParams : register(b5)
 {

@@ -12,6 +12,20 @@ JObject::JObject(JTextView InName)
 	: mName(InName)
 {}
 
+Ptr<IManagedInterface> JObject::Clone() const
+{
+	Ptr<JObject> clone = MakePtr<JObject>(*this);
+
+	clone->mName      = std::format("{}_Clone", mName);
+	clone->mParentObj = mParentObj;
+	for (const auto& child : mChildObjs)
+	{
+		clone->mChildObjs.push_back(std::dynamic_pointer_cast<JObject>(child->Clone()));
+	}
+
+	return clone;
+}
+
 uint32_t JObject::GetHash() const
 {
 	return StringHash(ParseFile(mName).c_str());

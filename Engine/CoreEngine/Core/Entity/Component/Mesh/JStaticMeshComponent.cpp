@@ -1,8 +1,7 @@
 ﻿#include "JStaticMeshComponent.h"
 
 #include "Core/Graphics/Mesh/JMeshObject.h"
-extern FVector4 g_DirectionalLightPos;
-extern FVector4 g_DirectionalLightColor;
+
 JStaticMeshComponent::JStaticMeshComponent() {}
 
 JStaticMeshComponent::JStaticMeshComponent(JTextView InName)
@@ -19,7 +18,7 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	// MeshObject의 버퍼 업데이트
 	if (mMeshObject)
 	{
-		mMeshObject->UpdateBuffer(mWorldMat, nullptr, g_DirectionalLightPos, g_DirectionalLightColor);
+		mMeshObject->UpdateBuffer(mWorldMat);
 	}
 }
 

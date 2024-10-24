@@ -50,6 +50,11 @@ public:
 	template <class ReturnType = ManagedType, typename... Args>
 	Ptr<ReturnType> CreateOrLoad(const JText& InName, Args&&... InArgs);
 
+	template <class ReturnType = ManagedType, typename... Args>
+	Ptr<ReturnType> CreateOrClone(const JWText& InName, Args&&... InArgs);
+	template <class ReturnType = ManagedType, typename... Args>
+	Ptr<ReturnType> CreateOrClone(const JText& InName, Args&&... InArgs);
+
 	template <class ReturnType = ManagedType>
 	Ptr<ReturnType> FetchResource(const JWText& InName);
 	template <class ReturnType = ManagedType>
@@ -97,6 +102,41 @@ Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::stri
 }
 
 template <class ManagedType, class Manager>
+template <class ReturnType, typename... Args>
+Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(const JWText& InName, Args&&... InArgs)
+{
+	return CreateOrClone<ReturnType>(WString2String(InName), std::forward<Args>(InArgs)...);
+}
+
+template <class ManagedType, class Manager>
+template <class ReturnType, typename... Args> Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(
+	const JText& InName, Args&&... InArgs)
+{
+	std::string id   = ParseFile(InName);
+	uint32_t    hash = StringHash(id.c_str());
+
+	EnterCriticalSection(&mCriticalSection);
+
+	Ptr<ReturnType> clone = nullptr;
+
+	// 이미 로드된 리소스가 있다면 복사
+	if (Ptr<ReturnType> resource = FetchResource<ReturnType>(id))
+	{
+		// Clone New Object
+		clone = std::dynamic_pointer_cast<ReturnType>(resource->Clone());
+		return clone;
+	}
+
+	// 없으면 팩토리에서 새로 생성
+	clone = MakePtr<ReturnType>(InName, std::forward<Args>(InArgs)...);
+	mManagedList.try_emplace(hash, clone);
+
+	LeaveCriticalSection(&mCriticalSection);
+
+	return clone;
+}
+
+template <class ManagedType, class Manager>
 template <class ReturnType>
 Ptr<ReturnType> Manager_Base<ManagedType, Manager>::FetchResource(const std::wstring& InName)
 {
@@ -108,11 +148,11 @@ template <class ReturnType>
 Ptr<ReturnType> Manager_Base<ManagedType, Manager>::FetchResource(const std::string& InName)
 {
 	uint32_t hash = StringHash(InName.c_str());
-	auto     it   = mManagedList.find(hash);
-	if (it != mManagedList.end())
+	if (mManagedList.contains(hash))
 	{
-		return std::dynamic_pointer_cast<ReturnType>(it->second);
+		return std::dynamic_pointer_cast<ReturnType>(mManagedList[hash]);
 	}
+
 	return nullptr;
 }
 

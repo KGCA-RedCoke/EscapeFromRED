@@ -32,6 +32,9 @@ void MManagerInterface::Initialize()
 	MeshManager = &MMeshManager::Get();
 
 	MaterialManager = &MMaterialManager::Get();
+	MaterialManager->SaveEngineMaterials();
+
+	MaterialInstanceManager = &MMaterialInstanceManager::Get();
 
 	GUIManager = &MGUIManager::Get();
 

@@ -3,6 +3,7 @@
 
 #include "Core/Entity/Animation/JAnimationClip.h"
 #include "Core/Graphics/Material/JMaterial.h"
+#include "Core/Graphics/Material/MMaterialInstanceManager.h"
 #include "Core/Graphics/Material/MMaterialManager.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Math/TMatrix.h"
@@ -32,11 +33,10 @@ namespace Utils::Fbx
 	/** 임시 텍스처 추출 구조체 */
 	struct FFbxProperty
 	{
-		const char*        FbxPropertyName;
-		const char*        PropertyName;
-		uint8_t            PostOperations;
-		EMaterialFlag      ParamFlags;
-		EMaterialParamType ParamType;
+		const char*         FbxPropertyName;
+		const char*         PropertyName;
+		uint8_t             PostOperations;
+		EMaterialParamValue ParamValue;
 	};
 
 	struct FAnimationNode
@@ -83,68 +83,78 @@ namespace Utils::Fbx
 	inline const FFbxProperty FbxMaterialProperties[] =
 	{
 		// Diffuse
-		{FbxSurfaceMaterial::sDiffuse, NAME_MAT_Diffuse, 0, EMaterialFlag::DiffuseColor, EMaterialParamType::Texture2D},
 		{
-			FbxSurfaceMaterial::sDiffuseFactor, NAME_MAT_DiffuseF, 0, EMaterialFlag::DiffuseFactor,
-			EMaterialParamType::Float
+			FbxSurfaceMaterial::sDiffuse, NAME_MAT_Diffuse, 0, EMaterialParamValue::Texture2D
 		},
+		// {
+		// 	FbxSurfaceMaterial::sDiffuseFactor, NAME_MAT_DiffuseF, 0, EMaterialParamType::DiffuseFactor,
+		// 	EMaterialParamValue::Float
+		// },
 
 		// Normal
-		{FbxSurfaceMaterial::sNormalMap, NAME_MAT_Normal, 0, EMaterialFlag::NormalMap, EMaterialParamType::Texture2D},
-
-		// Emissive
-		{FbxSurfaceMaterial::sEmissive, NAME_MAT_Emissive, 0, EMaterialFlag::EmissiveColor, EMaterialParamType::Texture2D},
 		{
-			FbxSurfaceMaterial::sEmissiveFactor, NAME_MAT_EmissiveF, 0, EMaterialFlag::EmissiveFactor,
-			EMaterialParamType::Float
+			FbxSurfaceMaterial::sNormalMap, NAME_MAT_Normal, 0, EMaterialParamValue::Texture2D
 		},
 
-		// Specular
-		{FbxSurfaceMaterial::sSpecular, NAME_MAT_Specular, 0, EMaterialFlag::SpecularColor, EMaterialParamType::Texture2D},
-		{
-			FbxSurfaceMaterial::sSpecularFactor, NAME_MAT_SpecularF, 0, EMaterialFlag::SpecularFactor,
-			EMaterialParamType::Float
-		},
-
-		// Reflection
-		{
-			FbxSurfaceMaterial::sReflection, NAME_MAT_Reflection, 0, EMaterialFlag::ReflectionColor,
-			EMaterialParamType::Texture2D
-		},
-		{
-			FbxSurfaceMaterial::sReflectionFactor, NAME_MAT_ReflectionF, 0, EMaterialFlag::ReflectionFactor,
-			EMaterialParamType::Float
-		},
-
-		// Ambient
-		{FbxSurfaceMaterial::sAmbient, NAME_MAT_Ambient, 0, EMaterialFlag::AmbientColor, EMaterialParamType::Texture2D},
-		{
-			FbxSurfaceMaterial::sAmbientFactor, NAME_MAT_AmbientF, 0, EMaterialFlag::AmbientFactor,
-			EMaterialParamType::Float
-		},
-
-		// Transparency
-		{
-			FbxSurfaceMaterial::sTransparentColor, NAME_MAT_Transparent, 1, EMaterialFlag::TransparentColor,
-			EMaterialParamType::Texture2D
-		},
-		{
-			FbxSurfaceMaterial::sTransparencyFactor, NAME_MAT_TransparentF, 1, EMaterialFlag::TransparentFactor,
-			EMaterialParamType::Float
-		},
-
-		// Displacement
-		{
-			FbxSurfaceMaterial::sDisplacementColor, NAME_MAT_Displacement, 0, EMaterialFlag::DisplacementColor,
-			EMaterialParamType::Texture2D
-		},
-		{
-			FbxSurfaceMaterial::sDisplacementFactor, NAME_MAT_DisplacementF, 0, EMaterialFlag::DisplacementFactor,
-			EMaterialParamType::Float
-		},
-
-		// Shininess
-		{FbxSurfaceMaterial::sShininess, NAME_MAT_Shininess, 0, EMaterialFlag::Shininess, EMaterialParamType::Float},
+		// // Emissive
+		// {
+		// 	FbxSurfaceMaterial::sEmissive, NAME_MAT_Emissive, 0, EMaterialParamType::EmissiveColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sEmissiveFactor, NAME_MAT_EmissiveF, 0, EMaterialParamType::EmissiveFactor,
+		// 	EMaterialParamValue::Float
+		// },
+		//
+		// // Specular
+		// {
+		// 	FbxSurfaceMaterial::sSpecular, NAME_MAT_Specular, 0, EMaterialParamType::SpecularColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sSpecularFactor, NAME_MAT_SpecularF, 0, EMaterialParamType::SpecularFactor,
+		// 	EMaterialParamValue::Float
+		// },
+		//
+		// // Reflection
+		// {
+		// 	FbxSurfaceMaterial::sReflection, NAME_MAT_Reflection, 0, EMaterialParamType::ReflectionColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sReflectionFactor, NAME_MAT_ReflectionF, 0, EMaterialParamType::ReflectionFactor,
+		// 	EMaterialParamValue::Float
+		// },
+		//
+		// // Ambient
+		// {
+		// 	FbxSurfaceMaterial::sAmbient, NAME_MAT_Ambient, 0, EMaterialParamType::AmbientColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sAmbientFactor, NAME_MAT_AmbientF, 0, EMaterialParamType::AmbientFactor,
+		// 	EMaterialParamValue::Float
+		// },
+		//
+		// // Transparency
+		// {
+		// 	FbxSurfaceMaterial::sTransparentColor, NAME_MAT_Transparent, 1, EMaterialParamType::TransparentColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sTransparencyFactor, NAME_MAT_TransparentF, 1, EMaterialParamType::TransparentFactor,
+		// 	EMaterialParamValue::Float
+		// },
+		//
+		// // Displacement
+		// {
+		// 	FbxSurfaceMaterial::sDisplacementColor, NAME_MAT_Displacement, 0, EMaterialParamType::DisplacementColor,
+		// 	EMaterialParamValue::Texture2D
+		// },
+		// {
+		// 	FbxSurfaceMaterial::sDisplacementFactor, NAME_MAT_DisplacementF, 0, EMaterialParamType::DisplacementFactor,
+		// 	EMaterialParamValue::Float
+		// },
 	};
 
 	[[nodiscard]] inline FbxMatrix GetNodeTransform(const FbxNode* InNode)
@@ -497,21 +507,17 @@ namespace Utils::Fbx
 
 #pragma endregion
 
-	inline void ParseMaterialProps(FbxProperty&  Property,
-								   const char*   ParamName,
-								   JMaterial*    Material,
-								   EMaterialFlag ParamFlags)
+	inline void ParseMaterialProps(FbxProperty&       Property,
+								   const char*        ParamName,
+								   JMaterialInstance* Material)
 	{
 		/// 텍스처가 일반 텍스처인지 레이어드 텍스처인지 확인
 		/// 레이어드 텍스처?
 		///  - 여러개의 텍스처를 하나로 합쳐서 사용하는 방식
 		///  - 더 복잡한 방식으로 텍스처들이 혼합되었기 때문에 여러 텍스처가 있을 수 있음
-		FMaterialParams materialParams;
+		FMaterialParam materialParams;
 		{
-			materialParams.Name         = ParamName;
-			materialParams.Key          = StringHash(ParamName);
 			materialParams.TextureValue = nullptr;
-			materialParams.Flags        = ParamFlags;
 		}
 
 		const int32_t layeredTextureCount = Property.GetSrcObjectCount<FbxLayeredTexture>();
@@ -535,8 +541,7 @@ namespace Utils::Fbx
 						materialParams                    = Material::CreateTextureParam(
 																	  ParamName,
 																	  fileTexture->GetFileName(),
-																	  textureIndex++,
-																	  ParamFlags);
+																	  textureIndex++);
 					}
 				}
 			}
@@ -552,8 +557,7 @@ namespace Utils::Fbx
 					const FbxFileTexture* fileTexture = Property.GetSrcObject<FbxFileTexture>(i);
 					materialParams                    = Material::CreateTextureParam(ParamName,
 																  fileTexture->GetFileName(),
-																  i,
-																  ParamFlags);
+																  i);
 				}
 			}
 		}
@@ -564,34 +568,34 @@ namespace Utils::Fbx
 			switch (Property.GetPropertyDataType().GetType())
 			{
 			case eFbxBool:
-				materialParams.ParamType = EMaterialParamType::Boolean;
+				materialParams.ParamValue = EMaterialParamValue::Boolean;
 				materialParams.BooleanValue = Property.Get<FbxBool>();
 				break;
 			case eFbxInt:
-				materialParams.ParamType = EMaterialParamType::Integer;
+				materialParams.ParamValue = EMaterialParamValue::Integer;
 				materialParams.IntegerValue = Property.Get<FbxInt>();
 				break;
 			case eFbxFloat:
-				materialParams.ParamType = EMaterialParamType::Float;
+				materialParams.ParamValue = EMaterialParamValue::Float;
 				materialParams.FloatValue = Property.Get<FbxFloat>();
 				break;
 			case eFbxDouble:
-				materialParams.ParamType = EMaterialParamType::Float;
+				materialParams.ParamValue = EMaterialParamValue::Float;
 				materialParams.FloatValue = Property.Get<FbxDouble>();
 				break;
 			case eFbxDouble2:
-				materialParams.ParamType = EMaterialParamType::Float2;
+				materialParams.ParamValue = EMaterialParamValue::Float2;
 				materialParams.Float2Value.x = Property.Get<FbxDouble2>().mData[0];
 				materialParams.Float2Value.y = Property.Get<FbxDouble2>().mData[1];
 				break;
 			case eFbxDouble3:
-				materialParams.ParamType = EMaterialParamType::Float3;
+				materialParams.ParamValue = EMaterialParamValue::Float3;
 				materialParams.Float3Value.x = Property.Get<FbxDouble3>().mData[0];
 				materialParams.Float3Value.y = Property.Get<FbxDouble3>().mData[1];
 				materialParams.Float3Value.z = Property.Get<FbxDouble3>().mData[2];
 				break;
 			case eFbxDouble4:
-				materialParams.ParamType = EMaterialParamType::Float4;
+				materialParams.ParamValue = EMaterialParamValue::Float4;
 				materialParams.Float4Value.x = Property.Get<FbxDouble4>().mData[0];
 				materialParams.Float4Value.y = Property.Get<FbxDouble4>().mData[1];
 				materialParams.Float4Value.z = Property.Get<FbxDouble4>().mData[2];
@@ -603,7 +607,7 @@ namespace Utils::Fbx
 			}
 		}
 
-		Material->AddMaterialParam(materialParams);
+		// Material->AddMaterialParam(materialParams);
 	}
 
 	[[nodiscard]] inline FMatrix ParseTransform(FbxNode* InNode, const FMatrix& ParentWorldMat)
@@ -633,8 +637,8 @@ namespace Utils::Fbx
 		return world;
 	}
 
-	[[nodiscard]] inline Ptr<JMaterial> ParseLayerMaterial(const FbxMesh* InMesh, const int32_t InMaterialIndex,
-														   bool&          bShouldSerialize)
+	[[nodiscard]] inline Ptr<JMaterialInstance> ParseLayerMaterial(const FbxMesh* InMesh, const int32_t InMaterialIndex,
+																   bool&          bShouldSerialize)
 	{
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
@@ -642,41 +646,39 @@ namespace Utils::Fbx
 		JText fileName = std::format("Game/Materials/{0}/{1}.jasset", InMesh->GetName(), fbxMaterial->GetName());
 		/** 셰이딩 모델은 거의 PhongShading */
 
-		Ptr<JMaterial> material = MMaterialManager::Get().CreateOrLoad(fileName);
+		Ptr<JMaterialInstance> material = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
 		// 머티리얼이 이미 존재할 경우 아래 파싱 과정 생략
-		if (!material->HasMaterial())
+
+		/// 머티리얼 파싱
+		/// FBX SDK에서 정확히 Property Name이 어떻게 설정되어있는지 모르겠다.
+		/// Metallic에 관련된 텍스처를 뽑고 싶어도 FBX SDK에서는 Metallic이라는 이름을 찾을 수 없다.
+		/// (Metallic뿐 아니라 PBR(Pyshically Based Rendering)에 관련된 텍스처이름들을 찾을 수 없다.)
+		/// 수동으로 모든 프로퍼티들을 파싱해보니 다른 프로퍼티로 저장되어 있을 수 있음
+		/// 따라서 머티리얼 내에 존재하는 모든 텍스처(우리에게 필수적인)부터 파싱하고, 없을 경우 Color값을 파싱한다.
+
+		/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
+		for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
 		{
-			/// 머티리얼 파싱
-			/// FBX SDK에서 정확히 Property Name이 어떻게 설정되어있는지 모르겠다.
-			/// Metallic에 관련된 텍스처를 뽑고 싶어도 FBX SDK에서는 Metallic이라는 이름을 찾을 수 없다.
-			/// (Metallic뿐 아니라 PBR(Pyshically Based Rendering)에 관련된 텍스처이름들을 찾을 수 없다.)
-			/// 수동으로 모든 프로퍼티들을 파싱해보니 다른 프로퍼티로 저장되어 있을 수 있음
-			/// 따라서 머티리얼 내에 존재하는 모든 텍스처(우리에게 필수적인)부터 파싱하고, 없을 경우 Color값을 파싱한다.
+			const FFbxProperty& textureParams = FbxMaterialProperties[i];
 
-			/** 현재 레이어의 머티리얼에서 추출하고자 하는 텍스처 타입(FbxSurfaceMaterial)이 존재할 경우 추출 */
-			for (int32_t i = 0; i < ARRAYSIZE(FbxMaterialProperties); ++i)
+			// if (material->HasMaterialParam(textureParams.ParamType))
+			// {
+			// 	continue;
+			// }
+
+			// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
+			// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
+			FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
+			if (property.IsValid())
 			{
-				const FFbxProperty& textureParams = FbxMaterialProperties[i];
-
-				if (material->GetMaterialParam(textureParams.PropertyName))
-				{
-					continue;
-				}
-
-				// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
-				// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
-				FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
-				if (property.IsValid())
-				{
-					ParseMaterialProps(property,
-									   textureParams.PropertyName,
-									   material.get(),
-									   textureParams.ParamFlags);
-				}
+				ParseMaterialProps(property,
+								   textureParams.PropertyName,
+								   material.get());
 			}
-
-			bShouldSerialize = true;
 		}
+
+		bShouldSerialize = true;
+
 
 		return material;
 	}

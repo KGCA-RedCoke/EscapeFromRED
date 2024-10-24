@@ -1,7 +1,7 @@
-#include "ConstantBuffers.hlslinc"
+#include "CommonConstantBuffers.hlslinc"
 #include "InputLayout.hlslinc"
-#include "ShaderUtils.hlslinc"
 #include "Params.hlslinc"
+#include "ShaderUtils.hlslinc"
 
 Texture2D g_DiffuseTexture : register(t0);
 Texture2D g_EmissiveTexture : register(t1);
@@ -18,17 +18,7 @@ SamplerState g_DiffuseSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
 
-/*
-MaterialProperties g_MatDiffuse = MakeMaterialProperties(DiffuseColor, g_DiffuseTexture, g_DiffuseSampler, bUseDiffuseMap);
-MaterialProperties g_MatEmissive = MakeMaterialProperties(EmissiveColor, g_EmissiveTexture, g_TextureSampler0, bUseEmissiveMap);
-MaterialProperties g_MatSpecular = MakeMaterialProperties(SpecularColor, g_SpecularTexture, g_TextureSampler1, bUseSpecularMap);
-MaterialProperties g_MatReflection = MakeMaterialProperties(ReflectionColor, g_ReflectionTexture, g_TextureSampler0, bUseReflectionMap);
-MaterialProperties g_MatAmient = MakeMaterialProperties(AmbientColor, g_AmbientOcclusionTexture, g_TextureSampler0, bUseAmbientMap);
-MaterialProperties g_MatNormal = MakeMaterialProperties(NormalColor, g_NormalTexture, g_TextureSampler0, bUseNormalMap);
-MaterialProperties g_MatDisplacement = MakeMaterialProperties(DisplacementColor, g_DisplacementTexture, g_TextureSampler0, bUseDisplacementMap);
-*/
-
-PixelInput_Base VS(VertexInput_Base Input)
+PixelInput_Base VS(VertexIn Input)
 {
 	PixelInput_Base output;
 
@@ -39,7 +29,7 @@ PixelInput_Base VS(VertexInput_Base Input)
 	output.Pos = mul(output.Pos, Projection);
 
 	float3 worldPos      = mul(Input.Pos, (float3x3)World);
-	float3 lightDir      = worldPos.xyz - WorldLightPos.xyz;
+	float3 lightDir      = worldPos.xyz - DirectionalLightPos.xyz;
 	float3 viewDir       = worldPos.xyz - WorldCameraPos.xyz;
 	float3 worldNormal   = mul(Input.Normal, (float3x3)World);
 	float3 worldTangent  = mul(Input.Tangent, (float3x3)World);
@@ -59,69 +49,48 @@ PixelInput_Base VS(VertexInput_Base Input)
 
 float4 PS(PixelInput_Base Input) : SV_TARGET
 {
+	return float4(1.f, 1.f, 1.f, 1.f);
 
-	// Texture Map
-    float3 albedoColor = g_DiffuseTexture.Sample(g_DiffuseSampler, Input.UV);
-	float3 normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
+	float3 diffuseColor = Diffuse.Color;
+	float3 normalColor  = normalize(Input.Normal * 2.0f - 1.0f); // -1 ~ 1 사이로 정규화
+
 	// 	R (Red): Ambient Occlusion (AO)
 	//  G (Green): Roughness
 	//  B (Blue): Metallic
-	float  ambientColor  = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
-	float  roughness     = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
-	float  metallic      = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
+	float ambientColor = AmbientOcclusion.Value;
+	float roughness    = Roughness.Value;
+	float metallic     = Metallic.Value;
 
-	ambientColor = 0.1;
-	roughness = 0.5;
- 	metallic = 0.5;    
-
-	if (bUseDiffuseMap != 1)
+	// Texture Map
+	if (TextureUsageFlag & TEXTURE_USE_DIFFUSE)
 	{
-		albedoColor.rgb = DiffuseColor.rgb;
+		diffuseColor = g_DiffuseTexture.Sample(g_DiffuseSampler, Input.UV);
 	}
-
-	normalColor = normalize(normalColor * 2.0f - 1.0f); // -1 ~ 1 사이로 정규화
-	if (bUseNormalMap != 1)
+	if (TextureUsageFlag & TEXTURE_USE_NORMAL)
 	{
-		normalColor = Input.Normal;
+		normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
 	}
-
-	if (bUseAmbientMap != 1)
-    {
-        ambientColor = AmbientColor;
-    }
-
-	float3 worldNormal = mul( Input.Normal, normalColor);
+	if (TextureUsageFlag & TEXTURE_USE_AMBIENTOCCLUSION)
+	{
+		ambientColor = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
+	}
+	if (TextureUsageFlag & TEXTURE_USE_ROUGHNESS)
+	{
+		roughness = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
+	}
+	if (TextureUsageFlag & TEXTURE_USE_METALLIC)
+	{
+		metallic = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
+	}
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
 	float3 lightDir = normalize(Input.LightDir);
 	float  NdotL    = saturate(dot(normalColor, -lightDir));
-	float3 diffuse  = NdotL * albedoColor.rgb * LightColor.rgb;
-	/*
-		// Specular 계산 (Cook-Torrance 모델 적용 가능)
-		float3 viewDir = normalize(Input.ViewDir);
-		float3 halfDir = normalize(viewDir + lightDir);
-		float NdotV = saturate(dot(worldNormal, viewDir));
-		float NdotH = saturate(dot(worldNormal, halfDir));
-		float VdotH = saturate(dot(viewDir, halfDir));
-	
-		// Fresnel 계산 (Schlick's approximation)
-		float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), albedoColor.rgb, metallic); // 금속일수록 알베도가 반사색으로
-		float3 F = F0 + (1.0f - F0) * pow(1.0f - VdotH, 5.0f);
-	
-		// 거칠기(Roughness)에 따른 반사광(Specular) 감소
-		float roughnessSquared = roughness * roughness;
-		float specular = (F * NdotL) / (4.0f * NdotV * NdotL + 0.0001f);
-	
-		// 주변광(Ambient)
-		float3 ambient = float3(0.1f, 0.1f, 0.1f) * ambientColor * albedoColor.rgb;
-	
-		// 최종 조명 결과
-		float3 finalColor = diffuse + specular + ambient;
-	
-		return float4(finalColor, 1.0f);*/
-
+	float3 diffuse  = NdotL * diffuseColor.rgb * DirectionalLightColor.rgb;
 
 	float3 specular = 0;
+
+	return float4(NdotL, 0, 0, 1);
 
 	// 난반사광이 없으면 애초에 반사되는 색상이 없음
 	if (diffuse.x > 0)
@@ -136,9 +105,9 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = ambientColor * albedoColor.rgb;
+	float3 ambient = ambientColor * diffuseColor.rgb;
 	//
-	float3 finalColor = float3(diffuse +  ambient + (specular * metallic));
+	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
 
 	return float4(finalColor, 1.f);

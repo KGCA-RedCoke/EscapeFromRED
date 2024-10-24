@@ -24,22 +24,17 @@ public:
 private:
 	void Update_Implementation(float DeltaTime) override;
 
-public:
-	static int32_t GetAvailableIndex() { return s_CachedMaterialEditorIndex; }
-
 private:
 	void ShowMenuBar() override;
 
 	void ShowMaterialEditor();
 	void ShowFileBrowser();
 
-	void ShowParamPopup();
-
-	void ShowTextureSlot(const Ptr<JMaterial>& InMaterialData, EMaterialFlag Flags, const char* TextureType) const;
+	void ShowTextureSlot(const Ptr<JMaterialInstance>& InMaterialData, const char* TextureType) const;
 
 private:
-	inline static int32_t s_MaterialEditorNum         = 0;	// 생성된 Material Editor 개수
-	inline static int32_t s_CachedMaterialEditorIndex = 0; // 캐시된 Material Editor  
+	// inline static int32_t s_MaterialEditorNum         = 0;	// 생성된 Material Editor 개수
+	// inline static int32_t s_CachedMaterialEditorIndex = 0; // 캐시된 Material Editor  
 
 	bool bOpenFileBrowser;
 	bool bShowNewParam;
@@ -47,11 +42,10 @@ private:
 
 	char mFilePath[256];
 
-	Ptr<JCamera>       mCamera;			// 뷰포트 카메라
-	Ptr<FViewportData> mViewport;		// 뷰포트
-	Ptr<JMeshObject>   mSphere;			// 머티리얼 적용 표면
-	Ptr<JMaterial>     mMaterialToEdit;	// 머티리얼
-	Ptr<JShader>       mShader;			// 셰이더
-
-	float mDeltaTime;
+	Ptr<JCamera>           mCamera;				// 뷰포트 카메라
+	Ptr<FViewportData>     mViewport;			// 뷰포트
+	Ptr<JMeshObject>       mPreviewMeshObject;	// 머티리얼 적용 표면
+	Ptr<JMaterialInstance> mMaterialToEdit;		// 머티리얼
+	Ptr<JShader>           mShader;				// 셰이더
+	float                  mDeltaTime;
 };

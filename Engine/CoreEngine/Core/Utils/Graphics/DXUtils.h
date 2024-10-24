@@ -60,15 +60,15 @@ namespace Utils::DX
 						  LPCSTR       ShaderModel, ID3DBlob** OutBlob);
 
 	/**
-	 * @brief ID3D11Buffer ¹öÆÛ »ı¼ºÀ» ½Ãµµ ½ÇÆĞ½Ã Á¾·á
+	 * @brief ID3D11Buffer ë²„í¼ ìƒì„±ì„ ì‹œë„ ì‹¤íŒ¨ì‹œ ì¢…ë£Œ
 	 * @param InDevice
-	 * @param InBindFlag Vertex, Index, Constant ÁöÁ¤
-	 * @param InData ¹öÆÛ¿¡ ³ÖÀ» µ¥ÀÌÅÍ
-	 * @param InDataSize µ¥ÀÌÅÍ ºí·Ï ´ÜÀ§
-	 * @param InDataNum µ¥ÀÌÅÍ ¹è¿­ °¹¼ö
-	 * @param OutBuffer ¹İÈ¯ ¹öÆÛ
-	 * @param InUsage ·±Å¸ÀÓ¿¡ ÀÚÁÖ ¾÷µ¥ÀÌÆ® µÈ´Ù¸é D3D11_USAGE_DYNAMIC
-	 * @param InAccessFlag MapÀ» »ç¿ëÇÒ°Å¸é D3D11_CPU_ACCESS_WRITE·Î ÁöÁ¤
+	 * @param InBindFlag Vertex, Index, Constant ì§€ì •
+	 * @param InData ë²„í¼ì— ë„£ì„ ë°ì´í„°
+	 * @param InDataSize ë°ì´í„° ë¸”ë¡ ë‹¨ìœ„
+	 * @param InDataNum ë°ì´í„° ë°°ì—´ ê°¯ìˆ˜
+	 * @param OutBuffer ë°˜í™˜ ë²„í¼
+	 * @param InUsage ëŸ°íƒ€ì„ì— ìì£¼ ì—…ë°ì´íŠ¸ ëœë‹¤ë©´ D3D11_USAGE_DYNAMIC
+	 * @param InAccessFlag Mapì„ ì‚¬ìš©í• ê±°ë©´ D3D11_CPU_ACCESS_WRITEë¡œ ì§€ì •
 	 */
 	void CreateBuffer(
 		ID3D11Device*        InDevice,
@@ -82,18 +82,18 @@ namespace Utils::DX
 	);
 
 	/**
-	 * @brief ¹öÆÛ³»¿ë ÀÏ°ı ¾÷µ¥ÀÌÆ® (Usage°¡ DynamicÀÌ ¾Æ´Ï¿©µµ »ó°ü¾ø´Ù)
+	 * @brief ë²„í¼ë‚´ìš© ì¼ê´„ ì—…ë°ì´íŠ¸ (Usageê°€ Dynamicì´ ì•„ë‹ˆì—¬ë„ ìƒê´€ì—†ë‹¤)
 	 * @param InDeviceContext
-	 * @param InBuffer ¾÷µ¥ÀÌÆ® ÇÒ ¹öÆÛ
-	 * @param InData »õ µ¥ÀÌÅÍ
+	 * @param InBuffer ì—…ë°ì´íŠ¸ í•  ë²„í¼
+	 * @param InData ìƒˆ ë°ì´í„°
 	 */
 	void UpdateBuffer(ID3D11DeviceContext* InDeviceContext,
 					  ID3D11Buffer*        InBuffer,
 					  const void*          InData);
 
 	/**
-	 * @brief ¹öÆÛ³»¿ë ¾÷µ¥ÀÌÆ® (¹öÆÛÀÇ Usage°¡ D3D11_USAGE_DYNAMICÀÌ¿©¾ß ÇÔ (Default X))
-	 * ¾à°£ÀÇ ¼º´É»ó ÀÌÁ¡ÀÌ ÀÖÀ»¼öµµ..
+	 * @brief ë²„í¼ë‚´ìš© ì—…ë°ì´íŠ¸ (ë²„í¼ì˜ Usageê°€ D3D11_USAGE_DYNAMICì´ì—¬ì•¼ í•¨ (Default X))
+	 * ì•½ê°„ì˜ ì„±ëŠ¥ìƒ ì´ì ì´ ìˆì„ìˆ˜ë„..
 	 * @param InDeviceContext
 	 * @param InBuffer
 	 * @param InData

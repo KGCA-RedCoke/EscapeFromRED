@@ -6,7 +6,8 @@
 
 
 JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData)
-	: mVertexSize(sizeof(Vertex::FVertexInfo_Base)),
+	: mName(InName),
+	  mVertexSize(sizeof(Vertex::FVertexInfo_Base)),
 	  mIndexSize(sizeof(uint32_t))
 {
 	if (InData.empty())
@@ -26,6 +27,22 @@ JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>&
 JMeshObject::JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
 	: JMeshObject(WString2String(InName), InData) {}
 
+Ptr<IManagedInterface> JMeshObject::Clone() const
+{
+	JArray<Ptr<JMeshData>> clonedData;
+	for (const auto& data : mPrimitiveMeshData)
+	{
+		clonedData.push_back(std::dynamic_pointer_cast<JMeshData>(data->Clone()));
+	}
+	Ptr<JMeshObject> cloned = MakePtr<JMeshObject>(mName, clonedData);
+	return cloned;
+}
+
+uint32_t JMeshObject::GetHash() const
+{
+	return StringHash(mName.c_str());
+}
+
 uint32_t JMeshObject::GetType() const
 {
 	return StringHash("J3DObject");
@@ -37,6 +54,8 @@ bool JMeshObject::Serialize_Implement(std::ofstream& FileStream)
 	{
 		return false;
 	}
+	// Mesh Name
+	Utils::Serialization::Serialize_Text(mName, FileStream);
 
 	// Primitive Mesh Data
 	int32_t meshDataSize = mPrimitiveMeshData.size();
@@ -61,6 +80,9 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return false;
 	}
+
+	// Mesh Name
+	Utils::Serialization::DeSerialize_Text(mName, InFileStream);
 
 	// Primitive Mesh Data
 	int32_t meshDataSize;
@@ -125,57 +147,19 @@ void JMeshObject::CreateBuffers()
 									mIndexSize,
 									data->IndexArray.size(),
 									instanceBuffer.Buffer_Index[j].GetAddressOf());
-
-			instanceBuffer.CBuffer_SpaceLightTime[j].CreateBuffer(device);
-
 		}
 	}
 }
 
 void JMeshObject::Update(float DeltaTime)
-{
-	UpdateBuffer();
-}
-
-void JMeshObject::UpdateBuffer(const FMatrix&  InWorldMatrix, const Ptr<JCamera>& InCameraObj, const FVector4& InLightLoc,
-							   const FVector4& InLightColor, const FVector4&      InWorldTime)
-{
-	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
-	assert(deviceContext);
-
-	Ptr<JCamera> currentCam = InCameraObj ? InCameraObj : IManager.CameraManager->GetCurrentMainCam();
-	assert(currentCam);
-
-	for (int32_t i = 0; i < mInstanceBuffer.size(); ++i)
-	{
-		auto& instanceBuffer = mInstanceBuffer[i];
-
-		for (int32_t j = 0; j < instanceBuffer.CBuffer_SpaceLightTime.size(); ++j)
-		{
-			if (instanceBuffer.Buffer_Index[j] == nullptr)
-			{
-				continue;
-			}
-
-			instanceBuffer.CBuffer_SpaceLightTime[j].UpdateSpace(deviceContext,
-																 XMMatrixTranspose(InWorldMatrix),
-																 XMMatrixTranspose(currentCam->GetViewMatrix()),
-																 XMMatrixTranspose(currentCam->GetProjMatrix()));
-			instanceBuffer.CBuffer_SpaceLightTime[j].UpdateLight(deviceContext,
-																 InLightLoc,
-																 InLightColor);
-
-			instanceBuffer.CBuffer_SpaceLightTime[j].UpdateTime(deviceContext,
-																InWorldTime);
-		}
-
-	}
-}
-
-void JMeshObject::PreRender()
 {}
 
-void JMeshObject::Render()
+void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
+{
+	mWorldMatrix = InWorldMatrix;
+}
+
+void JMeshObject::Draw()
 {
 	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 	assert(deviceContext);
@@ -188,11 +172,6 @@ void JMeshObject::Render()
 
 		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
 		{
-			if (!subMeshes.empty() && subMeshes[j]->GetVertexData()->FaceCount == 0)
-			{
-				continue;
-			}
-
 			uint32_t offset   = 0;
 			int32_t  indexNum = 0;
 
@@ -203,25 +182,19 @@ void JMeshObject::Render()
 			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
 			deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index[j].Get(), DXGI_FORMAT_R32_UINT, 0);
 
-
-			instanceBuffer.CBuffer_SpaceLightTime[j].PreRender(deviceContext);
-			IManager.CameraManager->SetCameraConstantBuffer();
-
-
 			if (subMeshes.empty())
 			{
-				meshData->GetMaterial()->ApplyMaterialParams(deviceContext);
-
+				meshData->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, mWorldMatrix);
+				meshData->PassMaterial(deviceContext);
 				indexNum = meshData->GetVertexData()->IndexArray.size();
 			}
 			else
 			{
-				subMeshes[j]->GetMaterial()->ApplyMaterialParams(deviceContext);
-
+				subMeshes[j]->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, mWorldMatrix);
+				subMeshes[j]->PassMaterial(deviceContext);
 				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
-				if (subMeshes[j]->GetVertexData()->FaceCount == 0)
-					continue;
 			}
+			IManager.CameraManager->SetCameraConstantBuffer();
 
 			int32_t slots[2] = {0, 1};
 			IManager.RenderManager->SetSamplerState(ESamplerState::LinearWrap, slots, 2);
@@ -234,12 +207,4 @@ void JMeshObject::Render()
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
 	}
-}
-
-void JMeshObject::PostRender()
-{}
-
-void JMeshObject::Draw()
-{
-	Render();
 }

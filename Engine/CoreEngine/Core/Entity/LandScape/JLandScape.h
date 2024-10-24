@@ -36,12 +36,19 @@ private:
 	void GenerateLandScape();
 	void GenVertex();
 	void GenIndex();
+	void GenFaceNormal();
+	void GenVertexNormal();
+	void GenBuffer();
 
 protected:
 	FMapDesc mMapDescription;
 
+	using IndexGroup = JArray<uint32_t>;
+
 	JArray<Vertex::FVertexInfo_Base>  mVertexInfo;
 	JArray<uint32_t>                  mIndexInfo;
+	JArray<FVector>                   mNormalInfo;
+	JArray<IndexGroup>                mIndexGroup;
 	Buffer::FBufferInstance_LandScape mInstanceBuffer;
 
 	Ptr<class JMaterial> mMaterial;

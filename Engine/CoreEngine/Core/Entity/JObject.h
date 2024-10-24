@@ -28,6 +28,8 @@ public:
 	explicit JObject(JTextView InName);
 	~JObject() override = default;
 
+	Ptr<IManagedInterface> Clone() const override;
+
 	virtual void Initialize() {}
 	virtual void BeginPlay() {}
 	virtual void Tick(float DeltaTime) {}
@@ -77,7 +79,7 @@ public:
 	[[nodiscard]] bool IsValid() const { return mObjectFlags & EObjectFlags::IsValid; }
 	[[nodiscard]] bool IsPendingKill() const { return mObjectFlags & EObjectFlags::IsPendingKill; }
 	[[nodiscard]] bool IsMarkedAsDirty() const { return mObjectFlags & EObjectFlags::MarkAsDirty; }
- 
+
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
 
 	void SetVisible(bool bVisible)

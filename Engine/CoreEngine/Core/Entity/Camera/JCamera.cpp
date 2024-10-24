@@ -124,6 +124,11 @@ uint32_t JCamera::GetHash() const
 	return StringHash(ParseFile(mName.data()).c_str());
 }
 
+Ptr<IManagedInterface> JCamera::Clone() const
+{
+	return nullptr;
+}
+
 void JCamera::Reset()
 {
 	XMStoreFloat4x4(&mWorld, XMMatrixIdentity());

@@ -1,33 +1,132 @@
 ﻿#include "JMaterial.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Shader/InputLayouts.h"
+#include "Core/Graphics/Shader/JShader_Basic.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Utils.h"
 
 
-JMaterial::JMaterial()
-	: mMaterial(),
-	  bTransparent(false)
+FMaterialParam::FMaterialParam(const JText& InName)
+	: Name(InName)
 {
-	// mShader = IManager.ShaderManager.BasicShader;
-	mShader = IManager.ShaderManager->FetchResource("Basic");
-
-	Utils::DX::CreateBuffer(IManager.RenderManager->GetDevice(),
-							D3D11_BIND_CONSTANT_BUFFER,
-							nullptr,
-							sizeof(CBuffer::Material),
-							1,
-							mMaterialBuffer.GetAddressOf(),
-							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE);
-
+	Key = StringHash(Name.c_str());
 }
 
-JMaterial::JMaterial(JTextView InMaterialName)
-	: JMaterial()
+FMaterialParam::FMaterialParam(const JText& InName, EMaterialParamValue InParamValue, const void* InValue,
+							   bool         bInInstanceParam)
+	: FMaterialParam(InName)
 {
-	mMaterialPath = {InMaterialName.begin(), InMaterialName.end()};
-	mMaterialName = ParseFile(mMaterialPath);
+	ParamValue     = InParamValue;
+	bInstanceParam = bInInstanceParam;
+
+	if (InParamValue == EMaterialParamValue::String)
+	{
+		StringValue = static_cast<const char*>(InValue);
+	}
+	else
+	{
+		switch (ParamValue)
+		{
+		case EMaterialParamValue::Boolean:
+			BooleanValue = *static_cast<const bool*>(InValue);
+			break;
+		case EMaterialParamValue::Integer:
+			IntegerValue = *static_cast<const int32_t*>(InValue);
+			break;
+		case EMaterialParamValue::Float:
+			FloatValue = *static_cast<const float*>(InValue);
+			break;
+		case EMaterialParamValue::Float2:
+			Float2Value = *static_cast<const FVector2*>(InValue);
+			break;
+		case EMaterialParamValue::Float3:
+			Float3Value = *static_cast<const FVector*>(InValue);
+			break;
+		case EMaterialParamValue::Float4:
+			Float4Value = *static_cast<const FVector4*>(InValue);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+uint32_t FMaterialParam::GetType() const
+{
+	return StringHash("FMaterialParam");
+}
+
+bool FMaterialParam::Serialize_Implement(std::ofstream& FileStream)
+{
+	if (!Utils::Serialization::SerializeMetaData(FileStream, this))
+	{
+		return false;
+	}
+
+	// Name
+	Utils::Serialization::Serialize_Text(Name, FileStream);
+
+	// bInstanceParam
+	Utils::Serialization::Serialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), FileStream);
+
+	// ParamValue
+	Utils::Serialization::Serialize_Primitive(&ParamValue, sizeof(ParamValue), FileStream);
+
+	// Value
+	Utils::Serialization::Serialize_Primitive(&Float4Value, sizeof(Float4Value), FileStream);
+	Utils::Serialization::Serialize_Text(StringValue, FileStream);
+
+	return true;
+}
+
+bool FMaterialParam::DeSerialize_Implement(std::ifstream& InFileStream)
+{
+	JAssetMetaData metaData;
+	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
+	{
+		return false;
+	}
+
+	// Name
+	Utils::Serialization::DeSerialize_Text(Name, InFileStream);
+
+	// bInstanceParam
+	Utils::Serialization::DeSerialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), InFileStream);
+
+	// ParamValue
+	Utils::Serialization::DeSerialize_Primitive(&ParamValue, sizeof(ParamValue), InFileStream);
+
+	// Value
+	Utils::Serialization::DeSerialize_Primitive(&Float4Value, sizeof(Float4Value), InFileStream);
+	Utils::Serialization::DeSerialize_Text(StringValue, InFileStream);
+
+	if (ParamValue == EMaterialParamValue::Texture2D && !StringValue.empty())
+	{
+		TextureValue = IManager.TextureManager->CreateOrLoad(StringValue.c_str());
+	}
+
+	Key = StringHash(Name.c_str());
+
+
+	return true;
+}
+
+void FMaterialParam::BindMaterialParam() const
+{
+	if (ParamValue == EMaterialParamValue::Texture2D && TextureValue)
+	{
+		JTexture::SetShaderTexture2D(0, TextureValue);
+	}
+}
+
+JMaterial::JMaterial(JTextView InMaterialName, uint32_t InBufferSize)
+{
+	mMaterialPath       = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialName       = ParseFile(mMaterialPath);
+	mMaterialID         = StringHash(mMaterialName.c_str());
+	mShader             = IManager.ShaderManager->FetchResource<JShader_Basic>(NAME_SHADER_BASIC);
+	mMaterialBufferSize = InBufferSize;
 
 	if (std::filesystem::is_regular_file(InMaterialName))
 	{
@@ -36,9 +135,14 @@ JMaterial::JMaterial(JTextView InMaterialName)
 
 }
 
-JMaterial::JMaterial(JWTextView InMaterialName)
-	: JMaterial(WString2String(InMaterialName.data()))
+JMaterial::JMaterial(JWTextView InMaterialName, uint32_t InBufferSize)
+	: JMaterial(WString2String(InMaterialName.data()), InBufferSize)
 {}
+
+Ptr<IManagedInterface> JMaterial::Clone() const
+{
+	return nullptr;
+}
 
 uint32_t JMaterial::GetHash() const
 {
@@ -57,14 +161,11 @@ bool JMaterial::Serialize_Implement(std::ofstream& FileStream)
 		return false;
 	}
 
-	// Material ID
-	Utils::Serialization::Serialize_Primitive(&mMaterialID, sizeof(mMaterialID), FileStream);
+	// Material Path
+	Utils::Serialization::Serialize_Text(mMaterialPath, FileStream);
 
 	// Material Name
 	Utils::Serialization::Serialize_Text(mMaterialName, FileStream);
-
-	// TransparentColor
-	Utils::Serialization::Serialize_Primitive(&bTransparent, sizeof(bTransparent), FileStream);
 
 	// Material Param Count
 	int32_t paramCount = mMaterialParams.size();
@@ -94,14 +195,11 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 		return false;
 	}
 
-	// Material ID
-	Utils::Serialization::DeSerialize_Primitive(&mMaterialID, sizeof(mMaterialID), InFileStream);
+	// Material Path
+	Utils::Serialization::DeSerialize_Text(mMaterialPath, InFileStream);
 
 	// Material Name
 	Utils::Serialization::DeSerialize_Text(mMaterialName, InFileStream);
-
-	// TransparentColor
-	Utils::Serialization::DeSerialize_Primitive(&bTransparent, sizeof(bTransparent), InFileStream);
 
 	// Material Param Count
 	int32_t paramCount;
@@ -111,7 +209,7 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	mMaterialParams.reserve(paramCount);
 	for (int32_t i = 0; i < paramCount; ++i)
 	{
-		FMaterialParams param;
+		FMaterialParam param;
 		param.DeSerialize_Implement(InFileStream);
 		mMaterialParams.push_back(param);
 	}
@@ -119,187 +217,72 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Shader File Name
 	JWText shaderName;
 	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
-	mShader = IManager.ShaderManager->CreateOrLoad(shaderName);
+	mShader = IManager.ShaderManager->CreateOrLoad<JShader_Basic>(shaderName);
 
-	ApplyTextures();
+	mMaterialID = StringHash(mMaterialName.c_str());
 
 	return true;
 }
 
 
-void JMaterial::AddMaterialParam(const FMaterialParams& InMaterialParam)
+void JMaterial::AddMaterialParam(const FMaterialParam& InMaterialParam)
 {
 	mMaterialParams.push_back(InMaterialParam);
 }
 
-void JMaterial::ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext)
+void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext)
 {
 	assert(mShader);
 
-	// 셰이더를 적용한다.
-	mShader->ApplyShader(InDeviceContext);
+	// 셰이더를 적용
+	mShader->BindShaderPipeline(InDeviceContext);
 
-	// 파라미터들을 셰이더에 넘겨준다.
+
+	// 텍스처맵 슬롯 바인딩
 	for (int32_t i = 0; i < mMaterialParams.size(); ++i)
 	{
-		const FMaterialParams param      = mMaterialParams[i];
-		const FVector4        colorValue = FVector4(param.Float3Value, 1.f);
+		const FMaterialParam& param = mMaterialParams[i];
 
-
-		switch (param.ParamType)
-		{
-		case EMaterialParamType::Boolean:
-			break;
-		case EMaterialParamType::Integer:
-			break;
-		case EMaterialParamType::Float:
-			break;
-		case EMaterialParamType::Float2:
-			break;
-		case EMaterialParamType::Float3:
-			break;
-		case EMaterialParamType::Float4:
-			break;
-		// 텍스처 적용
-		case EMaterialParamType::String:
-		case EMaterialParamType::Texture2D:
-			break;
-		}
-
-		switch (param.Flags)
-		{
-		case EMaterialFlag::DiffuseColor:
-			mMaterial.DiffuseColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseDiffuseMap = true;
-			}
-			break;
-		case EMaterialFlag::EmissiveColor:
-			mMaterial.EmissiveColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseEmissiveMap = true;
-			}
-			break;
-
-		case EMaterialFlag::SpecularColor:
-			mMaterial.SpecularColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseSpecularMap = true;
-			}
-			break;
-		case EMaterialFlag::ReflectionColor:
-			mMaterial.ReflectionColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseReflectionMap = true;
-			}
-			break;
-
-		case EMaterialFlag::AmbientColor:
-			mMaterial.AmbientColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseAmbientMap = true;
-			}
-			break;
-
-		case EMaterialFlag::TransparentColor:
-			mMaterial.TransparentColor = colorValue;
-			break;
-
-		case EMaterialFlag::DisplacementColor:
-			mMaterial.DisplacementColor = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseDisplacementMap = true;
-			}
-			break;
-
-		case EMaterialFlag::NormalMap:
-			mMaterial.NormalMap = colorValue;
-			if (param.ParamType == EMaterialParamType::Texture2D)
-			{
-				mMaterial.bUseNormalMap = true;
-			}
-			break;
-
-		case EMaterialFlag::DiffuseFactor:
-			mMaterial.DiffuseFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::EmissiveFactor:
-			mMaterial.EmissiveFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::SpecularFactor:
-			mMaterial.SpecularFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::ReflectionFactor:
-			mMaterial.ReflectionFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::AmbientFactor:
-			mMaterial.AmbientFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::TransparentFactor:
-			mMaterial.TransparentFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::DisplacementFactor:
-			mMaterial.DisplacementFactor = param.FloatValue;
-			break;
-
-		case EMaterialFlag::Shininess:
-			mMaterial.Shininess = param.FloatValue;
-			break;
-
-		case EMaterialFlag::Opacity:
-			mMaterial.Opacity = param.FloatValue;
-			break;
-
-		default:
-			break;
-		}
-
-		JTexture::SetShaderTexture2D(EnumAsByte(param.Flags), param.TextureValue);
+		param.BindMaterialParam();
 	}
-	Utils::DX::UpdateDynamicBuffer(InDeviceContext,
-								   mMaterialBuffer.Get(),
-								   &mMaterial,
-								   sizeof(CBuffer::Material));
-	InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_MATERIAL, 1, mMaterialBuffer.GetAddressOf());
 }
 
-const FMaterialParams* JMaterial::GetMaterialParam(const JText& InParamName) const
+void JMaterial::EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam)
+{
+	if (FMaterialParam* origin = GetMaterialParam(InParamName))
+	{
+		*origin = InMaterialParam;
+	}
+
+	// Utils::DX::UpdateDynamicBuffer(InDeviceContext,
+	// 						   mMaterialBuffer.Get(),
+	// 						   &mMaterial,
+	// 						   sizeof(CBuffer::Material));
+}
+
+const FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName) const
 {
 	return const_cast<JMaterial*>(this)->GetMaterialParam(InParamName);
 }
 
-const FMaterialParams* JMaterial::GetMaterialParam(const JWText& InParamName) const
-{
-	// const_cast로 상수성을 제거하고 비상수 버전을 호출
-	// 코드중복을 사용하지 않기 위해...
-	// FIXME: const_cast를 사용하지 않는 방법이 있을까? 
-	return const_cast<JMaterial*>(this)->GetMaterialParam(InParamName);
-}
+// const FMaterialParam* JMaterial::GetMaterialParam(const JWText& InParamName) const
+// {
+// 	// const_cast로 상수성을 제거하고 비상수 버전을 호출
+// 	// 코드중복을 사용하지 않기 위해...
+// 	// FIXME: const_cast를 사용하지 않는 방법이 있을까? 
+// 	return const_cast<JMaterial*>(this)->GetMaterialParam(InParamName);
+// }
 
-FMaterialParams* JMaterial::GetMaterialParam(const JText& InParamName)
+FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName)
 {
 	if (mMaterialParams.empty())
 	{
 		return nullptr;
 	}
 
-	const uint32_t paramName = StringHash(InParamName.c_str());
-
 	for (auto& param : mMaterialParams)
 	{
-		if (param.Key == paramName)
+		if (param.Name == InParamName)
 		{
 			return &param;
 		}
@@ -308,57 +291,13 @@ FMaterialParams* JMaterial::GetMaterialParam(const JText& InParamName)
 	return nullptr;
 }
 
-FMaterialParams* JMaterial::GetMaterialParam(const JWText& InParamName)
+FMaterialParam Utils::Material::CreateTextureParam(const char* ParamName, const char* FileName, int32_t Index)
 {
-	if (mMaterialParams.empty())
-	{
-		return nullptr;
-	}
+	FMaterialParam materialParams;
 
-	const uint32_t paramName = StringHash(InParamName.c_str());
-
-	for (auto& param : mMaterialParams)
-	{
-		if (param.Key == paramName)
-		{
-			return &param;
-		}
-	}
-
-	return nullptr;
-}
-
-
-void JMaterial::ApplyTextures()
-{
-	for (auto& param : mMaterialParams)
-	{
-		if (param.ParamType == EMaterialParamType::Texture2D)
-		{
-			param.TextureValue = IManager.TextureManager->CreateOrLoad(param.StringValue.c_str());
-		}
-	}
-}
-
-FMaterialParams Utils::Material::CreateTextureParam(const char*   ParamName, const char* FileName, int32_t Index,
-													EMaterialFlag Flag)
-{
-	FMaterialParams materialParams;
-
-	if (Index == 0)
-	{
-		materialParams.Name.assign(ParamName);
-	}
-	else
-	{
-		materialParams.Name = std::format("{0}_{1}", ParamName, Index);
-	}
-
-	materialParams.Key            = StringHash(materialParams.Name.c_str());
-	materialParams.ParamType      = EMaterialParamType::Texture2D;
+	materialParams.ParamValue     = EMaterialParamValue::Texture2D;
 	materialParams.StringValue    = FileName;
 	materialParams.bInstanceParam = true;
-	materialParams.Flags          = Flag;
 
 	materialParams.TextureValue = IManager.TextureManager->CreateOrLoad(FileName);
 

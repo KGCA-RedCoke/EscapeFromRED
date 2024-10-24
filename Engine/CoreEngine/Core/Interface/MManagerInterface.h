@@ -25,15 +25,16 @@ private:
 	static void SearchFiles_Recursive(const std::filesystem::path& InPath);
 
 public:
-	MGUIManager*      GUIManager;		// GUI
-	MViewportManager* ViewportManager;	// 뷰포트
-	MCameraManager*   CameraManager;	// 카메라
-	MShaderManager*   ShaderManager;	// 셰이더
-	MTextureManager*  TextureManager;	// 텍스처
-	MMaterialManager* MaterialManager;	// 머티리얼
-	MMeshManager*     MeshManager;		// 메시
-	XD3DDevice*       RenderManager;	// 디바이스
-	JWorld*           World;			// 월드
+	MGUIManager*              GUIManager;		// GUI
+	MViewportManager*         ViewportManager;	// 뷰포트
+	MCameraManager*           CameraManager;	// 카메라
+	MShaderManager*           ShaderManager;	// 셰이더
+	MTextureManager*          TextureManager;	// 텍스처
+	MMaterialManager*         MaterialManager;	// 머티리얼
+	MMaterialInstanceManager* MaterialInstanceManager; // 머티리얼 인스턴스
+	MMeshManager*             MeshManager;		// 메시
+	XD3DDevice*               RenderManager;	// 디바이스
+	JWorld*                   World;			// 월드
 
 	MLayerManager LayerManager;			// 레이어
 

@@ -32,6 +32,11 @@ JTexture::JTexture(JTextView InName, bool bEnableEdit)
 	: JTexture(String2WString(InName.data()), bEnableEdit) {}
 
 
+Ptr<IManagedInterface> JTexture::Clone() const
+{
+	return nullptr;
+}
+
 uint32_t JTexture::GetHash() const
 {
 	return StringHash(ParseFile(mTextureName).c_str());

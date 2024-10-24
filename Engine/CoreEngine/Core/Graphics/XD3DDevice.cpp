@@ -308,8 +308,6 @@ void XD3DDevice::Create2DResources()
 
 void XD3DDevice::CreateRasterizerState()
 {
-
-
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 	{
@@ -322,7 +320,7 @@ void XD3DDevice::CreateRasterizerState()
 		rasterizerDesc.DepthClipEnable       = true;
 		rasterizerDesc.ScissorEnable         = false;
 		rasterizerDesc.MultisampleEnable     = false;
-		rasterizerDesc.AntialiasedLineEnable = false;
+		rasterizerDesc.AntialiasedLineEnable = true;
 	}
 
 	CheckResult(

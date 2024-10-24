@@ -4,12 +4,8 @@
 
 class MMaterialManager : public Manager_Base<JMaterial, MMaterialManager>
 {
-public:
-	[[nodiscard]] FORCEINLINE Ptr<JMaterial> GetDefaultMaterial() const { return DefaultMaterial; }
-
-private:
-	Ptr<JMaterial> DefaultMaterial;
-
+	void SaveEngineMaterials();
+	
 public:
 #pragma region Singleton Boilerplate
 

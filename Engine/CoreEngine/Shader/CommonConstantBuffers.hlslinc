@@ -1,0 +1,53 @@
+cbuffer ModelViewProjectionConstantBuffer : register(b0)
+{
+	matrix World;
+	matrix View;
+	matrix Projection;
+};
+
+cbuffer LightConstantBuffer : register(b1)
+{
+	float4 DirectionalLightPos;
+	float4 DirectionalLightColor;
+}
+
+cbuffer CameraConstantBuffer : register(b2)
+{
+	float4 WorldCameraPos;
+}
+
+cbuffer WorldTimeConstantBuffer : register(b3)
+{
+	float4 WorldTime;
+}
+
+#define TEXTURE_USE_NONE 0
+#define TEXTURE_USE_DIFFUSE (1 << 0)			// 0000 0001	
+#define TEXTURE_USE_NORMAL (1 << 1)				// 0000 0010
+#define TEXTURE_USE_AMBIENTOCCLUSION (1 <<2)	// 0000 0100
+#define TEXTURE_USE_ROUGHNESS (1 << 3)			// 0000 1000
+#define TEXTURE_USE_METALLIC (1 << 4)			// 0001 0000
+
+struct ColorParam
+{
+	float3 Color;
+	float  Factor;
+};
+
+struct ValueParam
+{
+	float Value;
+	float Factor;
+};
+
+cbuffer BasicMaterialConstantBuffer : register(b4)
+{
+	ColorParam Diffuse;
+	ColorParam Ambient;
+
+	ValueParam AmbientOcclusion;
+	ValueParam Roughness;
+	ValueParam Metallic;
+
+	uint TextureUsageFlag;
+}

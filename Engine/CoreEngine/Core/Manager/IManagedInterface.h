@@ -7,5 +7,6 @@ public:
 	virtual ~IManagedInterface() = default;
 
 public:
-	virtual uint32_t GetHash() const = 0;
+	virtual uint32_t               GetHash() const = 0;
+	virtual Ptr<IManagedInterface> Clone() const = 0;
 };

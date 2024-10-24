@@ -13,6 +13,12 @@
  */
 namespace CBuffer
 {
+	constexpr const char* NAME_CONSTANT_BUFFER_SPACE    = "ModelViewProjectionConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_LIGHT    = "LightConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA   = "CameraConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_TIME     = "WorldTimeConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL = "MaterialConstantBuffer";
+
 	constexpr uint32_t SLOT_SPACE    = 0;
 	constexpr uint32_t SLOT_LIGHT    = 1;
 	constexpr uint32_t SLOT_CAMERA   = 2;
@@ -45,40 +51,40 @@ namespace CBuffer
 		FVector4 CameraPos;
 	};
 
-	// FVector(12)에 float값 하나 연결하면 딱 맞긴 한데...
-	struct Material
+	enum ETextureUsage : uint32_t
 	{
-		// sizeof(Fvector)(16) * 8 = 128
-		FVector4 DiffuseColor;
-		FVector4 EmissiveColor;
-		FVector4 SpecularColor;
-		FVector4 ReflectionColor;
-		FVector4 AmbientColor;
-		FVector4 TransparentColor;
-		FVector4 DisplacementColor;
-		FVector4 NormalMap;
+		None             = 0,
+		Diffuse          = 1 << 0,
+		Normal           = 1 << 1,
+		AmbientOcclusion = 1 << 2,
+		Roughness        = 1 << 3,
+		Metallic         = 1 << 4,
+	};
 
-		// sizeof(float) * 9 = 36
-		float DiffuseFactor;
-		float EmissiveFactor;
-		float SpecularFactor;
-		float ReflectionFactor;
-		float AmbientFactor;
-		float TransparentFactor;
-		float DisplacementFactor;
-		float Shininess;
-		float Opacity;
+	struct FMaterialColorParam
+	{
+		FVector Color;
+		float   Factor;
+	};
 
-		// sizeof(BOOL) * 7 = 28
-		int32_t bUseDiffuseMap;
-		int32_t bUseEmissiveMap;
-		int32_t bUseSpecularMap;
-		int32_t bUseReflectionMap;
-		int32_t bUseAmbientMap;
-		int32_t bUseDisplacementMap;
-		int32_t bUseNormalMap;
+	struct FMaterialValueParam
+	{
+		float Value;
+		float Factor;
+	};
 
-		// total = 128 + 36 + 28 = 192
+	struct Material_Basic
+	{
+		FMaterialColorParam Diffuse;	// 16 Bytes
+		FMaterialColorParam Ambient;	// 16 Bytes
+
+		FMaterialValueParam AmbientOcclusion;	// 8 Bytes 
+		FMaterialValueParam Roughness;			// 8 Bytes
+		FMaterialValueParam Metallic; 			// 8 Bytes
+
+		uint32_t TextureUsageFlag = 0;	// 4 Bytes
+
+		float Padding;						// 4 Bytes
 	};
 }
 
@@ -324,20 +330,17 @@ namespace Buffer
 	// Basic 버퍼 인스턴스
 	struct FBufferInstance
 	{
-		JArray<ComPtr<ID3D11Buffer>>  Buffer_Vertex;			// Vertex 
-		JArray<ComPtr<ID3D11Buffer>>  Buffer_Index;				// Index
-		JArray<FBufferSpaceLightTime> CBuffer_SpaceLightTime;	// Space, Light, Time
+		JArray<ComPtr<ID3D11Buffer>> Buffer_Vertex;			// Vertex 
+		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;				// Index
 
 
 		void Resize(const int32_t Size)
 		{
 			Buffer_Vertex.clear();
 			Buffer_Index.clear();
-			CBuffer_SpaceLightTime.clear();
 
 			Buffer_Vertex.resize(Size);
 			Buffer_Index.resize(Size);
-			CBuffer_SpaceLightTime.resize(Size);
 		}
 	};
 
@@ -408,10 +411,22 @@ struct JVertexData final : public ISerializable
 {
 	static_assert(std::is_base_of_v<Vertex::FVertexInfo_2D, T>, "T must be derived from FVertexInfo_2D");
 
-	int32_t                   FaceCount = 0;
-	std::vector<T>            VertexArray;
-	std::vector<uint32_t>     IndexArray;
-	std::vector<FTriangle<T>> TriangleList;
+	int32_t              FaceCount = 0;
+	JArray<T>            VertexArray;
+	JArray<uint32_t>     IndexArray;
+	JArray<FTriangle<T>> TriangleList;
+
+	Ptr<JVertexData<T>> Clone()
+	{
+		Ptr<JVertexData<T>> clone = MakePtr<JVertexData<T>>();
+
+		clone->FaceCount    = FaceCount;
+		clone->VertexArray  = VertexArray;
+		clone->IndexArray   = IndexArray;
+		clone->TriangleList = TriangleList;
+
+		return clone;
+	}
 
 	uint32_t GetType() const override
 	{

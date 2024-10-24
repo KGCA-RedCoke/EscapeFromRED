@@ -34,6 +34,7 @@ public:
 	void Draw() override;
 
 public:
+	FORCEINLINE [[nodiscard]] FMatrix GetWorldMatrix() const { return mWorldMat; }
 	FORCEINLINE [[nodiscard]] FVector GetWorldLocation() const { return mWorldLocation; }
 	FORCEINLINE [[nodiscard]] FVector GetWorldRotation() const { return mWorldRotation; }
 	FORCEINLINE [[nodiscard]] FVector GetWorldScale() const { return mWorldScale; }

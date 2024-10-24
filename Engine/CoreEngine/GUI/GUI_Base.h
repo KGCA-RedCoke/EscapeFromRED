@@ -32,4 +32,6 @@ protected:
 	std::string      mTitle;
 	bool             bIsWindowOpen;
 	ImGuiWindowFlags mWindowFlags = 0;
+
+	friend class MGUIManager;
 };

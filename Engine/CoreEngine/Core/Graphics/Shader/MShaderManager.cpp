@@ -1,5 +1,8 @@
 ﻿#include "MShaderManager.h"
 
+#include "InputLayouts.h"
+#include "JShader_Basic.h"
+
 MShaderManager::MShaderManager()
 {
 	Initialize_Initialize();
@@ -7,8 +10,6 @@ MShaderManager::MShaderManager()
 
 void MShaderManager::Initialize_Initialize()
 {
-	BasicShader = CreateOrLoad(L"Shader/Basic.hlsl");
-	CreateOrLoad(L"Shader/Gnomon.hlsl");
+	BasicShader = CreateOrLoad<JShader_Basic>(NAME_SHADER_BASIC);
+	CreateOrLoad(NAME_SHADER_GNOMON);
 }
-
-

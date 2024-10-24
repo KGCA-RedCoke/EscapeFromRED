@@ -2,12 +2,11 @@
 #include "common_include.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Graphics/Texture/JTexture.h"
-#include "Core/Utils/Utils.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
 
 
-class JShader;
+class JShader_Basic;
 class JTexture;
 
 constexpr auto NAME_MAT_Diffuse       = "DiffuseColor";
@@ -27,10 +26,12 @@ constexpr auto NAME_MAT_Displacement  = "DisplacementColor";
 constexpr auto NAME_MAT_DisplacementF = "DisplacementFactor";
 constexpr auto NAME_MAT_Shininess     = "Shininess";
 
+constexpr const char* NAME_MAT_BASIC = "Game/Materials/Engine/Material_Basic.jasset";
+
 /**
  * @brief Material parameter type
  */
-enum class EMaterialParamType : uint8_t
+enum class EMaterialParamValue : uint8_t
 {
 	Boolean,
 	Integer,
@@ -45,48 +46,21 @@ enum class EMaterialParamType : uint8_t
 };
 
 /**
- * @brief Material flag
- */
-enum class EMaterialFlag : uint8_t
-{
-	DiffuseColor,		// 기본 색상
-	EmissiveColor,		// 방출 색상
-	SpecularColor,		// 반사 색상 (하이라이트)
-	ReflectionColor,	// 반사
-	AmbientColor,		// 주변 색상
-	NormalMap,			// 노말맵
-	DisplacementColor,	// 변위
-	TransparentColor,	// 투명도
-
-	DiffuseFactor,		// 기본 색상 팩터
-	EmissiveFactor, 	// 방출 색상 팩터
-	SpecularFactor, 	// 반사 색상 팩터
-	ReflectionFactor,	// 반사 팩터
-	AmbientFactor,		// 주변 색상 팩터
-	TransparentFactor,	// 투명도 팩터
-	DisplacementFactor, // 변위 팩터
-	Shininess,			// 광택
-	Opacity,			// 투명도
-
-	// BumpMap,		// 범프맵 (노말맵으로 대체)
-	// BumpFactor,	// 범프맵 팩터
-};
-
-/**
  * @brief Material parameters
  * @details 머티리얼 템플릿 변수
  * ScalarParameter, VectorParameter, TextureParameter를 저장하는 구조체
  * Diffuse, Specular, Ambient, Emissive, Normal, Opacity 등
  */
-struct FMaterialParams : public ISerializable
+struct FMaterialParam : public ISerializable
 {
-	JText              Name; /** 머티리얼 변수 이름 */
-	bool               bInstanceParam = false; /** 인스턴스 변수 여부 */
-	uint32_t           Key            = 0; /** 머티리얼 변수 해시값 (빠른 비교를 위해 사용) */
-	EMaterialParamType ParamType      = EMaterialParamType::String; /** 머티리얼 변수 타입 */
-	EMaterialFlag      Flags          = EMaterialFlag::DiffuseColor; /** 머티리얼 변수 플래그 */
-	Ptr<JTexture>      TextureValue   = nullptr;
-	JText              StringValue;
+	JText    Name;						/** 변수 이름 */
+	uint32_t Key;						/** 변수 키 */
+	bool     bInstanceParam = false;	/** 인스턴스 변수 여부 */
+
+	EMaterialParamValue ParamValue = EMaterialParamValue::String; /** 머티리얼 변수 값 타입 */
+
+	Ptr<JTexture> TextureValue = nullptr;
+	JText         StringValue;
 
 	union
 	{
@@ -98,116 +72,17 @@ struct FMaterialParams : public ISerializable
 		FVector4 Float4Value;
 	};
 
-	uint32_t GetType() const override
-	{
-		return StringHash("FMaterialParams");
-	}
+	FMaterialParam() = default;
+	FMaterialParam(const JText& InName);
+	FMaterialParam(const JText& InName, EMaterialParamValue InParamValue, const void* InValue,
+				   bool         bInInstanceParam = false);
 
-	bool Serialize_Implement(std::ofstream& FileStream) override
-	{
-		if (!Utils::Serialization::SerializeMetaData(FileStream, this))
-		{
-			return false;
-		}
+	uint32_t GetType() const override;
 
-		// Name
-		Utils::Serialization::Serialize_Text(Name, FileStream);
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
-		// bInstanceParam
-		Utils::Serialization::Serialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), FileStream);
-
-		// Key
-		Utils::Serialization::Serialize_Primitive(&Key, sizeof(Key), FileStream);
-
-		// ParamType
-		Utils::Serialization::Serialize_Primitive(&ParamType, sizeof(ParamType), FileStream);
-
-		// Flags
-		Utils::Serialization::Serialize_Primitive(&Flags, sizeof(Flags), FileStream);
-
-		switch (ParamType)
-		{
-		case EMaterialParamType::Boolean:
-			Utils::Serialization::Serialize_Primitive(&BooleanValue, sizeof(BooleanValue), FileStream);
-			break;
-		case EMaterialParamType::Integer:
-			Utils::Serialization::Serialize_Primitive(&IntegerValue, sizeof(IntegerValue), FileStream);
-			break;
-		case EMaterialParamType::Float:
-			Utils::Serialization::Serialize_Primitive(&FloatValue, sizeof(FloatValue), FileStream);
-			break;
-		case EMaterialParamType::Float2:
-			Utils::Serialization::Serialize_Primitive(&Float2Value, sizeof(Float2Value), FileStream);
-			break;
-		case EMaterialParamType::Float3:
-			Utils::Serialization::Serialize_Primitive(&Float3Value, sizeof(Float3Value), FileStream);
-			break;
-		case EMaterialParamType::String:
-		case EMaterialParamType::Texture2D:
-			{
-				Utils::Serialization::Serialize_Text(StringValue, FileStream);
-			}
-		default:
-			break;
-		}
-
-		return true;
-	}
-
-	bool DeSerialize_Implement(std::ifstream& InFileStream) override
-	{
-		JAssetMetaData metaData;
-		if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
-		{
-			return false;
-		}
-
-		// Name
-		Utils::Serialization::DeSerialize_Text(Name, InFileStream);
-
-		// bInstanceParam
-		Utils::Serialization::DeSerialize_Primitive(&bInstanceParam, sizeof(bInstanceParam), InFileStream);
-
-		// Key
-		Utils::Serialization::DeSerialize_Primitive(&Key, sizeof(Key), InFileStream);
-
-		// ParamType
-		Utils::Serialization::DeSerialize_Primitive(&ParamType, sizeof(ParamType), InFileStream);
-
-		// Flags
-		Utils::Serialization::DeSerialize_Primitive(&Flags, sizeof(Flags), InFileStream);
-
-		// Value
-		switch (ParamType)
-		{
-		case EMaterialParamType::Boolean:
-			Utils::Serialization::DeSerialize_Primitive(&BooleanValue, sizeof(BooleanValue), InFileStream);
-			break;
-		case EMaterialParamType::Integer:
-			Utils::Serialization::DeSerialize_Primitive(&IntegerValue, sizeof(IntegerValue), InFileStream);
-			break;
-		case EMaterialParamType::Float:
-			Utils::Serialization::DeSerialize_Primitive(&FloatValue, sizeof(FloatValue), InFileStream);
-			break;
-		case EMaterialParamType::Float2:
-			Utils::Serialization::DeSerialize_Primitive(&Float2Value, sizeof(Float2Value), InFileStream);
-			break;
-		case EMaterialParamType::Float3:
-			Utils::Serialization::DeSerialize_Primitive(&Float3Value, sizeof(Float3Value), InFileStream);
-			break;
-		case EMaterialParamType::String:
-		case EMaterialParamType::Texture2D:
-			{
-				Utils::Serialization::DeSerialize_Text(StringValue, InFileStream);
-			}
-
-			break;
-		default:
-			break;
-		}
-
-		return true;
-	}
+	void BindMaterialParam() const;
 };
 
 /**
@@ -216,10 +91,12 @@ struct FMaterialParams : public ISerializable
 class JMaterial : public IManagedInterface, public ISerializable
 {
 public:
-	JMaterial();
-	explicit JMaterial(JTextView InMaterialName);
-	explicit JMaterial(JWTextView InMaterialName);
+	explicit JMaterial(JTextView InMaterialName, uint32_t InBufferSize = sizeof(CBuffer::Material_Basic));
+	explicit JMaterial(JWTextView InMaterialName, uint32_t InBufferSize = sizeof(CBuffer::Material_Basic));
 	~JMaterial() override = default;
+
+public:
+	Ptr<IManagedInterface> Clone() const override;
 
 public:
 	uint32_t GetHash() const override;
@@ -227,104 +104,52 @@ public:
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
+protected:
+	virtual void InitializeParams() {};
+	virtual void UpdateParamData(void* InData) { mParamData = InData; };
+
 public:
 	/**
-	 * 셰이더, (머티리얼) 활성화
+	 * 머티리얼을 GPU에 바인딩
 	 */
-	void ApplyMaterialParams(ID3D11DeviceContext* InDeviceContext);
+	void BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext);
 
-	template <typename Value>
-	void AddMaterialParam(const JText& InParamName, const EMaterialParamType InParamType, const EMaterialFlag InFlags,
-						  Value        InValue)
-	{
-		FMaterialParams param;
-		param.Name      = InParamName;
-		param.Key       = StringHash(InParamName.c_str());
-		param.ParamType = InParamType;
-		param.Flags     = InFlags;
-
-		param.BooleanValue = false;
-
-		if constexpr (std::is_same_v<Value, bool>)
-		{
-			param.BooleanValue = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, int32_t>)
-		{
-			param.IntegerValue = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, float>)
-		{
-			param.FloatValue = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, FVector2>)
-		{
-			param.Float2Value = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, FVector>)
-		{
-			param.Float3Value = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, FVector4>)
-		{
-			param.Float4Value = InValue;
-		}
-		else if constexpr (std::is_same_v<Value, JText>)
-		{
-			param.StringValue = InValue;
-		}
-		else
-		{
-			// 지원하지 않는 타입에 대한 예외처리
-		}
-
-		mMaterialParams.push_back(param);
-	}
+	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 
 	/**
 	 * 필요한 파라미터(텍스처, 색상 등)를 추가
 	 * @param InMaterialParam 추가할 파라미터
 	 */
-	void AddMaterialParam(const FMaterialParams& InMaterialParam);
+	void AddMaterialParam(const FMaterialParam& InMaterialParam);
 
 public:
-	[[nodiscard]] const FMaterialParams* GetMaterialParam(const JText& InParamName) const;
-	[[nodiscard]] const FMaterialParams* GetMaterialParam(const JWText& InParamName) const;
-	[[nodiscard]] FMaterialParams*       GetMaterialParam(const JText& InParamName);
-	[[nodiscard]] FMaterialParams*       GetMaterialParam(const JWText& InParamName);
+	[[nodiscard]] const FMaterialParam* GetMaterialParam(const JText& InParamName) const;
+	[[nodiscard]] FMaterialParam*       GetMaterialParam(const JText& InParamName);
 
-	[[nodiscard]] FORCEINLINE const std::vector<FMaterialParams>& GetMaterialParams() const { return mMaterialParams; }
-	[[nodiscard]] FORCEINLINE std::vector<FMaterialParams>&       GetMaterialParams() { return mMaterialParams; }
-	[[nodiscard]] FORCEINLINE uint32_t                            GetMaterialID() const { return mMaterialID; }
-	[[nodiscard]] FORCEINLINE ComPtr<ID3D11Buffer>                GetMaterialBuffer() const { return mMaterialBuffer; }
-	[[nodiscard]] FORCEINLINE const CBuffer::Material&            GetMaterial() const { return mMaterial; }
-	[[nodiscard]] FORCEINLINE const JText&                        GetMaterialPath() const { return mMaterialPath; }
-	[[nodiscard]] FORCEINLINE const JText&                        GetMaterialName() const { return mMaterialName; }
-	[[nodiscard]] FORCEINLINE bool                                HasMaterial() const { return !mMaterialParams.empty(); }
-	[[nodiscard]] FORCEINLINE bool                                IsTransparent() const { return bTransparent; }
+	[[nodiscard]] FORCEINLINE const std::vector<FMaterialParam>& GetMaterialParams() const { return mMaterialParams; }
+	[[nodiscard]] FORCEINLINE std::vector<FMaterialParam>&       GetMaterialParams() { return mMaterialParams; }
+	[[nodiscard]] FORCEINLINE uint32_t                           GetMaterialID() const { return mMaterialID; }
+	[[nodiscard]] FORCEINLINE const JText&                       GetMaterialPath() const { return mMaterialPath; }
+	[[nodiscard]] FORCEINLINE const JText&                       GetMaterialName() const { return mMaterialName; }
+	[[nodiscard]] FORCEINLINE bool                               HasMaterial() const { return !mMaterialParams.empty(); }
 
-	[[nodiscard]] FORCEINLINE Ptr<JShader> GetShader() const { return mShader; }
+	[[nodiscard]] FORCEINLINE Ptr<JShader_Basic> GetShader() const { return mShader; }
 
-	FORCEINLINE void SetShader(const Ptr<JShader>& InShader) { mShader = InShader; }
-	FORCEINLINE void SetTransparent(bool bInTransparent) { bTransparent = bInTransparent; }
+	FORCEINLINE void SetShader(const Ptr<JShader_Basic>& InShader) { mShader = InShader; }
 
-private:
-	void ApplyTextures();
+protected:
+	JText                  mMaterialPath;
+	JText                  mMaterialName;
+	uint32_t               mMaterialID;
+	JArray<FMaterialParam> mMaterialParams;
 
-private:
-	JText                        mMaterialPath;
-	JText                        mMaterialName;
-	uint32_t                     mMaterialID;
-	std::vector<FMaterialParams> mMaterialParams;
+	Ptr<JShader_Basic> mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 
-	Ptr<JShader> mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
-
-	ComPtr<ID3D11Buffer> mMaterialBuffer;
-	CBuffer::Material    mMaterial;
-
-	bool bTransparent;
+	uint32_t mMaterialBufferSize;
+	void*    mParamData;
 
 	friend class GUI_Editor_Material;
+	friend class JMaterialInstance;
 };
 
 namespace Utils::Material
@@ -334,10 +159,8 @@ namespace Utils::Material
 	 * @param ParamName 변수 이름
 	 * @param Index 변수 인덱스
 	 * @param FileName 텍스처 파일 경로
-	 * @param Flag 텍스처 파일 플래그(종류)
 	 */
-	FMaterialParams CreateTextureParam(const char*   ParamName, const char* FileName, int32_t Index,
-									   EMaterialFlag Flag);
+	FMaterialParam CreateTextureParam(const char* ParamName, const char* FileName, int32_t Index);
 
 
 }

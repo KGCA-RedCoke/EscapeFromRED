@@ -2,13 +2,15 @@
 #include "JShader.h"
 #include "Core/Manager/Manager_Base.h"
 
+class JShader_Basic;
+
 class MShaderManager : public Manager_Base<JShader, MShaderManager>
 {
 private:
 	void Initialize_Initialize();
 
 public:
-	Ptr<JShader> BasicShader;
+	Ptr<JShader_Basic> BasicShader;
 
 #pragma region Singleton Boilerplate
 

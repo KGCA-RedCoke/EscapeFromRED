@@ -102,7 +102,7 @@ namespace Utils::Fbx
 		/// 스켈레톤이 있을 때만 애니메이션 정보를 파싱한다.
 		void ParseAnimation(FbxScene* InScene);
 
-		
+
 		void ParseAnimationStack(FbxScene* Scene, FbxString* Buffer);
 
 		void ParseAnimNode(FbxNode* InNode, int32_t InParentIndex);
@@ -133,9 +133,10 @@ namespace Utils::Fbx
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
 		JArray<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
-		JArray<JArray<Ptr<JMaterial>>> mMaterialList;
+		JArray<JArray<Ptr<JMaterialInstance>>> mMaterialList;
 
-		JArray<FAnimationNode>  mScanList;
+
+		JArray<FAnimationNode>      mScanList;
 		JArray<Ptr<JAnimationClip>> mAnimations;
 
 		int32_t mNumVertex = 0;

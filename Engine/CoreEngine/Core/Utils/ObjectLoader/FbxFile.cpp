@@ -2,6 +2,7 @@
 #include "FbxUtils.h"
 #include "Core/Entity/Animation/JAnimationClip.h"
 #include "Core/Graphics/DirectMathHelper.h"
+#include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Interface/MManagerInterface.h"
@@ -119,25 +120,18 @@ namespace Utils::Fbx
 			const int32_t materialNum = mesh->mMaterialRefNum - 1;
 			assert(materialNum >= 0);
 
-			std::vector<Ptr<JMaterial>> materials = mMaterialList[meshIndex];
+			JArray<Ptr<JMaterialInstance>> materials = mMaterialList[meshIndex];
 			if (mesh->mFaceCount > 0 && !materials.empty())
 			{
 				// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
 				if (materials.size() == 1)
 				{
-					Ptr<JMaterial> subMaterial = materials[0];
+					Ptr<JMaterialInstance> subMaterial = materials[0];
 
 					// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
 					data->GenerateIndexArray(data->TriangleList);
 
-					if (subMaterial->HasMaterial())
-					{
-						mesh->mMaterial = subMaterial;
-					}
-					else
-					{
-						mesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
-					}
+					mesh->mMaterialInstance = subMaterial;
 
 					mNumVertex += data->VertexArray.size();
 					mNumIndex += data->IndexArray.size();
@@ -146,7 +140,7 @@ namespace Utils::Fbx
 				{
 					for (int subMeshIndex = 0; subMeshIndex < mesh->mSubMesh.size();)
 					{
-						Ptr<JMaterial> subMaterial = materials[subMeshIndex];
+						Ptr<JMaterialInstance> subMaterial = materials[subMeshIndex];
 
 						auto& subMesh = mesh->mSubMesh[subMeshIndex];
 						auto& subData = subMesh->mVertexData;
@@ -159,14 +153,8 @@ namespace Utils::Fbx
 
 						subData->GenerateIndexArray(subData->TriangleList);
 
-						if (subMaterial->HasMaterial())
-						{
-							subMesh->mMaterial = subMaterial;
-						}
-						else
-						{
-							subMesh->mMaterial = IManager.MaterialManager->GetDefaultMaterial();
-						}
+						subMesh->mMaterialInstance = subMaterial;
+
 						mNumVertex += data->VertexArray.size();
 						mNumIndex += data->IndexArray.size();
 
@@ -720,7 +708,7 @@ namespace Utils::Fbx
 			InMesh->GenerateTangentsData(0);
 		}
 
-		std::vector<Ptr<JMaterial>> materials;
+		JArray<Ptr<JMaterialInstance>> materials;
 
 		/// 레이어별로 NormalMap, Tangent, Color, UV, 머티리얼(정점에 다수의 텍스처가 매핑 되어있을 경우) 있으면 정보를 넣어놓는다.
 		/// 보통은 Layer0에만 존재하는데, 
@@ -764,8 +752,8 @@ namespace Utils::Fbx
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, i, bShouldSerialize);
-						materials.push_back(fbxMat);
+						Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, i, bShouldSerialize);
+						materials.push_back(materialInstance);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
 						// 현재는 머티리얼이 여러개 있으니 서브메시를 머티리얼 개수만큼 생성한다.
@@ -775,7 +763,7 @@ namespace Utils::Fbx
 						// 우선 메시 이름 + 머티리얼 이름 으로 설정
 						subMesh->mName = std::format("{0}_{1}",
 													 InMeshData->mName,
-													 fbxMat->GetMaterialName());
+													 materialInstance->GetMaterialName());
 
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
 						subMesh->mVertexData = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();
@@ -792,7 +780,8 @@ namespace Utils::Fbx
 							{
 								std::filesystem::create_directories(saveFilePath);
 							}
-							Utils::Serialization::Serialize(fbxMat->GetMaterialPath().c_str(), fbxMat.get());
+							Utils::Serialization::Serialize(materialInstance->GetMaterialPath().c_str(),
+															materialInstance.get());
 						}
 					}
 				}
@@ -802,8 +791,8 @@ namespace Utils::Fbx
 					InMeshData->mMaterialRefNum = 1;
 
 					// 머티리얼 정보만 가져와서 저장해놓자.
-					Ptr<JMaterial> fbxMat = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
-					materials.push_back(fbxMat);
+					Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
+					materials.push_back(materialInstance);
 
 					if (bShouldSerialize)
 					{
@@ -811,7 +800,8 @@ namespace Utils::Fbx
 						{
 							std::filesystem::create_directories(saveFilePath);
 						}
-						Utils::Serialization::Serialize(fbxMat->GetMaterialPath().c_str(), fbxMat.get());
+						Utils::Serialization::Serialize(materialInstance->GetMaterialPath().c_str(),
+														materialInstance.get());
 					}
 				}
 			}

@@ -10,7 +10,7 @@
  * directx11 sdk example - DXUTcamera 참고
  * https://github.com/microsoft/DXUT/blob/main/Optional/DXUTcamera.h
  */
-class JCamera : public IManagedInterface,  public ICoreInterface
+class JCamera : public IManagedInterface, public ICoreInterface
 {
 public:
 	JCamera() noexcept;
@@ -24,7 +24,8 @@ public:
 	void Release() override;
 #pragma endregion
 
-	uint32_t GetHash() const override;
+	uint32_t               GetHash() const override;
+	Ptr<IManagedInterface> Clone() const override;
 
 	//---------------------------------------------- Camera ---------------------------------------------------------------
 	virtual void Reset();
@@ -96,6 +97,7 @@ public:
 	[[nodiscard]]FORCEINLINE XMMATRIX GetViewMatrix() const { return XMLoadFloat4x4(&mView); }
 	[[nodiscard]]FORCEINLINE XMMATRIX GetProjMatrix() const { return XMLoadFloat4x4(&mProj); }
 	[[nodiscard]]FORCEINLINE XMVECTOR GetEyePosition() const { return XMLoadFloat3(&mEye); }
+	[[nodiscard]] FORCEINLINE FVector GetEyePositionFVector() const { return mEye; }
 	[[nodiscard]]FORCEINLINE XMVECTOR GetLookAtPosition() const { return XMLoadFloat3(&mLookAt); }
 	[[nodiscard]]FORCEINLINE float    GetNearClip() const { return mNearPlane; }
 	[[nodiscard]]FORCEINLINE float    GetFarClip() const { return mFarPlane; }

@@ -21,7 +21,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableUnitySupport>true</EnableUnitySupport>
@@ -119,9 +119,13 @@
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
     <ClInclude Include="Core\Graphics\Font\JFont.h" />
     <ClInclude Include="Core\Graphics\Font\XTKFont.h" />
+    <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
+    <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\MMeshManager.h" />
-    <ClInclude Include="Core\Graphics\Shader\JShader_Base.h" />
+    <ClInclude Include="Core\Graphics\Shader\JConstantBuffer.h" />
+    <ClInclude Include="Core\Graphics\Shader\JShader_Basic.h" />
     <ClInclude Include="Core\Graphics\XD3DDevice.h" />
     <ClInclude Include="Core\Graphics\graphics_common_include.h" />
     <ClInclude Include="Core\Graphics\Layer\XLayerBase.h" />
@@ -180,6 +184,18 @@
     <ClInclude Include="GUI\Popup\GUI_Popup_FileBrowser.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
+    <None Include="Shader\CommonConstantBuffers.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\InputLayout.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\Params.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\ShaderUtils.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <ClInclude Include="Vender\include\imgui\imconfig.h" />
     <ClInclude Include="Vender\include\imgui\imgui.h" />
     <ClInclude Include="Vender\include\imgui\imgui_impl_dx11.h" />
@@ -206,9 +222,13 @@
     <ClCompile Include="Core\Entity\World\JWorld.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
+    <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\MMeshManager.cpp" />
-    <ClCompile Include="Core\Graphics\Shader\JShader_Base.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JConstantBuffer.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JShader_Basic.cpp" />
     <ClCompile Include="Core\Graphics\XD3DDevice.cpp" />
     <ClCompile Include="Core\Graphics\Layer\XLayerBase.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial.cpp" />
@@ -255,6 +275,15 @@
     <ClCompile Include="GUI\Popup\GUI_Popup_FileBrowser.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport_Scene.cpp" />
+    <None Include="Shader\Basic.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\Gnomon.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\Object_Vertex.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <ClCompile Include="Vender\include\imgui\imgui.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_draw.cpp" />

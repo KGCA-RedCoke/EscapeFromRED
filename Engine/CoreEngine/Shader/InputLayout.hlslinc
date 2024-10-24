@@ -1,4 +1,4 @@
-struct VertexInput_Base
+struct VertexIn
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
 	float2 UV : TEXCOORD0;	// UV 좌표

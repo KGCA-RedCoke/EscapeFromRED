@@ -101,20 +101,29 @@ void MGUIManager::UpdateMainMenuBar()
 		{
 			if (ImGui::MenuItem("Material Editor"))
 			{
-				JText title = std::format("Material Editor {}", GUI_Editor_Material::GetAvailableIndex());
-				if (Ptr<GUI_Editor_Material> materialEditor = CreateOrLoad<GUI_Editor_Material>(title))
+				if (!mMaterialEditorRef)
 				{
-					mMaterialEditorList.push_back(materialEditor);
+					if (Ptr<GUI_Editor_Material> materialEditor = CreateOrLoad<GUI_Editor_Material>("Material Editor"))
+					{
+						mMaterialEditorRef = materialEditor;
+					}
 				}
+				mMaterialEditorRef->bIsWindowOpen = true;
+
 			}
 
 			if (ImGui::MenuItem("LandScape Editor"))
 			{
 				// LandScape Editor
-				if (Ptr<GUI_Editor_LandScape> landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
+				if (!mLandScapeEditorRef)
 				{
-					mLandScapeEditor = landScapeEditor;
+					if (Ptr<GUI_Editor_LandScape> landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
+					{
+						mLandScapeEditorRef = landScapeEditor;
+					}
 				}
+
+				mLandScapeEditorRef->bIsWindowOpen = true;
 			}
 
 			if (ImGui::MenuItem("Fbx Importer"))
@@ -153,14 +162,14 @@ void MGUIManager::UpdateStaticGUI(float DeltaTime) const
 void MGUIManager::UpdateEditorGUI(float DeltaTime) const
 {
 	// Material Editor
-	for (int32_t i = 0; i < mMaterialEditorList.size(); ++i)
+	if (mMaterialEditorRef)
 	{
-		mMaterialEditorList[i]->Update(DeltaTime);
+		mMaterialEditorRef->Update(DeltaTime);
 	}
 
-	if (mLandScapeEditor)
+	if (mLandScapeEditorRef)
 	{
-		mLandScapeEditor->Update(DeltaTime);
+		mLandScapeEditorRef->Update(DeltaTime);
 	}
 }
 

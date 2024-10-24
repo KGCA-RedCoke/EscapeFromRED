@@ -58,11 +58,11 @@ private:
 	void UpdateEditorGUI(float DeltaTime) const;
 
 private:
-	std::vector<Ptr<GUI_Editor_Material>> mMaterialEditorList;
-	Ptr<GUI_Editor_LandScape>             mLandScapeEditor;
-	Ptr<GUI_Base>                         mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
-	bool                                  bOpenFileBrowser;
-	bool                                  bRenderWireFrame = false;
+	Ptr<GUI_Editor_Material>  mMaterialEditorRef;
+	Ptr<GUI_Editor_LandScape> mLandScapeEditorRef;
+	Ptr<GUI_Base>             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
+	bool                      bOpenFileBrowser;
+	bool                      bRenderWireFrame = false;
 
 #pragma region Singleton Boilerplate
 

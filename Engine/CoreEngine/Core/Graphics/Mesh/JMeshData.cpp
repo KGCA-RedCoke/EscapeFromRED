@@ -1,7 +1,54 @@
 ﻿#include "JMeshData.h"
 #include "Core/Graphics/Material/JMaterial.h"
+#include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Interface/MManagerInterface.h"
+
+Ptr<IManagedInterface> JMeshData::Clone() const
+{
+	Ptr<JMeshData> clonedMesh = MakePtr<JMeshData>();
+
+	clonedMesh->mName                  = mName;
+	clonedMesh->mIndex                 = mIndex;
+	clonedMesh->mClassType             = mClassType;
+	clonedMesh->mFaceCount             = mFaceCount;
+	clonedMesh->mMaterialRefNum        = mMaterialRefNum;
+	clonedMesh->mInitialModelTransform = mInitialModelTransform;
+
+	if (mParentMesh.lock())
+	{
+		Ptr<JMeshData> parentMesh = mParentMesh.lock();
+		clonedMesh->mParentMesh   = dynamic_pointer_cast<JMeshData>(parentMesh->Clone());
+	}
+	clonedMesh->mMaterialInstance = std::dynamic_pointer_cast<JMaterialInstance>(mMaterialInstance->Clone());
+
+	clonedMesh->mSubMesh.reserve(mSubMesh.size());
+	clonedMesh->mChildMesh.reserve(mChildMesh.size());
+
+	for (int32_t i = 0; i < mSubMesh.size(); ++i)
+	{
+		clonedMesh->mSubMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mSubMesh[i]->Clone()));
+	}
+
+	for (int32_t i = 0; i < mChildMesh.size(); ++i)
+	{
+		clonedMesh->mChildMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mChildMesh[i]->Clone()));
+	}
+
+	clonedMesh->mVertexData = std::dynamic_pointer_cast<JVertexData<Vertex::FVertexInfo_Base>>(mVertexData->Clone());
+
+	for (const auto& [boneName, bindPose] : mBindPoseMap)
+	{
+		clonedMesh->mBindPoseMap.try_emplace(boneName, bindPose);
+	}
+
+	return clonedMesh;
+}
+
+uint32_t JMeshData::GetHash() const
+{
+	return StringHash(mName.c_str());
+}
 
 uint32_t JMeshData::GetType() const
 {
@@ -23,9 +70,6 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 
 	// Mesh Type
 	Utils::Serialization::Serialize_Primitive(&mClassType, sizeof(mClassType), FileStream);
-
-	// Material Reference ID
-	Utils::Serialization::Serialize_Primitive(&mMaterialRefNum, sizeof(mMaterialRefNum), FileStream);
 
 	// Face Count
 	Utils::Serialization::Serialize_Primitive(&mFaceCount, sizeof(mFaceCount), FileStream);
@@ -53,13 +97,13 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 		mVertexData->Serialize_Implement(FileStream);
 	}
 
-	bool bMaterialValid = mMaterial != nullptr;
+	// Material
+	bool bMaterialValid = mMaterialInstance != nullptr;
 	Utils::Serialization::Serialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), FileStream);
 	if (bMaterialValid)
 	{
-		auto matName = mMaterial->GetMaterialPath();
-		Utils::Serialization::Serialize_Text(matName, FileStream);
-		// mMaterial->Serialize_Implement(FileStream);
+		JText path = mMaterialInstance->GetMaterialPath();
+		Utils::Serialization::Serialize_Text(path, FileStream);
 	}
 
 	// Initial Transform
@@ -84,9 +128,6 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	// Mesh Type
 	Utils::Serialization::DeSerialize_Primitive(&mClassType, sizeof(mClassType), InFileStream);
-
-	// Material Reference ID
-	Utils::Serialization::DeSerialize_Primitive(&mMaterialRefNum, sizeof(mMaterialRefNum), InFileStream);
 
 	// Face Count
 	Utils::Serialization::DeSerialize_Primitive(&mFaceCount, sizeof(mFaceCount), InFileStream);
@@ -123,11 +164,11 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), InFileStream);
 	if (bMaterialValid)
 	{
-		JText matPath;
-		Utils::Serialization::DeSerialize_Text(matPath, InFileStream);
-		mMaterial = IManager.MaterialManager->CreateOrLoad(matPath);
-		// mMaterial->DeSerialize_Implement(InFileStream);
+		JText path;
+		Utils::Serialization::DeSerialize_Text(path, InFileStream);
+		mMaterialInstance = MMaterialInstanceManager::Get().CreateOrLoad(path);
 	}
+
 
 	// Initial Transform
 	Utils::Serialization::DeSerialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), InFileStream);
@@ -140,48 +181,9 @@ void JMeshData::AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose)
 	mBindPoseMap.try_emplace(InBoneName, InBindPose);
 }
 
-bool JMeshData::ApplyMaterial() const
+void JMeshData::PassMaterial(ID3D11DeviceContext* InDeviceContext) const
 {
-	auto material = GetMaterial();
-	if (!material)
-	{
-		return false;
-	}
-
-	if (auto diffuse = material->GetMaterialParam("DiffuseColor"))
-	{
-		diffuse->TextureValue = IManager.TextureManager->CreateOrLoad(diffuse->StringValue);
-	}
-	if (auto normal = material->GetMaterialParam("NormalMap"))
-	{
-		normal->TextureValue = IManager.TextureManager->CreateOrLoad(normal->StringValue);
-	}
-	if (auto specular = material->GetMaterialParam("SpecularMap"))
-	{
-		specular->TextureValue = IManager.TextureManager->CreateOrLoad(specular->StringValue);
-	}
-	if (auto roughness = material->GetMaterialParam("RoughnessMap"))
-	{
-		roughness->TextureValue = IManager.TextureManager->CreateOrLoad(roughness->StringValue);
-	}
-	if (auto metallic = material->GetMaterialParam("MetallicMap"))
-	{
-		metallic->TextureValue = IManager.TextureManager->CreateOrLoad(metallic->StringValue);
-	}
-	if (auto ao = material->GetMaterialParam("AOMap"))
-	{
-		ao->TextureValue = IManager.TextureManager->CreateOrLoad(ao->StringValue);
-	}
-	if (auto emissive = mMaterial->GetMaterialParam("EmissiveMap"))
-	{
-		emissive->TextureValue = IManager.TextureManager->CreateOrLoad(emissive->StringValue);
-	}
-	if (auto opacity = mMaterial->GetMaterialParam("OpacityMap"))
-	{
-		opacity->TextureValue = IManager.TextureManager->CreateOrLoad(opacity->StringValue);
-	}
-
-	return true;
+	mMaterialInstance->BindMaterial(InDeviceContext);
 }
 
 void JSkinnedMeshData::Initialize()

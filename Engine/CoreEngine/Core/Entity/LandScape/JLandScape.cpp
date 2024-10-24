@@ -69,10 +69,9 @@ void JLandScape::Draw()
 	uint32_t indexCount    = mIndexInfo.size(); // 총 인덱스 수
 	uint32_t instanceCount = mMapDescription.Column * mMapDescription.Row; // 인스턴스 수
 
-	mMaterial->ApplyMaterialParams(deviceContext);
+	mMaterial->BindMaterialPipeline(deviceContext);
 
 	deviceContext->DrawIndexed(indexCount, 0, 0);
-	// deviceContext->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
 }
 
 bool JLandScape::Serialize_Implement(std::ofstream& FileStream)
@@ -91,27 +90,24 @@ void JLandScape::GenerateLandScape()
 
 	GenVertex();
 	GenIndex();
+	GenFaceNormal();
+	GenVertexNormal();
+	GenBuffer();
 
 	mMaterial = IManager.MaterialManager->CreateOrLoad("Game/LandScape/Material/TestMaterial.jasset");
 
 	if (mAlbedoMap)
 	{
-		FMaterialParams albedoParams;
-		albedoParams.Name         = "AlbedoMap";
-		albedoParams.ParamType    = EMaterialParamType::Texture2D;
-		albedoParams.Key          = StringHash("AlbedoMap");
-		albedoParams.Flags        = EMaterialFlag::DiffuseColor;
+		FMaterialParam albedoParams;
+		albedoParams.ParamValue   = EMaterialParamValue::Texture2D;
 		albedoParams.TextureValue = mAlbedoMap;
 		mMaterial->AddMaterialParam(albedoParams);
 	}
 
 	if (mNormalMap)
 	{
-		FMaterialParams normalParams;
-		normalParams.Name         = "NormalMap";
-		normalParams.ParamType    = EMaterialParamType::Texture2D;
-		normalParams.Key          = StringHash("NormalMap");
-		normalParams.Flags        = EMaterialFlag::NormalMap;
+		FMaterialParam normalParams;
+		normalParams.ParamValue   = EMaterialParamValue::Texture2D;
 		normalParams.TextureValue = mNormalMap;
 		mMaterial->AddMaterialParam(normalParams);
 	}
@@ -119,9 +115,6 @@ void JLandScape::GenerateLandScape()
 
 void JLandScape::GenVertex()
 {
-	ID3D11Device* device = IManager.RenderManager->GetDevice();
-	assert(device);
-
 	const float halfColumn     = (mMapDescription.Column - 1) / 2.0f;
 	const float halfRow        = (mMapDescription.Row - 1) / 2.0f;
 	const float textureOffsetU = 1.0f / (mMapDescription.Column - 1);
@@ -148,26 +141,14 @@ void JLandScape::GenVertex()
 
 			mVertexInfo[index].UV = FVector2(column * textureOffsetU,
 											 row * textureOffsetV);
-			mVertexInfo[index].Normal   = FVector(0.0f, 1.0f, 0.0f);
-			mVertexInfo[index].Binormal = FVector(1.0f, 0.0f, 0.0f);
-			mVertexInfo[index].Tangent  = FVector(0.0f, 0.0f, 1.0f);
-			mVertexInfo[index].Color    = FLinearColor::Green;
+
+			mVertexInfo[index].Color = FLinearColor::Green;
 		}
 	}
-
-	Utils::DX::CreateBuffer(device,
-							D3D11_BIND_VERTEX_BUFFER,
-							reinterpret_cast<void**>(&mVertexInfo.at(0)),
-							sizeof(Vertex::FVertexInfo_Base),
-							mVertexInfo.size(),
-							mInstanceBuffer.Buffer_Vertex[0].GetAddressOf());
 }
 
 void JLandScape::GenIndex()
 {
-	ID3D11Device* device = IManager.RenderManager->GetDevice();
-	assert(device);
-
 	const int32_t cellRow = (mMapDescription.Column - 1);
 	const int32_t cellCol = (mMapDescription.Row - 1);
 
@@ -186,9 +167,69 @@ void JLandScape::GenIndex()
 			// 2 (clockwise)
 			mIndexInfo[index++] = mIndexInfo[index - 1];
 			mIndexInfo[index++] = mIndexInfo[index - 3];
-			mIndexInfo[index++] = (row + 1) * mMapDescription.Column + column + 1;
+			mIndexInfo[index++] = (row + 1) * mMapDescription.Column + (column + 1);
 		}
 	}
+}
+
+void JLandScape::GenFaceNormal()
+{
+	const int32_t cellRow = (mMapDescription.Column - 1);
+	const int32_t cellCol = (mMapDescription.Row - 1);
+
+	mNormalInfo.resize(cellRow * cellCol * 2);
+	mIndexGroup.resize(mMapDescription.Row * mMapDescription.Column);
+
+	for (int32_t face = 0; face < mIndexGroup.size(); ++face)
+	{
+		uint32_t index0 = mIndexInfo[face * 3 + 0];
+		uint32_t index1 = mIndexInfo[face * 3 + 1];
+		uint32_t index2 = mIndexInfo[face * 3 + 2];
+
+		FVector v0 = mVertexInfo[index0].Position;
+		FVector v1 = mVertexInfo[index1].Position;
+		FVector v2 = mVertexInfo[index2].Position;
+
+		FVector edge1 = v1 - v0;
+		FVector edge2 = v2 - v0;
+
+		mNormalInfo[face] = edge1.Cross(edge2);
+		mNormalInfo[face].Normalize();
+
+		mIndexGroup[index0].push_back(face);
+		mIndexGroup[index1].push_back(face);
+		mIndexGroup[index2].push_back(face);
+	}
+}
+
+void JLandScape::GenVertexNormal()
+{
+	for (int32_t vertex = 0; vertex < mVertexInfo.size(); ++vertex)
+	{
+		FVector normal = FVector::ZeroVector;
+
+		for (int32_t face : mIndexGroup[vertex])
+		{
+			normal += mNormalInfo[face];
+		}
+
+		normal.Normalize();
+		mVertexInfo[vertex].Normal = normal;
+	}
+}
+
+void JLandScape::GenBuffer()
+{
+	ID3D11Device* device = IManager.RenderManager->GetDevice();
+	assert(device);
+
+
+	Utils::DX::CreateBuffer(device,
+							D3D11_BIND_VERTEX_BUFFER,
+							reinterpret_cast<void**>(&mVertexInfo.at(0)),
+							sizeof(Vertex::FVertexInfo_Base),
+							mVertexInfo.size(),
+							mInstanceBuffer.Buffer_Vertex[0].GetAddressOf());
 
 	Utils::DX::CreateBuffer(device,
 							D3D11_BIND_INDEX_BUFFER,

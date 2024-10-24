@@ -7,7 +7,7 @@ class SFXAAEffect : public JShader
 {
 public:
 	SFXAAEffect(const JWText& InFileName);
-	~SFXAAEffect() override;
+	~SFXAAEffect();
 
 public:
 	void Initialize();
