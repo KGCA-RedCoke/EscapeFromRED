@@ -1,9 +1,9 @@
 ﻿#include "GUI_Inspector.h"
 
 #include "Core/Entity/Component/Scene/JSceneComponent.h"
+#include "Core/Graphics/ShaderStructs.h"
 
-extern FVector4 g_DirectionalLightPos;
-extern FVector4 g_DirectionalLightColor;
+extern CBuffer::Light g_LightData;
 
 GUI_Inspector::GUI_Inspector(const std::string& InTitle)
 	: GUI_Base(InTitle) {}
@@ -17,11 +17,12 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 {
 	if (ImGui::CollapsingHeader("Light Settings"))
 	{
-		ImGui::ColorEdit3("Directional Light Color", &g_DirectionalLightColor.x);
-		ImGui::DragFloat3("Directional Light Position", &g_DirectionalLightPos.x, 0.05f);
+		ImGui::ColorEdit3("Directional Light Color", &g_LightData.LightColor.x);
+		ImGui::DragFloat3("Directional Light Position", &g_LightData.LightPos.x, 0.05f);
+
 		ImGui::Separator();
 	}
-	
+
 	for (auto& element : mSceneComponents)
 	{
 		if (auto sceneComp = element.second.lock())

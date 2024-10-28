@@ -43,6 +43,8 @@ void MManagerInterface::Initialize()
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
+	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(Game/Mesh)"));
+	// SearchFiles_Recursive(std::filesystem::path(R"(Game/Mesh)"));
 }
 
 void MManagerInterface::Update(float DeltaTime)
@@ -130,15 +132,19 @@ void MManagerInterface::SearchFiles_Recursive(const std::filesystem::path& InPat
 			else if (entry.is_regular_file())
 			{
 				// 해시 비교
-				uint32_t hash = StringHash(entry.path().extension().string().c_str());
+				const uint32_t hash = StringHash(entry.path().extension().string().c_str());
 
-				if (hash == HASH_EXT_PNG || hash == HASH_EXT_JPG || hash == HASH_EXT_DDS || HASH_EXT_BMP)
+				if (hash == HASH_EXT_PNG || hash == HASH_EXT_JPG || hash == HASH_EXT_DDS || hash == HASH_EXT_BMP)
 				{
 					IManager.TextureManager->CreateOrLoad(entry.path().string());
 				}
 				else if (hash == HASH_EXT_HLSL)
 				{
 					IManager.ShaderManager->CreateOrLoad(entry.path().string());
+				}
+				else if (hash == Hash_EXT_JASSET)
+				{
+					IManager.MeshManager->CreateOrLoad(entry.path().string());
 				}
 			}
 		}

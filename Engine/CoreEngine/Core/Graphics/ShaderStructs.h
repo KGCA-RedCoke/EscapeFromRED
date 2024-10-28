@@ -13,11 +13,54 @@
  */
 namespace CBuffer
 {
-	constexpr const char* NAME_CONSTANT_BUFFER_SPACE    = "ModelViewProjectionConstantBuffer";
-	constexpr const char* NAME_CONSTANT_BUFFER_LIGHT    = "LightConstantBuffer";
-	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA   = "CameraConstantBuffer";
-	constexpr const char* NAME_CONSTANT_BUFFER_TIME     = "WorldTimeConstantBuffer";
-	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL = "MaterialConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_SPACE                 = "ModelViewProjectionConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_LIGHT                 = "LightConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA                = "CameraConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_TIME                  = "WorldTimeConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL              = "BasicMaterialConstantBuffer";
+	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_WORLD         = "World";
+	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_VIEW          = "View";
+	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_PROJ          = "Projection";
+	constexpr const char* NAME_CONSTANT_VARIABLE_LIGHT_POS           = "DirectionalLightPos";
+	constexpr const char* NAME_CONSTANT_VARIABLE_LIGHT_COLOR         = "DirectionalLightColor";
+	constexpr const char* NAME_CONSTANT_VARIABLE_CAMERA_POS          = "WorldCameraPos";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE    = "Diffuse";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_NORMAL     = "Normal";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_AMBIENT    = "Ambient";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_AO         = "AmbientOcclusion";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS  = "Roughness";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC   = "Metallic";
+	constexpr const char* NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG = "TextureUsageFlag";
+
+	const uint32_t HASH_CONSTANT_BUFFER_SPACE                 = StringHash(NAME_CONSTANT_BUFFER_SPACE);
+	const uint32_t HASH_CONSTANT_BUFFER_LIGHT                 = StringHash(NAME_CONSTANT_BUFFER_LIGHT);
+	const uint32_t HASH_CONSTANT_BUFFER_CAMERA                = StringHash(NAME_CONSTANT_BUFFER_CAMERA);
+	const uint32_t HASH_CONSTANT_BUFFER_TIME                  = StringHash(NAME_CONSTANT_BUFFER_TIME);
+	const uint32_t HASH_CONSTANT_BUFFER_MATERIAL              = StringHash(NAME_CONSTANT_BUFFER_MATERIAL);
+	const uint32_t HASH_CONSTANT_VARIABLE_SPACE_WORLD         = StringHash(NAME_CONSTANT_VARIABLE_SPACE_WORLD);
+	const uint32_t HASH_CONSTANT_VARIABLE_SPACE_VIEW          = StringHash(NAME_CONSTANT_VARIABLE_SPACE_VIEW);
+	const uint32_t HASH_CONSTANT_VARIABLE_SPACE_PROJ          = StringHash(NAME_CONSTANT_VARIABLE_SPACE_PROJ);
+	const uint32_t HASH_CONSTANT_VARIABLE_LIGHT_POS           = StringHash(NAME_CONSTANT_VARIABLE_LIGHT_POS);
+	const uint32_t HASH_CONSTANT_VARIABLE_LIGHT_COLOR         = StringHash(NAME_CONSTANT_VARIABLE_LIGHT_COLOR);
+	const uint32_t HASH_CONSTANT_VARIABLE_CAMERA_POS          = StringHash(NAME_CONSTANT_VARIABLE_CAMERA_POS);
+	const uint32_t HASH_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG = StringHash(NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG);
+
+	const JHash<const char*, uint32_t> ConstantBufferHashTable = {
+		{NAME_CONSTANT_BUFFER_SPACE, HASH_CONSTANT_BUFFER_SPACE},
+		{NAME_CONSTANT_BUFFER_LIGHT, HASH_CONSTANT_BUFFER_LIGHT},
+		{NAME_CONSTANT_BUFFER_CAMERA, HASH_CONSTANT_BUFFER_CAMERA},
+		{NAME_CONSTANT_BUFFER_TIME, HASH_CONSTANT_BUFFER_TIME},
+		{NAME_CONSTANT_BUFFER_MATERIAL, HASH_CONSTANT_BUFFER_MATERIAL},
+	};
+
+	const JHash<const char*, uint32_t> ConstantVariableHashTable = {
+		{NAME_CONSTANT_VARIABLE_SPACE_WORLD, HASH_CONSTANT_VARIABLE_SPACE_WORLD},
+		{NAME_CONSTANT_VARIABLE_SPACE_VIEW, HASH_CONSTANT_VARIABLE_SPACE_VIEW},
+		{NAME_CONSTANT_VARIABLE_SPACE_PROJ, HASH_CONSTANT_VARIABLE_SPACE_PROJ},
+		{NAME_CONSTANT_VARIABLE_LIGHT_POS, HASH_CONSTANT_VARIABLE_LIGHT_POS},
+		{NAME_CONSTANT_VARIABLE_LIGHT_COLOR, HASH_CONSTANT_VARIABLE_LIGHT_COLOR},
+		{NAME_CONSTANT_VARIABLE_CAMERA_POS, HASH_CONSTANT_VARIABLE_CAMERA_POS},
+	};
 
 	constexpr uint32_t SLOT_SPACE    = 0;
 	constexpr uint32_t SLOT_LIGHT    = 1;
@@ -59,6 +102,16 @@ namespace CBuffer
 		AmbientOcclusion = 1 << 2,
 		Roughness        = 1 << 3,
 		Metallic         = 1 << 4,
+	};
+
+	constexpr const char* TextureUsageString[]
+	{
+		"None",
+		"Diffuse",
+		"Normal",
+		"AmbientOcclusion",
+		"Roughness",
+		"Metallic"
 	};
 
 	struct FMaterialColorParam

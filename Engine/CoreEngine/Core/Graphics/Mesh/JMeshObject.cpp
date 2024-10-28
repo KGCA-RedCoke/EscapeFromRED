@@ -184,17 +184,16 @@ void JMeshObject::Draw()
 
 			if (subMeshes.empty())
 			{
-				meshData->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, mWorldMatrix);
+				meshData->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
 				meshData->PassMaterial(deviceContext);
 				indexNum = meshData->GetVertexData()->IndexArray.size();
 			}
 			else
 			{
-				subMeshes[j]->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, mWorldMatrix);
+				subMeshes[j]->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
 				subMeshes[j]->PassMaterial(deviceContext);
 				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
 			}
-			IManager.CameraManager->SetCameraConstantBuffer();
 
 			int32_t slots[2] = {0, 1};
 			IManager.RenderManager->SetSamplerState(ESamplerState::LinearWrap, slots, 2);

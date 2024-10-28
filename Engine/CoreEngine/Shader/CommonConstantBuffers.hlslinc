@@ -43,7 +43,7 @@ struct ValueParam
 cbuffer BasicMaterialConstantBuffer : register(b4)
 {
 	ColorParam Diffuse;
-	ColorParam Ambient;
+	ColorParam Normal;
 
 	ValueParam AmbientOcclusion;
 	ValueParam Roughness;

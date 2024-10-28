@@ -9,13 +9,9 @@
 JMaterialInstance::JMaterialInstance(JTextView InName)
 	: mFileName(InName)
 {
-	if (std::filesystem::is_regular_file(mFileName))
+	if (std::filesystem::exists(mFileName) && std::filesystem::is_regular_file(mFileName))
 	{
 		Utils::Serialization::DeSerialize(mFileName.c_str(), this);
-	}
-	else
-	{
-		SetParentMaterial(MMaterialManager::Get().CreateOrLoad<JMaterial_Basic>(NAME_MAT_BASIC));
 	}
 }
 
@@ -45,7 +41,15 @@ bool JMaterialInstance::Serialize_Implement(std::ofstream& FileStream)
 	}
 
 	// Parent Material Path
-	Utils::Serialization::Serialize_Text(mParentMaterial->mMaterialPath, FileStream);
+	if (!mParentMaterial)
+	{
+		JText empty = "NONE";
+		Utils::Serialization::Serialize_Text(empty, FileStream);
+	}
+	else
+	{
+		Utils::Serialization::Serialize_Text(mParentMaterial->mMaterialPath, FileStream);
+	}
 
 	// Instance Params
 	int32_t paramCount = mInstanceParams.size();
@@ -69,7 +73,11 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Parent Material Path
 	JText parentMaterialPath;
 	Utils::Serialization::DeSerialize_Text(parentMaterialPath, InFileStream);
-	mParentMaterial = MMaterialManager::Get().CreateOrLoad(parentMaterialPath);
+	if (!parentMaterialPath.empty())
+	{
+		mParentMaterial = MMaterialManager::Get().CreateOrLoad(parentMaterialPath);
+		mShader         = mParentMaterial->GetShader();
+	}
 
 	// Get Instance Params
 	int32_t paramCount;
@@ -88,49 +96,121 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext)
 {
-	mParentMaterial->mShader->BindShaderPipeline(InDeviceContext);
+	const auto shaderRef = mShader.lock();
+	if (!shaderRef)
+		return;
+	shaderRef->BindShaderPipeline(InDeviceContext);
+
+	if (mInstanceParams.empty())
+	{
+		shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
+									  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
+									  nullptr);
+	}
 
 	for (int32_t i = 0; i < mInstanceParams.size(); ++i)
 	{
-		mInstanceParams[i].BindMaterialParam();
-	}
-}
+		FMaterialParam& param = mInstanceParams[i];
 
-void JMaterialInstance::BindMaterialBuffer(ID3D11DeviceContext* InDeviceContext, const uint32_t InSlot)
-{
-	InDeviceContext->PSSetConstantBuffers(InSlot, 1, mMaterialBuffer.GetAddressOf());
+		shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
+									  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
+									  param.Name,
+									  &param.Float4Value);
+
+		param.BindMaterialParam(InDeviceContext, i);
+	}
 }
 
 void JMaterialInstance::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const
 {
-	mParentMaterial->mShader->SetObject(InDeviceContext, InWorldMatrix);
+	if (mShader.expired())
+		return;
+
+	mShader.lock()->UpdateConstantData(InDeviceContext,
+									   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
+									   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_WORLD,
+									   &InWorldMatrix);
 }
 
 void JMaterialInstance::UpdateCamera(ID3D11DeviceContext* InDeviceContext, const Ptr<JCamera>& InCameraObj) const
 {
-	mParentMaterial->mShader->SetCameraData(InDeviceContext, InCameraObj);
+	if (mShader.expired())
+		return;
+	// mParentMaterial->mShader->
+	FVector4 camPos = {InCameraObj->GetEyePositionFVector(), 1.f};
+	mShader.lock()->UpdateConstantData(InDeviceContext,
+									   CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
+									   CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_POS,
+									   &camPos);
 }
 
 void JMaterialInstance::UpdateLightColor(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightColor) const
 {
-	mParentMaterial->mShader->SetDirectionalLightColor(InDeviceContext, InLightColor);
+	if (mShader.expired())
+		return;
+	mShader.lock()->UpdateConstantData(InDeviceContext,
+									   CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
+									   CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_COLOR,
+									   &InLightColor);
 }
 
 void JMaterialInstance::UpdateLightLoc(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightLoc) const
 {
-	mParentMaterial->mShader->SetDirectionalLightPos(InDeviceContext, InLightLoc);
+	if (!mParentMaterial)
+		return;
+	mParentMaterial->mShader->UpdateConstantData(InDeviceContext,
+												 CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
+												 CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_POS,
+												 &InLightLoc);
 }
 
-void JMaterialInstance::GenerateMaterialBuffer()
+FMaterialParam* JMaterialInstance::GetInstanceParam(const JText& InParamName)
 {
-	Utils::DX::CreateBuffer(IManager.RenderManager->GetDevice(),
-							D3D11_BIND_CONSTANT_BUFFER,
-							nullptr,
-							mParentMaterial->mMaterialBufferSize,
-							1,
-							mMaterialBuffer.GetAddressOf(),
-							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE);
+	if (mInstanceParams.empty())
+	{
+		return nullptr;
+	}
+
+	const uint32_t hash = StringHash(InParamName.c_str());
+
+	for (auto& param : mInstanceParams)
+	{
+		if (param.Key == hash)
+		{
+			return &param;
+		}
+	}
+	return nullptr;
+}
+
+void JMaterialInstance::AddInstanceParam(const FMaterialParam& InParamValue)
+{
+	if (GetInstanceParam(InParamValue.Name))
+	{
+		LOG_CORE_ERROR("Material Instance Param already exists.");
+		return;
+	}
+
+	mInstanceParams.push_back(InParamValue);
+}
+
+void JMaterialInstance::EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue)
+{
+	if (mInstanceParams.empty())
+	{
+		return;
+	}
+
+	const uint32_t hash = StringHash(InParamName.c_str());
+
+	for (auto& param : mInstanceParams)
+	{
+		if (param.Key == hash)
+		{
+			param = InParamValue;
+			return;
+		}
+	}
 }
 
 void JMaterialInstance::GetInstanceParams()
@@ -146,12 +226,13 @@ void JMaterialInstance::GetInstanceParams()
 
 void JMaterialInstance::SetParentMaterial(const Ptr<JMaterial>& InParentMaterial)
 {
+	assert(InParentMaterial);
+
 	mParentMaterial = nullptr;
-	mMaterialBuffer = nullptr;
 	mInstanceParams.clear();
 
 	mParentMaterial = InParentMaterial;
+	mShader         = mParentMaterial->GetShader();
 
-	GenerateMaterialBuffer();
 	GetInstanceParams();
 }

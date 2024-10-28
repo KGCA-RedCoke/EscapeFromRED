@@ -1,6 +1,5 @@
 ﻿#include "JTexture.h"
 #include <directxtk/WICTextureLoader.h>
-#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/MManagerInterface.h"
 
 #include "Core/Utils/Utils.h"
@@ -82,7 +81,7 @@ bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JTexture::SetShaderTexture2D(const int32_t InSlot, const Ptr<JTexture>& InTexture)
+void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, const int32_t InSlot, const Ptr<JTexture>& InTexture)
 {
 	ID3D11ShaderResourceView* srv = nullptr;
 	if (InTexture)
@@ -90,7 +89,7 @@ void JTexture::SetShaderTexture2D(const int32_t InSlot, const Ptr<JTexture>& InT
 		srv = InTexture->mShaderResourceView.Get();
 	}
 
-	IManager.RenderManager->GetImmediateDeviceContext()->PSSetShaderResources(InSlot, 1, &srv);
+	InDeviceContext->PSSetShaderResources(InSlot, 1, &srv);
 
 }
 

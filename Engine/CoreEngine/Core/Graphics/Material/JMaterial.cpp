@@ -1,7 +1,7 @@
 ﻿#include "JMaterial.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/InputLayouts.h"
-#include "Core/Graphics/Shader/JShader_Basic.h"
+#include "Core/Graphics/Shader/JShader.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Utils.h"
@@ -112,31 +112,28 @@ bool FMaterialParam::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void FMaterialParam::BindMaterialParam() const
+void FMaterialParam::BindMaterialParam(ID3D11DeviceContext* InDeviceContext, const uint32_t Index) const
 {
 	if (ParamValue == EMaterialParamValue::Texture2D && TextureValue)
 	{
-		JTexture::SetShaderTexture2D(0, TextureValue);
+		JTexture::SetShaderTexture2D(InDeviceContext, Index, TextureValue);
 	}
 }
 
-JMaterial::JMaterial(JTextView InMaterialName, uint32_t InBufferSize)
+JMaterial::JMaterial(JTextView InMaterialName)
 {
-	mMaterialPath       = {InMaterialName.begin(), InMaterialName.end()};
-	mMaterialName       = ParseFile(mMaterialPath);
-	mMaterialID         = StringHash(mMaterialName.c_str());
-	mShader             = IManager.ShaderManager->FetchResource<JShader_Basic>(NAME_SHADER_BASIC);
-	mMaterialBufferSize = InBufferSize;
+	mMaterialPath = {InMaterialName.begin(), InMaterialName.end()};
+	mMaterialName = ParseFile(mMaterialPath);
+	SetShader(IManager.ShaderManager->BasicShader);
 
-	if (std::filesystem::is_regular_file(InMaterialName))
+	if (std::filesystem::exists(InMaterialName) && std::filesystem::is_regular_file(InMaterialName))
 	{
 		Utils::Serialization::DeSerialize(InMaterialName.data(), this);
 	}
-
 }
 
-JMaterial::JMaterial(JWTextView InMaterialName, uint32_t InBufferSize)
-	: JMaterial(WString2String(InMaterialName.data()), InBufferSize)
+JMaterial::JMaterial(JWTextView InMaterialName)
+	: JMaterial(WString2String(InMaterialName.data()))
 {}
 
 Ptr<IManagedInterface> JMaterial::Clone() const
@@ -186,7 +183,6 @@ bool JMaterial::Serialize_Implement(std::ofstream& FileStream)
 	return true;
 }
 
-
 bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 {
 	JAssetMetaData metaData;
@@ -217,17 +213,12 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Shader File Name
 	JWText shaderName;
 	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
-	mShader = IManager.ShaderManager->CreateOrLoad<JShader_Basic>(shaderName);
-
-	mMaterialID = StringHash(mMaterialName.c_str());
+	if (!shaderName.empty())
+	{
+		mShader = IManager.ShaderManager->CreateOrLoad<JShader>(shaderName);
+	}
 
 	return true;
-}
-
-
-void JMaterial::AddMaterialParam(const FMaterialParam& InMaterialParam)
-{
-	mMaterialParams.push_back(InMaterialParam);
 }
 
 void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext)
@@ -237,13 +228,12 @@ void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext)
 	// 셰이더를 적용
 	mShader->BindShaderPipeline(InDeviceContext);
 
-
 	// 텍스처맵 슬롯 바인딩
 	for (int32_t i = 0; i < mMaterialParams.size(); ++i)
 	{
 		const FMaterialParam& param = mMaterialParams[i];
 
-		param.BindMaterialParam();
+		// param.BindMaterialParam(InDeviceContext);
 	}
 }
 
@@ -253,11 +243,6 @@ void JMaterial::EditMaterialParam(const JText& InParamName, const FMaterialParam
 	{
 		*origin = InMaterialParam;
 	}
-
-	// Utils::DX::UpdateDynamicBuffer(InDeviceContext,
-	// 						   mMaterialBuffer.Get(),
-	// 						   &mMaterial,
-	// 						   sizeof(CBuffer::Material));
 }
 
 const FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName) const
@@ -280,9 +265,11 @@ FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName)
 		return nullptr;
 	}
 
+	const uint32_t hash = StringHash(InParamName.c_str());
+
 	for (auto& param : mMaterialParams)
 	{
-		if (param.Name == InParamName)
+		if (param.Key == hash)
 		{
 			return &param;
 		}
@@ -291,15 +278,30 @@ FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName)
 	return nullptr;
 }
 
+void JMaterial::SetShader(const Ptr<JShader>& InShader)
+{
+	mShader = InShader;
+
+	if (auto* ref = mShader->GetConstantBuffer(CBuffer::NAME_CONSTANT_BUFFER_MATERIAL))
+	{
+		mMaterialBuffer = *ref;
+	}
+	else
+	{
+		LOG_CORE_ERROR("Failed to set shader to material. Shader does not have material buffer.");
+	}
+}
+
 FMaterialParam Utils::Material::CreateTextureParam(const char* ParamName, const char* FileName, int32_t Index)
 {
 	FMaterialParam materialParams;
 
+	materialParams.Name           = ParamName;
+	materialParams.Key            = StringHash(ParamName);
 	materialParams.ParamValue     = EMaterialParamValue::Texture2D;
 	materialParams.StringValue    = FileName;
 	materialParams.bInstanceParam = true;
-
-	materialParams.TextureValue = IManager.TextureManager->CreateOrLoad(FileName);
+	materialParams.TextureValue   = IManager.TextureManager->CreateOrLoad(FileName);
 
 	return materialParams;
 }

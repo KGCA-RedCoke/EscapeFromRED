@@ -47,11 +47,11 @@ protected:
 
 	JArray<Vertex::FVertexInfo_Base>  mVertexInfo;
 	JArray<uint32_t>                  mIndexInfo;
-	JArray<FVector>                   mNormalInfo;
-	JArray<IndexGroup>                mIndexGroup;
+	JArray<FVector>                   mFaceInfo;
+	JArray<IndexGroup>                mVertexGroup;
 	Buffer::FBufferInstance_LandScape mInstanceBuffer;
 
-	Ptr<class JMaterial> mMaterial;
+	Ptr<class JMaterialInstance> mMaterial;
 
 	Ptr<JTexture> mAlbedoMap;
 	Ptr<JTexture> mHeightMap;

@@ -20,7 +20,11 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 		Ptr<JMeshData> parentMesh = mParentMesh.lock();
 		clonedMesh->mParentMesh   = dynamic_pointer_cast<JMeshData>(parentMesh->Clone());
 	}
-	clonedMesh->mMaterialInstance = std::dynamic_pointer_cast<JMaterialInstance>(mMaterialInstance->Clone());
+
+	if (mMaterialInstance)
+	{
+		clonedMesh->mMaterialInstance = std::dynamic_pointer_cast<JMaterialInstance>(mMaterialInstance->Clone());
+	}
 
 	clonedMesh->mSubMesh.reserve(mSubMesh.size());
 	clonedMesh->mChildMesh.reserve(mChildMesh.size());

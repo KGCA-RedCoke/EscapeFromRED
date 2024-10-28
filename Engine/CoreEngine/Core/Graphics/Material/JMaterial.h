@@ -1,32 +1,33 @@
 ﻿#pragma once
 #include "common_include.h"
-#include "Core/Graphics/ShaderStructs.h"
+#include "Core/Graphics/Shader/JConstantBuffer.h"
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
 
 
-class JShader_Basic;
+class JShader;
 class JTexture;
 
-constexpr auto NAME_MAT_Diffuse       = "DiffuseColor";
-constexpr auto NAME_MAT_DiffuseF      = "DiffuseFactor";
-constexpr auto NAME_MAT_Emissive      = "EmissiveColor";
-constexpr auto NAME_MAT_EmissiveF     = "EmissiveFactor";
-constexpr auto NAME_MAT_Specular      = "SpecularColor";
-constexpr auto NAME_MAT_SpecularF     = "SpecularFactor";
-constexpr auto NAME_MAT_Reflection    = "ReflectionColor";
-constexpr auto NAME_MAT_ReflectionF   = "ReflectionFactor";
-constexpr auto NAME_MAT_Ambient       = "AmbientColor";
-constexpr auto NAME_MAT_AmbientF      = "AmbientFactor";
-constexpr auto NAME_MAT_Normal        = "NormalMap";
-constexpr auto NAME_MAT_Transparent   = "TransparentColor";
-constexpr auto NAME_MAT_TransparentF  = "TransparentFactor";
-constexpr auto NAME_MAT_Displacement  = "DisplacementColor";
-constexpr auto NAME_MAT_DisplacementF = "DisplacementFactor";
-constexpr auto NAME_MAT_Shininess     = "Shininess";
+constexpr const char* NAME_MAT_Diffuse       = "Diffuse";
+constexpr const char* NAME_MAT_DiffuseF      = "DiffuseFactor";
+constexpr const char* NAME_MAT_Emissive      = "Emissive";
+constexpr const char* NAME_MAT_EmissiveF     = "EmissiveFactor";
+constexpr const char* NAME_MAT_Specular      = "Specular";
+constexpr const char* NAME_MAT_SpecularF     = "SpecularFactor";
+constexpr const char* NAME_MAT_Reflection    = "Reflection";
+constexpr const char* NAME_MAT_ReflectionF   = "ReflectionFactor";
+constexpr const char* NAME_MAT_Ambient       = "Ambient";
+constexpr const char* NAME_MAT_AmbientF      = "AmbientFactor";
+constexpr const char* NAME_MAT_Normal        = "NormalMap";
+constexpr const char* NAME_MAT_Transparent   = "Transparent";
+constexpr const char* NAME_MAT_TransparentF  = "TransparentFactor";
+constexpr const char* NAME_MAT_Displacement  = "Displacement";
+constexpr const char* NAME_MAT_DisplacementF = "DisplacementFactor";
+constexpr const char* NAME_MAT_Shininess     = "Shininess";
 
-constexpr const char* NAME_MAT_BASIC = "Game/Materials/Engine/Material_Basic.jasset";
+constexpr const char* NAME_MAT_BASIC     = "Game/Materials/Engine/Material_Basic.jasset";
+constexpr const char* NAME_MAT_LANDSCAPE = "Game/Materials/Engine/Material_Landscape.jasset";
 
 /**
  * @brief Material parameter type
@@ -77,12 +78,17 @@ struct FMaterialParam : public ISerializable
 	FMaterialParam(const JText& InName, EMaterialParamValue InParamValue, const void* InValue,
 				   bool         bInInstanceParam = false);
 
+	bool operator==(const FMaterialParam& Other) const
+	{
+		return Key == Other.Key;
+	}
+
 	uint32_t GetType() const override;
 
 	bool Serialize_Implement(std::ofstream& FileStream) override;
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
-	void BindMaterialParam() const;
+	void BindMaterialParam(ID3D11DeviceContext* InDeviceContext, uint32_t Index) const;
 };
 
 /**
@@ -91,8 +97,8 @@ struct FMaterialParam : public ISerializable
 class JMaterial : public IManagedInterface, public ISerializable
 {
 public:
-	explicit JMaterial(JTextView InMaterialName, uint32_t InBufferSize = sizeof(CBuffer::Material_Basic));
-	explicit JMaterial(JWTextView InMaterialName, uint32_t InBufferSize = sizeof(CBuffer::Material_Basic));
+	explicit JMaterial(JTextView InMaterialName);
+	explicit JMaterial(JWTextView InMaterialName);
 	~JMaterial() override = default;
 
 public:
@@ -106,7 +112,6 @@ public:
 
 protected:
 	virtual void InitializeParams() {};
-	virtual void UpdateParamData(void* InData) { mParamData = InData; };
 
 public:
 	/**
@@ -116,37 +121,27 @@ public:
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 
-	/**
-	 * 필요한 파라미터(텍스처, 색상 등)를 추가
-	 * @param InMaterialParam 추가할 파라미터
-	 */
-	void AddMaterialParam(const FMaterialParam& InMaterialParam);
-
 public:
 	[[nodiscard]] const FMaterialParam* GetMaterialParam(const JText& InParamName) const;
 	[[nodiscard]] FMaterialParam*       GetMaterialParam(const JText& InParamName);
 
-	[[nodiscard]] FORCEINLINE const std::vector<FMaterialParam>& GetMaterialParams() const { return mMaterialParams; }
-	[[nodiscard]] FORCEINLINE std::vector<FMaterialParam>&       GetMaterialParams() { return mMaterialParams; }
-	[[nodiscard]] FORCEINLINE uint32_t                           GetMaterialID() const { return mMaterialID; }
-	[[nodiscard]] FORCEINLINE const JText&                       GetMaterialPath() const { return mMaterialPath; }
-	[[nodiscard]] FORCEINLINE const JText&                       GetMaterialName() const { return mMaterialName; }
-	[[nodiscard]] FORCEINLINE bool                               HasMaterial() const { return !mMaterialParams.empty(); }
+	[[nodiscard]] FORCEINLINE const JArray<FMaterialParam>& GetMaterialParams() const { return mMaterialParams; }
+	[[nodiscard]] FORCEINLINE JArray<FMaterialParam>&       GetMaterialParams() { return mMaterialParams; }
+	[[nodiscard]] FORCEINLINE const JText&                  GetMaterialPath() const { return mMaterialPath; }
+	[[nodiscard]] FORCEINLINE const JText&                  GetMaterialName() const { return mMaterialName; }
+	[[nodiscard]] FORCEINLINE bool                          HasMaterial() const { return !mMaterialParams.empty(); }
+	[[nodiscard]] FORCEINLINE Ptr<JShader>                  GetShader() const { return mShader; }
 
-	[[nodiscard]] FORCEINLINE Ptr<JShader_Basic> GetShader() const { return mShader; }
-
-	FORCEINLINE void SetShader(const Ptr<JShader_Basic>& InShader) { mShader = InShader; }
+	FORCEINLINE void SetShader(const Ptr<JShader>& InShader);
 
 protected:
-	JText                  mMaterialPath;
-	JText                  mMaterialName;
-	uint32_t               mMaterialID;
+	JText    mMaterialPath;
+	JText    mMaterialName;
+	uint32_t mMaterialID;
+
+	JConstantBuffer        mMaterialBuffer;
 	JArray<FMaterialParam> mMaterialParams;
-
-	Ptr<JShader_Basic> mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
-
-	uint32_t mMaterialBufferSize;
-	void*    mParamData;
+	Ptr<JShader>           mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 
 	friend class GUI_Editor_Material;
 	friend class JMaterialInstance;
@@ -161,6 +156,4 @@ namespace Utils::Material
 	 * @param FileName 텍스처 파일 경로
 	 */
 	FMaterialParam CreateTextureParam(const char* ParamName, const char* FileName, int32_t Index);
-
-
 }

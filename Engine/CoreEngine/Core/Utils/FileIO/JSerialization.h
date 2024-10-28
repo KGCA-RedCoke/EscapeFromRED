@@ -72,7 +72,7 @@ template <typename T> constexpr bool bIsMap              = IsMap<T>::value;
 template <typename T> constexpr bool bIsArray            = IsArray<T>::value;
 template <typename T> constexpr bool bIsVector           = IsVector<T>::value;
 
-constexpr uint32_t SignatureHash = StringHash("JASSET");
+const uint32_t SignatureHash = StringHash("JASSET");
 
 /**
  * 직렬화/역직렬화 할 때 사용하는 헤더

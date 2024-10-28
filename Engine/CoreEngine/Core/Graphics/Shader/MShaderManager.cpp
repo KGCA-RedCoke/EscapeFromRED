@@ -1,7 +1,6 @@
 ﻿#include "MShaderManager.h"
-
+#include "Core/Graphics/Shader/JShader_Basic.h"
 #include "InputLayouts.h"
-#include "JShader_Basic.h"
 
 MShaderManager::MShaderManager()
 {

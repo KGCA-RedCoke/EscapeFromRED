@@ -78,15 +78,6 @@ struct AssetSelectionWithDeletion : ImGuiSelectionBasicStorage
 
 struct AssetBrowserIconList
 {
-
-	void CreateTextures()
-	{
-		FolderIcon = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/Folders/Folder_Base_64x.png");
-		FileIcon   = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/AssetIcons/Actor_64x.png");
-	}
-
-public
-:
 	Ptr<JTexture> FolderIcon;
 	Ptr<JTexture> FileIcon;
 };

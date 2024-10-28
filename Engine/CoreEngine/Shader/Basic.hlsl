@@ -4,15 +4,14 @@
 #include "ShaderUtils.hlslinc"
 
 Texture2D g_DiffuseTexture : register(t0);
-Texture2D g_EmissiveTexture : register(t1);
-Texture2D g_SpecularTexture : register(t2);
-Texture2D g_ReflectionTexture : register(t3);
-Texture2D g_AmbientOcclusionTexture : register(t4);
-Texture2D g_NormalTexture : register(t5);
+Texture2D g_NormalTexture : register(t1);
+Texture2D g_EmissiveTexture : register(t2);
+Texture2D g_SpecularTexture : register(t3);
+Texture2D g_ReflectionTexture : register(t4);
+Texture2D g_AmbientOcclusionTexture : register(t5);
 Texture2D g_DisplacementTexture : register(t6);
 Texture2D g_RoughnessTexture : register(t7);
 Texture2D g_MetallicTexture : register(t8);
-
 
 SamplerState g_DiffuseSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
@@ -28,16 +27,16 @@ PixelInput_Base VS(VertexIn Input)
 	output.Pos = mul(output.Pos, View);
 	output.Pos = mul(output.Pos, Projection);
 
+	// float3x3 normalMatrix = transpose(((float3x3)World));
+
 	float3 worldPos      = mul(Input.Pos, (float3x3)World);
-	float3 lightDir      = worldPos.xyz - DirectionalLightPos.xyz;
-	float3 viewDir       = worldPos.xyz - WorldCameraPos.xyz;
+	float3 viewDir       = WorldCameraPos.xyz - worldPos.xyz;
 	float3 worldNormal   = mul(Input.Normal, (float3x3)World);
 	float3 worldTangent  = mul(Input.Tangent, (float3x3)World);
 	float3 worldBinormal = mul(Input.Binormal, (float3x3)World);
 
 	output.Color    = Input.Color;
 	output.UV       = Input.UV;
-	output.LightDir = normalize(lightDir);
 	output.ViewDir  = normalize(viewDir);
 	output.Normal   = normalize(worldNormal);
 	output.Tangent  = normalize(worldTangent);
@@ -49,10 +48,9 @@ PixelInput_Base VS(VertexIn Input)
 
 float4 PS(PixelInput_Base Input) : SV_TARGET
 {
-	return float4(1.f, 1.f, 1.f, 1.f);
-
 	float3 diffuseColor = Diffuse.Color;
-	float3 normalColor  = normalize(Input.Normal * 2.0f - 1.0f); // -1 ~ 1 사이로 정규화
+
+	float3 normalColor = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
 
 	// 	R (Red): Ambient Occlusion (AO)
 	//  G (Green): Roughness
@@ -84,14 +82,11 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	}
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
-	float3 lightDir = normalize(Input.LightDir);
-	float  NdotL    = saturate(dot(normalColor, -lightDir));
+	float3 lightDir = normalize(DirectionalLightPos.xyz);
+	float  NdotL    = saturate(dot(normalColor, lightDir));
 	float3 diffuse  = NdotL * diffuseColor.rgb * DirectionalLightColor.rgb;
-
 	float3 specular = 0;
-
-	return float4(NdotL, 0, 0, 1);
-
+	// return float4(NdotL , NdotL, NdotL, 1.f);
 	// 난반사광이 없으면 애초에 반사되는 색상이 없음
 	if (diffuse.x > 0)
 	{
@@ -105,7 +100,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = ambientColor * diffuseColor.rgb;
+	float3 ambient = /*Ambient.Color;*/ 0.2 * diffuseColor;
 	//
 	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);

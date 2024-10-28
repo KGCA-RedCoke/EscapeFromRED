@@ -1,5 +1,5 @@
 ﻿#include "GUI_Editor_Material.h"
-#include "Core/Graphics/Material/JMaterial.h"
+#include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Logger.h"
@@ -9,14 +9,11 @@
 GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	: GUI_Base(InTitle),
 	  bOpenFileBrowser(false),
-	  bShowNewParam(false),
 	  bOpenFolder(false),
 	  mFilePath{"Game/Materials"},
 	  mDeltaTime(0)
 {
 	mWindowFlags |= ImGuiWindowFlags_MenuBar;
-	// s_MaterialEditorNum++;
-	// s_CachedMaterialEditorIndex = s_MaterialEditorNum;
 
 	// 1. 뷰포트를 생성
 	mViewport = IManager.ViewportManager->CreateOrLoad(mTitle, 1280, 720);
@@ -26,25 +23,7 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	mCamera = IManager.CameraManager->CreateOrLoad(InTitle);
 	assert(mCamera);
 
-	// 3. 구체 메시를 생성 (굳이 구체가 아니어도 상관없음, 대부분의 엔진에서는 구체를 사용)
-	mPreviewMeshObject = IManager.MeshManager->CreateOrClone("Cube");
-	assert(mPreviewMeshObject);
-	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
-	mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad<
-		JMaterialInstance>("Game/Materials/NewMaterial.jasset");
-	// mMaterialToEdit = mPreviewMeshObject->mPrimitiveMeshData[0]->mMaterial;
-	assert(mMaterialToEdit);
-
-	mPreviewMeshObject->mPrimitiveMeshData[0]->mMaterialInstance = mMaterialToEdit;
-	// 3.2 머티리얼의 셰이더 데이터를 가져온다.
-	// mShader = mMaterialToEdit->GetShader();
-	// assert(mShader);
-}
-
-GUI_Editor_Material::~GUI_Editor_Material()
-{
-	// s_MaterialEditorNum--;
-	// s_CachedMaterialEditorIndex = s_MaterialEditorNum;
+	SetMeshObject("Sphere");
 }
 
 void GUI_Editor_Material::Render()
@@ -55,8 +34,10 @@ void GUI_Editor_Material::Render()
 	// 구체는 원점에 유지시키고 카메라 위치만 업데이트 시켜준다.
 	// mPreviewMeshObject->UpdateBuffer(FMatrix::Identity, mCamera);
 
+	// mMaterialToEdit->UpdateCamera(IManager.RenderManager->GetImmediateDeviceContext(), mCamera);
+
 	// 변경사항 적용 Draw
-	mPreviewMeshObject->Render();
+	mPreviewMeshObject->Draw();
 }
 
 void GUI_Editor_Material::ShowMenuBar()
@@ -77,6 +58,80 @@ void GUI_Editor_Material::ShowMenuBar()
 	}
 }
 
+void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
+{
+	// 3. 구체 메시를 생성 (굳이 구체가 아니어도 상관없음, 대부분의 엔진에서는 구체를 사용)
+	mPreviewMeshObject = IManager.MeshManager->CreateOrClone(InMeshPath.data());
+	assert(mPreviewMeshObject);
+
+	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
+	mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/NewMaterial.jasset");
+	assert(mMaterialToEdit);
+
+	mPreviewMeshObject->mPrimitiveMeshData[0]->mMaterialInstance = mMaterialToEdit;
+}
+
+void GUI_Editor_Material::HandleIntegerType(FMaterialParam& MaterialParam)
+{
+	// if (MaterialParam.Key == CBuffer::HASH_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG)
+	// {
+	// 	uint32_t flag = static_cast<uint32_t>(MaterialParam.IntegerValue);
+	// 	
+	// 	for (int32_t i = 1; i < ARRAYSIZE(CBuffer::TextureUsageString); ++i)
+	// 	{
+	// 		bool bSelected = flag & (1 << (i - 1));
+	// 		ImGui::Selectable(CBuffer::TextureUsageString[i], &bSelected);
+	// 	}
+	// }
+}
+
+void GUI_Editor_Material::HandleFloat2Type(FMaterialParam& Param)
+{
+	ImGui::DragFloat(Param.Name.c_str(), &Param.FloatValue, 0.01f, 0.f, 1.f);
+}
+
+void GUI_Editor_Material::HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const
+{
+	const FVector4 cachedColor = Param.Float4Value;
+	float          color[4];
+
+	bool bUseTexture = Param.ParamValue == EMaterialParamValue::Texture2D;
+	ImGui::Text("Use Texture");
+	ImGui::SameLine();
+	ImGui::Checkbox(Param.Name.c_str(), &bUseTexture);
+
+	if (bUseTexture)
+	{
+		Param.ParamValue = EMaterialParamValue::Texture2D;
+		if (FMaterialParam* flagParam = mMaterialToEdit->
+				GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
+		{
+			uint32_t flag = static_cast<uint32_t>(flagParam->IntegerValue);
+			flag |= 1 << (Index);
+			flagParam->IntegerValue = flag;
+			mMaterialToEdit->EditInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG, *flagParam);
+		}
+	}
+
+	ImGui::DragFloat4(Param.Name.c_str(), &Param.Float4Value.x, 0.01f, 0.f, 1.f);
+	color[0] = Param.Float4Value.x;
+	color[1] = Param.Float4Value.y;
+	color[2] = Param.Float4Value.z;
+	color[3] = Param.Float4Value.w;
+	ImGui::SameLine();
+
+	ImGui::ColorEdit4("MyColor##3",
+					  reinterpret_cast<float*>(&color),
+					  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+	Param.Float4Value = FVector4{color[0], color[1], color[2], color[3]};
+
+
+	if (cachedColor != Param.Float4Value)
+	{
+		mMaterialToEdit->EditInstanceParam(Param.Name, Param);
+	}
+}
+
 void GUI_Editor_Material::ShowMaterialEditor()
 {
 	ImGui::BeginChild("MaterialView", ImVec2(ImGui::GetContentRegionAvail().x * 0.6, 0), true);
@@ -86,6 +141,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
 	{
 		mCamera->Update(mDeltaTime);
+		// mMaterialToEdit->UpdateCamera()
 	}
 
 	ImGui::EndChild();
@@ -94,6 +150,23 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	ImGui::BeginChild("MaterialEditor", ImVec2(ImGui::GetContentRegionAvail().x, 0), true);
 
+	// Mesh Selector
+	if (ImGui::BeginCombo("MeshSelector", mPreviewMeshObject->mName.c_str()))
+	{
+		const JArray<Ptr<JMeshObject>>& loaded = IManager.MeshManager->GetManagedList();
+		for (auto& loadedMesh : loaded)
+		{
+			JText meshName = loadedMesh->mName;
+			if (ImGui::Selectable(meshName.c_str()))
+			{
+				SetMeshObject(meshName);
+				break;
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
 	if (ImGui::CollapsingHeader("Properties"))
 	{
 		ImGui::InputText("Name",
@@ -101,29 +174,25 @@ void GUI_Editor_Material::ShowMaterialEditor()
 						 256,
 						 ImGuiInputTextFlags_CharsNoBlank);
 
-		// Ptr<JShader> shader         = mMaterialToEdit->mParentMaterial->GetShader();
-		// JText        shaderFileName = "None Selected";
-		// if (shader)
-		// {
-		// 	shaderFileName = WString2String(shader->GetShaderFile());
-		// }
+		auto materialRef = mMaterialToEdit->mParentMaterial;
 
-		// ImGui::Text("Shader");
-		// ImGui::SameLine();
-		// if (ImGui::BeginCombo("##ShaderModel", shaderFileName.c_str()))
-		// {
-		// 	const std::vector<Ptr<JShader>> loaded = IManager.ShaderManager->GetManagedList();
-		// 	for (auto& loadedShader : loaded)
-		// 	{
-		// 		JText shaderName = WString2String(loadedShader->GetShaderFile());
-		// 		if (ImGui::Selectable(shaderName.c_str()))
-		// 		{
-		// 			mMaterialToEdit->SetShader(loadedShader);
-		// 			mShader = loadedShader;
-		// 		}
-		// 	}
-		// 	ImGui::EndCombo();
-		// }
+		ImGui::Text("Parent Material");
+		ImGui::SameLine();
+		if (ImGui::BeginCombo("##ParentMaterial", materialRef ? materialRef->GetMaterialName().c_str() : "None Selected"))
+		{
+			const JArray<Ptr<JMaterial>>& loaded = IManager.MaterialManager->GetManagedList();
+			for (auto& loadedMaterial : loaded)
+			{
+				JText materialName = loadedMaterial->GetMaterialName();
+				if (ImGui::Selectable(materialName.c_str()))
+				{
+					mMaterialToEdit->SetParentMaterial(loadedMaterial);
+					break;
+				}
+			}
+
+			ImGui::EndCombo();
+		}
 	}
 
 
@@ -133,30 +202,20 @@ void GUI_Editor_Material::ShowMaterialEditor()
 		for (int32_t i = 0; i < params.size(); ++i)
 		{
 			FMaterialParam& param = params[i];
-			float           color[3];
 
-	
 			switch (param.ParamValue)
 			{
-			case EMaterialParamValue::Float:
-				ImGui::DragFloat(param.Name.c_str(), &param.FloatValue, 0.01f, 0.f, 1.f);
-
+			case EMaterialParamValue::Integer:
+				HandleIntegerType(param);
 				break;
-
-			case EMaterialParamValue::Float3:
-				// ShowTextureSlot(mMaterialToEdit, param.Name.c_str());
-
-				ImGui::DragFloat3(param.Name.c_str(), &param.Float3Value.x, 0.01f, 0.f, 1.f);
-				color[0] = param.Float4Value.x;
-				color[1] = param.Float4Value.y;
-				color[2] = param.Float4Value.z;
-				ImGui::SameLine();
-				ImGui::ColorEdit3("MyColor##3",
-								  (float*)&color,
-								  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-
-				param.Float3Value = FVector{color[0], color[1], color[2]};
-				// mMaterialToEdit->UpdateMaterialBuffer(IManager.RenderManager->GetImmediateDeviceContext());
+			case EMaterialParamValue::Float2:
+				HandleFloat2Type(param);
+				break;
+			case EMaterialParamValue::Float4:
+				HandleFloat4Type(param, i);
+				break;
+			case EMaterialParamValue::Texture2D:
+				ShowTextureSlot(param, i);
 				break;
 			}
 		}
@@ -164,10 +223,9 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	ImGui::Separator();
 
-	if (ImGui::Button("##Add New Param"))
-	{
-		bShowNewParam = true;
-	}
+	Button_AddParam();
+
+	ImGui::Separator();
 
 	ImGui::InputText("##SavePath", mFilePath, 256);
 	ImGui::SameLine();
@@ -207,55 +265,65 @@ void GUI_Editor_Material::ShowFileBrowser()
 	}
 }
 
-void GUI_Editor_Material::ShowTextureSlot(const Ptr<JMaterialInstance>& InMaterialData, const char* TextureType) const
+void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const
 {
-	// ImGui::Text(TextureType);
-	// ImGui::SameLine();
-	//
-	// // Texture Thumbnail
-	// FMaterialParam* params = InMaterialData->GetMaterialParam(TextureType);
-	// if (!params)
-	// {
-	// 	FMaterialParam newParams;
-	// 	newParams.Name       = TextureType;
-	// 	newParams.ParamValue = EMaterialParamValue::Texture2D;
-	//
-	// 	InMaterialData->AddMaterialParam(newParams);
-	// 	params = InMaterialData->GetMaterialParam(TextureType);
-	// }
-	//
-	// if (!(!params->StringValue.empty() && params->TextureValue))
-	// {
-	//
-	// 	params->TextureValue = IManager.TextureManager->CreateOrLoad("rsc/Icons/NoIcon.png");
-	// 	params->StringValue  = "rsc/Icons/NoIcon.png";
-	// }
-	//
-	// JText label = std::format("##{}", TextureType);
-	//
-	// // Texture Path
-	// if (ImGui::BeginCombo(label.c_str(), params->StringValue.c_str()))
-	// {
-	// 	std::vector<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
-	//
-	// 	for (auto& tex : loaded)
-	// 	{
-	// 		JText texName = WString2String(tex->GetPath());
-	// 		if (ImGui::Selectable(texName.c_str()))
-	// 		{
-	// 			params->ParamValue   = EMaterialParamValue::Texture2D;
-	// 			params->StringValue  = texName;
-	// 			params->TextureValue = tex;
-	// 		}
-	// 	}
-	//
-	// 	ImGui::EndCombo();
-	// }
-	//
-	//
-	// assert(params->TextureValue);
-	// ImGui::Image(params->TextureValue->GetSRV(), ImVec2(64, 64));
+	ImGui::Text(Param.Name.c_str());
+	ImGui::SameLine();
 
+	bool bUseTexture = Param.ParamValue == EMaterialParamValue::Texture2D;
+	ImGui::Text("Use Texture");
+	ImGui::SameLine();
+	ImGui::Checkbox(Param.Name.c_str(), &bUseTexture);
+	if (!bUseTexture)
+	{
+		Param.ParamValue = EMaterialParamValue::Float4;
+		if (FMaterialParam* flagParam = mMaterialToEdit->
+				GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
+		{
+			uint32_t flag = static_cast<uint32_t>(flagParam->IntegerValue);
+			flag &= ~(1 << (Index));
+			flagParam->IntegerValue = flag;
+			mMaterialToEdit->EditInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG, *flagParam);
+		}
+	}
+
+
+	JText label = std::format("##{}", Param.Name);
+
+	// Texture Path
+	if (ImGui::BeginCombo(label.c_str(), Param.StringValue.c_str()))
+	{
+		std::vector<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+
+		for (const auto& tex : loaded)
+		{
+			JText texName = WString2String(tex->GetPath());
+			if (ImGui::Selectable(texName.c_str()))
+			{
+				Param.StringValue  = texName;
+				Param.TextureValue = tex;
+
+				break;
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
+	if (Param.TextureValue)
+	{
+		ImGui::Image(Param.TextureValue->GetSRV(), ImVec2(64, 64));
+	}
+
+}
+
+void GUI_Editor_Material::Button_AddParam()
+{
+	// 파라미터 추가 버튼
+	if (ImGui::Button("New Param"))
+	{
+		bOpenNewParamPopup = true;
+	}
 }
 
 
@@ -270,8 +338,28 @@ void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 		ShowFileBrowser();
 	}
 
-	if (bShowNewParam)
+	if (bOpenNewParamPopup)
 	{
-		// ShowParamPopup();
+		ImGui::OpenPopup("NewParamPopup");
+		if (ImGui::BeginPopup("NewParamPopup"))
+		{
+			static char paramName[256];
+			ImGui::InputText("Param Name", paramName, 256);
+
+			if (ImGui::Button("Add"))
+			{
+				FMaterialParam newParam;
+				newParam.Name       = paramName;
+				newParam.ParamValue = EMaterialParamValue::Float4;
+				newParam.Float4Value = FVector4{0.5f, 0.5f, 0.5f, 1.f};
+
+				mMaterialToEdit->AddInstanceParam(newParam);
+				bOpenNewParamPopup = false;
+				ImGui::CloseCurrentPopup();
+				bOpenNewParamPopup = false;
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 }

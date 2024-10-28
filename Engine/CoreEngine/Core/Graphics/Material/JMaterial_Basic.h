@@ -8,9 +8,4 @@ public:
 
 private:
 	void InitializeParams() override;
-	void UpdateParamData(void* InData) override;
-	
-
-private:
-	CBuffer::Material_Basic mMaterialData;
 };

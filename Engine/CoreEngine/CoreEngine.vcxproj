@@ -187,6 +187,9 @@
     <None Include="Shader\CommonConstantBuffers.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shader\CommonTextures.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shader\InputLayout.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -281,7 +284,7 @@
     <None Include="Shader\Gnomon.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Shader\Object_Vertex.hlsl">
+    <None Include="Shader\LandScape.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <ClCompile Include="Vender\include\imgui\imgui.cpp" />

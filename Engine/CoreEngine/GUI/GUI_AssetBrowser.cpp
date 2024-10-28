@@ -22,10 +22,7 @@ GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 	  bRequestDelete(false),
 	  bRequestRename(false),
 	  bShowTypeOverlay(true),
-	  bStretchSpacing(true),
-	  mCurrentDirectory(),
-	  mCachedDirectory(),
-	  g_IconList()
+	  bStretchSpacing(true)
 {
 	mCurrentDirectory = fs::absolute(L"Game");
 }
@@ -34,7 +31,9 @@ GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 void GUI_AssetBrowser::Initialize()
 {
 	GUI_Base::Initialize();
-	g_IconList.CreateTextures();
+
+	g_IconList.FileIcon   = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/AssetIcons/Actor_64x.png");
+	g_IconList.FolderIcon = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
 
 	SetMultiFlagOptions();
 }
@@ -104,8 +103,9 @@ void GUI_AssetBrowser::Update(float DeltaTime)
 		UpdateMultiSelection(startPos);
 
 		UpdateZoom(startPos, availableWidth);
+
+		ImGui::EndChild();
 	}
-	ImGui::EndChild();
 
 	ImGui::Text("Selected: %d/%d items \t", mSelection.Size, mFiles.size());
 	ImGui::SameLine();
@@ -182,12 +182,12 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 		{
 			if (ImGui::MenuItem("New Folder"))
 			{
-				// 코드를 추가하여 새 폴더 생성을 처리합니다.
+				// 코드를 추가하여 새 폴더 생성을 처리
 
 			}
 			if (ImGui::MenuItem("New File"))
 			{
-				// 코드를 추가하여 새 파일 생성을 처리합니다.
+				// 코드를 추가하여 새 파일 생성을 처리
 			}
 		}
 		ImGui::EndPopup();
@@ -303,6 +303,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 						mCurrentDirectory = itemData->FilePath;
 						break;
 					case EFileType::Asset: // 에셋 창 열기(너무 복잡, 그냥 DragDrop만 가능하도록 수정)
+						
 						break;
 					}
 				}
@@ -465,7 +466,7 @@ void GUI_AssetBrowser::UpdateProgressBar() const
 {
 	ImGui::ProgressBar(mCurrentProgress, ImVec2(0, 0));
 	ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-	ImGui::Text("Loading Progress");
+	// ImGui::Text("TODO: 프로그레스 바 업데이트");
 }
 
 void GUI_AssetBrowser::HandleFile()

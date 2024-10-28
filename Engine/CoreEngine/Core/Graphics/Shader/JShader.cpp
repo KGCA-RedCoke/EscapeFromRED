@@ -45,12 +45,65 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	UpdateGlobalConstantBuffer(InDeviceContext);
 }
 
+void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const void* InData,
+								 const uint32_t       InOffset)
+{
+	if (JConstantBuffer* buffer = GetConstantBuffer(InBufferName))
+	{
+		if (InData == nullptr)
+		{
+			// 데이터가 없을 경우 버퍼를 초기화
+			memset(buffer->Data.data() + InOffset, 0, buffer->Size);
+		}
+		else
+		{
+			// 기존의 상수버퍼 데이터에 Offset부터 Size만큼 InData를 복사
+			memcpy_s(buffer->Data.data() + InOffset, buffer->Size, InData, buffer->Size);
+		}
+		buffer->UpdateBuffer(InDeviceContext);
+	}
+}
+
+void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,
+								 const void*          InData)
+{
+	JConstantBuffer* buffer = GetConstantBuffer(InBufferName);
+	if (!buffer)
+	{
+		LOG_CORE_ERROR("Buffer Name is not found in Shader Constant Buffer Table");
+		return;
+	}
+	const FCBufferVariable* variable = buffer->GetVariable(InDataName);
+	if (!variable)
+	{
+		LOG_CORE_ERROR("Variable Name is not found in Shader Constant Buffer Table");
+		return;
+	}
+
+	if (InData == nullptr)
+	{
+		// 데이터가 없을 경우 버퍼를 초기화
+		memset(buffer->Data.data() + variable->Offset, 0, variable->Size);
+	}
+	else
+	{
+		memcpy_s(
+				 buffer->Data.data() + variable->Offset,
+				 buffer->Data.size(),
+				 InData,
+				 variable->Size
+				);
+	}
+
+
+	buffer->UpdateBuffer(InDeviceContext);
+}
+
 void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 {
 	for (int32_t i = 0; i < mShaderData.ConstantBuffers.size(); ++i)
 	{
-		JConstantBuffer& constantBuffer = mShaderData.ConstantBuffers[i];
-		constantBuffer.SetConstantBuffer(InDeviceContext);
+		mShaderData.ConstantBuffers.at(i).SetConstantBuffer(InDeviceContext);
 	}
 }
 
@@ -218,6 +271,7 @@ void JShader::LoadShaderReflectionData()
 		CheckResult(vertexShaderReflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc));
 
 		JConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, true, false);
+		constantBuffer.Data.resize(bufferDesc.Size);
 
 		// 상수 버퍼 내부의 변수 정보를 가져옴
 		for (UINT j = 0; j < bufferDesc.Variables; ++j)
@@ -229,16 +283,18 @@ void JShader::LoadShaderReflectionData()
 
 			FCBufferVariable variable;
 			variable.Name   = varDesc.Name;
+			variable.Hash   = StringHash(varDesc.Name);
 			variable.Offset = varDesc.StartOffset;
 			variable.Size   = varDesc.Size;
 
 			constantBuffer.Variables.push_back(variable);
+			constantBuffer.VariableHashTable.emplace(variable.Hash, j);
 		}
 
-		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Name))
+		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
 		{
 			constantBuffer.GenBuffer(IManager.RenderManager->GetDevice());
-			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Name, mShaderData.ConstantBuffers.size());
+			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash, mShaderData.ConstantBuffers.size());
 			mShaderData.ConstantBuffers.push_back(constantBuffer);
 		}
 
@@ -256,14 +312,17 @@ void JShader::LoadShaderReflectionData()
 		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 		CheckResult(pixelShaderReflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc));
 
-		if (mShaderData.ConstantBufferHashTable.contains(bufferDesc.Name))
+		if (auto it = mShaderData.ConstantBufferHashTable.find(StringHash(bufferDesc.Name)); it != mShaderData.
+			ConstantBufferHashTable.
+			end())
 		{
-			int32_t index                                         = mShaderData.ConstantBufferHashTable[bufferDesc.Name];
-			mShaderData.ConstantBuffers[index].bPassToPixelShader = true;
+			int32_t index = it->second;
+			mShaderData.ConstantBuffers[index].Flags |= EConstantFlags::PassPixel;
 			continue;
 		}
 
 		JConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, false, true);
+		constantBuffer.Data.resize(bufferDesc.Size);
 
 		// 상수 버퍼 내부의 변수 정보를 가져옴
 		for (UINT j = 0; j < bufferDesc.Variables; ++j)
@@ -275,16 +334,18 @@ void JShader::LoadShaderReflectionData()
 
 			FCBufferVariable variable;
 			variable.Name   = varDesc.Name;
+			variable.Hash   = StringHash(varDesc.Name);
 			variable.Offset = varDesc.StartOffset;
 			variable.Size   = varDesc.Size;
 
 			constantBuffer.Variables.push_back(variable);
+			constantBuffer.VariableHashTable.emplace(variable.Hash, j);
 		}
 
-		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Name))
+		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
 		{
 			constantBuffer.GenBuffer(IManager.RenderManager->GetDevice());
-			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Name, mShaderData.ConstantBuffers.size());
+			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash, mShaderData.ConstantBuffers.size());
 			mShaderData.ConstantBuffers.push_back(constantBuffer);
 		}
 	}
@@ -299,4 +360,15 @@ void JShader::LoadShaderReflectionData()
 																	  ));
 
 
+}
+
+JConstantBuffer* JShader::GetConstantBuffer(const JText& InBufferName)
+{
+	if (auto it = mShaderData.ConstantBufferHashTable.find(StringHash(InBufferName.c_str())); it != mShaderData.
+		ConstantBufferHashTable.end())
+	{
+		return &mShaderData.ConstantBuffers[it->second];
+	}
+	LOG_CORE_ERROR("Buffer Name is not found in Shader Constant Buffer Table");
+	return nullptr;
 }

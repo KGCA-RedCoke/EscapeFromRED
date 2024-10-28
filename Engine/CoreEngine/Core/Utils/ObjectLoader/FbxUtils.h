@@ -607,7 +607,7 @@ namespace Utils::Fbx
 			}
 		}
 
-		// Material->AddMaterialParam(materialParams);
+		Material->EditInstanceParam(ParamName, materialParams);
 	}
 
 	[[nodiscard]] inline FMatrix ParseTransform(FbxNode* InNode, const FMatrix& ParentWorldMat)
@@ -646,8 +646,13 @@ namespace Utils::Fbx
 		JText fileName = std::format("Game/Materials/{0}/{1}.jasset", InMesh->GetName(), fbxMaterial->GetName());
 		/** 셰이딩 모델은 거의 PhongShading */
 
-		Ptr<JMaterialInstance> material = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
+		Ptr<JMaterialInstance> matInstance = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
 		// 머티리얼이 이미 존재할 경우 아래 파싱 과정 생략
+		if (matInstance->GetParamCount() > 0)
+		{
+			bShouldSerialize = false;
+			return matInstance;
+		}
 
 		/// 머티리얼 파싱
 		/// FBX SDK에서 정확히 Property Name이 어떻게 설정되어있는지 모르겠다.
@@ -661,11 +666,6 @@ namespace Utils::Fbx
 		{
 			const FFbxProperty& textureParams = FbxMaterialProperties[i];
 
-			// if (material->HasMaterialParam(textureParams.ParamType))
-			// {
-			// 	continue;
-			// }
-
 			// FindProperty가 내부적으로 어떤 알고리듬을 사용하는지 모르겠다...
 			// O(1)보다 크다면 그냥 순차적으로 하나씩 돌리는게 나음 (큰 차이는 없음)
 			FbxProperty property = fbxMaterial->FindProperty(textureParams.FbxPropertyName);
@@ -673,14 +673,14 @@ namespace Utils::Fbx
 			{
 				ParseMaterialProps(property,
 								   textureParams.PropertyName,
-								   material.get());
+								   matInstance.get());
 			}
 		}
 
 		bShouldSerialize = true;
 
 
-		return material;
+		return matInstance;
 	}
 
 

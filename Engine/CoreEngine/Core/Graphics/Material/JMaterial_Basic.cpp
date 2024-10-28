@@ -1,11 +1,10 @@
 ﻿#include "JMaterial_Basic.h"
 
-JMaterial_Basic::JMaterial_Basic(JTextView InName)
-	: JMaterial(InName, sizeof(CBuffer::Material_Basic)),
-	  mMaterialData()
-{
-	mParamData = &mMaterialData;
+#include "Core/Graphics/ShaderStructs.h"
 
+JMaterial_Basic::JMaterial_Basic(JTextView InName)
+	: JMaterial(InName)
+{
 	JMaterial_Basic::InitializeParams();
 }
 
@@ -13,24 +12,31 @@ void JMaterial_Basic::InitializeParams()
 {
 	if (mMaterialParams.empty())
 	{
-		mMaterialParams.push_back(FMaterialParam("DiffuseColor", EMaterialParamValue::Float3, &FVector::ZeroVector, true));
-		mMaterialParams.push_back(FMaterialParam("AmbientColor", EMaterialParamValue::Float3, &FVector::ZeroVector, true));
-		mMaterialParams.push_back(FMaterialParam("AmbientOcclusionColor",
-												 EMaterialParamValue::Float,
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE,
+												 EMaterialParamValue::Float4,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.
-				push_back(FMaterialParam("RoughnessColor", EMaterialParamValue::Float, &FVector::ZeroVector, true));
-		mMaterialParams.push_back(FMaterialParam("MetallicColor", EMaterialParamValue::Float, &FVector::ZeroVector, true));
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_NORMAL,
+												 EMaterialParamValue::Float4,
+												 &FVector::ZeroVector,
+												 true));
 
-		mMaterialData.TextureUsageFlag = CBuffer::ETextureUsage::None;
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO,
+												 EMaterialParamValue::Float2,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS,
+												 EMaterialParamValue::Float2,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC,
+												 EMaterialParamValue::Float2,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG,
+												 EMaterialParamValue::Integer,
+												 &FVector::ZeroVector,
+												 true));
 	}
 
-}
-
-void JMaterial_Basic::UpdateParamData(void* InData)
-{
-	JMaterial::UpdateParamData(InData);
-
-	static_cast<CBuffer::Material_Basic*>(InData);
 }

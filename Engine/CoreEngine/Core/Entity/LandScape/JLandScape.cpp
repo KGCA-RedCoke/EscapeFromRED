@@ -35,18 +35,7 @@ void JLandScape::Draw()
 	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	Ptr<JCamera> currentCam = IManager.CameraManager->GetCurrentMainCam();
-	assert(currentCam);
-
-	CBuffer::Space space;
-	space.Model      = XMMatrixTranspose(mWorldMat);
-	space.View       = XMMatrixTranspose(currentCam->GetViewMatrix());
-	space.Projection = XMMatrixTranspose(currentCam->GetProjMatrix());
-
-	Utils::DX::UpdateDynamicBuffer(deviceContext,
-								   mInstanceBuffer.CBuffer_Space[0].Get(),
-								   &space,
-								   sizeof(CBuffer::Space));
+	mMaterial->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMat));
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -55,22 +44,16 @@ void JLandScape::Draw()
 	deviceContext->IASetVertexBuffers(0, 1, mInstanceBuffer.Buffer_Vertex[0].GetAddressOf(), &stride, &offset);
 	deviceContext->IASetIndexBuffer(mInstanceBuffer.Buffer_Index[0].Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	deviceContext->VSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
-	deviceContext->PSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, mInstanceBuffer.CBuffer_Space[0].GetAddressOf());
-
-	IManager.CameraManager->SetCameraConstantBuffer();
-
 	IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame()
 											   ? ERasterState::WireFrame
 											   : ERasterState::CullNone);
 
 	IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
 
-	uint32_t indexCount    = mIndexInfo.size(); // 총 인덱스 수
-	uint32_t instanceCount = mMapDescription.Column * mMapDescription.Row; // 인스턴스 수
 
-	mMaterial->BindMaterialPipeline(deviceContext);
+	mMaterial->BindMaterial(deviceContext);
 
+	const uint32_t indexCount = mIndexInfo.size(); // 총 인덱스 수
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 }
 
@@ -94,23 +77,24 @@ void JLandScape::GenerateLandScape()
 	GenVertexNormal();
 	GenBuffer();
 
-	mMaterial = IManager.MaterialManager->CreateOrLoad("Game/LandScape/Material/TestMaterial.jasset");
+	mMaterial = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/Cube/DefaultMaterial.jasset");
 
 	if (mAlbedoMap)
 	{
 		FMaterialParam albedoParams;
+		albedoParams.Name         = CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE;
 		albedoParams.ParamValue   = EMaterialParamValue::Texture2D;
 		albedoParams.TextureValue = mAlbedoMap;
-		mMaterial->AddMaterialParam(albedoParams);
+		mMaterial->EditInstanceParam(CBuffer::NAME_CONSTANT_BUFFER_MATERIAL, albedoParams);
 	}
 
-	if (mNormalMap)
-	{
-		FMaterialParam normalParams;
-		normalParams.ParamValue   = EMaterialParamValue::Texture2D;
-		normalParams.TextureValue = mNormalMap;
-		mMaterial->AddMaterialParam(normalParams);
-	}
+	// if (mNormalMap)
+	// {
+	// 	FMaterialParam normalParams;
+	// 	normalParams.ParamValue   = EMaterialParamValue::Texture2D;
+	// 	normalParams.TextureValue = mNormalMap;
+	// 	mMaterial->AddMaterialParam(normalParams);
+	// }
 }
 
 void JLandScape::GenVertex()
@@ -174,31 +158,42 @@ void JLandScape::GenIndex()
 
 void JLandScape::GenFaceNormal()
 {
-	const int32_t cellRow = (mMapDescription.Column - 1);
-	const int32_t cellCol = (mMapDescription.Row - 1);
+	/// 삼각형의 노말벡터를 어떻게 구할 수 있을까?
+	/// Step 1. 삼각형 내의 위치 벡터를 구한다.
+	/// Step 2. 위치 벡터의 뺄셈을 이용해 두 벡터(엣지)를 구한다.
+	/// Step 3. 두 엣지에서 외적(Cross Product)을 이용해 노말 벡터를 구한다.
 
-	mNormalInfo.resize(cellRow * cellCol * 2);
-	mIndexGroup.resize(mMapDescription.Row * mMapDescription.Column);
+	const int32_t cellRow       = (mMapDescription.Column - 1);
+	const int32_t cellCol       = (mMapDescription.Row - 1);
+	const int32_t triangleCount = cellRow * cellCol * 2; // 삼각형 갯수
 
-	for (int32_t face = 0; face < mIndexGroup.size(); ++face)
+	mFaceInfo.resize(triangleCount);	// 삼각형 갯수만큼의 페이스 노말을 생성
+	mVertexGroup.resize(mMapDescription.Row * mMapDescription.Column);	// 정점 갯수 만큼의 벡터 그룹을 생성
+
+	for (int32_t face = 0; face < triangleCount; ++face)
 	{
+		// 삼각형에 있는 세 정점의 인덱스 조회
 		uint32_t index0 = mIndexInfo[face * 3 + 0];
 		uint32_t index1 = mIndexInfo[face * 3 + 1];
 		uint32_t index2 = mIndexInfo[face * 3 + 2];
 
+		// 인덱스별 정점위치 조회
 		FVector v0 = mVertexInfo[index0].Position;
 		FVector v1 = mVertexInfo[index1].Position;
 		FVector v2 = mVertexInfo[index2].Position;
 
+		// 벡터 뺄셈을 통해 두 벡터(엣지)를 구함
 		FVector edge1 = v1 - v0;
 		FVector edge2 = v2 - v0;
 
-		mNormalInfo[face] = edge1.Cross(edge2);
-		mNormalInfo[face].Normalize();
+		// 두 벡터의 외적을 통해 노말 벡터를 구함 + 정규화
+		mFaceInfo[face] = edge1.Cross(edge2);
+		mFaceInfo[face].Normalize();
 
-		mIndexGroup[index0].push_back(face);
-		mIndexGroup[index1].push_back(face);
-		mIndexGroup[index2].push_back(face);
+		// 정점 그룹에 페이스 인덱스 추가
+		mVertexGroup[index0].push_back(face);
+		mVertexGroup[index1].push_back(face);
+		mVertexGroup[index2].push_back(face);
 	}
 }
 
@@ -206,15 +201,12 @@ void JLandScape::GenVertexNormal()
 {
 	for (int32_t vertex = 0; vertex < mVertexInfo.size(); ++vertex)
 	{
-		FVector normal = FVector::ZeroVector;
-
-		for (int32_t face : mIndexGroup[vertex])
+		for (int32_t normalCount = 0; normalCount < mVertexGroup[vertex].size(); ++normalCount)
 		{
-			normal += mNormalInfo[face];
+			const int32_t faceIndex = mVertexGroup[vertex][normalCount];
+			mVertexInfo[vertex].Normal += mFaceInfo[faceIndex];
 		}
-
-		normal.Normalize();
-		mVertexInfo[vertex].Normal = normal;
+		mVertexInfo[vertex].Normal.Normalize();
 	}
 }
 

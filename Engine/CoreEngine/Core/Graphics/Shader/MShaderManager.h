@@ -10,7 +10,7 @@ private:
 	void Initialize_Initialize();
 
 public:
-	Ptr<JShader_Basic> BasicShader;
+	Ptr<JShader> BasicShader;
 
 #pragma region Singleton Boilerplate
 

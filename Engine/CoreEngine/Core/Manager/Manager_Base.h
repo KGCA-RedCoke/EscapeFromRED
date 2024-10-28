@@ -90,6 +90,8 @@ Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::stri
 
 	if (Ptr<ReturnType> resource = FetchResource<ReturnType>(id))
 	{
+		LeaveCriticalSection(&mCriticalSection);
+
 		return resource;
 	}
 

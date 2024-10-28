@@ -17,28 +17,32 @@ class GUI_Editor_Material : public GUI_Base
 {
 public:
 	GUI_Editor_Material(const JText& InTitle);
-	~GUI_Editor_Material() override;
+	~GUI_Editor_Material() override = default;
 
 	void Render() override;
 
 private:
 	void Update_Implementation(float DeltaTime) override;
+	void ShowMenuBar() override;
 
 private:
-	void ShowMenuBar() override;
+	void SetMeshObject(JTextView InMeshPath);
+
+	void HandleIntegerType(FMaterialParam& MaterialParam);
+	void HandleFloat2Type(FMaterialParam& Param);
+	void HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const;
 
 	void ShowMaterialEditor();
 	void ShowFileBrowser();
 
-	void ShowTextureSlot(const Ptr<JMaterialInstance>& InMaterialData, const char* TextureType) const;
+	void ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const;
+
+	void Button_AddParam();
 
 private:
-	// inline static int32_t s_MaterialEditorNum         = 0;	// 생성된 Material Editor 개수
-	// inline static int32_t s_CachedMaterialEditorIndex = 0; // 캐시된 Material Editor  
-
 	bool bOpenFileBrowser;
-	bool bShowNewParam;
 	bool bOpenFolder;
+	bool bOpenNewParamPopup = false;
 
 	char mFilePath[256];
 
@@ -46,6 +50,5 @@ private:
 	Ptr<FViewportData>     mViewport;			// 뷰포트
 	Ptr<JMeshObject>       mPreviewMeshObject;	// 머티리얼 적용 표면
 	Ptr<JMaterialInstance> mMaterialToEdit;		// 머티리얼
-	Ptr<JShader>           mShader;				// 셰이더
 	float                  mDeltaTime;
 };

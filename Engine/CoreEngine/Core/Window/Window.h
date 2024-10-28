@@ -47,7 +47,7 @@ private:
 	void Resize(UINT InWidth, UINT InHeight);
 
 public:
-	std::vector<std::function<void(UINT Width, UINT Height)>> ResizeCallbacks;
+	JArray<std::function<void(UINT Width, UINT Height)>> ResizeCallbacks;
 
 private:
 	HINSTANCE        mInstanceHandle;

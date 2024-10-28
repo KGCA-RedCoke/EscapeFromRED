@@ -26,7 +26,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	static void SetShaderTexture2D(int32_t InSlot = 0, const Ptr<JTexture>& InTexture = nullptr);
+	static void SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, int32_t InSlot = 0, const Ptr<JTexture>& InTexture = nullptr);
 
 public:
 	[[nodiscard]] FORCEINLINE JWText                          GetPath() const { return mTextureName; }
