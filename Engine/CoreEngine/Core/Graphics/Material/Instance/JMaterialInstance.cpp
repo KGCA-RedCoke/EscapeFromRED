@@ -139,8 +139,8 @@ void JMaterialInstance::UpdateCamera(ID3D11DeviceContext* InDeviceContext, const
 	// mParentMaterial->mShader->
 	FVector4 camPos = {InCameraObj->GetEyePositionFVector(), 1.f};
 	mShader.lock()->UpdateConstantData(InDeviceContext,
-									   CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
-									   CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_POS,
+									   CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
+									   CBuffer::NAME_CONSTANT_VARIABLE_CAMERA_POS,
 									   &camPos);
 }
 

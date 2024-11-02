@@ -11,10 +11,16 @@ public:
 
 	void AddSceneComponent(const JText& InName, const Ptr<class JSceneComponent>& InSceneComponent);
 
+	JHash<JText, WPtr<class JSceneComponent>> GetSelectedSceneComponent() const { return mSceneComponents; }
+
 private:
 	void Update_Implementation(float DeltaTime) override;
 
+	void DrawSearchBar();
+	void DrawTreeNode(const Ptr<class JSceneComponent>& InSceneComponent);
+
 private:
+	ImGuiTextFilter                           mFilter;
+	Ptr<JSceneComponent>                      mSelectedSceneComponent;
 	JHash<JText, WPtr<class JSceneComponent>> mSceneComponents;
-	float                                     RotationYaw = 0;
 };

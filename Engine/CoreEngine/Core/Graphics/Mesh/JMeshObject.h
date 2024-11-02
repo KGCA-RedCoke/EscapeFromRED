@@ -36,6 +36,7 @@ public:
 	void Render() override {}
 	void PostRender() override {}
 	void Draw() override;
+	void DrawID(uint32_t ID) override;
 #pragma endregion
 
 private:
@@ -63,5 +64,6 @@ private:
 
 private:
 	friend class Utils::Fbx::FbxFile;
+	friend class GUI_Editor_Mesh;
 	friend class GUI_Editor_Material;
 };

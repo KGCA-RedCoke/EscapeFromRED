@@ -29,6 +29,13 @@ namespace JMath
 		return *this;
 	}
 
+	TVector2& TVector2::operator=(const ImVec2& V)
+	{
+		x = V.x;
+		y = V.y;
+		return *this;
+	}
+
 
 	TVector2 TVector2::operator+(const TVector2& V) const
 	{
@@ -95,8 +102,18 @@ namespace JMath
 		return x == V.x && y == V.y;
 	}
 
+	bool TVector2::operator==(const ImVec2& V) const
+	{
+		return x == V.x && y == V.y;
+	}
+
 
 	bool TVector2::operator!=(const TVector2& V) const
+	{
+		return x != V.x && y != V.y;
+	}
+
+	bool TVector2::operator!=(const ImVec2& V) const
 	{
 		return x != V.x && y != V.y;
 	}
@@ -201,15 +218,13 @@ namespace JMath
 
 	TVector2 TVector2::Min(const TVector2& A, const TVector2& B)
 	{
-		return TVector2(A.x < B.x ? A.x : B.x
-						, A.y < B.y ? A.y : B.y);
+		return TVector2(A.x < B.x ? A.x : B.x, A.y < B.y ? A.y : B.y);
 	}
 
 
 	TVector2 TVector2::Max(const TVector2& A, const TVector2& B)
 	{
-		return TVector2(A.x > B.x ? A.x : B.x
-						, A.y > B.y ? A.y : B.y);
+		return TVector2(A.x > B.x ? A.x : B.x, A.y > B.y ? A.y : B.y);
 	}
 
 

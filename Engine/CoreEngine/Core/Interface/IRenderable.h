@@ -24,4 +24,6 @@ public:
 	virtual void PostRender() = 0;
 
 	virtual void Draw() = 0;
+
+	virtual void DrawID(uint32_t ID) = 0;
 };

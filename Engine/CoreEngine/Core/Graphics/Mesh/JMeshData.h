@@ -54,6 +54,12 @@ public:
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
 	[[nodiscard]] Ptr<JMaterialInstance> GetMaterialInstance() const { return mMaterialInstance; }
 
+public:
+	FORCEINLINE void SetMaterialInstance(const Ptr<JMaterialInstance>& InMaterialInstance)
+	{
+		mMaterialInstance = InMaterialInstance;
+	}
+
 protected:
 	// -------------------------- Mesh Info --------------------------
 	JText     mName;

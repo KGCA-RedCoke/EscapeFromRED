@@ -2,7 +2,6 @@
 
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
-
 #include "InputLayouts.h"
 #include "JConstantBuffer.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -76,7 +75,7 @@ void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JTe
 	const FCBufferVariable* variable = buffer->GetVariable(InDataName);
 	if (!variable)
 	{
-		LOG_CORE_ERROR("Variable Name is not found in Shader Constant Buffer Table");
+		// LOG_CORE_ERROR("Variable Name is not found in Shader Constant Buffer Table");
 		return;
 	}
 

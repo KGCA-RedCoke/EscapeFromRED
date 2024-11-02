@@ -17,16 +17,14 @@ constexpr char Name_Inspector[]    = "Editor Inspector";
 constexpr char Name_AssetBrowser[] = "Asset Browser";
 
 MGUIManager::MGUIManager()
-{
-	Initialize_Initialize();
-};
+{};
 MGUIManager::~MGUIManager() = default;
 
 /**
  * ImGui는 기본적으로 렌더링을 위한 초기화가 필요.
  * ImGui 초기화는 ImGui 컨텍스트를 생성하고, 스타일을 설정하며, 플랫폼 및 백엔드를 초기화해야한다.
  */
-void MGUIManager::Initialize_Initialize()
+void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDeviceContext)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -41,24 +39,24 @@ void MGUIManager::Initialize_Initialize()
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 뷰포트 활성화 
 
 	ImGui::Spectrum::StyleColorsSpectrum();	// 스펙트럼 테마 적용(테마는 io로 다양하게 설정이 가능하다)
+	ImGui::Spectrum::LoadFont();
 
 	/// NOTE:만약 특정 창에 대해서만 스타일을 설정하고 싶다면 (Push이후엔 Pop으로 설정을 되돌릴 수 있다, Pop을 안하면 계속 적용된다...)
 	/// ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	/// ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 	/// ImGui::PopStyleColor();
 	/// ImGui::PopStyleVar();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding              = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
+	// if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	// {
+	// 	style.WindowRounding              = 0.0f;
+	// 	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	// }
 
 	// 플랫폼, 백엔드 초기화
 	ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
-	ImGui_ImplDX11_Init(IManager.RenderManager->GetDevice(), IManager.RenderManager->GetImmediateDeviceContext());
+	ImGui_ImplDX11_Init(InDevice, InDeviceContext);
 
 	InitializeStaticGUI();
-	// ImGui::GetIO().FontGlobalScale = 1.5f; // 기본 글자 크기보다 1.5배로 확대
 }
 
 void MGUIManager::InitializeStaticGUI()
@@ -67,9 +65,16 @@ void MGUIManager::InitializeStaticGUI()
 	mStaticGUI[1] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
 	mStaticGUI[2] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
 
-	mStaticGUI[0]->Initialize();
-	mStaticGUI[1]->Initialize();
-	mStaticGUI[2]->Initialize();
+	mStaticGUI[0].lock()->Initialize();
+	mStaticGUI[1].lock()->Initialize();
+	mStaticGUI[2].lock()->Initialize();
+}
+
+void MGUIManager::Release()
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void MGUIManager::UpdateMainMenuBar()
@@ -101,21 +106,21 @@ void MGUIManager::UpdateMainMenuBar()
 		{
 			if (ImGui::MenuItem("Material Editor"))
 			{
-				if (!mMaterialEditorRef)
+				if (!mMaterialEditorRef.lock())
 				{
 					if (Ptr<GUI_Editor_Material> materialEditor = CreateOrLoad<GUI_Editor_Material>("Material Editor"))
 					{
 						mMaterialEditorRef = materialEditor;
 					}
 				}
-				mMaterialEditorRef->bIsWindowOpen = true;
+				mMaterialEditorRef.lock()->bIsWindowOpen = true;
 
 			}
 
 			if (ImGui::MenuItem("LandScape Editor"))
 			{
 				// LandScape Editor
-				if (!mLandScapeEditorRef)
+				if (!mLandScapeEditorRef.lock())
 				{
 					if (Ptr<GUI_Editor_LandScape> landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
 					{
@@ -123,7 +128,7 @@ void MGUIManager::UpdateMainMenuBar()
 					}
 				}
 
-				mLandScapeEditorRef->bIsWindowOpen = true;
+				mLandScapeEditorRef.lock()->bIsWindowOpen = true;
 			}
 
 			if (ImGui::MenuItem("Fbx Importer"))
@@ -151,25 +156,18 @@ void MGUIManager::UpdateMainMenuBar()
 	}
 }
 
-void MGUIManager::UpdateStaticGUI(float DeltaTime) const
-{
-	for (int32_t i = 0; i < 3; ++i)
-	{
-		mStaticGUI[i]->Update(DeltaTime);
-	}
-}
 
-void MGUIManager::UpdateEditorGUI(float DeltaTime) const
+void MGUIManager::UpdateGUIs(float DeltaTime) const
 {
-	// Material Editor
-	if (mMaterialEditorRef)
+	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
 	{
-		mMaterialEditorRef->Update(DeltaTime);
-	}
-
-	if (mLandScapeEditorRef)
-	{
-		mLandScapeEditorRef->Update(DeltaTime);
+		if (const auto& ptr = it->second)
+		{
+			if (ptr->bIsWindowOpen)
+			{
+				ptr->Update(DeltaTime);
+			}
+		}
 	}
 }
 
@@ -183,9 +181,7 @@ void MGUIManager::Update(float_t DeltaTime)
 
 	UpdateMainMenuBar();
 
-	UpdateStaticGUI(DeltaTime);
-
-	UpdateEditorGUI(DeltaTime);
+	UpdateGUIs(DeltaTime);
 
 	if (bOpenFileBrowser)
 	{
@@ -211,13 +207,6 @@ void MGUIManager::Update(float_t DeltaTime)
 
 }
 
-void MGUIManager::Release()
-{
-	ImGui_ImplDX11_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-}
-
 /**
  * 여러 GUI창들의 Update(Frame)에서 생성된 렌더링 명령들을 GPU에 전달 (한번에)
  * 그래서 업데이트와 렌더링 로직은 Update에 있지만 실제 렌더링은 Render에서 이루어진다.
@@ -237,7 +226,13 @@ void MGUIManager::Render()
 
 	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
 	{
-		it->second->Render();
+		if (const auto& ptr = it->second)
+		{
+			if (ptr->bIsWindowOpen)
+			{
+				ptr->Render();
+			}
+		}
 	}
 }
 
@@ -258,5 +253,9 @@ void MGUIManager::ScaleAllSize(float InScale)
 
 Ptr<GUI_Inspector> MGUIManager::GetInspector() const
 {
-	return std::dynamic_pointer_cast<GUI_Inspector>(mStaticGUI[2]);
+	if (mStaticGUI[2].expired())
+	{
+		return nullptr;
+	}
+	return std::dynamic_pointer_cast<GUI_Inspector>(mStaticGUI[2].lock());
 }

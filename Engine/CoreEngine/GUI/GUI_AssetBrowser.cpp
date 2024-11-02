@@ -1,7 +1,11 @@
 ﻿#include "GUI_AssetBrowser.h"
 
+#include "MGUIManager.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"
+#include "Editor/Actor/GUI_Editor_Actor.h"
+#include "Editor/Mesh/GUI_Editor_Mesh.h"
 
 
 GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
@@ -32,8 +36,9 @@ void GUI_AssetBrowser::Initialize()
 {
 	GUI_Base::Initialize();
 
-	g_IconList.FileIcon   = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/AssetIcons/Actor_64x.png");
-	g_IconList.FolderIcon = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
+	g_IconList.FileIcon     = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Actor_64x.png");
+	g_IconList.FolderIcon   = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
+	g_IconList.MaterialIcon = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
 
 	SetMultiFlagOptions();
 }
@@ -183,12 +188,24 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			if (ImGui::MenuItem("New Folder"))
 			{
 				// 코드를 추가하여 새 폴더 생성을 처리
-
+				fs::create_directory(mCurrentDirectory + L"/NewFolder");
 			}
-			if (ImGui::MenuItem("New File"))
+			if (ImGui::BeginMenu("New File"))
 			{
-				// 코드를 추가하여 새 파일 생성을 처리
+				if (ImGui::MenuItem("Actor"))
+				{
+					JText newActorPath = WString2String(mCurrentDirectory) + "/NewActor.jasset";
+
+					// TODO: 액터 에디터 열기
+					MGUIManager::Get().CreateOrLoad<GUI_Editor_Actor>(newActorPath);
+				}
+				if (ImGui::MenuItem("Material"))
+				{
+					// TODO: 머티리얼 에디터 열기
+				}
+				ImGui::EndMenu();
 			}
+
 		}
 		ImGui::EndPopup();
 
@@ -303,7 +320,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 						mCurrentDirectory = itemData->FilePath;
 						break;
 					case EFileType::Asset: // 에셋 창 열기(너무 복잡, 그냥 DragDrop만 가능하도록 수정)
-						
+						ParseAsset(itemData);
 						break;
 					}
 				}
@@ -331,7 +348,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 	ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
 }
 
-void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, JText ItemPath)
+void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, const JText& ItemPath)
 {
 	if (ImGui::BeginDragDropSource())
 	{
@@ -340,14 +357,7 @@ void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, JText ItemPath)
 		if (ImGui::GetDragDropPayload() == NULL)
 		{
 			ImVector<JText> payload_items;
-			void*           it = NULL;
-			ImGuiID         id = 0;
 			payload_items.push_back(ItemPath);
-			// if (!bIsItemSelected)
-			// 	payload_items.push_back(ItemPath);
-			// else
-			// 	while (mSelection.GetNextSelectedItem(&it, &id))
-			// 		payload_items.push_back(id);
 			ImGui::SetDragDropPayload("ASSETS_BROWSER_ITEMS",
 									  ItemPath.c_str(),
 									  ItemPath.size() + 1);
@@ -356,7 +366,7 @@ void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, JText ItemPath)
 		// Display payload content in tooltip, by extracting it from the payload data
 		// (we could read from selection, but it is more correct and reusable to read from payload)
 		const ImGuiPayload* payload       = ImGui::GetDragDropPayload();
-		const int           payload_count = (int)payload->DataSize / (int)sizeof(JText);
+		const int           payload_count = static_cast<int>(payload->DataSize) / static_cast<int>(sizeof(JText));
 		ImGui::Text("%d assets", payload_count);
 
 		ImGui::EndDragDropSource();
@@ -368,28 +378,55 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 	// Rendering parameters
 	bool bItemIsVisible = ImGui::IsRectVisible(mLayoutItemSize);
 
-	const ImU32 iconBgColor   = ImGui::GetColorU32(ImGuiCol_MenuBarBg);
+	const ImU32 iconBgColor   = ImGui::GetColorU32(ImGuiCol_WindowBg);	// 아이콘 배경색은 창 배경색과 동일 (이게 더 깔끔)
 	const bool  bDisplayLabel = (mLayoutItemSize.x >= ImGui::CalcTextSize("999").x);
 
-	// Render icon (a real app would likely display an image/thumbnail here)
-	// Because we use ImGuiMultiSelectFlags_BoxSelect2d, clipping vertical may occasionally be larger, so we coarse-clip our rendering as well.
+	// 자, 여기에 아이콘을 그리는 코드를 작성하면 된다.
 	if (bItemIsVisible)
 	{
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		// ImGui에서 제공하는 DrawList는 PrimitiveType들을 그리는데에 도움을 받을 수 있다. (물론 ImGui창 내에서만)
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-		ImVec2 box_min(pos.x - 1, pos.y - 1);
-		ImVec2 box_max(box_min.x + mLayoutItemSize.x + 2, box_min.y + mLayoutItemSize.y + 2); // Dubious
-		draw_list->AddRectFilled(box_min, box_max, iconBgColor); // Background color
+		// Box 경계를 결정
+		ImVec2 boxMin(pos.x - 1, pos.y - 1);
+		ImVec2 boxMax(boxMin.x + mLayoutItemSize.x + 2, boxMin.y + mLayoutItemSize.y + 2); // Dubious
 
-		// if (itemData->GetType() != 0)
+		// 사각형으로 아이콘 배경을 그린다. 
+		drawList->AddRectFilled(boxMin, boxMax, iconBgColor, 5);
+
+		JAssetMetaData metaData = Utils::Serialization::GetType(itemData->FilePath.string().c_str());
+		if (metaData.AssetType == StringHash("JActor"))
 		{
-			draw_list->AddImage(
-								itemData->FileType == EFileType::Folder
-									? g_IconList.FolderIcon->GetSRV()
-									: g_IconList.FileIcon->GetSRV(),
-								box_min + ImVec2(2, 2),
-								box_max - ImVec2(2, 2));
+			drawList->AddImage(g_IconList.FileIcon->GetSRV(),
+							   boxMin + ImVec2(2, 2),
+							   boxMax - ImVec2(2, 2));
 		}
+		else if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
+		{
+			drawList->AddImage(g_IconList.MaterialIcon->GetSRV(),
+							   boxMin + ImVec2(2, 2),
+							   boxMax - ImVec2(2, 2));
+		}
+
+		switch (itemData->FileType)
+		{
+		case EFileType::Folder:
+			drawList->AddImage(
+							   g_IconList.FolderIcon->GetSRV(),
+							   boxMin + ImVec2(2, 2),
+							   boxMax - ImVec2(2, 2));
+			break;
+		case EFileType::Asset:
+			break;
+		}
+
+		// drawList->AddImage(
+		// 				   itemData->FileType == EFileType::Folder
+		// 					   ? g_IconList.FolderIcon->GetSRV()
+		// 					   : g_IconList.FileIcon->GetSRV(),
+		// 				   boxMin + ImVec2(2, 2),
+		// 				   boxMax - ImVec2(2, 2));
+
 
 		// if (bShowTypeOverlay /*&& item_data->GetType() != 0*/)
 		// {
@@ -409,9 +446,9 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 			else
 			{
 				ImU32 label_col = ImGui::GetColorU32(bIsItemSelected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-				draw_list->AddText(ImVec2(box_min.x, box_max.y - ImGui::GetFontSize()),
-								   label_col,
-								   WString2String(itemData->FileName).c_str());
+				drawList->AddText(ImVec2(boxMin.x, boxMax.y - ImGui::GetFontSize()),
+								  label_col,
+								  WString2String(itemData->FileName).c_str());
 			}
 
 		}
@@ -508,4 +545,24 @@ void GUI_AssetBrowser::HandleFile()
 			mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
 		}
 	}
+}
+
+void GUI_AssetBrowser::ParseAsset(FBasicFilePreview* ItemData)
+{
+	JText fullFileName = ItemData->FilePath.string();
+
+	const JAssetMetaData metaData = Utils::Serialization::GetType(fullFileName.c_str());
+
+	uint32_t assetType = metaData.AssetType;
+
+	if (assetType == HASH_ASSET_TYPE_STATIC_MESH)
+	{
+		LOG_CORE_INFO("Static Mesh");
+		MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName);
+	}
+	else if (assetType == HASH_ASSET_TYPE_MATERIAL)
+	{
+		LOG_CORE_INFO("Material");
+	}
+
 }

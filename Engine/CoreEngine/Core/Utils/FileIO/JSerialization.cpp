@@ -8,10 +8,9 @@ namespace Utils::Serialization
 
 	JAssetMetaData GetType(const char* InFilePath)
 	{
-
 		std::ifstream archive(InFilePath, std::ios::binary);
 		if (!archive.is_open())
-			return JAssetMetaData();
+			return JAssetMetaData{};
 
 		JAssetHeader   header;
 		JAssetMetaData metaData;

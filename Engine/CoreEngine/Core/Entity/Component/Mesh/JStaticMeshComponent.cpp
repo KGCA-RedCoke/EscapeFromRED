@@ -33,3 +33,13 @@ void JStaticMeshComponent::Draw()
 	// Child SceneComponent Draw 호출
 	JSceneComponent::Draw();
 }
+
+void JStaticMeshComponent::DrawID(uint32_t ID)
+{
+	if (mMeshObject)
+	{
+		mMeshObject->DrawID(ID);
+	}
+	
+	JSceneComponent::DrawID(ID);
+}

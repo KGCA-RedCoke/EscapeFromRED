@@ -1,7 +1,6 @@
 #pragma once
 #include "MathUtility.h"
 
-
 struct FColor;
 
 // float 0.f - 1.f
@@ -20,11 +19,13 @@ struct FLinearColor
 		float RGBA[4];
 	};
 
+	static FLinearColor Alpha;
 	static FLinearColor White;
 	static FLinearColor White_HalfAlpha;
 	static FLinearColor Red;
 	static FLinearColor Green;
 	static FLinearColor Blue;
+	static FLinearColor TrueBlack;
 	static FLinearColor Gray;
 	static FLinearColor Lynch;
 	static FLinearColor WhiteSmoke;
@@ -42,6 +43,7 @@ struct FLinearColor
 	static FLinearColor Black;
 	static FLinearColor Yellow;
 	static FLinearColor YellowGreen;
+	static FLinearColor Studio;
 	static FLinearColor Cyan;
 	static FLinearColor Magenta;
 
@@ -192,10 +194,9 @@ struct FLinearColor
 	inline bool Equals(const FLinearColor& Other, float Tolerance = M_KINDA_SMALL_NUMBER) const
 	{
 		return FMath::Abs(this->R - Other.R) < Tolerance && FMath::Abs(this->G - Other.G) < Tolerance &&
-		FMath::Abs(this->B - Other.B) < Tolerance && FMath::Abs(this->A - Other.A) < Tolerance;
+				FMath::Abs(this->B - Other.B) < Tolerance && FMath::Abs(this->A - Other.A) < Tolerance;
 	}
 };
-
 
 // uint 0- 255
 struct FColor

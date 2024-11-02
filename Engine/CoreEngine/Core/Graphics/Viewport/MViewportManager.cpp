@@ -48,14 +48,71 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 	depthBuffer = nullptr;
 }
 
+FViewportData::FViewportData(const JText& InName, const FVector2& InSize)
+	: FViewportData(InName, InSize.x, InSize.y) {}
+
 MViewportManager::MViewportManager()
 {
 	Initialize_Internal();
 }
 
+void FViewportData::Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight)
+{
+	// 1. 기존 뷰 해제
+	RTV               = nullptr;
+	SRV               = nullptr;
+	RTV_2D            = nullptr;
+	DepthStencilView  = nullptr;
+	DepthStencilState = nullptr;
+
+	Create(InDevice, InWidth, InHeight);
+
+	OnViewportResized.Execute();
+}
+
+void FViewportData::Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight)
+{
+	// ------------------------- RenderTarget -------------------------
+	ComPtr<ID3D11Texture2D> texBuffer;
+	Utils::DX::CreateRenderTarget(InDevice,
+								  InWidth,
+								  InHeight,
+								  RTV.GetAddressOf(),
+								  SRV.GetAddressOf(),
+								  texBuffer.GetAddressOf());
+
+	// ------------------------- Viewport -------------------------
+	Utils::DX::CreateViewport(InWidth, InHeight, &ViewportDesc);
+
+	// ------------------------- DepthBuffer & Depth Stencil View ------------------	-------
+	ComPtr<ID3D11Texture2D> depthBuffer;
+	Utils::DX::CreateDepthStencilView(
+									  InDevice,
+									  InWidth,
+									  InHeight,
+									  DepthStencilView.GetAddressOf(),
+									  depthBuffer.GetAddressOf());
+
+	// ------------------------- Depth Stencil State -------------------------
+	Utils::DX::CreateDepthStencilState(InDevice,
+									   true,
+									   D3D11_DEPTH_WRITE_MASK_ALL,
+									   D3D11_COMPARISON_LESS_EQUAL,
+									   DepthStencilState.GetAddressOf());
+
+
+	// 2D Side RenderTarget (DWrite)
+	Utils::DX::CreateD2DRenderTarget(IManager.RenderManager->Get2DFactory(),
+									 texBuffer.Get(),
+									 RTV_2D.GetAddressOf());
+
+	texBuffer   = nullptr;
+	depthBuffer = nullptr;
+}
+
 void MViewportManager::Initialize_Internal()
 {
-	CreateOrLoad(Name_Editor_Viewport, 1280 , 720 );
+	CreateOrLoad(Name_Editor_Viewport, 1280, 720);
 }
 
 void MViewportManager::ResizeViewport(JTextView InViewportName,
@@ -74,7 +131,7 @@ void MViewportManager::ResizeViewport(JTextView InViewportName,
 
 void MViewportManager::SetRenderTarget(JTextView InViewportName, const FLinearColor& InClearColor)
 {
-	uint32_t stringHash = StringHash(InViewportName.data());
+	uint32_t stringHash = StringHash(ParseFile(InViewportName.data()).c_str());
 
 	assert(mManagedList.contains(stringHash), "Invalid viewport ID");
 

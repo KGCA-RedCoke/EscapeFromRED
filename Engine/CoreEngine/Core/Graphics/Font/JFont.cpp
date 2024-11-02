@@ -12,7 +12,8 @@ JFont::JFont(ID2D1RenderTarget* InRenderTarget)
 	  mFontStretch(DWRITE_FONT_STRETCH_NORMAL),
 	  mFontSize(18),
 	  mBrushColor({0, 0, 0, 1})
-{}
+{
+}
 
 JFont::~JFont() {}
 

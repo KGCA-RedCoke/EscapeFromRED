@@ -63,15 +63,20 @@ void Application::Initialize()
 	IManager.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 MManagerInterface.cpp 참조)
 
 	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
-	mFpsText = std::make_unique<JFont>(IManager.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
+	auto viewportPtr = IManager.ViewportManager->FetchResource(Name_Editor_Viewport);
+	assert(viewportPtr);
+	viewportPtr->OnViewportResized.Bind([&](){
+		mFpsText->SetRenderTarget(IManager.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
+	});
+	mFpsText = MakeUPtr<JFont>();
 	mFpsText->Initialize();
-	mFpsText->SetFontSize(48);
-	mFpsText->SetColor(FLinearColor::Orange);
-	mFpsText->SetScreenPosition({25, 25});
+	mFpsText->SetFontSize(36);
+	mFpsText->SetColor(FLinearColor::Gallary);
+	mFpsText->SetScreenPosition({5, 5});
 
 	Actors.reserve(10);
 
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Cone.jasset");
+	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Sphere.jasset");
 	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
 	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
 	sampleActor->Initialize();
@@ -79,7 +84,7 @@ void Application::Initialize()
 	swordComponent->AttachToActor(sampleActor);
 	Actors.push_back(sampleActor);
 
-	sampleActor->SetLocalLocation({0, 0, 0});
+	sampleActor->SetLocalLocation({10, 0, 0});
 }
 
 void Application::Run()
@@ -117,9 +122,10 @@ void Application::Update(float DeltaTime)
 
 void Application::Render()
 {
-	IManager.RenderManager->ClearColor(FLinearColor::EbonyClay);
+	IManager.RenderManager->ClearColor(FLinearColor::Black);
 
 	IManager.Render(); // GUI Render
+	
 
 	for (int32_t i = 0; i < Actors.size(); ++i)
 	{

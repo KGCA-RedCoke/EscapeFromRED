@@ -81,6 +81,18 @@ void JSceneComponent::Draw()
 	}
 }
 
+void JSceneComponent::DrawID(uint32_t ID)
+{
+
+	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
+	{
+		if (auto childComp = mChildSceneComponents[i].lock())
+		{
+			childComp->DrawID(ID);
+		}
+	}
+}
+
 void JSceneComponent::AddChildSceneComponent(const Ptr<JSceneComponent>& Ptr)
 {
 	mChildSceneComponents.push_back(Ptr);

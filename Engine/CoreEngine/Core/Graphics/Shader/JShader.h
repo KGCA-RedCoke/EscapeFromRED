@@ -5,6 +5,7 @@
 
 constexpr const char* NAME_SHADER_BASIC  = "Shader/Basic.hlsl";
 constexpr const char* NAME_SHADER_GNOMON = "Shader/Gnomon.hlsl";
+constexpr const char* NAME_SHADER_ID     = "Shader/FBMP.hlsl";
 
 const uint32_t HASH_SHADER_BASIC  = StringHash(NAME_SHADER_BASIC);
 const uint32_t HASH_SHADER_GNOMON = StringHash(NAME_SHADER_GNOMON);
@@ -109,8 +110,11 @@ private:
 
 public:
 	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
+	void SetTargetCamera(const Ptr<class JCamera>& InCamera) { mTargetCamera = InCamera; }
 
 protected:
 	JWText      mShaderFile;
 	FShaderData mShaderData;
+
+	Ptr<class JCamera> mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
 };

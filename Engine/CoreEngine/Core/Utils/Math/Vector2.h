@@ -29,6 +29,7 @@ namespace JMath
 		TVector2(POINT InPoint);
 		// explicit TVector2(const TVector<float>& V);
 		TVector2& operator=(const DirectX::XMVECTORF32& F);
+		TVector2& operator=(const ImVec2& V);
 		operator DirectX::XMVECTOR() const { return XMLoadFloat2(this); }
 
 		inline TVector2 operator+(const TVector2& V) const;
@@ -44,7 +45,9 @@ namespace JMath
 		TVector2        operator/(float Scale) const;
 
 		bool operator==(const TVector2& V) const;
+		bool operator==(const ImVec2& V) const;
 		bool operator!=(const TVector2& V) const;
+		bool operator!=(const ImVec2& V) const;
 
 		inline bool operator<(const TVector2& Other) const;
 		inline bool operator<=(const TVector2& Other) const;

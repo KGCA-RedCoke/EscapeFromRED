@@ -8,11 +8,13 @@ constexpr FLinearColor::FLinearColor(const FColor& Color)
 	  A(static_cast<float>(Color.A) * (1.0f / 255.0f))
 {}
 
+FLinearColor FLinearColor::Alpha(1, 1, 1, 0);
 FLinearColor FLinearColor::White(1, 1, 1, 1);
 FLinearColor FLinearColor::White_HalfAlpha(1, 1, 1, .5);
 FLinearColor FLinearColor::Red(1, 0, 0, 1);
 FLinearColor FLinearColor::Green(0, 1, 0, 1);
 FLinearColor FLinearColor::Blue(0, 0, 1, 1);
+FLinearColor FLinearColor::TrueBlack(0, 0, 0, 1);
 FLinearColor FLinearColor::Gray        = FColor(189, 195, 199, 1);
 FLinearColor FLinearColor::Black       = FColor(189, 195, 199, 1);
 FLinearColor FLinearColor::Lynch       = FColor(108, 122, 137);
@@ -30,6 +32,7 @@ FLinearColor FLinearColor::EbonyClay   = FColor(34, 49, 63);
 FLinearColor FLinearColor::GreenPea    = FColor(22, 69, 62);
 FLinearColor FLinearColor::Yellow      = FColor(1, 1, 0, 1);
 FLinearColor FLinearColor::YellowGreen = FColor(0.603f, 0.803f, 0.196f, 1);
+FLinearColor FLinearColor::Studio      = FColor(142, 68, 173, 1);
 FLinearColor FLinearColor::Cyan        = FColor(0, 1, 1, 1);
 FLinearColor FLinearColor::Magenta     = FColor(1, 0, 1, 1);
 

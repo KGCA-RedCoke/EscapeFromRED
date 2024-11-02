@@ -26,6 +26,7 @@ public:
 	void Render() override;
 	void PostRender() override;
 	void Draw() override;
+	void DrawID(uint32_t ID) override {};
 #pragma endregion
 
 public:

@@ -1,11 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "GUI_Base.h"
-#include "Core/Graphics/Texture/MTextureManager.h"
-#include "Core/Interface/MManagerInterface.h"
-// #include "Core/Texture/MTextureManager.h"
 
-class JTexture;
 namespace fs = std::filesystem;
 
 enum class EFileType : uint8_t
@@ -52,34 +48,60 @@ struct AssetSelectionWithDeletion : ImGuiSelectionBasicStorage
 	}
 
 	template <typename ItemType>
-	void ApplyDeletionPostLoop(ImGuiMultiSelectIO* MultiSelectIo, std::vector<ItemType>& Items,
-							   int                 CurrentItemIndexToSelect)
+	void ApplyDeletionPostLoop(ImGuiMultiSelectIO* MultiSelectIo, JArray<ItemType>& Items,
+							   const int32_t       CurrentItemIndexToSelect)
 	{
 		// Rewrite item list (delete items) + convert old selection index (before deletion) to new selection index (after selection).
 		// If NavId was not part of selection, we will stay on same item.
-		std::vector<ItemType> new_items;
-		new_items.reserve(Items.size() - Size);
-		int item_next_idx_to_select = -1;
+		JArray<ItemType> newItems;	// 업데이트 될 아이템 리스트
+		newItems.reserve(Items.size() - Size);	// 새로운 아이템 리스트의 크기를 (기존 아이템 리스트 크기 - 선택된 아이템(삭제할) 크기)로 설정
+
+		int nextItemIndexToSelect = -1;	// 삭제된 아이템 다음에 선택될 아이템 인덱스
+
+		// 다음 선택될 아이템 인덱스를 찾아보자. 일단 순회하자.
 		for (int idx = 0; idx < Items.size(); idx++)
 		{
+			// 삭제되려고 선택된 아이템이 아니라면 새로운 아이템 리스트에 추가
 			if (!Contains(GetStorageIdFromIndex(idx)))
-				new_items.push_back(Items[idx]);
+			{
+				newItems.push_back(Items[idx]);
+			}
+			// 아이템들은 모두 디렉터리 / 파일이므로 실제로 삭제해준다.
+			else
+			{
+				switch (Items[idx].FileType)
+				{
+				case EFileType::Folder:
+					fs::remove_all(Items[idx].FilePath);
+					break;
+				case EFileType::Asset:
+					fs::remove(Items[idx].FilePath);
+					break;
+				default:
+					break;
+				}
+			}
+
+			// 삭제되려고 선택된 아이템이라면 다음 선택될 아이템 인덱스를 이전 인덱스 값으로 설정
 			if (CurrentItemIndexToSelect == idx)
-				item_next_idx_to_select = new_items.size() - 1;
+			{
+				nextItemIndexToSelect = newItems.size() - 1;
+			}
 		}
-		Items.swap(new_items);
+		Items.swap(newItems);
 
 		// Update selection
 		Clear();
-		if (item_next_idx_to_select != -1 && MultiSelectIo->NavIdSelected)
-			SetItemSelected(GetStorageIdFromIndex(item_next_idx_to_select), true);
+		if (nextItemIndexToSelect != -1 && MultiSelectIo->NavIdSelected)
+			SetItemSelected(GetStorageIdFromIndex(nextItemIndexToSelect), true);
 	}
 };
 
 struct AssetBrowserIconList
 {
-	Ptr<JTexture> FolderIcon;
-	Ptr<JTexture> FileIcon;
+	Ptr<class JTexture> FolderIcon;
+	Ptr<JTexture>       FileIcon;
+	Ptr<JTexture>       MaterialIcon;
 };
 
 struct FBasicFilePreview
@@ -108,12 +130,13 @@ private:
 	void SetMultiFlagOptions();
 	void UpdateLayoutSizes(float InAvailWidth);
 	void UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImVec2 startPos, int currentItemIndexToFocus);
-	void UpdateDragDrop(bool bIsItemSelected, JText ItemPath);
+	void UpdateDragDrop(bool bIsItemSelected, const JText& ItemPath);
 	void UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData) const;
 	void UpdateZoom(ImVec2 startPos, float availableWidth);
 	void UpdateProgressBar() const;
 
 	void HandleFile();
+	void ParseAsset(FBasicFilePreview* ItemData);
 
 private:
 	float mIconHitSpacing;

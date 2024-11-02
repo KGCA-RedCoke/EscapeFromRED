@@ -43,7 +43,22 @@ enum class EMaterialParamValue : uint8_t
 	String,
 	Texture2D,
 	TextureCube,
-	TextureVolume
+	TextureVolume,
+
+	Max
+};
+
+constexpr const char* HASH_MATERIAL_PARAM_VALUE_TYPE[] = {
+	"Boolean",
+	"Integer",
+	"Float",
+	"Float2",
+	"Float3",
+	"Float4",
+	"String",
+	"Texture2D",
+	"TextureCube",
+	"TextureVolume"
 };
 
 /**

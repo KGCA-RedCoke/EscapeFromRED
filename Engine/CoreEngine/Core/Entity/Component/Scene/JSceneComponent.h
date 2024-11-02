@@ -32,6 +32,7 @@ public:
 	void Render() override {};
 	void PostRender() override {};
 	void Draw() override;
+	void DrawID(uint32_t ID) override;
 
 public:
 	FORCEINLINE [[nodiscard]] FMatrix GetWorldMatrix() const { return mWorldMat; }
@@ -52,6 +53,7 @@ public:
 	void SetLocalScale(const FVector& InScale) { mLocalScale = InScale; }
 
 	void SetParentSceneComponent(const Ptr<JSceneComponent>& Ptr) { mParentSceneComponent = Ptr; }
+	JArray<WPtr<JSceneComponent>>& GetChildSceneComponents() { return mChildSceneComponents; }
 	void AddChildSceneComponent(const Ptr<JSceneComponent>& Ptr);
 
 	/**
@@ -100,4 +102,6 @@ protected:
 	FMatrix mLocalRotationMat = FMatrix::Identity;
 	FMatrix mLocalScaleMat    = FMatrix::Identity;
 	FMatrix mLocalMat         = FMatrix::Identity;
+
+	friend class GUI_Editor_Actor;
 };

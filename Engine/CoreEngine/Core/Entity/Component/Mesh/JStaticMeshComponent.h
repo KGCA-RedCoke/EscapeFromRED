@@ -20,6 +20,7 @@ public:
 	void Tick(float DeltaTime) override;
 
 	void Draw() override;
+	void DrawID(uint32_t ID) override;
 
 public:
 	FORCEINLINE void             SetMeshObject(const Ptr<JMeshObject>& InMeshObject) { mMeshObject = InMeshObject; }

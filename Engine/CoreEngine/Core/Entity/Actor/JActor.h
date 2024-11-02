@@ -28,8 +28,8 @@ public:
 protected:
 	Ptr<JSceneComponent> mRootComponent;
 
-	WPtr<JActor>        mParentActor;
-	JArray<Ptr<JActor>> mChildActors;
-
+	WPtr<JActor>             mParentActor;
+	JArray<Ptr<JActor>>      mChildActors;
 	JArray<JActorComponent*> mActorComponents;
+
 };

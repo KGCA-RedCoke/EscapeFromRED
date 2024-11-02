@@ -6,11 +6,15 @@ class JShader_Basic;
 
 class MShaderManager : public Manager_Base<JShader, MShaderManager>
 {
+public:
+	void UpdateCamera(const Ptr<class JCamera>& InCameraObj) const;
+
 private:
 	void Initialize_Initialize();
 
 public:
 	Ptr<JShader> BasicShader;
+	Ptr<JShader> IDShader;
 
 #pragma region Singleton Boilerplate
 

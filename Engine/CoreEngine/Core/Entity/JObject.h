@@ -89,7 +89,7 @@ public:
 
 	[[nodiscard]] FORCEINLINE JText        GetName() const { return mName; }
 	[[nodiscard]] FORCEINLINE Ptr<JObject> GetParentObject() const { return mParentObj.lock(); }
-	[[nodiscard]] FORCEINLINE size_t       GetChildCount() const { return mChildObjs.empty() ? mChildObjs.size() : 0; }
+	[[nodiscard]] FORCEINLINE size_t       GetChildCount() const { return mChildObjs.empty() ? 0 : mChildObjs.size(); }
 
 protected:
 	JText    mName;

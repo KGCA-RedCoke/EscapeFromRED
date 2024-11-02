@@ -32,11 +32,11 @@ void MManagerInterface::Initialize()
 	MeshManager = &MMeshManager::Get();
 
 	MaterialManager = &MMaterialManager::Get();
-	MaterialManager->SaveEngineMaterials();
 
 	MaterialInstanceManager = &MMaterialInstanceManager::Get();
 
 	GUIManager = &MGUIManager::Get();
+	GUIManager->Initialize(RenderManager->GetDevice(), RenderManager->GetImmediateDeviceContext());
 
 	World = &GetWorld();
 
@@ -44,7 +44,6 @@ void MManagerInterface::Initialize()
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(Game/Mesh)"));
-	// SearchFiles_Recursive(std::filesystem::path(R"(Game/Mesh)"));
 }
 
 void MManagerInterface::Update(float DeltaTime)
@@ -63,7 +62,8 @@ void MManagerInterface::Render()
 	auto deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
-	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Blender_Grid_Gray);
+	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Studio);
+	ShaderManager->UpdateCamera(IManager.CameraManager->GetCurrentMainCam());
 
 	World->Draw();
 

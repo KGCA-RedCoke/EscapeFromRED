@@ -18,6 +18,7 @@ namespace CBuffer
 	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA                = "CameraConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_TIME                  = "WorldTimeConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL              = "BasicMaterialConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_COLOR_ID              = "ColorIDConstantBuffer";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_WORLD         = "World";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_VIEW          = "View";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_PROJ          = "Projection";
@@ -468,18 +469,6 @@ struct JVertexData final : public ISerializable
 	JArray<T>            VertexArray;
 	JArray<uint32_t>     IndexArray;
 	JArray<FTriangle<T>> TriangleList;
-
-	Ptr<JVertexData<T>> Clone()
-	{
-		Ptr<JVertexData<T>> clone = MakePtr<JVertexData<T>>();
-
-		clone->FaceCount    = FaceCount;
-		clone->VertexArray  = VertexArray;
-		clone->IndexArray   = IndexArray;
-		clone->TriangleList = TriangleList;
-
-		return clone;
-	}
 
 	uint32_t GetType() const override
 	{

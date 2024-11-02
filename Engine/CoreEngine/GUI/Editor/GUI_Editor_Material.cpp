@@ -7,34 +7,19 @@
 
 
 GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
-	: GUI_Base(InTitle),
+	: GUI_Editor_Base(InTitle),
 	  bOpenFileBrowser(false),
 	  bOpenFolder(false),
-	  mFilePath{"Game/Materials"},
-	  mDeltaTime(0)
+	  mFilePath{"Game/Materials"}
 {
-	mWindowFlags |= ImGuiWindowFlags_MenuBar;
-
-	// 1. 뷰포트를 생성
-	mViewport = IManager.ViewportManager->CreateOrLoad(mTitle, 1280, 720);
-	assert(mViewport);
-
-	// 2. 머티리얼 에디터 프리뷰에 사용될 카메라를 생성
-	mCamera = IManager.CameraManager->CreateOrLoad(InTitle);
-	assert(mCamera);
-
 	SetMeshObject("Sphere");
 }
 
 void GUI_Editor_Material::Render()
 {
-	// 렌더 타겟을 현재 뷰포트로 설정
-	IManager.ViewportManager->SetRenderTarget(mTitle.c_str());
+	using Super = GUI_Editor_Base;
 
-	// 구체는 원점에 유지시키고 카메라 위치만 업데이트 시켜준다.
-	// mPreviewMeshObject->UpdateBuffer(FMatrix::Identity, mCamera);
-
-	// mMaterialToEdit->UpdateCamera(IManager.RenderManager->GetImmediateDeviceContext(), mCamera);
+	Super::Render();
 
 	// 변경사항 적용 Draw
 	mPreviewMeshObject->Draw();
@@ -120,7 +105,7 @@ void GUI_Editor_Material::HandleFloat4Type(FMaterialParam& Param, uint32_t Index
 	color[3] = Param.Float4Value.w;
 	ImGui::SameLine();
 
-	ImGui::ColorEdit4("MyColor##3",
+	ImGui::ColorEdit4(Param.Name.c_str(),
 					  reinterpret_cast<float*>(&color),
 					  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
 	Param.Float4Value = FVector4{color[0], color[1], color[2], color[3]};
@@ -134,14 +119,13 @@ void GUI_Editor_Material::HandleFloat4Type(FMaterialParam& Param, uint32_t Index
 
 void GUI_Editor_Material::ShowMaterialEditor()
 {
-	ImGui::BeginChild("MaterialView", ImVec2(ImGui::GetContentRegionAvail().x * 0.6, 0), true);
+	ImGui::BeginChild("MaterialView", ImVec2(400, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border);
 
 	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
 
 	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
 	{
 		mCamera->Update(mDeltaTime);
-		// mMaterialToEdit->UpdateCamera()
 	}
 
 	ImGui::EndChild();
@@ -194,7 +178,6 @@ void GUI_Editor_Material::ShowMaterialEditor()
 			ImGui::EndCombo();
 		}
 	}
-
 
 	if (ImGui::CollapsingHeader("Shader Params"))
 	{
@@ -343,23 +326,41 @@ void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 		ImGui::OpenPopup("NewParamPopup");
 		if (ImGui::BeginPopup("NewParamPopup"))
 		{
+			// Name Slot
 			static char paramName[256];
 			ImGui::InputText("Param Name", paramName, 256);
+
+			static uint8_t selectedType = 0; // 기본값을 원하는 초기 값으로 설정
+
+			// Type Slot
+			if (ImGui::BeginMenu("ParamType"))
+			{
+				for (uint8_t i = 0; i < static_cast<uint8_t>(EMaterialParamValue::Max); ++i)
+				{
+					if (ImGui::MenuItem(HASH_MATERIAL_PARAM_VALUE_TYPE[i], nullptr, selectedType == i))
+					{
+						selectedType = i; // 선택된 타입 업데이트
+					}
+				}
+				ImGui::EndMenu();
+			}
 
 			if (ImGui::Button("Add"))
 			{
 				FMaterialParam newParam;
-				newParam.Name       = paramName;
-				newParam.ParamValue = EMaterialParamValue::Float4;
-				newParam.Float4Value = FVector4{0.5f, 0.5f, 0.5f, 1.f};
+				newParam.Name           = paramName;
+				newParam.Key            = StringHash(paramName);
+				newParam.bInstanceParam = true;
+				newParam.ParamValue     = static_cast<EMaterialParamValue>(selectedType);
+				newParam.Float4Value    = FVector4::ZeroVector;
 
 				mMaterialToEdit->AddInstanceParam(newParam);
-				bOpenNewParamPopup = false;
 				ImGui::CloseCurrentPopup();
 				bOpenNewParamPopup = false;
 			}
 
 			ImGui::EndPopup();
+
 		}
 	}
 }

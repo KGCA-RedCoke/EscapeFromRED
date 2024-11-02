@@ -251,10 +251,10 @@ void JCamera::UpdateVelocity(float DeltaTime)
 
 	mCamSpeed = FMath::Clamp(
 							 IsKeyPressed(EKeyCode::LShift)
-								 ? mCamSpeed + DeltaTime * 5.f
-								 : mCamSpeed - DeltaTime * 5.f,
+								 ? mCamSpeed + DeltaTime * mCamSpeed
+								 : mCamSpeed - DeltaTime * mCamSpeed,
 							 1.f,
-							 10.f);
+							 50.f);
 
 
 	mVelocity *= mCamSpeed;
@@ -262,7 +262,7 @@ void JCamera::UpdateVelocity(float DeltaTime)
 
 void JCamera::UpdateRotation(float DeltaTime)
 {
-	if (IsKeyPressed(EKeyCode::LButton) || IsKeyPressed(EKeyCode::RButton))
+	if (IsKeyPressed(EKeyCode::RButton))
 	{
 		float fPercentOfNew = 1.0f / 2.f;
 		float fPercentOfOld = 1.0f - fPercentOfNew;

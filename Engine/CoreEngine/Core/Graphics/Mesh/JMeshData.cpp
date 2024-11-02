@@ -8,6 +8,7 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 {
 	Ptr<JMeshData> clonedMesh = MakePtr<JMeshData>();
 
+	// 이 값들은 그냥 l-value로 복사해도 무방하다.
 	clonedMesh->mName                  = mName;
 	clonedMesh->mIndex                 = mIndex;
 	clonedMesh->mClassType             = mClassType;
@@ -15,20 +16,28 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 	clonedMesh->mMaterialRefNum        = mMaterialRefNum;
 	clonedMesh->mInitialModelTransform = mInitialModelTransform;
 
+	// 부모 메시까지 같이 복사해야한다.
 	if (mParentMesh.lock())
 	{
 		Ptr<JMeshData> parentMesh = mParentMesh.lock();
 		clonedMesh->mParentMesh   = dynamic_pointer_cast<JMeshData>(parentMesh->Clone());
 	}
 
+	// 머티리얼은 복사하는게 아니라 인스턴스를 참조한다.
 	if (mMaterialInstance)
 	{
-		clonedMesh->mMaterialInstance = std::dynamic_pointer_cast<JMaterialInstance>(mMaterialInstance->Clone());
+		clonedMesh->mMaterialInstance = mMaterialInstance;
+	}
+	// 버텍스 데이터도 마찬가지로 참조한다. (공유하고 행렬데이터는 따로 관리된다)
+	if (mVertexData)
+	{
+		clonedMesh->mVertexData = mVertexData;
 	}
 
 	clonedMesh->mSubMesh.reserve(mSubMesh.size());
 	clonedMesh->mChildMesh.reserve(mChildMesh.size());
 
+	// 서브 메시와 자식 메시는 재귀적으로 확인
 	for (int32_t i = 0; i < mSubMesh.size(); ++i)
 	{
 		clonedMesh->mSubMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mSubMesh[i]->Clone()));
@@ -39,7 +48,6 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 		clonedMesh->mChildMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mChildMesh[i]->Clone()));
 	}
 
-	clonedMesh->mVertexData = std::dynamic_pointer_cast<JVertexData<Vertex::FVertexInfo_Base>>(mVertexData->Clone());
 
 	for (const auto& [boneName, bindPose] : mBindPoseMap)
 	{

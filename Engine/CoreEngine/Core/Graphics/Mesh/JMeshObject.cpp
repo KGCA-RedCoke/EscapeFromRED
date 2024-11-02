@@ -45,7 +45,7 @@ uint32_t JMeshObject::GetHash() const
 
 uint32_t JMeshObject::GetType() const
 {
-	return StringHash("J3DObject");
+	return HASH_ASSET_TYPE_STATIC_MESH;
 }
 
 bool JMeshObject::Serialize_Implement(std::ofstream& FileStream)
@@ -202,6 +202,62 @@ void JMeshObject::Draw()
 													   : ERasterState::CullNone);
 			IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
 			IManager.RenderManager->SetDepthStencilState(EDepthStencilState::DepthDefault);
+
+			deviceContext->DrawIndexed(indexNum, 0, 0);
+		}
+	}
+}
+
+void JMeshObject::DrawID(uint32_t ID)
+{
+	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	assert(deviceContext);
+
+	for (int32_t i = 0; i < mInstanceBuffer.size(); ++i)
+	{
+		auto& instanceBuffer = mInstanceBuffer[i];
+		auto& meshData       = mPrimitiveMeshData[i];
+		auto& subMeshes      = meshData->GetSubMesh();
+
+		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
+		{
+			uint32_t offset = 0;
+			int32_t  indexNum;
+
+			// Topology 설정
+			IManager.RenderManager->SetPrimitiveTopology(mPrimitiveType);
+
+			// 버퍼 설정
+			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
+			deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index[j].Get(), DXGI_FORMAT_R32_UINT, 0);
+
+			auto idShader = IManager.ShaderManager->IDShader;
+
+			auto cam = IManager.CameraManager->GetCurrentMainCam();
+
+			CBuffer::Space space;
+			space.Model      = XMMatrixTranspose(mWorldMatrix);
+			space.View       = XMMatrixTranspose(cam->GetViewMatrix());
+			space.Projection = XMMatrixTranspose(cam->GetProjMatrix());
+
+			idShader->UpdateConstantData(deviceContext,
+										 CBuffer::NAME_CONSTANT_BUFFER_SPACE,
+										 &space);
+
+			FVector4 color = Hash2Color(ID);
+			idShader->UpdateConstantData(deviceContext, CBuffer::NAME_CONSTANT_BUFFER_COLOR_ID, &color);
+			idShader->BindShaderPipeline(deviceContext);
+
+			if (subMeshes.empty())
+			{
+				indexNum = meshData->GetVertexData()->IndexArray.size();
+			}
+			else
+			{
+				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
+			}
+
+			IManager.RenderManager->SetBlendState(EBlendState::Opaque);
 
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}

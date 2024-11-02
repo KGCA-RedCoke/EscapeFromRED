@@ -85,3 +85,24 @@ namespace JMath
 		void Clamp(const TVector4& vmin, const TVector4& vmax, TVector4& result) const;
 	};
 }
+
+// ------------------------------------------------- Color ---------------------------------------------------------------
+inline JMath::TVector4 Hash2Color(const uint32_t InHash)
+{
+	float r = static_cast<float>(InHash & 0xFF) / 255.0f;
+	float g = static_cast<float>((InHash >> 8) & 0xFF) / 255.0f;
+	float b = static_cast<float>((InHash >> 16) & 0xFF) / 255.0f;
+	float a = static_cast<float>((InHash >> 24) & 0xFF) / 255.0f;
+
+	return JMath::TVector4(r, g, b, a);
+}
+
+inline uint32_t Color2Hash(const JMath::TVector4& Color)
+{
+	uint32_t r = static_cast<uint32_t>(Color.x * 255.0f);
+	uint32_t g = static_cast<uint32_t>(Color.y * 255.0f);
+	uint32_t b = static_cast<uint32_t>(Color.z * 255.0f);
+	uint32_t a = static_cast<uint32_t>(Color.w * 255.0f);
+
+	return (r | (g << 8) | (b << 16) | (a << 24));
+}

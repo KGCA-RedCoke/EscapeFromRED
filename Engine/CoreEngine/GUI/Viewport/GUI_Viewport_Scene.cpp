@@ -13,13 +13,14 @@ GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 
 void GUI_Viewport_Scene::Initialize()
 {
-	mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
+	// mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
 
 	mEditorCameraRef = IManager.CameraManager->FetchResource(L"EditorCamera");
 	assert(mEditorCameraRef);
 
 	mPauseIcon = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/PauseButton On@2x.png");
 	mPlayIcon  = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/PlayButton On@2x.png");
+
 }
 
 void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
@@ -32,9 +33,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 	{
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-		// if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSETS_BROWSER_ITEMS"))
 		{
-
 			const char* str = (const char*)payload->Data;
 
 			auto  metaData = Utils::Serialization::GetType(str);
@@ -45,7 +44,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 				auto newActor = MakePtr<JActor>();
 				newActor->Initialize();
 
-				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrLoad(str);
+				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrClone(str);
 				Ptr<JStaticMeshComponent> meshComponent = MakePtr<JStaticMeshComponent>(ParseFile(str));
 				meshComponent->SetMeshObject(mesh);
 				meshComponent->AttachToActor(newActor);

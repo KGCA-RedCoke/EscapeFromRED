@@ -1,7 +1,7 @@
 ﻿#pragma once
+#include "GUI_Editor_Base.h"
 #include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
-#include "GUI/GUI_Base.h"
 
 // Forward Declaration
 class JCamera;
@@ -13,7 +13,7 @@ class GUI_Viewport;
 /**
  * 머티리얼 에디터 
  */
-class GUI_Editor_Material : public GUI_Base
+class GUI_Editor_Material : public GUI_Editor_Base
 {
 public:
 	GUI_Editor_Material(const JText& InTitle);
@@ -46,9 +46,6 @@ private:
 
 	char mFilePath[256];
 
-	Ptr<JCamera>           mCamera;				// 뷰포트 카메라
-	Ptr<FViewportData>     mViewport;			// 뷰포트
 	Ptr<JMeshObject>       mPreviewMeshObject;	// 머티리얼 적용 표면
 	Ptr<JMaterialInstance> mMaterialToEdit;		// 머티리얼
-	float                  mDeltaTime;
 };

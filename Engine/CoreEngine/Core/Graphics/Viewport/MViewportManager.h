@@ -3,10 +3,15 @@
 #include "Core/Manager/Manager_Base.h"
 #include "Core/Utils/Math/Color.h"
 
-constexpr char Name_Editor_Viewport[] = "Editor Viewport";
+DECLARE_DYNAMIC_DELEGATE(FOnViewportResized);
+
+constexpr const char* Name_Editor_Viewport = "Editor Viewport";
 
 struct FViewportData
 {
+public:
+	FOnViewportResized OnViewportResized;
+
 public:
 	uint32_t                         Hash;
 	ComPtr<ID3D11RenderTargetView>   RTV;			// 렌더 타겟
@@ -17,8 +22,15 @@ public:
 	D3D11_VIEWPORT                   ViewportDesc;	// 뷰포트 정보
 
 public:
-	explicit FViewportData(const std::string& InName, uint32_t InWidth, uint32_t InHeight);
+	explicit FViewportData(const JText& InName, uint32_t InWidth, uint32_t InHeight);
+	explicit FViewportData(const JText& InName, const FVector2& InSize);
 	~FViewportData() = default;
+
+public:
+	void Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight);
+
+private:
+	void Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight);
 };
 
 class MViewportManager : public Manager_Base<FViewportData, MViewportManager>

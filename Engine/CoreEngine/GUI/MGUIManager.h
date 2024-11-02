@@ -24,12 +24,12 @@ enum class EGUIType : uint8_t
 class MGUIManager : public Manager_Base<GUI_Base, MGUIManager>
 {
 private:
-	void Initialize_Initialize();
+	void Initialize(class ID3D11Device* InDevice, class ID3D11DeviceContext* InDeviceContext);
 
 public:
-	void Update(float_t DeltaTime);
 	void Release();
 
+	void Update(float_t DeltaTime);
 	void Render();
 
 public:
@@ -50,19 +50,14 @@ private:
 
 	void UpdateMainMenuBar();
 
-	/**
-	 * 엔진 필수 GUI들을 업데이트
-	 */
-	void UpdateStaticGUI(float DeltaTime) const;
-
-	void UpdateEditorGUI(float DeltaTime) const;
+	void UpdateGUIs(float DeltaTime) const;
 
 private:
-	Ptr<GUI_Editor_Material>  mMaterialEditorRef;
-	Ptr<GUI_Editor_LandScape> mLandScapeEditorRef;
-	Ptr<GUI_Base>             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
-	bool                      bOpenFileBrowser;
-	bool                      bRenderWireFrame = false;
+	WPtr<GUI_Editor_Material>  mMaterialEditorRef;
+	WPtr<GUI_Editor_LandScape> mLandScapeEditorRef;
+	WPtr<GUI_Base>             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
+	bool                       bOpenFileBrowser;
+	bool                       bRenderWireFrame = false;
 
 #pragma region Singleton Boilerplate
 
