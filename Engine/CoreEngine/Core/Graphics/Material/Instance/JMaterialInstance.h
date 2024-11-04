@@ -31,9 +31,17 @@ public:
 	void            EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue);
 
 public:
-	FORCEINLINE JText   GetMaterialName() const { return ParseFile(mFileName); }
-	FORCEINLINE JText   GetMaterialPath() const { return mFileName; }
-	FORCEINLINE int32_t GetParamCount() const { return mInstanceParams.size(); }
+	FORCEINLINE JText    GetMaterialName() const { return ParseFile(mFileName); }
+	FORCEINLINE JText    GetMaterialPath() const { return mFileName; }
+	FORCEINLINE int32_t  GetParamCount() const { return mInstanceParams.size(); }
+	FORCEINLINE uint32_t GetInputLayoutSize() const
+	{
+		if (const auto ptr = mShader.lock())
+		{
+			return ptr->GetInputLayoutSize();
+		}
+		return 0;
+	}
 
 public:
 	void SetParentMaterial(const Ptr<JMaterial>& InParentMaterial);

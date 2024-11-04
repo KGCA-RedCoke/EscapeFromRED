@@ -43,7 +43,7 @@ void MManagerInterface::Initialize()
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
-	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(Game/Mesh)"));
+	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(Game/Mesh)"));
 }
 
 void MManagerInterface::Update(float DeltaTime)

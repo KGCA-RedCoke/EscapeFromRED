@@ -51,8 +51,9 @@ inline uint32_t StringHash(const wchar_t* InString)
 // ------------------------------------------- JHash Table ---------------------------------------------------------------
 const uint32_t JAssetHash = StringHash("JASSET\0");
 
-const uint32_t JActorHash                        = StringHash("JActor");
+const uint32_t HASH_ASSET_TYPE_Actor             = StringHash("JActor");
 const uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash("J3DObject");
+const uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash("JSkeletalMesh");
 const uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash("JMaterial");
 const uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash("JMaterialInstance");
 

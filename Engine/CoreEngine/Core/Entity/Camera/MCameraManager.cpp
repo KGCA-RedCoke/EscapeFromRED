@@ -14,17 +14,4 @@ void MCameraManager::Initialize_Internal()
 void MCameraManager::SetCurrentMainCam(JWTextView InName)
 {}
 
-void MCameraManager::SetCameraConstantBuffer(uint32_t InSlot, JCamera* InCamera) const
-{
-	if (InCamera)
-	{
-		InCamera->SetCameraConstantBuffer(InSlot);
-	}
-	else
-	{
-		assert(mCurrentCamera);
-		mCurrentCamera->SetCameraConstantBuffer(InSlot);
-	}
-}
-
 

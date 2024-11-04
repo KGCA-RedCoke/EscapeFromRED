@@ -29,6 +29,8 @@ struct FShaderData
 	ComPtr<ID3DBlob> DomainShaderBuf;
 	ComPtr<ID3DBlob> ComputeShaderBuf;
 
+	uint32_t VertexInputLayoutSize;
+
 	JArray<JConstantBuffer>  ConstantBuffers;
 	JHash<uint32_t, int32_t> ConstantBufferHashTable;
 };
@@ -110,6 +112,7 @@ private:
 
 public:
 	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
+	[[nodiscard]] FORCEINLINE uint32_t GetInputLayoutSize() const { return mShaderData.VertexInputLayoutSize; }
 	void SetTargetCamera(const Ptr<class JCamera>& InCamera) { mTargetCamera = InCamera; }
 
 protected:

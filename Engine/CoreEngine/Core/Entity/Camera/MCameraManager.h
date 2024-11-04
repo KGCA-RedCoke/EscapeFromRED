@@ -14,9 +14,6 @@ public:
 public:
 	void SetCurrentMainCam(JWTextView InName);
 
-public:
-	void SetCameraConstantBuffer(uint32_t InSlot = CBuffer::SLOT_CAMERA, JCamera* InCamera = nullptr) const;
-
 private:
 	Ptr<JCamera> mCurrentCamera;
 

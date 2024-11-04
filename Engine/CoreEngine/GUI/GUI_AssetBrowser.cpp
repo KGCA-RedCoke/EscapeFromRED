@@ -4,6 +4,7 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"
+#include "Editor/GUI_Editor_Material.h"
 #include "Editor/Actor/GUI_Editor_Actor.h"
 #include "Editor/Mesh/GUI_Editor_Mesh.h"
 
@@ -36,9 +37,11 @@ void GUI_AssetBrowser::Initialize()
 {
 	GUI_Base::Initialize();
 
-	g_IconList.FileIcon     = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Actor_64x.png");
-	g_IconList.FolderIcon   = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
-	g_IconList.MaterialIcon = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
+	g_IconList.FileIcon         = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Actor_64x.png");
+	g_IconList.FolderIcon       = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
+	g_IconList.StaticMeshIcon   = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/StaticMesh_64.png");
+	g_IconList.SkeletalMeshIcon = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Skeleton_64x.png");
+	g_IconList.MaterialIcon     = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
 
 	SetMultiFlagOptions();
 }
@@ -373,7 +376,7 @@ void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, const JText& ItemPat
 	}
 }
 
-void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData) const
+void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData)
 {
 	// Rendering parameters
 	bool bItemIsVisible = ImGui::IsRectVisible(mLayoutItemSize);
@@ -395,9 +398,21 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 		drawList->AddRectFilled(boxMin, boxMax, iconBgColor, 5);
 
 		JAssetMetaData metaData = Utils::Serialization::GetType(itemData->FilePath.string().c_str());
-		if (metaData.AssetType == StringHash("JActor"))
+		if (metaData.AssetType == HASH_ASSET_TYPE_Actor)
 		{
 			drawList->AddImage(g_IconList.FileIcon->GetSRV(),
+							   boxMin + ImVec2(2, 2),
+							   boxMax - ImVec2(2, 2));
+		}
+		else if (metaData.AssetType == HASH_ASSET_TYPE_STATIC_MESH)
+		{
+			drawList->AddImage(g_IconList.StaticMeshIcon->GetSRV(),
+							   boxMin + ImVec2(2, 2),
+							   boxMax - ImVec2(2, 2));
+		}
+		else if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
+		{
+			drawList->AddImage(g_IconList.SkeletalMeshIcon->GetSRV(),
 							   boxMin + ImVec2(2, 2),
 							   boxMax - ImVec2(2, 2));
 		}
@@ -420,40 +435,47 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 			break;
 		}
 
-		// drawList->AddImage(
-		// 				   itemData->FileType == EFileType::Folder
-		// 					   ? g_IconList.FolderIcon->GetSRV()
-		// 					   : g_IconList.FileIcon->GetSRV(),
-		// 				   boxMin + ImVec2(2, 2),
-		// 				   boxMax - ImVec2(2, 2));
-
-
-		// if (bShowTypeOverlay /*&& item_data->GetType() != 0*/)
-		// {
-		// 	ImU32 type_col = icon_type_overlay_colors[itemData->GetType() %
-		// 		IM_ARRAYSIZE(icon_type_overlay_colors)];
-		// 	draw_list->AddRectFilled(ImVec2(box_max.x - 2 - icon_type_overlay_size.x, box_min.y + 2),
-		// 							 ImVec2(box_max.x - 2, box_min.y + 2 + icon_type_overlay_size.y),
-		// 							 type_col);
-		// }
 		if (bDisplayLabel)
 		{
+			ImU32 label_col = ImGui::GetColorU32(bIsItemSelected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+
 			if (bRequestRename && bIsItemSelected)
 			{
-				char inputText[256];
-				ImGui::InputText("", inputText, 256);
+				// static JText renameBuffer;
+				//
+				// // 버퍼 초기화 (처음 rename 모드로 들어올 때 한 번만 초기화)
+				// if (renameBuffer.empty())
+				// {
+				// 	renameBuffer = WString2String(itemData->FileName);
+				// }
+				//
+				// // InputText로 텍스트 편집기 제공
+				// // ImGui::SetKeyboardFocusHere();  // 자동으로 포커스를 InputText로 설정
+				// if (ImGui::InputText("##RenameText",
+				// 					 renameBuffer.data(),
+				// 					 renameBuffer.size(),
+				// 					 ImGuiInputTextFlags_EnterReturnsTrue))
+				// {
+				// 	// Enter 키로 이름 변경 완료
+				// 	itemData->FileName = String2WString(renameBuffer);  // 변경한 이름을 적용
+				// 	bRequestRename     = false;  // 편집 모드 종료
+				// }
+				//
+				// // 편집을 취소하려면 esc 키 사용
+				// if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				// {
+				// 	bRequestRename  = false;  // 편집 모드 종료
+				// 	renameBuffer[0] = '\0';  // 버퍼 초기화
+				// }
 			}
 			else
 			{
-				ImU32 label_col = ImGui::GetColorU32(bIsItemSelected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 				drawList->AddText(ImVec2(boxMin.x, boxMax.y - ImGui::GetFontSize()),
 								  label_col,
 								  WString2String(itemData->FileName).c_str());
 			}
-
 		}
 	}
-
 }
 
 void GUI_AssetBrowser::UpdateZoom(ImVec2 startPos, float availableWidth)
@@ -540,9 +562,12 @@ void GUI_AssetBrowser::HandleFile()
 		{
 			mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Folder);
 		}
-		else if (!path.extension().empty() && path.extension() == ".jasset")
+		else if (!path.extension().empty())
 		{
-			mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
+			if (StringHash(path.extension().c_str()) == Hash_EXT_JASSET)
+			{
+				mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
+			}
 		}
 	}
 }
@@ -555,14 +580,29 @@ void GUI_AssetBrowser::ParseAsset(FBasicFilePreview* ItemData)
 
 	uint32_t assetType = metaData.AssetType;
 
-	if (assetType == HASH_ASSET_TYPE_STATIC_MESH)
+	if (assetType == HASH_ASSET_TYPE_STATIC_MESH || assetType == HASH_ASSET_TYPE_SKELETAL_MESH)
 	{
 		LOG_CORE_INFO("Static Mesh");
-		MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName);
+		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
 	}
-	else if (assetType == HASH_ASSET_TYPE_MATERIAL)
+	else if (assetType == HASH_ASSET_TYPE_MATERIAL || assetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
 	{
-		LOG_CORE_INFO("Material");
+		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+	}
+
+	else if
+	(assetType
+		==
+		HASH_ASSET_TYPE_Actor
+	)
+	{
+		LOG_CORE_INFO("Actor");
 	}
 
 }

@@ -16,7 +16,9 @@ private:
 
 private:
 	void DrawViewport() const;
+	void DrawProperty() const;
 	void DrawMaterialSlot() const;
+	void DrawSaveButton() const;
 
 private:
 	WPtr<class JMeshObject> mMeshObject;

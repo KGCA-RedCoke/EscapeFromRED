@@ -10,7 +10,10 @@ void JAnimBoneTrack::AddKey(float InTime, const FVector& InPosition, const FVect
 
 
 void JAnimBoneTrack::OptimizeKeys()
-{}
+{
+	SortKeys();
+	
+}
 
 void JAnimBoneTrack::OptimizeKey()
 {
@@ -37,6 +40,11 @@ void JAnimBoneTrack::SortKeys()
 }
 
 void JAnimBoneTrack::EndianSwap() {}
+
+bool JAnimBoneTrack::IsTrackEmpty() const
+{
+	return false;
+}
 
 JAnimationClip::JAnimationClip()
 {}
@@ -246,9 +254,29 @@ void JAnimationClip::TickAnim(const float DeltaSeconds)
 		}
 	}
 
-	
 
+}
 
+void JAnimationClip::OptimizeKeys()
+{
+	JArray<Ptr<JAnimBoneTrack>> optimizedTracks;
+	for (int32_t i = 0; i < mTracks.size(); ++i)
+	{
+		auto track = mTracks[i];
+
+		track->OptimizeKeys();
+		if (track->IsTrackEmpty())
+		{
+			// 트랙이 비어있으면 삭제 예약
+			track = nullptr;
+		}
+		else
+		{
+			optimizedTracks.push_back(track);
+		}
+	}
+
+	mTracks = optimizedTracks;
 }
 
 void JAnimationClip::AddTrack(const Ptr<JAnimBoneTrack>& Track)

@@ -11,7 +11,7 @@ cbuffer ColorIDConstantBuffer : register(b1)
 	float4 color;
 };
 
-struct VertexIn
+struct VertexIn_Base
 {
 	float3 Pos : POSITION;
 };
@@ -21,7 +21,7 @@ struct PixelInput
 	float4 Pos : SV_POSITION;
 };
 
-PixelInput VS(VertexIn Input)
+PixelInput VS(VertexIn_Base Input)
 {
 	PixelInput output;
 

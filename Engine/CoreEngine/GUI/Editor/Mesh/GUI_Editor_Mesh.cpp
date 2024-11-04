@@ -17,7 +17,10 @@ void GUI_Editor_Mesh::Render()
 
 	if (const auto& ptr = mMeshObject.lock())
 	{
+		ptr->UpdateBuffer();
 		ptr->Draw();
+
+		ptr->DrawBone();
 	}
 }
 
@@ -32,23 +35,18 @@ void GUI_Editor_Mesh::Update_Implementation(float DeltaTime)
 
 	DrawViewport();
 
+	DrawProperty();
+
 	DrawMaterialSlot();
 
-	ImGui::Separator();
-
-	if (ImGui::Button("Save"))
-	{
-		auto ptr = mMeshObject.lock();
-		if (ptr)
-		{
-			Utils::Serialization::Serialize(mTitle.c_str(), ptr.get());
-		}
-	}
+	DrawSaveButton();
 }
 
 void GUI_Editor_Mesh::DrawViewport() const
 {
-	if (ImGui::BeginChild("ActorView", ImVec2(400, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+
+
+	if (ImGui::BeginChild("ActorView", ImVec2(mWindowSize.x * 0.66f, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{
 		ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
 
@@ -59,13 +57,41 @@ void GUI_Editor_Mesh::DrawViewport() const
 				mCamera->Update(mDeltaTime);
 			}
 		}
-		ImGui::EndChild();
 	}
+	ImGui::EndChild();
+
+}
+
+void GUI_Editor_Mesh::DrawProperty() const
+{
+	ImGui::SameLine();
+
+	if (ImGui::BeginChild("Property",
+						  ImVec2(mWindowSize.x * 0.33f, 0),
+						  ImGuiChildFlags_AutoResizeX))
+	{
+		if (const auto& ptr = mMeshObject.lock())
+		{
+			// 원시 파일 경로 표시
+			ImGui::Text("Mesh Name");
+			ImGui::Text(&ptr->mName[0]);
+
+			// 메시 타입 표시
+			ImGui::Text("Mesh Type : ");
+			ImGui::SameLine();
+			ImGui::Text(ptr->mPrimitiveMeshData[0]->GetClassType() == EMeshType::Skeletal ? "Skeletal" : "Static");
+		}
+
+	}
+
+	// 창이 안보이는 경우 방지
+	ImVec2 size = ImGui::GetWindowSize();
+	if (size.x < 50 || size.y < 50)
+		ImGui::SetWindowSize(ImVec2(max(size.x, 50), max(size.y, 50)));
 }
 
 void GUI_Editor_Mesh::DrawMaterialSlot() const
 {
-	ImGui::SameLine();
 
 	if (const auto& ptr = mMeshObject.lock())
 	{
@@ -103,13 +129,14 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 
 				}
 
+				ImGui::SameLine();
 				if (materialSlot)
 				{
 					ImGui::Text(materialSlot->GetMaterialName().c_str());
 				}
 				else
 				{
-					ImGui::Text("NONE");
+					ImGui::Text("None Selected");
 				}
 
 
@@ -149,4 +176,22 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 
 		ImGui::EndGroup();
 	}
+
+}
+
+void GUI_Editor_Mesh::DrawSaveButton() const
+{
+	ImGui::Separator();
+
+	if (ImGui::Button("Save"))
+	{
+		auto ptr = mMeshObject.lock();
+		if (ptr)
+		{
+			Utils::Serialization::Serialize(mTitle.c_str(), ptr.get());
+		}
+	}
+	ImGui::EndChild();
+
+
 }

@@ -68,7 +68,17 @@ void XD3DDevice::ClearColor(const FLinearColor& InColor) const
 	mImmediateContext->ClearRenderTargetView(mRenderTargetView.Get(), InColor.RGBA);
 }
 
-void XD3DDevice::Present()
+void XD3DDevice::ClearCommandList()
+{
+	mRenderCommandList.clear();
+}
+
+void XD3DDevice::QueueCommand(const FRenderCommand& InCommandList)
+{
+	
+}
+
+void XD3DDevice::Draw()
 {
 	// 후면 버퍼 렌더
 	CheckResult(

@@ -137,7 +137,7 @@ void Application::Render()
 	mFpsText->Render();
 	mFpsText->PostRender();
 
-	IManager.RenderManager->Present();
+	IManager.RenderManager->Draw();
 }
 
 void Application::Release()

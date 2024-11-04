@@ -201,6 +201,7 @@ void JShader::LoadShaderReflectionData()
 	CheckResult(pixelShaderReflection->GetDesc(&pixelShaderDesc));
 
 	// ---------------------------------------------- Input Layout 생성 ----------------------------------------------
+	mShaderData.VertexInputLayoutSize = 0;
 	JArray<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
 	for (int32_t i = 0; i < vertexShaderDesc.InputParameters; ++i)
 	{
@@ -225,6 +226,8 @@ void JShader::LoadShaderReflectionData()
 				elementDesc.Format = DXGI_FORMAT_R32_SINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+
+			mShaderData.VertexInputLayoutSize += 4;
 		} // 1 Byte
 		else if (paramDesc.Mask <= 3)
 		{
@@ -234,6 +237,8 @@ void JShader::LoadShaderReflectionData()
 				elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+
+			mShaderData.VertexInputLayoutSize += 8;
 		}	// 2 Byte
 		else if (paramDesc.Mask <= 7)
 		{
@@ -243,6 +248,8 @@ void JShader::LoadShaderReflectionData()
 				elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+
+			mShaderData.VertexInputLayoutSize += 12;
 		}	// 3 Byte
 		else if (paramDesc.Mask <= 15)
 		{
@@ -252,6 +259,8 @@ void JShader::LoadShaderReflectionData()
 				elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+			mShaderData.VertexInputLayoutSize += 16;
 		} // 4 Byte
 		inputLayoutDesc.push_back(elementDesc);
 	}

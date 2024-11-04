@@ -1,14 +1,16 @@
 ﻿#include "JMeshObject.h"
+
+#include <ranges>
+
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
 
-JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData)
+JMeshObject::JMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 	: mName(InName),
-	  mVertexSize(sizeof(Vertex::FVertexInfo_Base)),
-	  mIndexSize(sizeof(uint32_t))
+	  mVertexSize(sizeof(Vertex::FVertexInfo_Base))
 {
 	if (InData.empty())
 	{
@@ -24,17 +26,25 @@ JMeshObject::JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>&
 	}
 }
 
-JMeshObject::JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
+JMeshObject::JMeshObject(const JWText& InName, const JArray<Ptr<JMeshData>>& InData)
 	: JMeshObject(WString2String(InName), InData) {}
 
-Ptr<IManagedInterface> JMeshObject::Clone() const
+JMeshObject::JMeshObject(const JMeshObject& Other)
+	: mName(Other.mName),
+	  mInstanceBuffer(Other.mInstanceBuffer),
+	  mVertexSize(Other.mVertexSize)
 {
 	JArray<Ptr<JMeshData>> clonedData;
-	for (const auto& data : mPrimitiveMeshData)
+	for (const auto& data : Other.mPrimitiveMeshData)
 	{
 		clonedData.push_back(std::dynamic_pointer_cast<JMeshData>(data->Clone()));
 	}
-	Ptr<JMeshObject> cloned = MakePtr<JMeshObject>(mName, clonedData);
+	mPrimitiveMeshData = clonedData;
+}
+
+Ptr<IManagedInterface> JMeshObject::Clone() const
+{
+	auto cloned = MakePtr<JMeshObject>(*this);
 	return cloned;
 }
 
@@ -45,7 +55,7 @@ uint32_t JMeshObject::GetHash() const
 
 uint32_t JMeshObject::GetType() const
 {
-	return HASH_ASSET_TYPE_STATIC_MESH;
+	return bIsSkeletalMesh ? HASH_ASSET_TYPE_SKELETAL_MESH : HASH_ASSET_TYPE_STATIC_MESH;
 }
 
 bool JMeshObject::Serialize_Implement(std::ofstream& FileStream)
@@ -66,19 +76,20 @@ bool JMeshObject::Serialize_Implement(std::ofstream& FileStream)
 		mPrimitiveMeshData[i]->Serialize_Implement(FileStream);
 	}
 
-	// Model Data
-	Utils::Serialization::Serialize_Primitive(&mVertexSize, sizeof(mVertexSize), FileStream);
-	Utils::Serialization::Serialize_Primitive(&mIndexSize, sizeof(mIndexSize), FileStream);
-
 	return true;
 }
 
 bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 {
 	JAssetMetaData metaData;
-	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
+	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, HASH_ASSET_TYPE_STATIC_MESH))
 	{
-		return false;
+		// File pointer to header
+		InFileStream.seekg(sizeof(JAssetHeader), std::ios::beg);
+		if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, HASH_ASSET_TYPE_SKELETAL_MESH))
+		{
+			return false;
+		}
 	}
 
 	// Mesh Name
@@ -95,42 +106,47 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mPrimitiveMeshData.push_back(archivedData);
 	}
 
-	// Model Data
-	Utils::Serialization::DeSerialize_Primitive(&mVertexSize, sizeof(mVertexSize), InFileStream);
-	Utils::Serialization::DeSerialize_Primitive(&mIndexSize, sizeof(mIndexSize), InFileStream);
-
 	CreateBuffers();
 
 	return true;
 }
 
+/** 버퍼는 메모리에 올릴 때 한번만 생성되고 공유 */
 void JMeshObject::CreateBuffers()
 {
+	if (mInstanceBuffer.size() > 0)
+	{
+		return;
+	}
+
 	ID3D11Device* device = IManager.RenderManager->GetDevice();
 	assert(device);
 
 	const int32_t meshDataSize = mPrimitiveMeshData.size();
 
 	mInstanceBuffer.resize(meshDataSize);
+	mInstanceBuffer_Bone.resize(meshDataSize);
 
 	for (int32_t i = 0; i < meshDataSize; ++i)
 	{
-		auto& mesh           = mPrimitiveMeshData[i];
-		auto& instanceBuffer = mInstanceBuffer[i];
-		auto& subMeshes      = mesh->GetSubMesh();
+		auto& mesh                = mPrimitiveMeshData[i];
+		auto& instanceBuffer      = mInstanceBuffer[i];
+		auto& instanceBuffer_Bone = mInstanceBuffer_Bone[i];
+		auto& subMeshes           = mesh->GetSubMesh();
 
 		instanceBuffer.Resize(subMeshes.empty() ? 1 : subMeshes.size());
+		instanceBuffer_Bone.Resize(subMeshes.empty() ? 1 : subMeshes.size());
+
+		if (mesh->GetClassType() == EMeshType::Skeletal)
+		{
+			bIsSkeletalMesh = true;
+		}
 
 		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
 		{
 			auto& data = subMeshes.empty()
 							 ? mesh->GetVertexData()
 							 : subMeshes[j]->GetVertexData();
-
-			if (data->FaceCount == 0)
-			{
-				continue;
-			}
 
 			// Vertex 버퍼 생성
 			Utils::DX::CreateBuffer(device,
@@ -144,9 +160,33 @@ void JMeshObject::CreateBuffers()
 			Utils::DX::CreateBuffer(device,
 									D3D11_BIND_INDEX_BUFFER,
 									reinterpret_cast<void**>(&data->IndexArray.at(0)),
-									mIndexSize,
+									SIZE_INDEX_BUFFER,
 									data->IndexArray.size(),
 									instanceBuffer.Buffer_Index[j].GetAddressOf());
+
+			if (mesh->GetClassType() == EMeshType::Skeletal)
+			{
+				// Bone 버퍼 생성
+				Utils::DX::CreateBuffer(device,
+										D3D11_BIND_SHADER_RESOURCE,
+										nullptr,
+										sizeof(FMatrix),
+										SIZE_MAX_BONE_NUM,
+										instanceBuffer_Bone.Buffer_Bone[j].GetAddressOf());
+
+				D3D11_SHADER_RESOURCE_VIEW_DESC boneSRVDesc;
+				ZeroMemory(&boneSRVDesc, sizeof(boneSRVDesc));
+				{
+					boneSRVDesc.Format               = DXGI_FORMAT_R32G32B32A32_FLOAT;	// 4x4 Matrix
+					boneSRVDesc.ViewDimension        = D3D11_SRV_DIMENSION_BUFFER;		// Buffer
+					boneSRVDesc.Buffer.ElementOffset = 0;
+					boneSRVDesc.Buffer.ElementWidth  = SIZE_MAX_BONE_NUM * 4;
+					device->CreateShaderResourceView(instanceBuffer_Bone.Buffer_Bone[j].Get(),
+													 &boneSRVDesc,
+													 instanceBuffer_Bone.Resource_Bone[j].GetAddressOf());
+				}
+			}
+
 		}
 	}
 }
@@ -157,6 +197,29 @@ void JMeshObject::Update(float DeltaTime)
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 {
 	mWorldMatrix = InWorldMatrix;
+
+	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	assert(deviceContext);
+
+	for (int32_t i = 0; i < mInstanceBuffer.size(); ++i)
+	{
+		auto& instanceBuffer = mInstanceBuffer[i];
+		if (bIsSkeletalMesh)
+		{
+			auto& boneBuffer = mInstanceBuffer_Bone[i];
+		}
+
+		auto& meshData  = mPrimitiveMeshData[i];
+		auto& subMeshes = meshData->GetSubMesh();
+
+		const bool bIsSkeletal = meshData->GetClassType() == EMeshType::Skeletal;
+
+		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
+		{
+			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+			currMesh->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
+		}
+	}
 }
 
 void JMeshObject::Draw()
@@ -172,28 +235,21 @@ void JMeshObject::Draw()
 
 		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
 		{
-			uint32_t offset   = 0;
-			int32_t  indexNum = 0;
+			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+
+			uint32_t offset = 0;
+
+			mVertexSize = currMesh->GetVertexData()->GetVertexSize();
 
 			// Topology 설정
-			IManager.RenderManager->SetPrimitiveTopology(mPrimitiveType);
+			IManager.RenderManager->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			currMesh->PassMaterial(deviceContext);
+			int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
 
 			// 버퍼 설정
 			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
 			deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index[j].Get(), DXGI_FORMAT_R32_UINT, 0);
-
-			if (subMeshes.empty())
-			{
-				meshData->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
-				meshData->PassMaterial(deviceContext);
-				indexNum = meshData->GetVertexData()->IndexArray.size();
-			}
-			else
-			{
-				subMeshes[j]->GetMaterialInstance()->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
-				subMeshes[j]->PassMaterial(deviceContext);
-				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
-			}
 
 			int32_t slots[2] = {0, 1};
 			IManager.RenderManager->SetSamplerState(ESamplerState::LinearWrap, slots, 2);
@@ -225,7 +281,7 @@ void JMeshObject::DrawID(uint32_t ID)
 			int32_t  indexNum;
 
 			// Topology 설정
-			IManager.RenderManager->SetPrimitiveTopology(mPrimitiveType);
+			IManager.RenderManager->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// 버퍼 설정
 			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
@@ -262,4 +318,81 @@ void JMeshObject::DrawID(uint32_t ID)
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
 	}
+}
+
+void JMeshObject::DrawBone()
+{
+	// if (!bIsSkeletalMesh)
+	// {
+	// 	// LOG_CORE_ERROR("This mesh object is not skeletal mesh.");
+	// 	return;
+	// }
+	// auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	// assert(deviceContext);
+	//
+	// for (int32_t i = 0; i < mInstanceBuffer.size(); ++i)
+	// {
+	// 	auto& meshData = mPrimitiveMeshData[i];
+	//
+	// 	const auto& pose = meshData->GetBindPoseMap();
+	//
+	// 	Ptr<JMeshObject> sphere = IManager.MeshManager->CreateOrClone("Game/Mesh/Sphere.jasset");
+	// 	if (sphere)
+	// 	{
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("root"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("pelvis"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("spine_01"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("spine_02"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("spine_03"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("neck_01"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("head"));
+	// 		sphere->Draw();
+	//
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("thigh_l"));
+	// 		sphere->Draw();
+	//
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("thigh_twist_01_l"));
+	// 		sphere->Draw();
+	//
+	//
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("calf_l"));
+	// 		sphere->Draw();
+	//
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("calf_twist_01_l"));
+	// 		sphere->Draw();
+	//
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("thigh_r"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("calf_r"));
+	// 		sphere->Draw();
+	// 		
+	// 		sphere->UpdateBuffer(mWorldMatrix  * pose.at("calf_twist_01_r"));
+	// 		sphere->Draw();
+	// 	}
+	// 	
+	// 	
+	// 	for (auto& mat : pose | std::views::values)
+	// 	{
+	// 		Ptr<JMeshObject> sphere = IManager.MeshManager->CreateOrClone("Game/Mesh/Sphere.jasset");
+	// 		if (sphere)
+	// 		{
+	// 			sphere->UpdateBuffer(mWorldMatrix  * mat);
+	// 			sphere->Draw();
+	// 		}
+	// 	}
+	//
+	// }
 }

@@ -2,10 +2,12 @@
 
 #include "Core/Graphics/Mesh/JMeshObject.h"
 
-JStaticMeshComponent::JStaticMeshComponent() {}
+JStaticMeshComponent::JStaticMeshComponent()
+{}
 
 JStaticMeshComponent::JStaticMeshComponent(JTextView InName)
-	: JSceneComponent(InName) {}
+	: JSceneComponent(InName)
+{}
 
 JStaticMeshComponent::~JStaticMeshComponent() {}
 
@@ -40,6 +42,6 @@ void JStaticMeshComponent::DrawID(uint32_t ID)
 	{
 		mMeshObject->DrawID(ID);
 	}
-	
+
 	JSceneComponent::DrawID(ID);
 }

@@ -12,6 +12,11 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	  bOpenFolder(false),
 	  mFilePath{"Game/Materials"}
 {
+	if (std::filesystem::exists(InTitle) && std::filesystem::is_regular_file(InTitle))
+	{
+		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad(InTitle);
+	}
+
 	SetMeshObject("Sphere");
 }
 
@@ -22,6 +27,7 @@ void GUI_Editor_Material::Render()
 	Super::Render();
 
 	// 변경사항 적용 Draw
+	mPreviewMeshObject->UpdateBuffer();
 	mPreviewMeshObject->Draw();
 }
 
@@ -50,8 +56,11 @@ void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 	assert(mPreviewMeshObject);
 
 	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
-	mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/NewMaterial.jasset");
-	assert(mMaterialToEdit);
+	if (!mMaterialToEdit)
+	{
+		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/NewMaterial.jasset");
+		assert(mMaterialToEdit);
+	}
 
 	mPreviewMeshObject->mPrimitiveMeshData[0]->mMaterialInstance = mMaterialToEdit;
 }

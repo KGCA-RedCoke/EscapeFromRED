@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include <directxtk/CommonStates.h>
+
+#include "ShaderStructs.h"
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Manager/Manager_Base.h"
 
@@ -51,8 +53,22 @@ public:
 	void Release();
 
 public:
+#pragma region RenderCommand
+	/**
+	 *  메인 렌더 타깃의 화면을 InColor로 채운다. (주의: 메인 렌더타깃은 화면 전체를 의미(현재 보이는 화면이 아님)한다.)
+	 * @param InColor 화면을 지울 색상 
+	 */
 	void ClearColor(const struct FLinearColor& InColor) const;
-	void Present();
+
+	void ClearCommandList();
+
+	void QueueCommand(const FRenderCommand& InCommandList);
+
+	/**
+	 * 최종 렌더링을 화면에 출력한다.
+	 */
+	void Draw();
+#pragma endregion
 
 public:
 	void SetPrimitiveTopology(const D3D11_PRIMITIVE_TOPOLOGY InTopology) const;
@@ -73,9 +89,7 @@ public:
 	FORCEINLINE ID2D1RenderTarget*      GetSurface1() const { return mRenderTarget_2D.Get(); }
 	FORCEINLINE CommonStates*           GetDXTKCommonStates() const { return mToolKitStates.get(); }
 	FORCEINLINE ID3D11RasterizerState*  GetRasterizerState() const { return mRasterizerState.Get(); }
-
-
-	FORCEINLINE static CHAR* GetVideoCardDesc() { return Get().mVideoCardDescription; }
+	FORCEINLINE CHAR*                   GetVideoCardDesc() { return mVideoCardDescription; }
 #pragma endregion
 
 private:
@@ -90,6 +104,9 @@ private:
 	void CleanResources();
 
 	void OnResize(uint32_t InWidth, uint32_t InHeight);
+
+private:
+	JArray<RenderCommandList> mRenderCommandList;
 
 private:
 	ComPtr<ID3D11Device>           mDevice;						/** 디바이스 포인터 (리소스 생성) */
@@ -109,6 +126,7 @@ private:
 	DXGI_SWAP_CHAIN_DESC1 mSwapChainDesc;             /** 스왑체인 구조체 */
 	D3D11_VIEWPORT        mViewport;                  /** 렌더링 뷰포트 */
 	CHAR                  mVideoCardDescription[128]; /** 비디오카드 상세 정보 */
+
 
 #pragma region Singleton Boilerplate
 

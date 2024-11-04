@@ -17,6 +17,7 @@ class JMeshObject : public IManagedInterface,
 public:
 	JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
 	JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
+	JMeshObject(const JMeshObject& Other);
 	~JMeshObject() override = default;
 
 public:
@@ -37,6 +38,7 @@ public:
 	void PostRender() override {}
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
+	void DrawBone();
 #pragma endregion
 
 private:
@@ -45,22 +47,25 @@ private:
 public:
 	void UpdateBuffer(const FMatrix& InWorldMatrix = FMatrix::Identity);
 
+public:
+	bool IsSkeletalMesh() const { return bIsSkeletalMesh; }
+
 private:
 	JText mName;
 
+	bool bIsSkeletalMesh = false;
+
 	// -------------------------------- Buffers --------------------------------------
-	JArray<Buffer::FBufferInstance> mInstanceBuffer;
+	JArray<Buffer::FBufferInstance>      mInstanceBuffer;
+	JArray<Buffer::FBufferInstance_Bone> mInstanceBuffer_Bone;
 
 	// ----------------------------- Model Primitive Data -----------------------------
 	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
 
 	// ----------------------------- Model Data -----------------------------
 	uint32_t mVertexSize;
-	uint32_t mIndexSize;
 
 	FMatrix mWorldMatrix = FMatrix::Identity;
-
-	D3D11_PRIMITIVE_TOPOLOGY mPrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 private:
 	friend class Utils::Fbx::FbxFile;

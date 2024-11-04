@@ -37,7 +37,7 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 
 					DrawTreeNode(sceneComp);
 
-					/*if (ImGui::CollapsingHeader(sceneComp->GetName().c_str()))
+					if (ImGui::CollapsingHeader(sceneComp->GetName().c_str()))
 					{
 						FVector location = sceneComp->GetLocalLocation();
 						FVector rotation = sceneComp->GetLocalRotation();
@@ -63,7 +63,7 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 							sceneComp->SetLocalRotation(rotation);
 							sceneComp->SetLocalScale(scale);
 						}
-					}*/
+					}
 				}
 			}
 		}

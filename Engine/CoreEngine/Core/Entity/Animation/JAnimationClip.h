@@ -43,6 +43,8 @@ struct JAnimBoneTrack
 	void SortKeys();
 	void EndianSwap();
 
+	bool IsTrackEmpty() const;
+
 	JText                 Name;				// 본(조인트) 이름
 	FAnimKeyDataTransform TransformKeys;	// 변환 행렬 데이터
 
@@ -75,6 +77,7 @@ public:
 	void TickAnim(const float DeltaSeconds);
 
 public:
+	void OptimizeKeys();
 	void AddTrack(const Ptr<JAnimBoneTrack>& Track);
 	void RemoveTrack(uint32_t Index);
 	void RemoveAllTracks();

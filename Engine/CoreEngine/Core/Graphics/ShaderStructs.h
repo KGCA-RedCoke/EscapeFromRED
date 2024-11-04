@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Utils/FileIO/JSerialization.h"
-#include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Utils/Math/Vector4.h"
+
+constexpr uint32_t SIZE_INDEX_BUFFER = sizeof(uint32_t);
+constexpr uint32_t SIZE_MAX_BONE_NUM = 255;
 
 /**
  * @brief 셰이더에서 사용하는 상수 버퍼 구조체
@@ -45,29 +47,6 @@ namespace CBuffer
 	const uint32_t HASH_CONSTANT_VARIABLE_LIGHT_COLOR         = StringHash(NAME_CONSTANT_VARIABLE_LIGHT_COLOR);
 	const uint32_t HASH_CONSTANT_VARIABLE_CAMERA_POS          = StringHash(NAME_CONSTANT_VARIABLE_CAMERA_POS);
 	const uint32_t HASH_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG = StringHash(NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG);
-
-	const JHash<const char*, uint32_t> ConstantBufferHashTable = {
-		{NAME_CONSTANT_BUFFER_SPACE, HASH_CONSTANT_BUFFER_SPACE},
-		{NAME_CONSTANT_BUFFER_LIGHT, HASH_CONSTANT_BUFFER_LIGHT},
-		{NAME_CONSTANT_BUFFER_CAMERA, HASH_CONSTANT_BUFFER_CAMERA},
-		{NAME_CONSTANT_BUFFER_TIME, HASH_CONSTANT_BUFFER_TIME},
-		{NAME_CONSTANT_BUFFER_MATERIAL, HASH_CONSTANT_BUFFER_MATERIAL},
-	};
-
-	const JHash<const char*, uint32_t> ConstantVariableHashTable = {
-		{NAME_CONSTANT_VARIABLE_SPACE_WORLD, HASH_CONSTANT_VARIABLE_SPACE_WORLD},
-		{NAME_CONSTANT_VARIABLE_SPACE_VIEW, HASH_CONSTANT_VARIABLE_SPACE_VIEW},
-		{NAME_CONSTANT_VARIABLE_SPACE_PROJ, HASH_CONSTANT_VARIABLE_SPACE_PROJ},
-		{NAME_CONSTANT_VARIABLE_LIGHT_POS, HASH_CONSTANT_VARIABLE_LIGHT_POS},
-		{NAME_CONSTANT_VARIABLE_LIGHT_COLOR, HASH_CONSTANT_VARIABLE_LIGHT_COLOR},
-		{NAME_CONSTANT_VARIABLE_CAMERA_POS, HASH_CONSTANT_VARIABLE_CAMERA_POS},
-	};
-
-	constexpr uint32_t SLOT_SPACE    = 0;
-	constexpr uint32_t SLOT_LIGHT    = 1;
-	constexpr uint32_t SLOT_CAMERA   = 2;
-	constexpr uint32_t SLOT_TIME     = 3;
-	constexpr uint32_t SLOT_MATERIAL = 4;
 
 	/**
 	 * Model, View, Projection
@@ -184,9 +163,11 @@ namespace Vertex
 
 	struct FVertexInfo_Base : public FVertexInfo_2D
 	{
-		FVector Normal;
-		FVector Tangent;
-		FVector Binormal;
+		FVector  Normal;
+		FVector  Tangent;
+		FVector  Binormal;
+		FVector4 BoneIndices = FVector4::ZeroVector;
+		FVector4 BoneWeights = FVector4::OneVector;
 
 		void Serialize_Implement(std::ofstream& FileStream)
 		{
@@ -199,6 +180,10 @@ namespace Vertex
 			FileStream.write(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
 			// Binormal
 			FileStream.write(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
+			// BoneIndices
+			FileStream.write(reinterpret_cast<char*>(&BoneIndices), sizeof(BoneIndices));
+			// BoneWeights
+			FileStream.write(reinterpret_cast<char*>(&BoneWeights), sizeof(BoneWeights));
 		}
 
 		void DeSerialize_Implement(std::ifstream& InFileStream)
@@ -212,30 +197,6 @@ namespace Vertex
 			InFileStream.read(reinterpret_cast<char*>(&Tangent), sizeof(Tangent));
 			// Binormal
 			InFileStream.read(reinterpret_cast<char*>(&Binormal), sizeof(Binormal));
-		}
-	};
-
-	struct FVertexInfo_Skeletal : public FVertexInfo_Base
-	{
-		FVector4 BoneIndices;
-		FVector4 BoneWeights;
-
-		void Serialize_Implement(std::ofstream& FileStream)
-		{
-			using Base = FVertexInfo_Base;
-			Base::Serialize_Implement(FileStream);
-
-			// BoneIndices
-			FileStream.write(reinterpret_cast<char*>(&BoneIndices), sizeof(BoneIndices));
-			// BoneWeights
-			FileStream.write(reinterpret_cast<char*>(&BoneWeights), sizeof(BoneWeights));
-		}
-
-		void DeSerialize_Implement(std::ifstream& InFileStream)
-		{
-			using Base = FVertexInfo_Base;
-			Base::DeSerialize_Implement(InFileStream);
-
 			// BoneIndices
 			InFileStream.read(reinterpret_cast<char*>(&BoneIndices), sizeof(BoneIndices));
 			// BoneWeights
@@ -247,121 +208,13 @@ namespace Vertex
 
 /**
  * @brief Basic Buffer 구조체
+ * Shader Reflection으로 셰이더 컴파일 할 때 이 버퍼들을 다 불러올 수 있다.
+ * 그러니까 따로 이렇게 구조체를 만들지 않아도 무방하나,
+ * 우리는 셰이더를 머티리얼을 통해서 접근해야하는데 그렇게 되면
+ * 머티리얼과 다른 개체관의 관계의 결합이 생기기 때문에 따로 구조체를 만들어 뒀다.
  */
 namespace Buffer
 {
-	/**
-	 * 상수 버퍼 묶음 (기본이 되는 버퍼)
-	 */
-	struct FBufferSpaceLightTime
-	{
-		// --------------------- 버퍼 ---------------------
-		ComPtr<ID3D11Buffer> CBuffer_Space;	// World, View, Projection
-		ComPtr<ID3D11Buffer> CBuffer_Light;	// Light Direction
-		ComPtr<ID3D11Buffer> CBuffer_Time;		// Time
-
-		// --------------------- 실제 버퍼에 넘길 데이터 ---------------------
-		CBuffer::Space Space;
-		CBuffer::Light Light;
-		CBuffer::Time  Time;
-
-		void CreateBuffer(ID3D11Device* InDevice)
-		{
-			// 상수 버퍼 생성 (WVP)
-			Utils::DX::CreateBuffer(InDevice,
-									D3D11_BIND_CONSTANT_BUFFER,
-									nullptr,
-									sizeof(CBuffer::Space),
-									1,
-									CBuffer_Space.GetAddressOf(),
-									D3D11_USAGE_DYNAMIC,
-									D3D11_CPU_ACCESS_WRITE);
-
-
-			// 상수 버퍼 생성 (World Directional Light)
-			Utils::DX::CreateBuffer(InDevice,
-									D3D11_BIND_CONSTANT_BUFFER,
-									nullptr,
-									sizeof(CBuffer::Light),
-									1,
-									CBuffer_Light.GetAddressOf(),
-									D3D11_USAGE_DYNAMIC,
-									D3D11_CPU_ACCESS_WRITE);
-
-			// 상수 버퍼 생성 (Time)
-			Utils::DX::CreateBuffer(InDevice,
-									D3D11_BIND_CONSTANT_BUFFER,
-									nullptr,
-									sizeof(CBuffer::Time),
-									1,
-									CBuffer_Time.GetAddressOf(),
-									D3D11_USAGE_DYNAMIC,
-									D3D11_CPU_ACCESS_WRITE);
-		}
-
-		void UpdateSpace(ID3D11DeviceContext* InDeviceContext, const FMatrix& InModel, const FMatrix& InView,
-						 const FMatrix&       InProjection)
-		{
-			if (CBuffer_Space == nullptr)
-			{
-				return;
-			}
-			Space.Model      = InModel;
-			Space.View       = InView;
-			Space.Projection = InProjection;
-
-			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
-										   CBuffer_Space.Get(),
-										   &Space,
-										   sizeof(CBuffer::Space));
-		}
-
-		void UpdateLight(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightPos, const FVector4& InLightColor)
-		{
-			if (CBuffer_Light == nullptr)
-			{
-				return;
-			}
-			Light.LightPos   = InLightPos;
-			Light.LightColor = InLightColor;
-
-			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
-										   CBuffer_Light.Get(),
-										   &Light,
-										   sizeof(CBuffer::Light));
-		}
-
-		void UpdateTime(ID3D11DeviceContext* InDeviceContext, const FVector4& InWorldTime)
-		{
-			if (CBuffer_Time == nullptr)
-			{
-				return;
-			}
-			Time.WorldTime = InWorldTime;
-
-			Utils::DX::UpdateDynamicBuffer(InDeviceContext,
-										   CBuffer_Time.Get(),
-										   &Time,
-										   sizeof(CBuffer::Time));
-		}
-
-		void PreRender(ID3D11DeviceContext* InDeviceContext)
-		{
-			// --------------------- Buffer Space ---------------------
-			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, CBuffer_Space.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_SPACE, 1, CBuffer_Space.GetAddressOf());
-
-			// --------------------- Buffer Light ---------------------
-			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_LIGHT, 1, CBuffer_Light.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_LIGHT, 1, CBuffer_Light.GetAddressOf());
-
-			// --------------------- Buffer Time ---------------------
-			InDeviceContext->VSSetConstantBuffers(CBuffer::SLOT_TIME, 1, CBuffer_Time.GetAddressOf());
-			InDeviceContext->PSSetConstantBuffers(CBuffer::SLOT_TIME, 1, CBuffer_Time.GetAddressOf());
-		}
-
-	};
-
 	// Landscape 버퍼 인스턴스
 	struct FBufferInstance_LandScape
 	{
@@ -385,8 +238,7 @@ namespace Buffer
 	struct FBufferInstance
 	{
 		JArray<ComPtr<ID3D11Buffer>> Buffer_Vertex;			// Vertex 
-		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;				// Index
-
+		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;			// Index
 
 		void Resize(const int32_t Size)
 		{
@@ -398,8 +250,38 @@ namespace Buffer
 		}
 	};
 
+	// Bone 버퍼 인스턴스
+	struct FBufferInstance_Bone
+	{
+		JArray<ComPtr<ID3D11Buffer>>             Buffer_Bone;	// Bone
+		JArray<ComPtr<ID3D11ShaderResourceView>> Resource_Bone;	// Bone
 
+		void Resize(const int32_t Size)
+		{
+			Buffer_Bone.clear();
+			Resource_Bone.clear();
+
+			Buffer_Bone.resize(Size);
+			Resource_Bone.resize(Size);
+		}
+	};
 }
+
+// 인스턴싱 버퍼 구조체
+struct FInstanceData
+{
+	FMatrix WorldMatrix;	// 각 인스턴스 별로 다른 월드 행렬
+
+	// Etc... 머티리얼
+};
+
+struct FRenderCommand
+{
+	void*         ObjectToRender;	// 렌더 대상 오브젝트
+	FInstanceData InstanceData;		// 인스턴싱 데이터
+};
+
+using RenderCommandList = JArray<FRenderCommand>;
 
 /**
  * 삼각형(정점)을 나타내는 데이터 구조체
@@ -473,6 +355,11 @@ struct JVertexData final : public ISerializable
 	uint32_t GetType() const override
 	{
 		return StringHash("VertexData");
+	}
+
+	static uint32_t GetVertexSize()
+	{
+		return sizeof(T);
 	}
 
 	bool Serialize_Implement(std::ofstream& FileStream) override

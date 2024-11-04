@@ -101,6 +101,8 @@ struct AssetBrowserIconList
 {
 	Ptr<class JTexture> FolderIcon;
 	Ptr<JTexture>       FileIcon;
+	Ptr<JTexture>       StaticMeshIcon;
+	Ptr<JTexture>       SkeletalMeshIcon;
 	Ptr<JTexture>       MaterialIcon;
 };
 
@@ -131,7 +133,7 @@ private:
 	void UpdateLayoutSizes(float InAvailWidth);
 	void UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImVec2 startPos, int currentItemIndexToFocus);
 	void UpdateDragDrop(bool bIsItemSelected, const JText& ItemPath);
-	void UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData) const;
+	void UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData);
 	void UpdateZoom(ImVec2 startPos, float availableWidth);
 	void UpdateProgressBar() const;
 

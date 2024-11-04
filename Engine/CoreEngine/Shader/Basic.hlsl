@@ -1,43 +1,74 @@
 #include "CommonConstantBuffers.hlslinc"
 #include "InputLayout.hlslinc"
-#include "Params.hlslinc"
-#include "ShaderUtils.hlslinc"
 
 Texture2D g_DiffuseTexture : register(t0);
 Texture2D g_NormalTexture : register(t1);
-Texture2D g_EmissiveTexture : register(t2);
-Texture2D g_SpecularTexture : register(t3);
-Texture2D g_ReflectionTexture : register(t4);
-Texture2D g_AmbientOcclusionTexture : register(t5);
-Texture2D g_DisplacementTexture : register(t6);
-Texture2D g_RoughnessTexture : register(t7);
-Texture2D g_MetallicTexture : register(t8);
+Texture2D g_AmbientOcclusionTexture : register(t2);
+Texture2D g_RoughnessTexture : register(t3);
+Texture2D g_MetallicTexture : register(t4);
+
+Buffer<float4> g_BoneTransforms : register(t5);
 
 SamplerState g_DiffuseSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
 
-PixelInput_Base VS(VertexIn Input)
+/**
+ * 버퍼로부터 본의 변환 행렬을 가져온다.
+ */
+float4x4 FetchBoneTransform(uint Bone)
+{
+	Bone *= 4;	// 4x4 행렬이므로 4를 곱해준다.
+	float4 row1 = g_BoneTransforms.Load(Bone + 0);	// 4x4 행렬의 첫번째 행
+	float4 row2 = g_BoneTransforms.Load(Bone + 1);	// 4x4 행렬의 두번째 행
+	float4 row3 = g_BoneTransforms.Load(Bone + 2);	// 4x4 행렬의 세번째 행
+	float4 row4 = g_BoneTransforms.Load(Bone + 3);	// 4x4 행렬의 네번째 행
+
+	float4x4 Matrix = float4x4(row1, row2, row3, row4);	// 4x4 행렬 생성
+	return Matrix;
+}
+
+PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 {
 	PixelInput_Base output;
 
-	output.Pos = float4(Input.Pos, 1.f);
+	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
+	float4 localPos = output.Pos;
+	float3 normal   = 1;
 
-	output.Pos = mul(output.Pos, World);
+	if (MeshFlags & FLAG_MESH_ANIMATED || MeshFlags & FLAG_MESH_SKINNED)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			uint  boneIndex = Input.BoneIndices[i];	// 본 인덱스
+			float weight    = Input.BoneWeights[i];	// 가중치
+
+			float4x4 boneTransform = FetchBoneTransform(boneIndex);	// 본의 변환 행렬을 가져온다.
+			output.Pos += mul(localPos, boneTransform) *
+					weight;	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치) 
+			normal += mul(Input.Normal, (float3x3)boneTransform) *
+					weight;	// normal(원래 메시 노말) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
+		}
+	}
+	else
+	{
+		normal = Input.Normal;
+	}
+
+	output.Pos     = mul(output.Pos, World);
+	float3 viewDir = WorldCameraPos.xyz - output.Pos.xyz;
+
 	output.Pos = mul(output.Pos, View);
 	output.Pos = mul(output.Pos, Projection);
 
-	// float3x3 normalMatrix = transpose(((float3x3)World));
-
-	float3 worldPos      = mul(Input.Pos, (float3x3)World);
-	float3 viewDir       = WorldCameraPos.xyz - worldPos.xyz;
-	float3 worldNormal   = mul(Input.Normal, (float3x3)World);
+	float3 worldNormal   = mul(normal, (float3x3)World);
 	float3 worldTangent  = mul(Input.Tangent, (float3x3)World);
 	float3 worldBinormal = mul(Input.Binormal, (float3x3)World);
 
-	output.Color    = Input.Color;
-	output.UV       = Input.UV;
-	output.ViewDir  = normalize(viewDir);
+	output.Color   = Input.Color;
+	output.UV      = Input.UV;
+	output.ViewDir = normalize(viewDir);
+
 	output.Normal   = normalize(worldNormal);
 	output.Tangent  = normalize(worldTangent);
 	output.Binormal = normalize(worldBinormal);

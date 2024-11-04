@@ -14,9 +14,7 @@ namespace Utils::Fbx
 enum class EMeshType : uint8_t
 {
 	Static = 0, // 정적 메시
-	Skeletal,   // 스켈레탈 메시
-	DUMMY, 		// 더미 메시
-	BIPED		// 바이패드 메시 (뭔지는 모르겠음 maya에서 관리하는것같음)
+	Skeletal   // 스켈레탈 메시
 };
 
 /**
@@ -39,6 +37,8 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const;
+
 	void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose);
 	void PassMaterial(ID3D11DeviceContext* InDeviceContext) const;
 
@@ -51,6 +51,7 @@ public:
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetSubMesh() const { return mSubMesh; }
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetChildMesh() const { return mChildMesh; }
 	[[nodiscard]] const Ptr<JVertexData<Vertex::FVertexInfo_Base>>& GetVertexData() const { return mVertexData; }
+	[[nodiscard]] const JHash<JText, FMatrix>& GetBindPoseMap() const { return mBindPoseMap; }
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
 	[[nodiscard]] Ptr<JMaterialInstance> GetMaterialInstance() const { return mMaterialInstance; }
 
@@ -92,15 +93,17 @@ private:
 	friend class GUI_Editor_Material;
 };
 
+class JSkeletalMesh : public JMeshData
+{};
 
 /**
  * Skin Mesh
  */
-class JSkinnedMeshData
+class JSkinData
 {
 public:
-	JSkinnedMeshData()  = default;
-	~JSkinnedMeshData() = default;
+	JSkinData() = default;
+	~JSkinData();
 
 public:
 	void Initialize();
@@ -109,7 +112,7 @@ public:
 	void AddInfluenceBone(const JText& InBoneName);
 	void AddBindPose(const JText& InBoneName, const FMatrix& InBindPose);
 	void AddInverseBindPose(const JText& InBoneName, const FMatrix& InInverseBindPose);
-	void AddWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight);
+	void AddWeight(int32_t InIndex, int32_t InBoneIndex, float InBoneWeight);
 
 	FORCEINLINE void SetVertexCount(int32_t InVertexCount) { mVertexCount = InVertexCount; }
 	FORCEINLINE void SetVertexStride(int32_t InVertexStride) { mVertexStride = InVertexStride; }
@@ -126,14 +129,15 @@ public:
 		return mInverseBindPoseMap.at(InBoneName);
 	}
 
-	[[nodiscard]] FORCEINLINE int32_t  GetVertexCount() const { return mVertexCount; }
-	[[nodiscard]] FORCEINLINE int32_t  GetVertexStride() const { return mVertexStride; }
-	[[nodiscard]] FORCEINLINE int32_t  GetBoneCount() const { return mInfluenceBones.size(); }
-	[[nodiscard]] FORCEINLINE uint32_t GetBoneIndex(int32_t InIndex) const { return mBoneIndices[InIndex]; }
-	[[nodiscard]] FORCEINLINE float    GetBoneWeight(int32_t InIndex) const { return mBoneWeights[InIndex]; }
+	[[nodiscard]] FORCEINLINE int32_t GetVertexCount() const { return mVertexCount; }
+	[[nodiscard]] FORCEINLINE int32_t GetVertexStride() const { return mVertexStride; }
+	[[nodiscard]] FORCEINLINE int32_t GetBoneCount() const { return mInfluenceBones.size(); }
+
+	uint32_t* GetBoneIndex(int32_t InIndex) const;
+	float*    GetBoneWeight(int32_t InIndex) const;
 
 public:
-	enum { MAX_BONE_INFLUENCES = 4 };
+	static int32_t MAX_BONE_INFLUENCES;
 
 private:
 	JArray<JText> mInfluenceBones;

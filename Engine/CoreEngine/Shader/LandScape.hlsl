@@ -1,7 +1,7 @@
 ﻿#include "CommonConstantBuffers.hlslinc"
 #include "CommonTextures.hlslinc"
 
-struct VertexIn
+struct VertexIn_Base
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
 	float2 UV : TEXCOORD0;	// UV 좌표
@@ -26,7 +26,7 @@ struct VertexOut
 	float3 Binormal : TEXCOORD5;
 };
 
-VertexOut VS(VertexIn Input)
+VertexOut VS(VertexIn_Base Input)
 {
 	VertexOut output;
 

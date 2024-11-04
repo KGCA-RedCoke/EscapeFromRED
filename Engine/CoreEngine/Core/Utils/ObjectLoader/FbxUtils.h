@@ -63,11 +63,9 @@ namespace Utils::Fbx
 	 */
 	struct FJointData
 	{
-		JText              Name;					// 조인트 이름
-		int32_t            ParentIndex = -1;		// 부모 본
-		FbxAMatrix         GlobalBindPoseInverse;	// 전역 바인드 포즈 역행렬
-		Ptr<FKeyFrameData> Animation = nullptr;	// 애니메이션 데이터
-		FbxNode*           Node      = nullptr;	// FbxNode
+		JText      Name;					// 조인트 이름
+		int32_t    ParentIndex = -1;		// 부모 본
+		FbxAMatrix GlobalBindPoseInverse;	// 전역 바인드 포즈 역행렬
 
 		FJointData()
 		{

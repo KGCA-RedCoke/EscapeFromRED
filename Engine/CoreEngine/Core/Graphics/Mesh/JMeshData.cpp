@@ -15,6 +15,7 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 	clonedMesh->mFaceCount             = mFaceCount;
 	clonedMesh->mMaterialRefNum        = mMaterialRefNum;
 	clonedMesh->mInitialModelTransform = mInitialModelTransform;
+	clonedMesh->mBindPoseMap           = mBindPoseMap;
 
 	// 부모 메시까지 같이 복사해야한다.
 	if (mParentMesh.lock())
@@ -48,11 +49,6 @@ Ptr<IManagedInterface> JMeshData::Clone() const
 		clonedMesh->mChildMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mChildMesh[i]->Clone()));
 	}
 
-
-	for (const auto& [boneName, bindPose] : mBindPoseMap)
-	{
-		clonedMesh->mBindPoseMap.try_emplace(boneName, bindPose);
-	}
 
 	return clonedMesh;
 }
@@ -118,6 +114,16 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 		Utils::Serialization::Serialize_Text(path, FileStream);
 	}
 
+	// Bind Pose
+	int32_t bindPoseSize = mBindPoseMap.size();
+	Utils::Serialization::Serialize_Primitive(&bindPoseSize, sizeof(bindPoseSize), FileStream);
+	for (auto& bindPose : mBindPoseMap)
+	{
+		JText name = bindPose.first;
+		Utils::Serialization::Serialize_Text(name, FileStream);
+		Utils::Serialization::Serialize_Primitive(&bindPose.second, sizeof(bindPose.second), FileStream);
+	}
+
 	// Initial Transform
 	Utils::Serialization::Serialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), FileStream);
 
@@ -181,11 +187,27 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 		mMaterialInstance = MMaterialInstanceManager::Get().CreateOrLoad(path);
 	}
 
+	// Bind Pose
+	int32_t bindPoseSize;
+	Utils::Serialization::DeSerialize_Primitive(&bindPoseSize, sizeof(bindPoseSize), InFileStream);
+	for (int32_t i = 0; i < bindPoseSize; ++i)
+	{
+		JText name;
+		Utils::Serialization::DeSerialize_Text(name, InFileStream);
+		FMatrix bindPose;
+		Utils::Serialization::DeSerialize_Primitive(&bindPose, sizeof(bindPose), InFileStream);
+		mBindPoseMap.try_emplace(name, bindPose);
+	}
 
 	// Initial Transform
 	Utils::Serialization::DeSerialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), InFileStream);
 
 	return true;
+}
+
+void JMeshData::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const
+{
+	mMaterialInstance->UpdateWorldMatrix(InDeviceContext, InWorldMatrix);
 }
 
 void JMeshData::AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose)
@@ -198,23 +220,33 @@ void JMeshData::PassMaterial(ID3D11DeviceContext* InDeviceContext) const
 	mMaterialInstance->BindMaterial(InDeviceContext);
 }
 
-void JSkinnedMeshData::Initialize()
+JSkinData::~JSkinData()
+{
+	mBoneIndices = nullptr;
+	mBoneWeights = nullptr;
+}
+
+void JSkinData::Initialize()
 {
 	if (mVertexCount == 0 || mVertexStride == 0)
 	{
 		return;
 	}
 
+	/// 버퍼의 사이즈는 몇이 될까?
+	/// 영향을 받는 정점 갯수 * (영향을 받는 본의 최대 갯수(8)) 
 	const int32_t bufferSize = mVertexCount * mVertexStride;
 
-	mBoneIndices.reset(new uint32_t[bufferSize]);
-	mBoneWeights.reset(new float[bufferSize]);
+	mBoneIndices = MakeUPtr<uint32_t[]>(bufferSize);
+	mBoneWeights = MakeUPtr<float[]>(bufferSize);
 
-	ZeroMemory(mBoneIndices.get(), sizeof(float) * bufferSize);
+	ZeroMemory(mBoneIndices.get(), sizeof(uint32_t) * bufferSize);
 	ZeroMemory(mBoneWeights.get(), sizeof(float) * bufferSize);
 }
 
-void JSkinnedMeshData::Initialize(int32_t InVertexCount, int32_t InVertexStride)
+int32_t JSkinData::MAX_BONE_INFLUENCES = 0;
+
+void JSkinData::Initialize(int32_t InVertexCount, int32_t InVertexStride)
 {
 	SetVertexCount(InVertexCount);
 	SetVertexStride(InVertexStride);
@@ -222,20 +254,60 @@ void JSkinnedMeshData::Initialize(int32_t InVertexCount, int32_t InVertexStride)
 	Initialize();
 }
 
-void JSkinnedMeshData::AddInfluenceBone(const JText& InBoneName)
+void JSkinData::AddInfluenceBone(const JText& InBoneName)
 {
 	mInfluenceBones.push_back(InBoneName);
 }
 
-void JSkinnedMeshData::AddBindPose(const JText& InBoneName, const FMatrix& InBindPose)
+void JSkinData::AddBindPose(const JText& InBoneName, const FMatrix& InBindPose)
 {
 	mBindPoseMap.try_emplace(InBoneName, InBindPose);
 }
 
-void JSkinnedMeshData::AddInverseBindPose(const JText& InBoneName, const FMatrix& InInverseBindPose)
+void JSkinData::AddInverseBindPose(const JText& InBoneName, const FMatrix& InInverseBindPose)
 {
 	mInverseBindPoseMap.try_emplace(InBoneName, InInverseBindPose);
 }
 
-void JSkinnedMeshData::AddWeight(int32_t InIndex, uint32_t InBoneIndex, float InBoneWeight)
-{}
+
+void JSkinData::AddWeight(int32_t InIndex, int32_t InBoneIndex, float InBoneWeight)
+{
+	assert(InBoneIndex < 256);
+
+	auto indices = GetBoneIndex(InIndex);
+	auto weights = GetBoneWeight(InIndex);
+
+	for (int32_t i = 0; i < mVertexStride; ++i)
+	{
+		if (InBoneWeight > weights[i])
+		{
+			for (int32_t j = mVertexStride - 1; j > i; --j)
+			{
+				indices[j] = indices[j - 1];
+				weights[j] = weights[j - 1];
+			}
+			indices[i] = InBoneIndex;
+			weights[i] = InBoneWeight;
+			break;
+		}
+
+		if (MAX_BONE_INFLUENCES < i)
+		{
+			MAX_BONE_INFLUENCES = i;
+		}
+	}
+}
+
+uint32_t* JSkinData::GetBoneIndex(int32_t InIndex) const
+{
+	assert(InIndex < mVertexCount);
+
+	return mBoneIndices.get() + InIndex * mVertexStride;
+}
+
+float* JSkinData::GetBoneWeight(int32_t InIndex) const
+{
+	assert(InIndex < mVertexCount);
+
+	return mBoneWeights.get() + InIndex * mVertexStride;
+}

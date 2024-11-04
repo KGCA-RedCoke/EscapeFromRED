@@ -4,8 +4,7 @@
 #include "FbxUtils.h"
 #include "Core/Utils/Math/TMatrix.h"
 
-class JSkinnedMeshData;
-class JSkeletalMesh;
+class JSkinData;
 class JMeshData;
 class JMaterial;
 
@@ -28,6 +27,7 @@ namespace Utils::Fbx
 	public:
 		/** Importer, Scene 생성 */
 		void Initialize(const char* InFilePath);
+
 		/** 존재하는 모든 fbx sdk destroy (프로세스 종료 전에 호출) */
 		void Release_Internal() const;
 
@@ -39,6 +39,7 @@ namespace Utils::Fbx
 		 * @param InFilePath 파일 경로
 		 */
 		bool Load(const char* InFilePath);
+		
 		/**
 		 * FBX 파일을 파싱하여 Raw 데이터로 변환
 		 * FIXME: 인덱스 버퍼를 생성하는 과정에서 시간이 많이 소요됨 최적화 필요
@@ -94,18 +95,17 @@ namespace Utils::Fbx
 		 * @param InMesh 메시노드 
 		 * @param InSkinData 메시 스킨 데이터
 		 */
-		void ParseMeshSkin(const FbxMesh* InMesh, JSkinnedMeshData* InSkinData);
+		void ParseMeshSkin(const FbxMesh* InMesh, JSkinData* InSkinData);
 
 		/// ---------------------------- Step3. 애니메이션 정보를 파싱 ----------------------------
 		/// Check List
 		///  스켈레톤 정보가 있나?
 		/// 스켈레톤이 있을 때만 애니메이션 정보를 파싱한다.
 		void ParseAnimation(FbxScene* InScene);
+		
+		void ParseAnimationStack(FbxScene* Scene, FbxString* AnimStackName);
 
-
-		void ParseAnimationStack(FbxScene* Scene, FbxString* Buffer);
-
-		void ParseAnimNode(FbxNode* InNode, int32_t InParentIndex);
+		void ParseAnimNode(FbxNode* InNode, int32_t InParentIndex, bool bSkeletalAnim = false);
 
 		/**
 		 * 메시의 레이어들을 분석하여 파싱한다.
@@ -118,8 +118,8 @@ namespace Utils::Fbx
 		 */
 		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData);
 
-		void CaptureBindPoseMatrix(JSkinnedMeshData* Ptr, const FbxNode* Joint,
-								   const FbxAMatrix& InBindPosMat);
+		void CaptureBindPoseMatrix(JSkinData*        Ptr, const FbxNode* Joint,
+								   const FbxMatrix& InBindPosMat);
 
 		void CaptureAnimation(const std::shared_ptr<JAnimationClip>& Ptr, FbxScene* Scene);
 
@@ -129,6 +129,7 @@ namespace Utils::Fbx
 		FbxImporter* mFbxImporter;
 		FbxScene*    mFbxScene;
 
+		bool          bHasSkeleton = false;
 		FSkeletonData mSkeletonData;
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
 		JArray<Ptr<JMeshData>> mMeshList;
