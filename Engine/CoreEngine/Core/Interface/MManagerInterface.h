@@ -23,6 +23,7 @@ public:
 
 private:
 	static void SearchFiles_Recursive(const std::filesystem::path& InPath);
+	static void ParseFiles_Recursive(const std::filesystem::path& InPath);
 
 public:
 	MGUIManager*              GUIManager;		// GUI
@@ -39,8 +40,6 @@ public:
 	MLayerManager LayerManager;			// 레이어
 
 	Thread::ThreadPool ThreadPool;		// 스레드
-
-
 #pragma region Singleton Boilerplate
 
 public:

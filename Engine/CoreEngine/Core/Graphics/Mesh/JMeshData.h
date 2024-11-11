@@ -3,6 +3,7 @@
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/IManagedInterface.h"
 #include "Core/Utils/FileIO/JSerialization.h"
+#include "Core/Utils/ObjectLoader/FbxUtils.h"
 
 class JMaterialInstance;
 class JMaterial;
@@ -13,8 +14,9 @@ namespace Utils::Fbx
 
 enum class EMeshType : uint8_t
 {
-	Static = 0, // 정적 메시
-	Skeletal   // 스켈레탈 메시
+	Static       = 0, // 정적 메시
+	Skeletal     = 1 << 0,   // 스켈레탈 메시
+	AnimatedMesh = 1 << 1, // 애니메이션 메시
 };
 
 /**
@@ -38,9 +40,12 @@ public:
 
 public:
 	void UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const;
-
-	void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose);
 	void PassMaterial(ID3D11DeviceContext* InDeviceContext) const;
+
+public:
+	virtual void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose) {};
+	virtual void SetSkeletalData(const class FSkeletonData& InSkeletonData) {}
+	virtual void SetSkinData(const Ptr<class JSkinData>& InSkinData) {}
 
 public:
 	[[nodiscard]] JText GetName() const { return mName; }
@@ -51,9 +56,13 @@ public:
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetSubMesh() const { return mSubMesh; }
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetChildMesh() const { return mChildMesh; }
 	[[nodiscard]] const Ptr<JVertexData<Vertex::FVertexInfo_Base>>& GetVertexData() const { return mVertexData; }
-	[[nodiscard]] const JHash<JText, FMatrix>& GetBindPoseMap() const { return mBindPoseMap; }
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
 	[[nodiscard]] Ptr<JMaterialInstance> GetMaterialInstance() const { return mMaterialInstance; }
+
+	[[nodiscard]] FORCEINLINE int32_t GetMaterialRefNum() const { return mMaterialRefNum; }
+
+	[[nodiscard]] FORCEINLINE bool IsSkeletalMesh() const { return mClassType == EMeshType::Skeletal; }
+	[[nodiscard]] FORCEINLINE bool IsStaticMesh() const { return mClassType == EMeshType::Static; }
 
 public:
 	FORCEINLINE void SetMaterialInstance(const Ptr<JMaterialInstance>& InMaterialInstance)
@@ -78,9 +87,6 @@ protected:
 	// -------------------------- Vertex Data --------------------------
 	Ptr<JVertexData<Vertex::FVertexInfo_Base>> mVertexData;
 
-	// -------------------------- Skin Mesh Data --------------------------
-	JHash<JText, FMatrix> mBindPoseMap;
-
 	// -------------------------- Material Reference --------------------------
 	Ptr<JMaterialInstance> mMaterialInstance;
 	int32_t                mMaterialRefNum;
@@ -93,17 +99,55 @@ private:
 	friend class GUI_Editor_Material;
 };
 
+/**
+	 * 관절 데이터
+	 */
+struct FJointData
+{
+	JText   Name;					// 조인트 이름
+	int32_t ParentIndex = -1;		// 부모 본
+};
+
+struct FSkeletonData
+{
+	JArray<FJointData> Joints;
+};
+
 class JSkeletalMesh : public JMeshData
-{};
+{
+public:
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose) override;
+	void SetSkeletalData(const class FSkeletonData& InSkeletonData) override;
+	void SetSkinData(const Ptr<class JSkinData>& InSkinData) override;
+
+	[[nodiscard]] FORCEINLINE const FSkeletonData&  GetSkeletonData() const { return mSkeletonData; }
+	[[nodiscard]] FORCEINLINE const Ptr<JSkinData>& GetSkinData() const { return mSkinData; }
+
+protected:
+	// -------------------------- Skin Mesh Data --------------------------
+	FSkeletonData        mSkeletonData;	// 본 계층 구조
+	Ptr<class JSkinData> mSkinData;		// 스킨 데이터(본과 메시를 연결)
+
+	friend class Utils::Fbx::FbxFile;
+};
 
 /**
  * Skin Mesh
  */
-class JSkinData
+class JSkinData : public ISerializable
 {
 public:
 	JSkinData() = default;
-	~JSkinData();
+	~JSkinData() override;
+
+public:
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
 	void Initialize();
@@ -117,11 +161,15 @@ public:
 	FORCEINLINE void SetVertexCount(int32_t InVertexCount) { mVertexCount = InVertexCount; }
 	FORCEINLINE void SetVertexStride(int32_t InVertexStride) { mVertexStride = InVertexStride; }
 
-	[[nodiscard]] FORCEINLINE JText GetInfluenceBoneName(int32_t InIndex) const { return mInfluenceBones.at(InIndex); }
+	[[nodiscard]] FORCEINLINE const JHash<JText, FMatrix>& GetBindPoseWorldMap() const { return mBindPoseWorldMap; }
+	[[nodiscard]] FORCEINLINE const JHash<JText, FMatrix>& GetInverseBindPoseMap() const { return mInverseBindPoseMap; }
 
-	[[nodiscard]] FORCEINLINE FMatrix GetInfluenceBoneBindPose(const JText& InBoneName) const
+	[[nodiscard]] FORCEINLINE JText   GetInfluenceBoneName(int32_t InIndex) const { return mInfluenceBones.at(InIndex); }
+	[[nodiscard]] FORCEINLINE int32_t GetInfluenceBoneCount() const { return mInfluenceBones.size(); }
+
+	[[nodiscard]] FORCEINLINE FMatrix GetInfluenceWorldBindPose(const JText& InBoneName) const
 	{
-		return mBindPoseMap.at(InBoneName);
+		return mBindPoseWorldMap.at(InBoneName);
 	}
 
 	[[nodiscard]] FORCEINLINE FMatrix GetInfluenceBoneInverseBindPose(const JText& InBoneName) const
@@ -133,8 +181,8 @@ public:
 	[[nodiscard]] FORCEINLINE int32_t GetVertexStride() const { return mVertexStride; }
 	[[nodiscard]] FORCEINLINE int32_t GetBoneCount() const { return mInfluenceBones.size(); }
 
-	uint32_t* GetBoneIndex(int32_t InIndex) const;
-	float*    GetBoneWeight(int32_t InIndex) const;
+	int32_t* GetBoneIndex(int32_t InIndex) const;
+	float*   GetBoneWeight(int32_t InIndex) const;
 
 public:
 	static int32_t MAX_BONE_INFLUENCES;
@@ -142,13 +190,13 @@ public:
 private:
 	JArray<JText> mInfluenceBones;
 
-	JHash<JText, FMatrix> mBindPoseMap;
+	JHash<JText, FMatrix> mBindPoseWorldMap;
 	JHash<JText, FMatrix> mInverseBindPoseMap;
 
 	int32_t mVertexCount  = 0;
 	int32_t mVertexStride = 0;
 
-	UPtr<uint32_t[]> mBoneIndices;
-	UPtr<float[]>    mBoneWeights;
+	UPtr<int32_t[]> mBoneIndices;
+	UPtr<float[]>   mBoneWeights;
 
 };

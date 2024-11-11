@@ -69,8 +69,9 @@ public:
 		return obj;
 	}
 
+	// 타입 추론 버전
 	template <class ObjectType>
-	Ptr<ObjectType> GetThisPtr()
+	auto GetThisPtr() -> Ptr<ObjectType>
 	{
 		return std::dynamic_pointer_cast<ObjectType>(shared_from_this());
 	}

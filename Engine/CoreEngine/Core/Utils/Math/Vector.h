@@ -76,6 +76,7 @@ namespace JMath
 		explicit TVector(const TVector2 V, float InZ);
 		explicit TVector(const DirectX::XMFLOAT3& InVector);
 		explicit TVector(const DirectX::XMVECTORF32& InVector);
+		TVector(const float* pArray);
 
 
 		// ------------------------ 복사,이동 생성자 ----------------------------

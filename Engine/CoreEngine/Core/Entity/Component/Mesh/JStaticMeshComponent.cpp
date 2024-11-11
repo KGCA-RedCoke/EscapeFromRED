@@ -20,6 +20,7 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	// MeshObject의 버퍼 업데이트
 	if (mMeshObject)
 	{
+		mMeshObject->Tick(DeltaTime);
 		mMeshObject->UpdateBuffer(mWorldMat);
 	}
 }

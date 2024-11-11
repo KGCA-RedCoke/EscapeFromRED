@@ -1,7 +1,7 @@
 ﻿#include "JAnimationClip.h"
 
 
-void JAnimBoneTrack::AddKey(float InTime, const FVector& InPosition, const FVector& InRotation, const FVector& InScale)
+void JAnimBoneTrack::AddKey(float InTime, const FVector& InPosition, const FVector4& InRotation, const FVector& InScale)
 {
 	TransformKeys.PositionKeys.push_back({InTime, InPosition});
 	TransformKeys.RotationKeys.push_back({InTime, InRotation});
@@ -12,7 +12,7 @@ void JAnimBoneTrack::AddKey(float InTime, const FVector& InPosition, const FVect
 void JAnimBoneTrack::OptimizeKeys()
 {
 	SortKeys();
-	
+
 }
 
 void JAnimBoneTrack::OptimizeKey()
@@ -35,7 +35,7 @@ void JAnimBoneTrack::OptimizeKey()
 void JAnimBoneTrack::SortKeys()
 {
 	std::ranges::sort(TransformKeys.PositionKeys, LessEqual<FVector>);
-	std::ranges::sort(TransformKeys.RotationKeys, LessEqual<FVector>);
+	std::ranges::sort(TransformKeys.RotationKeys, LessEqual<FVector4>);
 	std::ranges::sort(TransformKeys.ScaleKeys, LessEqual<FVector>);
 }
 
@@ -103,7 +103,7 @@ bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 													  sizeof(float),
 													  FileStream);
 			Utils::Serialization::Serialize_Primitive(&track->TransformKeys.RotationKeys[j].Value,
-													  sizeof(FVector),
+													  sizeof(FVector4),
 													  FileStream);
 			Utils::Serialization::Serialize_Primitive(&track->TransformKeys.ScaleKeys[j].Time, sizeof(float), FileStream);
 			Utils::Serialization::Serialize_Primitive(&track->TransformKeys.ScaleKeys[j].Value,
@@ -171,9 +171,9 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 			Utils::Serialization::DeSerialize_Primitive(&positionKey.Time, sizeof(float), InFileStream);
 			Utils::Serialization::DeSerialize_Primitive(&positionKey.Value, sizeof(FVector), InFileStream);
 
-			JAnimKey<FVector> orientationKey;
+			JAnimKey<FVector4> orientationKey;
 			Utils::Serialization::DeSerialize_Primitive(&orientationKey.Time, sizeof(float), InFileStream);
-			Utils::Serialization::DeSerialize_Primitive(&orientationKey.Value, sizeof(FVector), InFileStream);
+			Utils::Serialization::DeSerialize_Primitive(&orientationKey.Value, sizeof(FVector4), InFileStream);
 
 			JAnimKey<FVector> scaleKey;
 			Utils::Serialization::DeSerialize_Primitive(&scaleKey.Time, sizeof(float), InFileStream);
@@ -183,6 +183,7 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 			track->TransformKeys.RotationKeys.push_back(orientationKey);
 			track->TransformKeys.ScaleKeys.push_back(scaleKey);
 		}
+		mTracks.push_back(track);
 
 		// Curve Keys
 		int32_t curveSize;

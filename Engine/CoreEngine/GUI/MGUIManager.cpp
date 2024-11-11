@@ -4,6 +4,7 @@
 #include "GUI_AssetBrowser.h"
 #include "GUI_Inspector.h"
 #include "GUI_Themes.h"
+#include "Camera/GUI_Camera_Debug_Frustum.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
@@ -57,6 +58,8 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 	ImGui_ImplDX11_Init(InDevice, InDeviceContext);
 
 	InitializeStaticGUI();
+
+	ScaleAllSize(1.5f);
 }
 
 void MGUIManager::InitializeStaticGUI()
@@ -152,6 +155,18 @@ void MGUIManager::UpdateMainMenuBar()
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Camera"))
+		{
+			if (ImGui::MenuItem("Frustum View"))
+			{
+				if (auto ptr = CreateOrLoad<GUI_Camera_Debug_Frustum>("Debug Frustum"))
+				{
+					ptr->bIsWindowOpen = true;
+				}
+			}
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndMainMenuBar();  // Make sure to close the main menu bar
 	}
 }
@@ -195,9 +210,9 @@ void MGUIManager::Update(float_t DeltaTime)
 				{
 					// Import Fbx
 					Utils::Fbx::FbxFile fbxFile;
-					if (fbxFile.Load(resultFile.c_str()))
+					if (!fbxFile.Load(resultFile.c_str()))
 					{
-						LOG_CORE_INFO("Fbx File Loaded: {}", resultFile);
+						LOG_CORE_INFO("Fbx File Failed: {}", resultFile);
 					}
 				}
 				bOpenFileBrowser = false;

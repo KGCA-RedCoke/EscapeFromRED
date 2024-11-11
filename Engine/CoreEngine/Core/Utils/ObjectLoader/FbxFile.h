@@ -2,10 +2,10 @@
 
 #include <fbxsdk.h>
 #include "FbxUtils.h"
+#include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Utils/Math/TMatrix.h"
 
 class JSkinData;
-class JMeshData;
 class JMaterial;
 
 // Fbx 파일 구조에 대해 자세하게 나와있는 링크
@@ -24,13 +24,14 @@ namespace Utils::Fbx
 		FbxFile() = default;
 		~FbxFile();
 
-	public:
+	private:
 		/** Importer, Scene 생성 */
 		void Initialize(const char* InFilePath);
 
 		/** 존재하는 모든 fbx sdk destroy (프로세스 종료 전에 호출) */
 		void Release_Internal() const;
 
+	public:
 		static void Release();
 
 	public:
@@ -39,16 +40,20 @@ namespace Utils::Fbx
 		 * @param InFilePath 파일 경로
 		 */
 		bool Load(const char* InFilePath);
-		
+
+	private:
+		/** 내부적으로 Parsing함수들을 실행 */
+		void ProcessLoad();
+
 		/**
 		 * FBX 파일을 파싱하여 Raw 데이터로 변환
 		 * FIXME: 인덱스 버퍼를 생성하는 과정에서 시간이 많이 소요됨 최적화 필요
 		 */
 		bool Convert();
 
-	private:
-		/** 내부적으로 Parsing함수들을 실행 */
-		void ProcessLoad();
+		bool SaveMeshData(const char* InFilePath);
+
+		bool SaveAnimationData(const char* InFilePath) const;
 
 		/// ---------------------------- Step1. 스켈레톤 정보를 파싱 ----------------------------
 		/// 이 과정은 가장 먼저 선행된다. 스켈레톤 정보가 있으면 추후 메시 파싱시 스킨 정보를 파싱할 수 있음
@@ -102,7 +107,7 @@ namespace Utils::Fbx
 		///  스켈레톤 정보가 있나?
 		/// 스켈레톤이 있을 때만 애니메이션 정보를 파싱한다.
 		void ParseAnimation(FbxScene* InScene);
-		
+
 		void ParseAnimationStack(FbxScene* Scene, FbxString* AnimStackName);
 
 		void ParseAnimNode(FbxNode* InNode, int32_t InParentIndex, bool bSkeletalAnim = false);
@@ -118,12 +123,12 @@ namespace Utils::Fbx
 		 */
 		FLayer ParseMeshLayer(FbxMesh* InMesh, const Ptr<JMeshData>& InMeshData);
 
-		void CaptureBindPoseMatrix(JSkinData*        Ptr, const FbxNode* Joint,
+		void CaptureBindPoseMatrix(JSkinData*       Ptr, const FbxNode* Joint,
 								   const FbxMatrix& InBindPosMat);
 
 		void CaptureAnimation(const std::shared_ptr<JAnimationClip>& Ptr, FbxScene* Scene);
 
-		void AddKey(FAnimationNode& InNode, FAnimationNode* InParentNode, const FbxAMatrix& InGlobalMat, float InTime);
+		void AddKey(FAnimationNode& InNode, const FbxAMatrix& InLocalMat, float InTime);
 
 	private:
 		FbxImporter* mFbxImporter;

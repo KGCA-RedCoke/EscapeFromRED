@@ -11,7 +11,7 @@ class JActor : public JSceneComponent
 public:
 	JActor();
 	JActor(JTextView InName);
-	~JActor() override;
+	~JActor() override = default;
 
 	void Initialize() override;
 	void BeginPlay() override;

@@ -43,12 +43,12 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 						FVector rotation = sceneComp->GetLocalRotation();
 						FVector scale    = sceneComp->GetLocalScale();
 
-						if (ImGui::DragFloat3("Position", &location.x, 0.01f, -100.f, 100.0f))
+						if (ImGui::DragFloat3("Position", &location.x, 1.f))
 						{
 							bIsDragging = true;
 						}
 
-						if (ImGui::DragFloat3("Rotation", &rotation.x, 0.01f, -360.0f, 360.0f))
+						if (ImGui::DragFloat3("Rotation", &rotation.x, 0.1f, -360.0f, 360.0f))
 						{
 							bIsDragging = true;
 						}

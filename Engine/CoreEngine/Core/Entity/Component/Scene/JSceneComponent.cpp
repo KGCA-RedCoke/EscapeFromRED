@@ -111,6 +111,7 @@ void JSceneComponent::SetupAttachment(const Ptr<JSceneComponent>& InParentCompon
 	mParentSceneComponent = InParentComponent;
 	InParentComponent->mChildSceneComponents.push_back(thisPtr);
 
+	mOwnerActor = InParentComponent->GetOwnerActor();
 }
 
 void JSceneComponent::AttachComponent(const Ptr<JSceneComponent>& InChildComponent)

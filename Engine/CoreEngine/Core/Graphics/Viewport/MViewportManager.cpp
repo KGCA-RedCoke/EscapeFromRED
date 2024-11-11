@@ -113,6 +113,7 @@ void FViewportData::Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t In
 void MViewportManager::Initialize_Internal()
 {
 	CreateOrLoad(Name_Editor_Viewport, 1280, 720);
+	CreateOrLoad(Name_Editor_Viewport_Top, 1280, 720);
 }
 
 void MViewportManager::ResizeViewport(JTextView InViewportName,

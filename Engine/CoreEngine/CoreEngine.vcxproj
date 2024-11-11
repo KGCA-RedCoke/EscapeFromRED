@@ -103,13 +103,16 @@
     <ClInclude Include="common_include.h" />
     <ClInclude Include="common_pch.h" />
     <ClInclude Include="Core\Entity\Actor\JActor.h" />
+    <ClInclude Include="Core\Entity\Actor\JStaticMeshActor.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
     <ClInclude Include="Core\Entity\Camera\JCamera.h" />
+    <ClInclude Include="Core\Entity\Camera\JFrustum.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\JSceneComponent.h" />
+    <ClInclude Include="Core\Entity\Component\Scene\Shape\JShape.h" />
     <ClInclude Include="Core\Entity\JObject.h" />
     <ClInclude Include="Core\Entity\LandScape\JLandScape.h" />
     <ClInclude Include="Core\Entity\Level\JLevel.h" />
@@ -121,8 +124,10 @@
     <ClInclude Include="Core\Graphics\Font\XTKFont.h" />
     <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_SkySphere.h" />
     <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
+    <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\MMeshManager.h" />
     <ClInclude Include="Core\Graphics\Shader\JConstantBuffer.h" />
     <ClInclude Include="Core\Graphics\Shader\JShader_Basic.h" />
@@ -174,11 +179,13 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="GUI\Camera\GUI_Camera_Debug_Frustum.h" />
     <ClInclude Include="GUI\Editor\Actor\GUI_Editor_Actor.h" />
     <ClInclude Include="GUI\Editor\GUI_Editor_Base.h" />
     <ClInclude Include="GUI\Editor\GUI_Editor_Material.h" />
     <ClInclude Include="GUI\Editor\LandScape\GUI_Editor_LandScape.h" />
     <ClInclude Include="GUI\Editor\Mesh\GUI_Editor_Mesh.h" />
+    <ClInclude Include="GUI\Editor\Mesh\GUI_Editor_SkeletalMesh.h" />
     <ClInclude Include="GUI\GUI_AssetBrowser.h" />
     <ClInclude Include="GUI\GUI_Base.h" />
     <ClInclude Include="GUI\GUI_Inspector.h" />
@@ -187,6 +194,9 @@
     <ClInclude Include="GUI\Popup\GUI_Popup_FileBrowser.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
+    <None Include="Shader\Basic_2D.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shader\CommonConstantBuffers.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -213,16 +223,25 @@
     <ClInclude Include="Vender\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="Vender\include\imgui\imstb_textedit.h" />
     <ClInclude Include="Vender\include\imgui\imstb_truetype.h" />
+    <None Include="Shader\SkyBox.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\SkySphere.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Entity\Actor\JActor.cpp" />
+    <ClCompile Include="Core\Entity\Actor\JStaticMeshActor.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
+    <ClCompile Include="Core\Entity\Camera\JFrustum.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\JSceneComponent.cpp" />
+    <ClCompile Include="Core\Entity\Component\Scene\Shape\JShape.cpp" />
     <ClCompile Include="Core\Entity\JObject.cpp" />
     <ClCompile Include="Core\Entity\LandScape\JLandScape.cpp" />
     <ClCompile Include="Core\Entity\Level\JLevel.cpp" />
@@ -233,8 +252,10 @@
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_SkySphere.cpp" />
     <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
+    <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\MMeshManager.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JConstantBuffer.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JShader_Basic.cpp" />
@@ -274,6 +295,7 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="GUI\Camera\GUI_Camera_Debug_Frustum.cpp" />
     <ClCompile Include="GUI\Editor\Actor\GUI_Editor_Actor.cpp" />
     <ClCompile Include="GUI\Editor\GUI_Editor_Base.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -360,6 +382,7 @@
     <ClCompile Include="GUI\Editor\GUI_Editor_Material.cpp" />
     <ClCompile Include="GUI\Editor\LandScape\GUI_Editor_LandScape.cpp" />
     <ClCompile Include="GUI\Editor\Mesh\GUI_Editor_Mesh.cpp" />
+    <ClCompile Include="GUI\Editor\Mesh\GUI_Editor_SkeletalMesh.cpp" />
     <ClCompile Include="GUI\GUI_AssetBrowser.cpp" />
     <ClCompile Include="GUI\GUI_Base.cpp" />
     <ClCompile Include="GUI\GUI_Inspector.cpp" />

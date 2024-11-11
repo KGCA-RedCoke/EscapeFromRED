@@ -132,7 +132,7 @@ public:
 	/**
 	 * 머티리얼을 GPU에 바인딩
 	 */
-	void BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext);
+	virtual void BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext, const JArray<FMaterialParam>& InInstanceParams);
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 

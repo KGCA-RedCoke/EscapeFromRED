@@ -1,5 +1,6 @@
 ﻿#include "XD3DDevice.h"
 
+#include "Core/Interface/IRenderable.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Utils/Math/Color.h"
@@ -65,7 +66,7 @@ void XD3DDevice::ClearColor(const FLinearColor& InColor) const
 	mImmediateContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr);
 	mImmediateContext->RSSetViewports(1, &mViewport);
 
-	mImmediateContext->ClearRenderTargetView(mRenderTargetView.Get(), InColor.RGBA);
+	// mImmediateContext->ClearRenderTargetView(mRenderTargetView.Get(), InColor.RGBA);
 }
 
 void XD3DDevice::ClearCommandList()
@@ -73,19 +74,35 @@ void XD3DDevice::ClearCommandList()
 	mRenderCommandList.clear();
 }
 
-void XD3DDevice::QueueCommand(const FRenderCommand& InCommandList)
+void XD3DDevice::QueueCommand(const uint32_t InGeometryType, const FRenderCommand& InCommandList)
 {
-	
+	mRenderCommandList[InGeometryType].push_back(InCommandList);
 }
 
 void XD3DDevice::Draw()
 {
+	for (auto& [key, value] : mRenderCommandList)
+	{
+		for (auto& command : value)
+		{
+			command.ObjectToRender->Draw();
+		}
+		mImmediateContext->DrawIndexedInstanced(
+												0,
+												value.size(),
+												0,
+												0,
+												0);
+	}
+
 	// 후면 버퍼 렌더
 	CheckResult(
 				mSwapChain->Present(
 									Window::GetWindow()->IsVsyncEnabled(),
 									0
 								   ));
+
+	ClearCommandList();
 }
 
 void XD3DDevice::SetPrimitiveTopology(const D3D11_PRIMITIVE_TOPOLOGY InTopology) const

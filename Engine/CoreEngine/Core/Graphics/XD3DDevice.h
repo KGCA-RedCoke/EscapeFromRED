@@ -62,7 +62,7 @@ public:
 
 	void ClearCommandList();
 
-	void QueueCommand(const FRenderCommand& InCommandList);
+	void QueueCommand(const uint32_t InGeometryType, const FRenderCommand& InCommandList);
 
 	/**
 	 * 최종 렌더링을 화면에 출력한다.
@@ -106,7 +106,7 @@ private:
 	void OnResize(uint32_t InWidth, uint32_t InHeight);
 
 private:
-	JArray<RenderCommandList> mRenderCommandList;
+	JHash<uint32_t, RenderCommandList> mRenderCommandList;
 
 private:
 	ComPtr<ID3D11Device>           mDevice;						/** 디바이스 포인터 (리소스 생성) */

@@ -120,4 +120,7 @@ protected:
 	FShaderData mShaderData;
 
 	Ptr<class JCamera> mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
+
+	CBuffer::Space  mCachedSpaceData;
+	CBuffer::Camera mCachedCameraData;
 };

@@ -21,6 +21,7 @@ namespace CBuffer
 	constexpr const char* NAME_CONSTANT_BUFFER_TIME                  = "WorldTimeConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL              = "BasicMaterialConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_COLOR_ID              = "ColorIDConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_MESH                  = "MeshConstantBuffer";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_WORLD         = "World";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_VIEW          = "View";
 	constexpr const char* NAME_CONSTANT_VARIABLE_SPACE_PROJ          = "Projection";
@@ -72,6 +73,12 @@ namespace CBuffer
 	struct Camera
 	{
 		FVector4 CameraPos;
+	};
+
+	struct MeshConstantBuffer  // slot 3
+	{
+		uint32_t MeshFlags = 0;	// Default : Static
+		float    Padding[3];
 	};
 
 	enum ETextureUsage : uint32_t
@@ -253,17 +260,8 @@ namespace Buffer
 	// Bone 버퍼 인스턴스
 	struct FBufferInstance_Bone
 	{
-		JArray<ComPtr<ID3D11Buffer>>             Buffer_Bone;	// Bone
-		JArray<ComPtr<ID3D11ShaderResourceView>> Resource_Bone;	// Bone
-
-		void Resize(const int32_t Size)
-		{
-			Buffer_Bone.clear();
-			Resource_Bone.clear();
-
-			Buffer_Bone.resize(Size);
-			Resource_Bone.resize(Size);
-		}
+		ComPtr<ID3D11Buffer>             Buffer_Bone;	// Bone
+		ComPtr<ID3D11ShaderResourceView> Resource_Bone;	// Bone
 	};
 }
 
@@ -277,11 +275,11 @@ struct FInstanceData
 
 struct FRenderCommand
 {
-	void*         ObjectToRender;	// 렌더 대상 오브젝트
-	FInstanceData InstanceData;		// 인스턴싱 데이터
+	class IRenderable* ObjectToRender;	// 렌더 대상 오브젝트
+	FInstanceData      InstanceData;	// 인스턴싱 데이터
 };
 
-using RenderCommandList = JArray<FRenderCommand>;
+using RenderCommandList = JArray<FRenderCommand>;	// 렌더 명령어 리스트
 
 /**
  * 삼각형(정점)을 나타내는 데이터 구조체

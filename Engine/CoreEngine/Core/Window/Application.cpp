@@ -1,6 +1,7 @@
 ﻿#include "Application.h"
 
 #include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Camera/JCamera.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -76,15 +77,13 @@ void Application::Initialize()
 
 	Actors.reserve(10);
 
-	Ptr<JMeshObject>          swordMesh      = IManager.MeshManager->CreateOrLoad("Game/Mesh/Sphere.jasset");
-	Ptr<JStaticMeshComponent> swordComponent = MakePtr<JStaticMeshComponent>("Sword");
-	Ptr<JActor>               sampleActor    = MakePtr<JActor>("SampleActor");
+	Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
+														IManager.MeshManager->CreateOrClone(Path_Mesh_Sphere));
 	sampleActor->Initialize();
-	swordComponent->SetMeshObject(swordMesh);
-	swordComponent->AttachToActor(sampleActor);
-	Actors.push_back(sampleActor);
+	sampleActor->SetLocalScale({100, 100, 100});
+	
 
-	sampleActor->SetLocalLocation({10, 0, 0});
+	Actors.push_back(sampleActor);
 }
 
 void Application::Run()
@@ -94,7 +93,7 @@ void Application::Run()
 
 	while (bRunning)
 	{
-		mCurrentTime = mTimer->ElapsedMillis();
+		mCurrentTime = mTimer->Elapsed();
 
 		// 매 프레임 작동
 		HandleFrame();
@@ -122,10 +121,10 @@ void Application::Update(float DeltaTime)
 
 void Application::Render()
 {
-	IManager.RenderManager->ClearColor(FLinearColor::Black);
+	IManager.RenderManager->ClearColor(FLinearColor::TrueBlack);
 
 	IManager.Render(); // GUI Render
-	
+
 
 	for (int32_t i = 0; i < Actors.size(); ++i)
 	{
@@ -136,7 +135,7 @@ void Application::Render()
 	mFpsText->PreRender();
 	mFpsText->Render();
 	mFpsText->PostRender();
-
+	
 	IManager.RenderManager->Draw();
 }
 

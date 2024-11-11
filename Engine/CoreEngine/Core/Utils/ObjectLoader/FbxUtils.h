@@ -57,27 +57,7 @@ namespace Utils::Fbx
 		FbxAMatrix          WorldTransform;
 		UPtr<FKeyFrameData> NextKeyFrameData = nullptr;
 	};
-
-	/**
-	 * 관절 데이터
-	 */
-	struct FJointData
-	{
-		JText      Name;					// 조인트 이름
-		int32_t    ParentIndex = -1;		// 부모 본
-		FbxAMatrix GlobalBindPoseInverse;	// 전역 바인드 포즈 역행렬
-
-		FJointData()
-		{
-			GlobalBindPoseInverse.SetIdentity();
-		}
-	};
-
-	struct FSkeletonData
-	{
-		JArray<FJointData> Joints;
-	};
-
+	
 	inline const FFbxProperty FbxMaterialProperties[] =
 	{
 		// Diffuse

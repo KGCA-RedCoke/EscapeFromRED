@@ -1,5 +1,7 @@
 ﻿#include "Quaternion.h"
 
+#include "TMatrix.h"
+
 namespace JMath
 {
 	TQuaternion::TQuaternion() noexcept
@@ -160,5 +162,173 @@ namespace JMath
 		XMVECTOR q1 = XMLoadFloat4(this);
 		XMVECTOR q2 = XMLoadFloat4(&Q);
 		return XMVectorGetX(XMQuaternionDot(q1, q2));
+	}
+
+	TQuaternion TQuaternion::CreateFromAxisAngle(const TVector& axis, float angle)
+	{
+		XMVECTOR a = XMLoadFloat3(&axis);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMQuaternionRotationAxis(a, angle));
+		return R;
+	}
+
+	TQuaternion TQuaternion::CreateFromYawPitchRoll(float yaw, float pitch, float roll)
+	{
+		TQuaternion R;
+		XMStoreFloat4(&R, XMQuaternionRotationRollPitchYaw(pitch, yaw, roll));
+		return R;
+	}
+
+	TQuaternion TQuaternion::CreateFromRotationMatrix(const TMatrix& M)
+	{
+		XMMATRIX M0 = XMLoadFloat4x4(&M);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMQuaternionRotationMatrix(M0));
+		return R;
+	}
+
+	void TQuaternion::Lerp(const TQuaternion& q1, const TQuaternion& q2, float t, TQuaternion& result)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+
+		XMVECTOR dot = XMVector4Dot(Q0, Q1);
+
+		XMVECTOR R;
+		if (XMVector4GreaterOrEqual(dot, XMVectorZero()))
+		{
+			R = XMVectorLerp(Q0, Q1, t);
+		}
+		else
+		{
+			XMVECTOR tv = XMVectorReplicate(t);
+			XMVECTOR t1v = XMVectorReplicate(1.f - t);
+			XMVECTOR X0 = XMVectorMultiply(Q0, t1v);
+			XMVECTOR X1 = XMVectorMultiply(Q1, tv);
+			R = XMVectorSubtract(X0, X1);
+		}
+
+		XMStoreFloat4(&result, XMQuaternionNormalize(R));
+	}
+
+	TQuaternion TQuaternion::Lerp(const TQuaternion& q1, const TQuaternion& q2, float t)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+
+		XMVECTOR dot = XMVector4Dot(Q0, Q1);
+
+		XMVECTOR R;
+		if (XMVector4GreaterOrEqual(dot, XMVectorZero()))
+		{
+			R = XMVectorLerp(Q0, Q1, t);
+		}
+		else
+		{
+			XMVECTOR tv = XMVectorReplicate(t);
+			XMVECTOR t1v = XMVectorReplicate(1.f - t);
+			XMVECTOR X0 = XMVectorMultiply(Q0, t1v);
+			XMVECTOR X1 = XMVectorMultiply(Q1, tv);
+			R = XMVectorSubtract(X0, X1);
+		}
+
+		TQuaternion result;
+		XMStoreFloat4(&result, XMQuaternionNormalize(R));
+		return result;
+	}
+
+	void TQuaternion::Slerp(const TQuaternion& q1, const TQuaternion& q2, float t, TQuaternion& result)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+		XMStoreFloat4(&result, XMQuaternionSlerp(Q0, Q1, t));
+	}
+
+	TQuaternion TQuaternion::Slerp(const TQuaternion& q1, const TQuaternion& q2, float t)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+
+		TQuaternion result;
+		XMStoreFloat4(&result, XMQuaternionSlerp(Q0, Q1, t));
+		return result;
+	}
+
+	void TQuaternion::Concatenate(const TQuaternion& q1, const TQuaternion& q2, TQuaternion& result)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+		XMStoreFloat4(&result, XMQuaternionMultiply(Q1, Q0));
+	}
+
+	TQuaternion TQuaternion::Concatenate(const TQuaternion& q1, const TQuaternion& q2)
+	{
+		XMVECTOR Q0 = XMLoadFloat4(&q1);
+		XMVECTOR Q1 = XMLoadFloat4(&q2);
+
+		TQuaternion result;
+		XMStoreFloat4(&result, XMQuaternionMultiply(Q1, Q0));
+		return result;
+	}
+
+	TQuaternion operator+(const TQuaternion& Q1, const TQuaternion& Q2)
+	{
+		XMVECTOR q1 = XMLoadFloat4(&Q1);
+		XMVECTOR q2 = XMLoadFloat4(&Q2);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMVectorAdd(q1, q2));
+		return R;
+	}
+
+	TQuaternion operator-(const TQuaternion& Q1, const TQuaternion& Q2)
+	{
+		XMVECTOR q1 = XMLoadFloat4(&Q1);
+		XMVECTOR q2 = XMLoadFloat4(&Q2);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMVectorSubtract(q1, q2));
+		return R;
+	}
+
+	TQuaternion operator*(const TQuaternion& Q1, const TQuaternion& Q2)
+	{
+		XMVECTOR q1 = XMLoadFloat4(&Q1);
+		XMVECTOR q2 = XMLoadFloat4(&Q2);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMQuaternionMultiply(q1, q2));
+		return R;
+	}
+
+	TQuaternion operator*(const TQuaternion& Q, float S)
+	{
+		XMVECTOR q = XMLoadFloat4(&Q);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMVectorScale(q, S));
+		return R;
+	}
+
+	TQuaternion operator/(const TQuaternion& Q1, const TQuaternion& Q2)
+	{
+		XMVECTOR q1 = XMLoadFloat4(&Q1);
+		XMVECTOR q2 = XMLoadFloat4(&Q2);
+		q2 = XMQuaternionInverse(q2);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMQuaternionMultiply(q1, q2));
+		return R;
+	}
+
+	TQuaternion operator*(float S, const TQuaternion& Q)
+	{
+		XMVECTOR q1 = XMLoadFloat4(&Q);
+
+		TQuaternion R;
+		XMStoreFloat4(&R, XMVectorScale(q1, S));
+		return R;
 	}
 }

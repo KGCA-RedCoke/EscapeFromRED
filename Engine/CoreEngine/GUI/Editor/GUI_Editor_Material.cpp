@@ -17,7 +17,7 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad(InTitle);
 	}
 
-	SetMeshObject("Sphere");
+	SetMeshObject(Path_Mesh_Sphere);
 }
 
 void GUI_Editor_Material::Render()

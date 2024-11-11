@@ -96,29 +96,48 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext)
 {
-	const auto shaderRef = mShader.lock();
-	if (!shaderRef)
+	mParentMaterial->BindMaterialPipeline(InDeviceContext, mInstanceParams	);
+	// const auto shaderRef = mShader.lock();
+	// if (!shaderRef)
+	// 	return;
+	// shaderRef->BindShaderPipeline(InDeviceContext);
+	//
+	// if (mInstanceParams.empty())
+	// {
+	// 	shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
+	// 								  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
+	// 								  nullptr);
+	// }
+	//
+	// for (int32_t i = 0; i < mInstanceParams.size(); ++i)
+	// {
+	// 	FMaterialParam& param = mInstanceParams[i];
+	//
+	// 	shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
+	// 								  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
+	// 								  param.Name,
+	// 								  &param.Float4Value);
+	//
+	// 	param.BindMaterialParam(InDeviceContext, i);
+	// }
+}
+
+void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
+										   const void*          InData, const uint32_t        InOffset) const
+{
+	if (mShader.expired())
 		return;
-	shaderRef->BindShaderPipeline(InDeviceContext);
 
-	if (mInstanceParams.empty())
-	{
-		shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
-									  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-									  nullptr);
-	}
+	mShader.lock()->UpdateConstantData(InDeviceContext, InBufferName, InData, InOffset);
+}
 
-	for (int32_t i = 0; i < mInstanceParams.size(); ++i)
-	{
-		FMaterialParam& param = mInstanceParams[i];
+void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
+										   const JText&         InDataName, const void*       InData) const
+{
+	if (mShader.expired())
+		return;
 
-		shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
-									  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-									  param.Name,
-									  &param.Float4Value);
-
-		param.BindMaterialParam(InDeviceContext, i);
-	}
+	mShader.lock()->UpdateConstantData(InDeviceContext, InBufferName, InDataName, InData);
 }
 
 void JMaterialInstance::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const

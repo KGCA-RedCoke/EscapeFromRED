@@ -32,20 +32,38 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 {
 	PixelInput_Base output;
 
+	output.Color    = Input.Color;
 	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
 	float4 localPos = output.Pos;
-	float3 normal   = 1;
+	float3 normal;
 
 	if (MeshFlags & FLAG_MESH_ANIMATED || MeshFlags & FLAG_MESH_SKINNED)
 	{
 		for (int i = 0; i < 4; ++i)
 		{
-			uint  boneIndex = Input.BoneIndices[i];	// 본 인덱스
-			float weight    = Input.BoneWeights[i];	// 가중치
+			const uint  boneIndex = (uint)Input.BoneIndices[i];	// 본 인덱스
+			const float weight    = Input.BoneWeights[i];	// 가중치
 
 			float4x4 boneTransform = FetchBoneTransform(boneIndex);	// 본의 변환 행렬을 가져온다.
-			output.Pos += mul(localPos, boneTransform) *
-					weight;	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치) 
+			output.Pos += (100 * weight *
+				mul(localPos, boneTransform));	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
+
+			if (i == 0)
+			{
+				output.Color.x = weight;
+			}
+			else if (i == 1)
+			{
+				output.Color.y = weight;
+			}
+			else if (i == 2)
+			{
+				output.Color.z = weight;
+			}
+			else if (i == 3)
+			{
+				output.Color.w = weight;
+			}
 			normal += mul(Input.Normal, (float3x3)boneTransform) *
 					weight;	// normal(원래 메시 노말) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
 		}
@@ -65,7 +83,6 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 	float3 worldTangent  = mul(Input.Tangent, (float3x3)World);
 	float3 worldBinormal = mul(Input.Binormal, (float3x3)World);
 
-	output.Color   = Input.Color;
 	output.UV      = Input.UV;
 	output.ViewDir = normalize(viewDir);
 
@@ -79,6 +96,13 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 
 float4 PS(PixelInput_Base Input) : SV_TARGET
 {
+	// if (MeshFlags & FLAG_MESH_SKINNED)
+	// {
+	// 	// ! FOR DEBUG !
+	// 	// 가중치 표현 (가중치는 잘 적용이 됐는데 스케일 100을 곱해줘야하는 이유?)
+	// 	return float4(Input.Color.rgb, 1);
+	// }
+
 	float3 diffuseColor = Diffuse.Color;
 
 	float3 normalColor = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
@@ -98,6 +122,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	if (TextureUsageFlag & TEXTURE_USE_NORMAL)
 	{
 		normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
+		normalColor = normalize(normalColor * 2.0f - 1.0f);
 	}
 	if (TextureUsageFlag & TEXTURE_USE_AMBIENTOCCLUSION)
 	{

@@ -5,6 +5,7 @@
 #include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
+#include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Interface/MManagerInterface.h"
 
 namespace Utils::Fbx
@@ -65,7 +66,7 @@ namespace Utils::Fbx
 
 		// front -> y | right -> x | up -> z (y, z 축이 바뀐 형태) 
 		FbxAxisSystem::MayaZUp.ConvertScene(mFbxScene);
-		FbxSystemUnit::m.ConvertScene(mFbxScene);
+		FbxSystemUnit::cm.ConvertScene(mFbxScene);
 
 		mMeshList.clear();
 		mMaterialList.clear();
@@ -96,12 +97,13 @@ namespace Utils::Fbx
 		// 파싱된 데이터 메모리에 저장
 		Convert();
 
-		// TODO: Mesh | SkeletalMesh 구분 짓고 따라 직렬화
-		JText filePath = std::format("Game/Mesh/{0}.jasset", ParseFile(InFilePath));
+		// 데이터 저장
+		if (!SaveMeshData(InFilePath) || !SaveAnimationData(InFilePath))
+		{
+			return false;
+		}
 
-		const auto object = MakePtr<JMeshObject>(filePath, mMeshList);
-
-		return Serialization::Serialize(filePath.c_str(), object.get());
+		return true;
 	}
 
 	bool FbxFile::Convert()
@@ -172,30 +174,48 @@ namespace Utils::Fbx
 					}
 				}
 			}
+		}
 
-			// if (!mAnimations.empty())
-			// {
-			// 	Ptr<JAnimBoneTrack> targetTrack = nullptr;
-			// 	for (int32_t i = 0; i < mAnimations[0]->mTracks.size(); ++i)
-			// 	{
-			// 		auto& track    = mAnimations[0]->mTracks.at(i);
-			// 		JText boneName = track->Name;
-			//
-			// 		if (boneName == mesh->mName)
-			// 		{
-			// 			targetTrack = track;
-			// 			break;
-			// 		}
-			// 	}
-			//
-			// 	targetTrack->TransformKeys;
-			// 	for (int32_t i = 0; i < targetTrack->TransformKeys.PositionKeys.size(); ++i)
-			// 	{
-			// 		auto& key = targetTrack->TransformKeys.PositionKeys[i];
-			// 		// key.Value
-			// 	}
-			// }
 
+		return true;
+	}
+
+
+	bool FbxFile::SaveMeshData(const char* InFilePath)
+	{
+		if (!mMeshList.empty())
+		{
+			JText filePath = std::format("Game/Mesh/{0}.jasset", ParseFile(InFilePath));
+
+			const auto object = bHasSkeleton
+									? MakePtr<JSkeletalMeshObject>(filePath, mMeshList)
+									: MakePtr<JMeshObject>(filePath, mMeshList);
+
+			if (!Serialization::Serialize(filePath.c_str(), object.get()))
+			{
+				LOG_CORE_ERROR("Failed to serialize mesh object, {0} {1}", __FILE__, __LINE__);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool FbxFile::SaveAnimationData(const char* InFilePath) const
+	{
+		if (!mAnimations.empty())
+		{
+			for (int32_t i = 0; i < mAnimations.size(); ++i)
+			{
+				auto& clip     = mAnimations[i];
+				JText filePath = std::format("Game/Animation/{0}.jasset", ParseFile(InFilePath));
+
+				if (!Serialization::Serialize(filePath.c_str(), clip.get()))
+				{
+					LOG_CORE_ERROR("Failed to serialize animation clip, {0} {1}", __FILE__, __LINE__);
+					return false;
+				}
+			}
 		}
 
 		return true;
@@ -207,7 +227,8 @@ namespace Utils::Fbx
 		assert(root, "empty scene(node x)");
 
 		// 본 정보 파싱
-		ParseSkeleton_Recursive(root, 0, -1);
+		mSkeletonData.Joints.emplace_back(FJointData{"RootNode", -1});
+		ParseSkeleton_Recursive(root, 1, 0);
 
 		// Parse Mesh
 		ParseNode_Recursive(root, FbxNodeAttribute::EType::eMesh);
@@ -215,18 +236,21 @@ namespace Utils::Fbx
 		ParseAnimation(mFbxScene);
 	}
 
-
 	void FbxFile::ParseSkeleton_Recursive(FbxNode* InNode, int32_t InIndex, int32_t InParentIndex)
 	{
 		if (!InNode)
 			return;
+
+		bool    bFound = false;
+		int32_t index;
+		int32_t parentIndex;
 
 		if (InNode->GetNodeAttribute() && InNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
 		{
 			FJointData jointData;
 			{
 				jointData.Name        = InNode->GetName();
-				jointData.ParentIndex = mSkeletonData.Joints.empty() ? -1 : InParentIndex;
+				jointData.ParentIndex = InParentIndex;
 			}
 
 			mSkeletonData.Joints.push_back(jointData);
@@ -235,12 +259,25 @@ namespace Utils::Fbx
 			{
 				bHasSkeleton = true;
 			}
+
+			bFound = true;
+		}
+
+		if (bFound)
+		{
+			index       = mSkeletonData.Joints.size();
+			parentIndex = index - 1;
+		}
+		else
+		{
+			index       = mSkeletonData.Joints.size() - 1;
+			parentIndex = InParentIndex;
 		}
 
 		const int32_t childCount = InNode->GetChildCount();
 		for (int32_t i = 0; i < childCount; ++i)
 		{
-			ParseSkeleton_Recursive(InNode->GetChild(i), mSkeletonData.Joints.size(), InIndex);
+			ParseSkeleton_Recursive(InNode->GetChild(i), index, parentIndex);
 		}
 	}
 
@@ -263,7 +300,8 @@ namespace Utils::Fbx
 		Ptr<JMeshData> meshData = nullptr;
 		if (attribute && attribute->GetAttributeType() == NodeAttribute)
 		{
-			meshData = MakePtr<JMeshData>();
+			meshData = bHasSkeleton ? MakePtr<JSkeletalMesh>() : MakePtr<JMeshData>();
+
 			{
 				meshData->mName                  = InNode->GetName();
 				meshData->mParentMesh            = InParentMeshData;
@@ -301,18 +339,20 @@ namespace Utils::Fbx
 		FbxMesh* fbxMesh = InNode->GetMesh();
 
 		// DeFormer & Skin
-		JSkinData skinData;
-		ParseMeshSkin(fbxMesh, &skinData);
+		Ptr<JSkinData> skinData = MakePtr<JSkinData>();
+		ParseMeshSkin(fbxMesh, skinData.get());
 
-		int32_t boneCount = skinData.GetBoneCount();
+		int32_t boneCount = skinData->GetBoneCount();
 		if (boneCount > 0)
 		{
+			InMeshData->SetSkinData(skinData);
+			InMeshData->SetSkeletalData(mSkeletonData);
 			InMeshData->mClassType = EMeshType::Skeletal;
 
 			for (int32_t i = 0; i < boneCount; ++i)
 			{
-				JText boneName = skinData.GetInfluenceBoneName(i);
-				InMeshData->AddInfluenceBone(boneName, skinData.GetInfluenceBoneInverseBindPose(boneName));
+				JText boneName = skinData->GetInfluenceBoneName(i);
+				InMeshData->AddInfluenceBone(boneName, skinData->GetInfluenceBoneInverseBindPose(boneName));
 			}
 		}
 		else
@@ -511,13 +551,13 @@ namespace Utils::Fbx
 
 						if (bHasSkeleton)
 						{
-							uint32_t* indices    = skinData.GetBoneIndex(vertexIndex);
-							vertex.BoneIndices.x = indices[0];
-							vertex.BoneIndices.y = indices[1];
-							vertex.BoneIndices.z = indices[2];
-							vertex.BoneIndices.w = indices[3];
+							int32_t* indices     = skinData->GetBoneIndex(dccIndex);
+							vertex.BoneIndices.x = static_cast<uint32_t>(indices[0]);
+							vertex.BoneIndices.y = static_cast<uint32_t>(indices[1]);
+							vertex.BoneIndices.z = static_cast<uint32_t>(indices[2]);
+							vertex.BoneIndices.w = static_cast<uint32_t>(indices[3]);
 
-							float* weights       = skinData.GetBoneWeight(vertexIndex);
+							float* weights       = skinData->GetBoneWeight(dccIndex);
 							vertex.BoneWeights.x = weights[0];
 							vertex.BoneWeights.y = weights[1];
 							vertex.BoneWeights.z = weights[2];
@@ -550,8 +590,8 @@ namespace Utils::Fbx
 	void FbxFile::ParseMeshSkin(const FbxMesh* InMesh, JSkinData* InSkinData)
 	{
 		// 스켈레톤 데이터가 없으면 스키닝 정보를 파싱할 필요가 없다.
-		if (mSkeletonData.Joints.empty())
-			return;
+		// if (mSkeletonData.Joints.empty())
+		// 	return;
 
 		/// 메시에 붙어있는 스킨을 가져오자.
 		/// 스킨(skinning)이라는게 뭘까?
@@ -568,11 +608,33 @@ namespace Utils::Fbx
 		if (deformerCount == 0)	// 스킨이 없으면
 			return;
 
+
 		// SkinData에 메시 정보를 집어넣자
 		const int32_t     vertexCount  = InMesh->GetControlPointsCount();	// 영향을 받는 정점 개수
 		constexpr int32_t vertexStride = 4;									// 가중치 용량 (몇개의 본에서 영향을 받나? 8개까지 넘어가는건 괴물 같은 메시)
 
 		InSkinData->Initialize(vertexCount, vertexStride);
+
+		JArray<FbxMatrix> sample;
+		int               poseCount = mFbxScene->GetPoseCount();
+		for (int i = 0; i < poseCount; i++)
+		{
+			FbxPose* pose = mFbxScene->GetPose(i);
+			if (pose->IsBindPose())
+			{  // 바인드 포즈인지 확인
+				int nodeCount = pose->GetCount();
+				for (int j = 0; j < nodeCount; j++)
+				{
+					FbxNode* node = pose->GetNode(j);
+					if (node)
+					{
+						LOG_CORE_INFO("Bind Pose Node Name: {0}", node->GetName());
+						FbxMatrix bindPoseMatrix = pose->GetMatrix(j);
+						sample.push_back(bindPoseMatrix);
+					}
+				}
+			}
+		}
 
 		// 스킨 갯수 만큼 순회
 		for (int32_t deformerIndex = 0; deformerIndex < deformerCount; ++deformerIndex)
@@ -596,21 +658,23 @@ namespace Utils::Fbx
 				const double*  weights     = cluster->GetControlPointWeights();			// 이 본에 영향을 받는 가중치 배열
 				const int32_t  boneIndex   = InSkinData->GetBoneCount();				// 이 본의 인덱스
 
-
 				/// BindPose?
 				/// 이 FbxSdk는 autodesk Maya에서 사용되는 기능으로 용어가 정립이 되어있는거같은데
 				/// 보통 스켈레톤(본)과 메시를 연결되기 위한 기본 포즈이다.
 				/// 예로 캐릭터 메시가 T-Pose로 되어있다면 본 또한 T-Pose로 되어있을 때 이걸 연결시키고 둘을 Binding한다.
-				FbxAMatrix boneBindPose;
-				FbxAMatrix vertexGroupBindPose;
+				FbxAMatrix boneBindPose;		// 본의 변환 행렬 (좌표: 월드 좌표계)
+				FbxAMatrix vertexGroupBindPose;	// 메시(VertexGroup, 클러스터)의 변환 행렬 (좌표: 월드 좌표계)
 
-				cluster->GetTransformLinkMatrix(boneBindPose);		// 본의 변환 행렬
+				cluster->GetTransformLinkMatrix(boneBindPose);		// 본의 변환 행렬 
 				cluster->GetTransformMatrix(vertexGroupBindPose);	// 메시(VertexGroup, 클러스터)의 변환 행렬
+
+				InSkinData->AddBindPose(jointName, Utils::Fbx::Maya2DXMat(FMat2JMat(boneBindPose)));
 
 				// BindPoseMatrix를 저장한다.
 				FbxMatrix bindPosMat =
-						vertexGroupBindPose.Inverse() // 메시 로컬 좌표계로 변환위해 역행렬
-						* boneBindPose; // 본의 변환 행렬을 메시 로컬 좌표계로 변환
+						vertexGroupBindPose.Inverse()		// 메시 로컬 좌표계로 변환위해 역행렬
+						* boneBindPose;						// 본의 변환 행렬을 메시 로컬 좌표계로 변환
+
 				CaptureBindPoseMatrix(InSkinData, joint, bindPosMat);
 
 				InSkinData->AddInfluenceBone(joint->GetName());
@@ -682,7 +746,7 @@ namespace Utils::Fbx
 
 		mAnimations.push_back(anim);
 
-		ParseAnimNode(Scene->GetRootNode(), -1, !mSkeletonData.Joints.empty());
+		ParseAnimNode(Scene->GetRootNode(), -1, true);
 
 		const int32_t nodeCount = mScanList.size();
 		for (int32_t i = 0; i < nodeCount; ++i)
@@ -704,22 +768,10 @@ namespace Utils::Fbx
 		const int32_t childNum    = InNode->GetChildCount();
 
 		FAnimationNode animNode{};
-		animNode.ParentIndex = mScanList.empty() ? -1 : InParentIndex;
+		animNode.ParentIndex = InParentIndex;
 		animNode.Node        = InNode;
 
-
-		if (bSkeletalAnim)
-		{
-			if (InNode->GetNodeAttribute() && InNode->GetNodeAttribute()->GetAttributeType() ==
-				FbxNodeAttribute::eSkeleton)
-			{
-				mScanList.push_back(animNode);
-			}
-		}
-		else
-		{
-			mScanList.push_back(animNode);
-		}
+		mScanList.push_back(animNode);
 
 
 		for (int32_t i = 0; i < childNum; ++i)
@@ -864,14 +916,12 @@ namespace Utils::Fbx
 		return layer;
 	}
 
-	void FbxFile::CaptureBindPoseMatrix(JSkinData*       Ptr, const FbxNode* Joint,
-										const FbxMatrix& InBindPosMat)
+	void FbxFile::CaptureBindPoseMatrix(JSkinData* Ptr, const FbxNode* Joint, const FbxMatrix& InBindPosMat)
 	{
 		FMatrix bindPoseMat = Utils::Fbx::Maya2DXMat(FMat2JMat(InBindPosMat));
 		FMatrix bindPoseInvMat;
 		bindPoseMat.Invert(bindPoseInvMat);
 
-		Ptr->AddBindPose(Joint->GetName(), bindPoseMat);
 		Ptr->AddInverseBindPose(Joint->GetName(), bindPoseInvMat);
 	}
 
@@ -897,42 +947,31 @@ namespace Utils::Fbx
 
 				auto animEvaluator = Scene->GetAnimationEvaluator();
 
-				auto            globalMat  = animEvaluator->GetNodeGlobalTransform(animNode.Node, time);
-				FAnimationNode* parentNode = nullptr;
-				if (animNode.ParentIndex >= 0)
-				{
-					parentNode = &mScanList[animNode.ParentIndex];
-				}
+				auto localMat = animEvaluator->GetNodeLocalTransform(animNode.Node, time);
 
-				AddKey(animNode, parentNode, globalMat, currentTime - startTime);
+				AddKey(animNode, localMat, currentTime - startTime);
 			}
 			currentTime += deltaTime;
 		}
 	}
 
-	void FbxFile::AddKey(FAnimationNode&   InNode, FAnimationNode* InParentNode,
-						 const FbxAMatrix& InGlobalMat, float      InTime)
+	void FbxFile::AddKey(FAnimationNode& InNode, const FbxAMatrix& InLocalMat, float InTime)
 	{
-		FMatrix globalMat = Utils::Fbx::Maya2DXMat(FMat2JMat(InGlobalMat));
-		InNode.Transform  = globalMat;
+		FMatrix localMat = Utils::Fbx::Maya2DXMat(FMat2JMat(InLocalMat));
+		InNode.Transform = localMat;
 
-		FMatrix localMat = globalMat;
-		if (InParentNode)
-		{
-			localMat = globalMat * InParentNode->Transform.Invert();
-		}
 		XMVECTOR scale;
 		XMVECTOR rotation;
 		XMVECTOR translation;
 
 		XMMatrixDecompose(&scale, &rotation, &translation, localMat);
 
-		FVector scaleVec;
-		FVector rotationVec;
-		FVector translationVec;
+		FVector  scaleVec;
+		FVector4 rotationVec;
+		FVector  translationVec;
 
 		XMStoreFloat3(&scaleVec, scale);
-		XMStoreFloat3(&rotationVec, rotation);
+		XMStoreFloat4(&rotationVec, rotation);
 		XMStoreFloat3(&translationVec, translation);
 
 		InNode.AnimationTrack->AddKey(InTime, translationVec, rotationVec, scaleVec);

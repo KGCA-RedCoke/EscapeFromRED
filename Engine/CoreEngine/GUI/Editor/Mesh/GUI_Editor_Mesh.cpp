@@ -19,8 +19,6 @@ void GUI_Editor_Mesh::Render()
 	{
 		ptr->UpdateBuffer();
 		ptr->Draw();
-
-		ptr->DrawBone();
 	}
 }
 

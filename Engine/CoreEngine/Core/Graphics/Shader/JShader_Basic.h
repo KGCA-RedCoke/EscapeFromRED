@@ -15,8 +15,6 @@ public:
 private:
 
 	// ------------------------------ 캐싱 데이터 ------------------------------
-	CBuffer::Space  mCachedSpaceData;
 	CBuffer::Light  mCachedLightData;
-	CBuffer::Camera mCachedCameraData;
 
 };

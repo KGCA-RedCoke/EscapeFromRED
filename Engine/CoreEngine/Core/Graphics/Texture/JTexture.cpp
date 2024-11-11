@@ -81,7 +81,8 @@ bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, const int32_t InSlot, const Ptr<JTexture>& InTexture)
+void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, const int32_t InSlot,
+								  const Ptr<JTexture>& InTexture)
 {
 	ID3D11ShaderResourceView* srv = nullptr;
 	if (InTexture)
@@ -107,12 +108,25 @@ void JTexture::LoadFromFile()
 	ComPtr<ID3D11Resource>  textureResource;
 	ComPtr<ID3D11Texture2D> texture;
 
+
+	if (FAILED(CreateWICTextureFromFileEx(
+					   Renderer.GetDevice(),
+					   mTextureName.c_str(),
+					   0,
+					   D3D11_USAGE_DEFAULT,
+					   D3D11_BIND_SHADER_RESOURCE,
+					   0,
+					   0,
+					   WIC_LOADER_FORCE_RGBA32,
+					   textureResource.GetAddressOf(),
+					   mShaderResourceView.GetAddressOf()
+				   )))
 	// 여기서는 CheckResult를 하지 않는다. 텍스처 파일이 없을 경우 디폴트 텍스처 적용
-	if (FAILED(CreateWICTextureFromFile(
-				   Renderer.GetDevice(),
-				   mTextureName.c_str(),
-				   textureResource.GetAddressOf(),
-				   mShaderResourceView.GetAddressOf())))
+	// if (FAILED(CreateWICTextureFromFile(
+	// 			   Renderer.GetDevice(),
+	// 			   mTextureName.c_str(),
+	// 			   textureResource.GetAddressOf(),
+	// 			   mShaderResourceView.GetAddressOf())))
 	{
 		JText errorText = WString2String(std::format(L"Texture Load Failed: {}", mTextureName));
 		// ShowErrorPopup(errorText);
@@ -142,7 +156,7 @@ void JTexture::LoadFromFileEx()
 				   0,
 				   D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ,
 				   0,
-				   WIC_LOADER_DEFAULT,
+				   WIC_LOADER_FORCE_SRGB,
 				   textureResource.GetAddressOf(),
 				   nullptr
 			   )))

@@ -13,7 +13,7 @@ uint32_t JCamera::s_CameraNum = 0;
  */
 JCamera::JCamera() noexcept
 	: mName(std::format(L"JCam_{}", s_CameraNum++)),
-	  mDefaultEye(0, 5.f, -15.f),
+	  mDefaultEye(0, 500.f, -1500.f),
 	  mDefaultLookAt(0, 0, 0),
 	  mEye(mDefaultEye),
 	  mLookAt(0, 0, 0),
@@ -22,9 +22,9 @@ JCamera::JCamera() noexcept
 	  mFOV(0),
 	  mAspect(0),
 	  mNearPlane(0.1f),
-	  mFarPlane(10000.f),
+	  mFarPlane(100000.f),
 	  mRotationValue(0.01f),
-	  mTranslationValue(5.f),
+	  mTranslationValue(500.f),
 	  mInputKeyboard()
 {
 	JCamera::SetViewParams(mDefaultEye, mDefaultLookAt);
@@ -294,18 +294,10 @@ void JCamera::UpdateInput()
 	else if (IsKeyPressed(EKeyCode::A))
 		mInputDirection.x -= 1.f;
 
-	// 입력이 있으면 가속 체크
-	// if (!mInputDirection.IsNearlyZero())
-	// {
-	//
-	// 	if (IsKeyPressed(EKeyCode::LButton))
-	// 	{
-	// 		mCamSpeed = FMath::Clamp(mCamSpeed + Application::GetDeltaSeconds() * 5.f, 1.f, 10.f);
-	// 	}
-	// 	else
-	// 	{
-	// 		mCamSpeed = FMath::Clamp(mCamSpeed - Application::GetDeltaSeconds() * 5.f, 1.f, 10.f);
-	// 	}
-	// }
-
+	if (IsKeyPressed(EKeyCode::Home))
+	{
+		mYaw   = 0.f;
+		mPitch = 0.f;
+		mEye   = mDefaultEye;
+	}
 }

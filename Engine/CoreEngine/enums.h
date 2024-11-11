@@ -42,6 +42,7 @@ enum class EKeyCode : uint8_t
 	F3,
 	F4,
 	LShift,
+	Home,
 	End
 };
 
@@ -62,5 +63,5 @@ static constexpr int ASCII[static_cast<UINT>(EKeyCode::End)] =
 	VK_LEFT, VK_RIGHT, VK_DOWN, VK_UP,
 	VK_LBUTTON, VK_MBUTTON, VK_RBUTTON,
 	VK_SPACE, VK_F1, VK_F2, VK_F3, VK_F4,
-	VK_LSHIFT
+	VK_LSHIFT, VK_HOME
 };

@@ -13,6 +13,9 @@ public:
 	~GUI_Viewport() override = default;
 
 protected:
+	void Initialize() override;
+	
+protected:
 	void Update_Implementation(float DeltaTime) override;
 
 public:

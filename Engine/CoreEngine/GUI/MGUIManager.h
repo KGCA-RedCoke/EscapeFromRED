@@ -2,6 +2,8 @@
 #include "GUI_Base.h"
 #include "Core/Manager/Manager_Base.h"
 
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+
 class GUI_Editor_LandScape;
 class GUI_Inspector;
 class GUI_Editor_Material;

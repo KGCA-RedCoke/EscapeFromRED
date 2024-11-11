@@ -228,6 +228,9 @@ namespace JMath
 	TVector::TVector(const DirectX::XMVECTORF32& InVector)
 		: XMFLOAT3(InVector.f[0], InVector.f[1], InVector.f[2]) {}
 
+	TVector::TVector(const float* pArray)
+		: XMFLOAT3(pArray) {}
+
 	TVector& TVector::operator=(const DirectX::XMVECTORF32& InVector)
 	{
 		x = InVector.f[0];

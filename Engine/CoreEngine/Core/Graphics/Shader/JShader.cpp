@@ -100,6 +100,35 @@ void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JTe
 
 void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 {
+	if (!mTargetCamera)
+	{
+		mTargetCamera = IManager.CameraManager->GetCurrentMainCam();
+	}
+
+	if (const auto viewMat = XMMatrixTranspose(mTargetCamera->GetViewMatrix()); mCachedSpaceData.View != viewMat)
+	{
+		mCachedSpaceData.View = viewMat;
+		UpdateConstantData(InDeviceContext,
+						   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
+						   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_VIEW,
+						   &mCachedSpaceData.View);
+	}
+
+	if (const auto projMat = XMMatrixTranspose(mTargetCamera->GetProjMatrix()); mCachedSpaceData.Projection != projMat)
+	{
+		mCachedSpaceData.Projection = projMat;
+		UpdateConstantData(InDeviceContext,
+						   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
+						   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_PROJ,
+						   &mCachedSpaceData.Projection);
+	}
+
+	if (const auto camPos = FVector4(mTargetCamera->GetEyePositionFVector(), 1.0f); mCachedCameraData.CameraPos != camPos)
+	{
+		mCachedCameraData.CameraPos = camPos;
+		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_CAMERA, &mCachedCameraData);
+	}
+
 	for (int32_t i = 0; i < mShaderData.ConstantBuffers.size(); ++i)
 	{
 		mShaderData.ConstantBuffers.at(i).SetConstantBuffer(InDeviceContext);
@@ -377,6 +406,5 @@ JConstantBuffer* JShader::GetConstantBuffer(const JText& InBufferName)
 	{
 		return &mShaderData.ConstantBuffers[it->second];
 	}
-	LOG_CORE_ERROR("Buffer Name is not found in Shader Constant Buffer Table");
 	return nullptr;
 }

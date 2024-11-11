@@ -1,4 +1,7 @@
 ﻿#include "MManagerInterface.h"
+
+#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 
 
@@ -32,6 +35,7 @@ void MManagerInterface::Initialize()
 	MeshManager = &MMeshManager::Get();
 
 	MaterialManager = &MMaterialManager::Get();
+	MaterialManager->SaveEngineMaterials();
 
 	MaterialInstanceManager = &MMaterialInstanceManager::Get();
 
@@ -43,7 +47,10 @@ void MManagerInterface::Initialize()
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
-	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(Game/Mesh)"));
+	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));
+	ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc/GameResource/Horror_Farm)"));
+
+
 }
 
 void MManagerInterface::Update(float DeltaTime)
@@ -59,52 +66,16 @@ void MManagerInterface::Render()
 {
 	GUIManager->Render();
 
-	auto deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
-
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
-	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Studio);
+	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::TrueBlack);
 	ShaderManager->UpdateCamera(IManager.CameraManager->GetCurrentMainCam());
-
-	World->Draw();
-
-	//
-	deviceContext->OMSetBlendState(IManager.RenderManager->GetDXTKCommonStates()->AlphaBlend(),
-								   nullptr,
-								   0xFFFFFFFF);
-
-	deviceContext->RSSetState(IManager.RenderManager->GetRasterizerState());
 
 	G_DebugBatch.PreRender();
 
 	G_DebugBatch.Render();
 
-	// Draw X Axis (Infinity Line)
-	G_DebugBatch.DrawRay(
-						 {0.f, 0.f, 0.f, 0.f},
-						 {100.f, 0.f, 0.f, 0.f},
-						 false,
-						 {1.f, 0.f, 0.f, 1.f}
-						);
-
-	// Draw Z Axis
-	G_DebugBatch.DrawRay(
-						 {0.f, 0.f, 0.f, 0.f},
-						 {0.f, 0.f, 100.f, 0.f},
-						 false,
-						 {0.f, 0.f, 1.f, 1.f}
-						);
-
-	// Draw Y Axis
-	G_DebugBatch.DrawRay(
-						 {0.f, 0.f, 0.f, 0.f},
-						 {0.f, 100.f, 0.f, 0.f},
-						 false,
-						 {0.f, 1.f, 0.f, 1.f}
-						);
-
 	G_DebugBatch.PostRender();
 
-	LayerManager.Render();
 }
 
 void MManagerInterface::Release()
@@ -113,7 +84,7 @@ void MManagerInterface::Release()
 
 	GUIManager->Release();
 
-	IManager.RenderManager->Release();
+	RenderManager->Release();
 
 	Utils::Fbx::FbxFile::Release();
 }
@@ -131,8 +102,14 @@ void MManagerInterface::SearchFiles_Recursive(const std::filesystem::path& InPat
 			}
 			else if (entry.is_regular_file())
 			{
+				JText ext = entry.path().extension().string();
 				// 해시 비교
-				const uint32_t hash = StringHash(entry.path().extension().string().c_str());
+
+				std::ranges::transform(ext,
+									   ext.begin(),
+									   [](unsigned char c){ return std::tolower(c); });
+
+				const uint32_t hash = StringHash(ext.c_str());
 
 				if (hash == HASH_EXT_PNG || hash == HASH_EXT_JPG || hash == HASH_EXT_DDS || hash == HASH_EXT_BMP)
 				{
@@ -145,6 +122,45 @@ void MManagerInterface::SearchFiles_Recursive(const std::filesystem::path& InPat
 				else if (hash == Hash_EXT_JASSET)
 				{
 					IManager.MeshManager->CreateOrLoad(entry.path().string());
+				}
+			}
+		}
+	}
+}
+
+void MManagerInterface::ParseFiles_Recursive(const std::filesystem::path& InPath)
+{
+	if (exists(InPath) && is_directory(InPath))
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(InPath))
+		{
+			if (entry.is_directory())
+			{
+				ParseFiles_Recursive(entry.path());
+			}
+			else if (entry.is_regular_file())
+			{
+				JText ext = entry.path().extension().string();
+				// 해시 비교
+
+				std::ranges::transform(ext,
+									   ext.begin(),
+									   [](unsigned char c){ return std::tolower(c); });
+
+				const uint32_t hash = StringHash(ext.c_str());
+
+				if (hash == Hash_EXT_FBX)
+				{
+					JText resultFile = entry.path().string();
+					if (std::filesystem::exists(resultFile) && std::filesystem::is_regular_file(resultFile))
+					{
+						// Import Fbx
+						Utils::Fbx::FbxFile fbxFile;
+						if (!fbxFile.Load(resultFile.c_str()))
+						{
+							LOG_CORE_INFO("Fbx File Failed: {}", resultFile);
+						}
+					}
 				}
 			}
 		}

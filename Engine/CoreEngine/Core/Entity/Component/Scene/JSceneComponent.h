@@ -4,6 +4,15 @@
 #include "Core/Utils/Math/TMatrix.h"
 
 /**
+ * 2D 스크린에 배치되는 컴포넌트
+ */
+class JSceneComponent_2D : public IRenderable
+{
+	
+};
+
+
+/**
  * 씬 컴포넌트는 씬에 배치되는 모든 액터의 기본 컴포넌트
  * 위치 및 회전, 크기를 가지며, 이를 통해 컴포넌트의 위치 및 회전을 결정
  */
@@ -12,7 +21,8 @@ class JSceneComponent : public JActorComponent, public IRenderable
 public:
 	JSceneComponent();
 	JSceneComponent(JTextView InName);
-	JSceneComponent(JTextView                   InName, const Ptr<JActor>& InOwnerActor,
+	JSceneComponent(JTextView                   InName,
+					const Ptr<JActor>&          InOwnerActor,
 					const Ptr<JSceneComponent>& InParentSceneComponent);
 	~JSceneComponent() override;
 

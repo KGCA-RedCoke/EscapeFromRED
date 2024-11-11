@@ -1,12 +1,15 @@
 ﻿#include "GUI_AssetBrowser.h"
 
 #include "MGUIManager.h"
+#include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"
 #include "Editor/GUI_Editor_Material.h"
 #include "Editor/Actor/GUI_Editor_Actor.h"
 #include "Editor/Mesh/GUI_Editor_Mesh.h"
+#include "Editor/Mesh/GUI_Editor_SkeletalMesh.h"
 
 
 GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
@@ -580,10 +583,18 @@ void GUI_AssetBrowser::ParseAsset(FBasicFilePreview* ItemData)
 
 	uint32_t assetType = metaData.AssetType;
 
-	if (assetType == HASH_ASSET_TYPE_STATIC_MESH || assetType == HASH_ASSET_TYPE_SKELETAL_MESH)
+	if (assetType == HASH_ASSET_TYPE_STATIC_MESH)
 	{
 		LOG_CORE_INFO("Static Mesh");
 		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+	}
+	else if (assetType == HASH_ASSET_TYPE_SKELETAL_MESH)
+	{
+		LOG_CORE_INFO("Skeletal Mesh");
+		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_SkeletalMesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}

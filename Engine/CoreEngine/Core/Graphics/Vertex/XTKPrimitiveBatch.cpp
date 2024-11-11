@@ -52,13 +52,42 @@ void XTKPrimitiveBatch::Release()
 void XTKPrimitiveBatch::PreRender()
 {
 	mBatchEffect->Apply(IManager.RenderManager->GetImmediateDeviceContext());
+
+	IManager.RenderManager->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
+
+	mBatch->Begin();
 }
 
 void XTKPrimitiveBatch::Render()
 {
-	IManager.RenderManager->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
 
-	mBatch->Begin();
+	constexpr FVector4 origin = {0, 0, 0, 0};
+
+	// TODO: Editor Mode 일때만 Draw (매크로 사용)
+
+	// Draw X Axis (Infinity Line)
+	G_DebugBatch.DrawRay_Implement(
+								   origin,
+								   {10000.f, 0.f, 0.f, 0.f},
+								   false,
+								   {1.f, 0.f, 0.f, 1.f}
+								  );
+
+	// Draw Z Axis
+	G_DebugBatch.DrawRay_Implement(
+								   origin,
+								   {0.f, 0.f, 10000.f, 0.f},
+								   false,
+								   {0.f, 0.f, 1.f, 1.f}
+								  );
+
+	// Draw Y Axis
+	G_DebugBatch.DrawRay_Implement(
+								   origin,
+								   {0.f, 10000.f, 0.f, 0.f},
+								   false,
+								   {0.f, 1.f, 0.f, 1.f}
+								  );
 }
 
 void XTKPrimitiveBatch::PostRender()
@@ -66,7 +95,8 @@ void XTKPrimitiveBatch::PostRender()
 	mBatch->End();
 }
 
-void XTKPrimitiveBatch::Draw() {}
+void XTKPrimitiveBatch::Draw()
+{}
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
 {
@@ -78,9 +108,9 @@ void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
 	const XMVECTOR yAxis = XMVectorScale(g_XMIdentityR1, radius);
 	const XMVECTOR zAxis = XMVectorScale(g_XMIdentityR2, radius);
 
-	DrawRing(origin, xAxis, zAxis, InColor);
-	DrawRing(origin, xAxis, yAxis, InColor);
-	DrawRing(origin, yAxis, zAxis, InColor);
+	DrawRing_Implement(origin, xAxis, zAxis, InColor);
+	DrawRing_Implement(origin, xAxis, yAxis, InColor);
+	DrawRing_Implement(origin, yAxis, zAxis, InColor);
 }
 
 void XTKPrimitiveBatch::Draw(const BoundingBox& InBox, FXMVECTOR InColor) const
@@ -89,7 +119,7 @@ void XTKPrimitiveBatch::Draw(const BoundingBox& InBox, FXMVECTOR InColor) const
 	const XMVECTOR position = XMLoadFloat3(&InBox.Center);
 	matWorld.r[3]           = XMVectorSelect(matWorld.r[3], position, g_XMSelect1110);
 
-	DrawCube(matWorld, InColor);
+	DrawCube_Implement(matWorld, InColor);
 }
 
 void XTKPrimitiveBatch::Draw(const BoundingOrientedBox& InObb, FXMVECTOR InColor) const
@@ -100,7 +130,7 @@ void XTKPrimitiveBatch::Draw(const BoundingOrientedBox& InObb, FXMVECTOR InColor
 	const XMVECTOR position = XMLoadFloat3(&InObb.Center);
 	matWorld.r[3]           = XMVectorSelect(matWorld.r[3], position, g_XMSelect1110);
 
-	DrawCube(matWorld, InColor);
+	DrawCube_Implement(matWorld, InColor);
 }
 
 void XTKPrimitiveBatch::Draw(const BoundingFrustum& InFrustum, FXMVECTOR InColor) const
@@ -144,7 +174,7 @@ void XTKPrimitiveBatch::Draw(const BoundingFrustum& InFrustum, FXMVECTOR InColor
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINELIST, verts, static_cast<UINT>(std::size(verts)));
 }
 
-void XTKPrimitiveBatch::DrawCube(CXMMATRIX matWorld, FXMVECTOR color) const
+void XTKPrimitiveBatch::DrawCube_Implement(CXMMATRIX matWorld, FXMVECTOR color) const
 {
 	static const XMVECTORF32 s_verts[8] =
 	{
@@ -181,13 +211,12 @@ void XTKPrimitiveBatch::DrawCube(CXMMATRIX matWorld, FXMVECTOR color) const
 		XMStoreFloat3(&verts[i].position, v);
 		XMStoreFloat4(&verts[i].color, color);
 	}
-
 	mBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_LINELIST, s_indices, static_cast<UINT>(std::size(s_indices)), verts, 8);
 }
 
 
-void XTKPrimitiveBatch::DrawGrid(FXMVECTOR InXAxis, FXMVECTOR InYAxis, FXMVECTOR InOrigin,
-								 size_t    InXdivs, size_t    InYdivs, GXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawGrid_Implement(FXMVECTOR InXAxis, FXMVECTOR InYAxis, FXMVECTOR InOrigin,
+										   size_t    InXdivs, size_t    InYdivs, GXMVECTOR InColor) const
 {
 	InXdivs = FMath::Max<size_t>(1, InXdivs);
 	InYdivs = FMath::Max<size_t>(1, InYdivs);
@@ -217,7 +246,8 @@ void XTKPrimitiveBatch::DrawGrid(FXMVECTOR InXAxis, FXMVECTOR InYAxis, FXMVECTOR
 	}
 }
 
-void XTKPrimitiveBatch::DrawRing(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis, GXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis,
+										   GXMVECTOR InColor) const
 {
 	constexpr size_t c_ringSegments = 32;
 
@@ -254,7 +284,8 @@ void XTKPrimitiveBatch::DrawRing(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMV
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, c_ringSegments + 1);
 }
 
-void XTKPrimitiveBatch::DrawRay(FXMVECTOR InOrigin, FXMVECTOR InDirection, bool bNormalize, FXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR InDirection, bool bNormalize,
+										  FXMVECTOR InColor) const
 {
 	VertexPositionColor verts[3];
 	XMStoreFloat3(&verts[0].position, InOrigin);
@@ -284,7 +315,8 @@ void XTKPrimitiveBatch::DrawRay(FXMVECTOR InOrigin, FXMVECTOR InDirection, bool 
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, 2);
 }
 
-void XTKPrimitiveBatch::DrawTriangle(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawTriangle_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC,
+											   GXMVECTOR InColor) const
 {
 	VertexPositionColor verts[4];
 	XMStoreFloat3(&verts[0].position, InPointA);
@@ -300,8 +332,8 @@ void XTKPrimitiveBatch::DrawTriangle(FXMVECTOR InPointA, FXMVECTOR InPointB, FXM
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, 4);
 }
 
-void XTKPrimitiveBatch::DrawQuad(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InPointD,
-								 HXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawQuad_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InPointD,
+										   HXMVECTOR InColor) const
 {
 	VertexPositionColor verts[5];
 	XMStoreFloat3(&verts[0].position, InPointA);

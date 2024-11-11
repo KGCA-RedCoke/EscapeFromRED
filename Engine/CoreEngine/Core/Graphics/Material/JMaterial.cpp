@@ -221,20 +221,12 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext)
+void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext, const JArray<FMaterialParam>& InInstanceParams)
 {
 	assert(mShader);
 
 	// 셰이더를 적용
 	mShader->BindShaderPipeline(InDeviceContext);
-
-	// 텍스처맵 슬롯 바인딩
-	for (int32_t i = 0; i < mMaterialParams.size(); ++i)
-	{
-		const FMaterialParam& param = mMaterialParams[i];
-
-		// param.BindMaterialParam(InDeviceContext);
-	}
 }
 
 void JMaterial::EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam)

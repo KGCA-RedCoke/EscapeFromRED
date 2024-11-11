@@ -56,14 +56,14 @@ namespace Utils::DX
 		dxgiBackBuffer = nullptr;
 	}
 
-	void CreateViewport(uint32_t InWidth, uint32_t InHeight, D3D11_VIEWPORT* OutViewport)
+	void CreateViewport(uint32_t InWidth, uint32_t InHeight, D3D11_VIEWPORT* OutViewport, FVector2 InOffset)
 	{
 		OutViewport->Width    = static_cast<FLOAT>(InWidth);
 		OutViewport->Height   = static_cast<FLOAT>(InHeight);
 		OutViewport->MinDepth = 0.0f;
 		OutViewport->MaxDepth = 1.0f;
-		OutViewport->TopLeftX = 0.0f;
-		OutViewport->TopLeftY = 0.0f;
+		OutViewport->TopLeftX = InOffset.x;
+		OutViewport->TopLeftY = InOffset.y;
 	}
 
 	void CreateDepthStencilView(ID3D11Device*            InDevice, uint32_t        InWidth, uint32_t InHeight,

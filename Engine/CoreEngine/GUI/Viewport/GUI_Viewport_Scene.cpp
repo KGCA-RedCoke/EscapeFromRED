@@ -1,7 +1,8 @@
 ﻿#include "GUI_Viewport_Scene.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
+#include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Interface/MManagerInterface.h"
 #include "Core/Window/Application.h"
 
@@ -39,18 +40,26 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			auto  metaData = Utils::Serialization::GetType(str);
 			JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
 
-			if (metaData.AssetType == StringHash("J3DObject"))
+			if (metaData.AssetType == HASH_ASSET_TYPE_STATIC_MESH)
+			{
+
+				auto newActor = MakePtr<JStaticMeshActor>(name, IManager.MeshManager->CreateOrClone(str));
+				newActor->Initialize();
+
+				Application::s_AppInstance->Actors.push_back(newActor);
+
+			}
+			else if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
 			{
 				auto newActor = MakePtr<JActor>();
 				newActor->Initialize();
 
-				Ptr<JMeshObject>          mesh          = IManager.MeshManager->CreateOrClone(str);
+				Ptr<JSkeletalMeshObject>  mesh          = IManager.MeshManager->CreateOrClone<JSkeletalMeshObject>(str);
 				Ptr<JStaticMeshComponent> meshComponent = MakePtr<JStaticMeshComponent>(ParseFile(str));
 				meshComponent->SetMeshObject(mesh);
 				meshComponent->AttachToActor(newActor);
 
 				Application::s_AppInstance->Actors.push_back(newActor);
-
 			}
 
 		}
@@ -83,7 +92,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	ImGui::SetCursorPosX(offsetX);
 
 	// Pause 버튼
-	if (ImGui::ImageButton(mPauseIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
+	if (ImGui::ImageButton("GameBtn", mPauseIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
 		// Pause 동작 처리
 		std::cout << "Game Paused" << std::endl;
@@ -92,7 +101,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	ImGui::SameLine(0, spacing); // 버튼 간격 띄우기
 
 	// Play 버튼
-	if (ImGui::ImageButton(mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
+	if (ImGui::ImageButton("PlayBtn",mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;

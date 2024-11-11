@@ -13,17 +13,23 @@ GUI_Viewport::GUI_Viewport(const JText& InTitle)
 	  bIsFocused(false),
 	  bIsHovered(false),
 	  mEditorCameraRef(nullptr),
-	  mViewportTitle(InTitle) {}
+	  mViewportTitle(InTitle)
+{
+	GUI_Viewport::Initialize();
+}
+
+void GUI_Viewport::Initialize()
+{
+	if (!mViewportData)
+	{
+		mViewportData = IManager.ViewportManager->FetchResource(mViewportTitle);
+	}
+}
 
 void GUI_Viewport::Update_Implementation(float DeltaTime)
 {
 	bIsFocused = ImGui::IsWindowFocused();
 	bIsHovered = ImGui::IsWindowHovered();
-
-	if (!mViewportData)
-	{
-		mViewportData = IManager.ViewportManager->FetchResource(mViewportTitle);
-	}
 
 	if (!mViewportData)
 	{
@@ -63,7 +69,7 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 					ptr->DrawID((ptr->GetHash()));
 				}
 			}
-			
+
 			uint32_t id = GetMousePickingValue(IManager.RenderManager->GetImmediateDeviceContext(), mousePos);
 
 			for (auto& actor : actors)

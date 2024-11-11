@@ -45,8 +45,19 @@ public:
 	}
 
 public:
+	/**
+	 * Args에 뭘 넣을지 잘 모르겠으면 생성자 확인
+	 * @param InName 고유 이름 
+	 * @param InArgs 템플릿 클래스 생성자 인자 
+	 */
 	template <class ReturnType = ManagedType, typename... Args>
 	Ptr<ReturnType> CreateOrLoad(const JWText& InName, Args&&... InArgs);
+	
+	/**
+	 * Args에 뭘 넣을지 잘 모르겠으면 생성자 확인
+	 * @param InName 고유 이름 
+	 * @param InArgs 템플릿 클래스 생성자 인자 
+	 */
 	template <class ReturnType = ManagedType, typename... Args>
 	Ptr<ReturnType> CreateOrLoad(const JText& InName, Args&&... InArgs);
 

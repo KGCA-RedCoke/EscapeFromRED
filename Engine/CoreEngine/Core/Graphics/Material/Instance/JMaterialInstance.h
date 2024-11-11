@@ -20,6 +20,10 @@ public:
 
 public:
 	void BindMaterial(ID3D11DeviceContext* InDeviceContext);
+	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const void* InData,
+							const uint32_t       InOffset = 0) const;
+	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,
+							const void*          InData) const;
 	void UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const;
 	void UpdateCamera(ID3D11DeviceContext* InDeviceContext, const Ptr<class JCamera>& InCameraObj) const;
 	void UpdateLightColor(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightColor) const;

@@ -28,15 +28,15 @@ using JAnimKeyList = JArray<JAnimKey<T>>;
  */
 struct FAnimKeyDataTransform
 {
-	JAnimKeyList<FVector> PositionKeys;
-	JAnimKeyList<FVector> RotationKeys;
-	JAnimKeyList<FVector> ScaleKeys;
+	JAnimKeyList<FVector>  PositionKeys;
+	JAnimKeyList<FVector4> RotationKeys;
+	JAnimKeyList<FVector>  ScaleKeys;
 };
 
 
 struct JAnimBoneTrack
 {
-	void AddKey(float InTime, const FVector& InPosition, const FVector& InRotation, const FVector& InScale);
+	void AddKey(float InTime, const FVector& InPosition, const FVector4& InRotation, const FVector& InScale);
 
 	void OptimizeKeys();
 	void OptimizeKey();
@@ -91,6 +91,7 @@ public:
 	[[nodiscard]] FORCEINLINE float GetStartTime() const { return mStartTime; }
 	[[nodiscard]] FORCEINLINE float GetEndTime() const { return mEndTime; }
 	[[nodiscard]] FORCEINLINE float GetSourceSamplingInterval() const { return mSourceSamplingInterval; }
+	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
 
 protected:
 	// ------------ Properties ------------

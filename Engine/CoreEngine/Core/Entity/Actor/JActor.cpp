@@ -7,15 +7,16 @@
 JActor::JActor() {}
 
 JActor::JActor(JTextView InName)
-	: JSceneComponent(InName) {}
-
-JActor::~JActor() {}
+	: JSceneComponent(InName)
+{}
 
 void JActor::Initialize()
 {
 	JSceneComponent::Initialize();
+
 	Ptr<JActor> thisPtr = GetThisPtr<JActor>();
-	mRootComponent      = CreateDefaultSubObject<JSceneComponent>("RootComponent", thisPtr, thisPtr);
+
+	mRootComponent = CreateDefaultSubObject<JSceneComponent>("RootComponent", thisPtr, thisPtr);
 	mRootComponent->SetupAttachment(thisPtr);
 
 	// TODO: Editor에서 Initialize 시에 호출되도록 수정
@@ -32,11 +33,6 @@ void JActor::BeginPlay()
 void JActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
-
-	for (int32_t i = 0; i < mChildObjs.size(); ++i)
-	{
-		mChildObjs[i]->Tick(DeltaTime);
-	}
 }
 
 void JActor::Destroy()

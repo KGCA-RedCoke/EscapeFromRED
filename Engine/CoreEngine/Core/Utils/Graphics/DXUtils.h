@@ -19,7 +19,7 @@ namespace Utils::DX
 
 	void CreateViewport(uint32_t              InWidth,
 						uint32_t              InHeight,
-						_Out_ D3D11_VIEWPORT* OutViewport);
+						_Out_ D3D11_VIEWPORT* OutViewport, FVector2 InOffset = {0, 0});
 
 	void CreateDepthStencilView(ID3D11Device*                  InDevice,
 								uint32_t                       InWidth,
