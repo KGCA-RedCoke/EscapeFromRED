@@ -48,9 +48,7 @@ void MManagerInterface::Initialize()
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));
-	ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc/GameResource/Horror_Farm)"));
-
-
+	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc/GameResource/Horror_Farm)"));
 }
 
 void MManagerInterface::Update(float DeltaTime)

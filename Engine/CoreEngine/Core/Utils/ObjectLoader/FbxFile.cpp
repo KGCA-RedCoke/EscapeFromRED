@@ -227,7 +227,6 @@ namespace Utils::Fbx
 		assert(root, "empty scene(node x)");
 
 		// 본 정보 파싱
-		mSkeletonData.Joints.emplace_back(FJointData{"RootNode", -1});
 		ParseSkeleton_Recursive(root, 1, 0);
 
 		// Parse Mesh
@@ -241,16 +240,12 @@ namespace Utils::Fbx
 		if (!InNode)
 			return;
 
-		bool    bFound = false;
-		int32_t index;
-		int32_t parentIndex;
-
 		if (InNode->GetNodeAttribute() && InNode->GetNodeAttribute()->GetAttributeType() == FbxNodeAttribute::eSkeleton)
 		{
 			FJointData jointData;
 			{
 				jointData.Name        = InNode->GetName();
-				jointData.ParentIndex = InParentIndex;
+				jointData.ParentIndex = mSkeletonData.Joints.empty() ? -1 : InParentIndex;
 			}
 
 			mSkeletonData.Joints.push_back(jointData);
@@ -259,25 +254,12 @@ namespace Utils::Fbx
 			{
 				bHasSkeleton = true;
 			}
-
-			bFound = true;
-		}
-
-		if (bFound)
-		{
-			index       = mSkeletonData.Joints.size();
-			parentIndex = index - 1;
-		}
-		else
-		{
-			index       = mSkeletonData.Joints.size() - 1;
-			parentIndex = InParentIndex;
 		}
 
 		const int32_t childCount = InNode->GetChildCount();
 		for (int32_t i = 0; i < childCount; ++i)
 		{
-			ParseSkeleton_Recursive(InNode->GetChild(i), index, parentIndex);
+			ParseSkeleton_Recursive(InNode->GetChild(i), mSkeletonData.Joints.size(), InIndex);
 		}
 	}
 
@@ -768,10 +750,22 @@ namespace Utils::Fbx
 		const int32_t childNum    = InNode->GetChildCount();
 
 		FAnimationNode animNode{};
-		animNode.ParentIndex = InParentIndex;
+		animNode.ParentIndex = mScanList.empty() ? -1 : InParentIndex;
 		animNode.Node        = InNode;
 
-		mScanList.push_back(animNode);
+
+		if (bSkeletalAnim)
+		{
+			if (InNode->GetNodeAttribute() && InNode->GetNodeAttribute()->GetAttributeType() ==
+				FbxNodeAttribute::eSkeleton)
+			{
+				mScanList.push_back(animNode);
+			}
+		}
+		else
+		{
+			mScanList.push_back(animNode);
+		}
 
 
 		for (int32_t i = 0; i < childNum; ++i)

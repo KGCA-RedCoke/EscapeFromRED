@@ -95,7 +95,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Vender\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;d3dcompiler.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmt.lib;spdlog.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmt.lib;spdlog.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -192,6 +192,7 @@
     <ClInclude Include="GUI\GUI_Themes.h" />
     <ClInclude Include="GUI\MGUIManager.h" />
     <ClInclude Include="GUI\Popup\GUI_Popup_FileBrowser.h" />
+    <ClInclude Include="GUI\Utils\GUI_Utils.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
     <None Include="Shader\Basic_2D.hlsl">
@@ -297,88 +298,7 @@
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="GUI\Camera\GUI_Camera_Debug_Frustum.cpp" />
     <ClCompile Include="GUI\Editor\Actor\GUI_Editor_Actor.cpp" />
-    <ClCompile Include="GUI\Editor\GUI_Editor_Base.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>../../bin/Debug\Engine\CoreEngine\Intermediate/</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>../../bin/Debug\Engine\CoreEngine\Intermediate/</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>../../bin/Debug\Engine\CoreEngine\Intermediate/</ModuleDependenciesFile>
-      <ModuleOutputFile>../../bin/Debug\Engine\CoreEngine\Intermediate/</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>../../bin/Debug\Engine\CoreEngine\Intermediate/</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>../../bin/Debug\Engine\CoreEngine\Intermediate/vc143.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>../../bin/Debug\Engine\CoreEngine\Intermediate/CoreEngine.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>../../bin/Debug\Engine\CoreEngine\Intermediate/</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>../../bin/Debug\Engine\CoreEngine\Intermediate/CoreEngine.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>../../bin/Debug\Engine\CoreEngine\Intermediate/</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <IncludeInUnityFile>true</IncludeInUnityFile>
-      <UnityFilesDirectory>../../bin/Debug\Engine\CoreEngine\Intermediate/</UnityFilesDirectory>
-      <OrderInUnityFile>100</OrderInUnityFile>
-      <CombineFilesOnlyFromTheSameFolder>false</CombineFilesOnlyFromTheSameFolder>
-      <MinFilesInUnityFile>2</MinFilesInUnityFile>
-      <MaxFilesInUnityFile>0</MaxFilesInUnityFile>
-      <MinUnityFiles>1</MinUnityFiles>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LinkCompiled>true</LinkCompiled>
-    </ClCompile>
+    <ClCompile Include="GUI\Editor\GUI_Editor_Base.cpp" />
     <ClCompile Include="GUI\Editor\GUI_Editor_Material.cpp" />
     <ClCompile Include="GUI\Editor\LandScape\GUI_Editor_LandScape.cpp" />
     <ClCompile Include="GUI\Editor\Mesh\GUI_Editor_Mesh.cpp" />
@@ -389,6 +309,7 @@
     <ClCompile Include="GUI\GUI_Themes.cpp" />
     <ClCompile Include="GUI\MGUIManager.cpp" />
     <ClCompile Include="GUI\Popup\GUI_Popup_FileBrowser.cpp" />
+    <ClCompile Include="GUI\Utils\GUI_Utils.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport_Scene.cpp" />
     <None Include="Shader\Basic.hlsl">

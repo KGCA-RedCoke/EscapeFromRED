@@ -22,7 +22,7 @@ JCamera::JCamera() noexcept
 	  mFOV(0),
 	  mAspect(0),
 	  mNearPlane(0.1f),
-	  mFarPlane(100000.f),
+	  mFarPlane(1000000.f),
 	  mRotationValue(0.01f),
 	  mTranslationValue(500.f),
 	  mInputKeyboard()

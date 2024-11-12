@@ -15,12 +15,14 @@ namespace JMath
 		explicit TQuaternion(_In_reads_(4) const float* pArray);
 		TQuaternion(XMFLOAT4 V);
 		TQuaternion(const XMFLOAT4& InQuaternion);
+
 		explicit TQuaternion(const DirectX::XMVECTORF32& F);
 
 		TQuaternion(const TQuaternion&)            = default;
 		TQuaternion& operator=(const TQuaternion&) = default;
 
-		TQuaternion(TQuaternion&&)            = default;
+		TQuaternion(TQuaternion&&) = default;
+		TQuaternion& operator=(FXMVECTOR V);
 		TQuaternion& operator=(TQuaternion&&) = default;
 
 		operator DirectX::XMVECTOR() const { return XMLoadFloat4(this); }

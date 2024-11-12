@@ -2,6 +2,7 @@
 
 #include "common_include.h"
 #include "GUI_Base.h"
+#include "Utils/GUI_Utils.h"
 
 class GUI_Inspector : public GUI_Base
 {
@@ -20,7 +21,7 @@ private:
 	void DrawTreeNode(const Ptr<class JSceneComponent>& InSceneComponent);
 
 private:
-	ImGuiTextFilter                           mFilter;
+	Utils::GUI::FSearchBar                    mSearchBar;
 	Ptr<JSceneComponent>                      mSelectedSceneComponent;
 	JHash<JText, WPtr<class JSceneComponent>> mSceneComponents;
 };

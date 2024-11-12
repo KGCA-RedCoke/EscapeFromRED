@@ -217,6 +217,10 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		mShader = IManager.ShaderManager->CreateOrLoad<JShader>(shaderName);
 	}
+	else
+	{
+		mShader = IManager.ShaderManager->BasicShader;
+	}
 
 	return true;
 }

@@ -90,6 +90,8 @@ void GUI_AssetBrowser::Update(float DeltaTime)
 		ImGui::EndMenuBar();
 	}
 
+	mSearchBar.DrawSearchBar();
+
 	// 창 내부 크기 설정
 	ImGui::SetNextWindowContentSize(ImVec2(0.0f,
 										   mLayoutOuterPadding + mLayoutLineCount *
@@ -147,18 +149,27 @@ void GUI_AssetBrowser::SetWindowSize(int32_t InWidth, int32_t InHeight) const
 
 void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 {
+	mFilteredItems.clear();
+	for (auto& item : mFiles)
+	{
+		if (mSearchBar.Filter.PassFilter(WString2String(item.FileName).c_str()))
+		{
+			mFilteredItems.push_back(&item);
+		}
+	}
+	
 	ImGuiMultiSelectIO* msIO =
 			ImGui::BeginMultiSelect(
 									mMultiSelectFlag,
 									mSelection.Size, // [option] esc clear되는 flag같은 걸 넣었을때 이 값이 0이라면 비용을 아낄 수 있다
-									mFiles.size() // [option] 아직 잘 모르겠다...
+									mFilteredItems.size() // [option] 아직 잘 모르겠다...
 								   );
 
 	// Use custom selection adapter: store ID in selection (recommended)
 	mSelection.UserData                = this;
 	mSelection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx){
 		GUI_AssetBrowser* self = static_cast<GUI_AssetBrowser*>(self_->UserData);
-		return self->mFiles[idx].ID;
+		return self->mFilteredItems[idx]->ID;
 	};
 	mSelection.ApplyRequests(msIO);
 
@@ -168,7 +179,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			(ImGui::Shortcut(ImGuiKey_F2, ImGuiInputFlags_Repeat) && mSelection.Size > 0) || bRequestRename;
 
 	const int currentItemIndexToFocus =
-			bWantDelete || bWantRename ? mSelection.ApplyDeletionPreLoop(msIO, mFiles.size()) : -1;
+			bWantDelete || bWantRename ? mSelection.ApplyDeletionPreLoop(msIO, mFilteredItems.size()) : -1;
 
 	UpdateClipperAndItemSpacing(msIO, start_pos, currentItemIndexToFocus);
 
@@ -297,12 +308,14 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 			// 라인 시작 인덱스 (한줄에 10개씩이면 0, 11, 21 ...)
 			const int itemLineIndex = lineIndex * columnCount;
 			// 라인 끝 인덱스 (10, 20, 30 ...)
-			const int itemLineIndexEnd = min((lineIndex + 1) * columnCount, mFiles.size());
+			const int itemLineIndexEnd = min((lineIndex + 1) * columnCount, mFilteredItems.size());
 
+			// int32_t filteredIndex = itemLineIndex;
 			// 한 줄씩 렌더링 시작
 			for (int itemIndex = itemLineIndex; itemIndex < itemLineIndexEnd; ++itemIndex)
 			{
-				auto* itemData = &mFiles[itemIndex];
+				auto itemData = mFilteredItems[itemIndex];
+
 
 				// 특정 ID에 대한 아이템 처리 시작
 				ImGui::PushID(itemData->FileName.c_str());

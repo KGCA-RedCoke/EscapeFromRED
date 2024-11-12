@@ -94,32 +94,9 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext)
+void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext) const
 {
-	mParentMaterial->BindMaterialPipeline(InDeviceContext, mInstanceParams	);
-	// const auto shaderRef = mShader.lock();
-	// if (!shaderRef)
-	// 	return;
-	// shaderRef->BindShaderPipeline(InDeviceContext);
-	//
-	// if (mInstanceParams.empty())
-	// {
-	// 	shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
-	// 								  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-	// 								  nullptr);
-	// }
-	//
-	// for (int32_t i = 0; i < mInstanceParams.size(); ++i)
-	// {
-	// 	FMaterialParam& param = mInstanceParams[i];
-	//
-	// 	shaderRef->UpdateConstantData(IManager.RenderManager->GetImmediateDeviceContext(),
-	// 								  CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-	// 								  param.Name,
-	// 								  &param.Float4Value);
-	//
-	// 	param.BindMaterialParam(InDeviceContext, i);
-	// }
+	mParentMaterial->BindMaterialPipeline(InDeviceContext, mInstanceParams);
 }
 
 void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,

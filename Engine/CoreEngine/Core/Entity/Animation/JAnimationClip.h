@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "common_include.h"
+#include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/TMatrix.h"
 
@@ -22,6 +23,23 @@ struct JAnimKey
 /** 키 데이터 배열 */
 template <typename T>
 using JAnimKeyList = JArray<JAnimKey<T>>;
+
+/** 본 트랙에서 보간할 키 프레임 구간을 찾아보자 */
+template <typename T>
+bool FindDeltaKey(const JAnimKeyList<T>& InKeys, const float InTime, JAnimKey<T>& OutStartTrack, JAnimKey<T>& OutEndTrack)
+{
+	for (int32_t i = 0; i < InKeys.size(); ++i)
+	{
+		if (InKeys[i].Time * 30.f * 160.f >= InTime)
+		{
+			OutEndTrack = InKeys[i];
+			return true;
+		}
+		OutStartTrack = InKeys[i];
+	}
+
+	return false;
+}
 
 /**
  * 변환 정보를 가지는 키 프레임 데이터
@@ -83,15 +101,18 @@ public:
 	void RemoveAllTracks();
 
 public:
-	FORCEINLINE void SetStartTime(const float Time) { mStartTime = Time; }
-	FORCEINLINE void SetEndTime(const float Time) { mEndTime = Time; }
-	FORCEINLINE void SetSourceSamplingInterval(const float Interval) { mSourceSamplingInterval = Interval; }
+	[[nodiscard]] FMatrix FetchInterpolateBone(const int32_t  InBoneIndex,
+											   const FMatrix& InParentBoneMatrix,
+											   const float    InAnimElapsedTime) const;
 
 public:
 	[[nodiscard]] FORCEINLINE float GetStartTime() const { return mStartTime; }
 	[[nodiscard]] FORCEINLINE float GetEndTime() const { return mEndTime; }
 	[[nodiscard]] FORCEINLINE float GetSourceSamplingInterval() const { return mSourceSamplingInterval; }
 	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
+	[[nodiscard]] FORCEINLINE const JArray<FMatrix>& GetAnimPoses() { return mAnimationPose; }
+
+	void SetSkeletalMesh(const Ptr<class JSkeletalMesh>& InSkeletalMesh);
 
 protected:
 	// ------------ Properties ------------
@@ -103,8 +124,10 @@ protected:
 	float   mSourceSamplingInterval;	// 샘플링 간격
 	int32_t mStartFrame; 				// 시작 프레임
 	int32_t mEndFrame;					// 끝 프레임
-	int32_t mFramePerSecond;			// 초당 프레임 수
-	int32_t mTickPerFrame;				// 프레임당 틱 수
+
+	float mAnimationSpeed = 1.f;	// 애니메이션 속도
+	float mFramePerSecond = 30.f;	// 초당 프레임 수
+	float mTickPerFrame   = 160.f;	// 프레임당 틱 수
 
 	// ------------ Editable Variable ------------
 	bool  bLooping;					// 루프 여부
@@ -112,8 +135,14 @@ protected:
 	bool  bRootMotion;				// 루트 모션 여부 (어떻게 처리할지 고민해봐야 함 자연스러운 공격 모션을 위해선 필수적)
 	float mElapsedTime;				// 경과 시간
 
+	// ------------ Skeletal Mesh Data ------------
+	WPtr<JSkeletalMesh> mSkeletalMesh;	// 스켈레탈 메쉬
+
 	// ------------ Animation Data ------------
-	JArray<Ptr<JAnimBoneTrack>> mTracks;					// 본별로 트랙을 가지고 있는 배열
+	JArray<Ptr<JAnimBoneTrack>> mTracks;		// 본별로 트랙을 가지고 있는 배열
+	JArray<FMatrix>             mAnimationPose;	// 애니메이션 포즈
+
+	bool bInterpolate = false;
 
 	friend class Utils::Fbx::FbxFile;
 };

@@ -29,17 +29,12 @@ public:
 	void DrawID(uint32_t ID) override;
 	void DrawBone();
 
-private:
-	// TODO: REMOVE THIS
-	FMatrix InterpolateBone(int32_t InIndex, const FMatrix& InParentMatrix, float InElapsedTime);
-	bool    GetAnimationTrack(float InTime, const JArray<Ptr<JAnimBoneTrack>>& InTracks, Ptr<JAnimBoneTrack>& StartTrack,
-						   Ptr<JAnimBoneTrack>& EndTrack);
+public:
+	void SetAnimation(const Ptr<JAnimationClip>& InAnimation);
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
-	FSkeletonData                mSkeletonData;	// 본 계층 구조
-	JHash<JText, FMatrix>        mCurrentAnimationPose;	// 재생될 현재 애니메이션의 포즈
-	Ptr<class JSkinData>         mSkinData;
+	Ptr<JSkeletalMesh>           mSkeletalMesh;
 	Buffer::FBufferInstance_Bone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------

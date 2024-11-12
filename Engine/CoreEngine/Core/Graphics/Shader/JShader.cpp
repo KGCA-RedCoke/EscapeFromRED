@@ -204,19 +204,21 @@ void JShader::LoadComputeShader(LPCSTR FuncName)
 												 FuncName));
 }
 
+typedef HRESULT (WINAPI*pD3DReflectFunc)(LPCVOID, SIZE_T, REFIID, void**);
 
 void JShader::LoadShaderReflectionData()
 {
 	// 컴파일된 셰이더 바이트코드에서 리플렉션 생성
 	ComPtr<ID3D11ShaderReflection> vertexShaderReflection = nullptr;
 	ComPtr<ID3D11ShaderReflection> pixelShaderReflection  = nullptr;
+	
 	CheckResult(D3DReflect(
 						   mShaderData.VertexShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
 						   mShaderData.VertexShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기
 						   IID_ID3D11ShaderReflection,						// 리플렉션 인터페이스의 IID
 						   (void**)vertexShaderReflection.GetAddressOf()	// 리플렉션 인터페이스 포인터
 						  ));
-
+	
 	CheckResult(D3DReflect(
 						   mShaderData.PixelShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
 						   mShaderData.PixelShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기

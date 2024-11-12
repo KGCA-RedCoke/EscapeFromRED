@@ -31,7 +31,7 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 		{
 			if (auto sceneComp = element.second.lock())
 			{
-				if (mFilter.PassFilter(sceneComp->GetName().c_str()))
+				if (mSearchBar.Filter.PassFilter(sceneComp->GetName().c_str()))
 				{
 					bool bIsDragging = false;
 
@@ -85,11 +85,11 @@ void GUI_Inspector::DrawSearchBar()
 
 	if (ImGui::InputTextWithHint("##Filter",
 								 "incl, -excl (...)",
-								 mFilter.InputBuf,
-								 IM_ARRAYSIZE(mFilter.InputBuf),
+								 mSearchBar.Filter.InputBuf,
+								 IM_ARRAYSIZE(mSearchBar.Filter.InputBuf),
 								 ImGuiInputTextFlags_EscapeClearsAll))
 	{
-		mFilter.Build();
+		mSearchBar.Filter.Build();
 	}
 	ImGui::PopItemFlag();
 }

@@ -56,6 +56,7 @@ const uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash("J3DObject");
 const uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash("JSkeletalMesh");
 const uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash("JMaterial");
 const uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash("JMaterialInstance");
+const uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash("JAnimationClip");
 
 const uint32_t Hash_EXT_FBX    = StringHash(".fbx");
 const uint32_t Hash_EXT_JASSET = StringHash(".jasset");

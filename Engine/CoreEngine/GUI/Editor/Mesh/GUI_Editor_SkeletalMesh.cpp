@@ -41,6 +41,8 @@ void GUI_Editor_SkeletalMesh::Update_Implementation(float DeltaTime)
 
 	DrawProperty();
 
+	DrawAnimationPreview();
+
 	DrawMaterialSlot();
 
 	DrawSaveButton();
@@ -162,7 +164,7 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 					ImGui::ImageButton(nullptr, ImVec2(100, 100));
 					ImGui::Text(subMeshes[j]->GetName().c_str());
 
-					if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+					if (ImGui::IsMouseReleased(0) && ImGui::IsItemHovered() && ImGui::BeginDragDropTarget())
 					{
 						const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
 						const char*         str     = static_cast<const char*>(payload->Data);
@@ -174,6 +176,8 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 							if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
 							{
 								subMeshes[j]->SetMaterialInstance(matInstancePtr);
+								ImGui::EndDragDropTarget();
+
 							}
 						}
 						if (auto subMat = subMeshes[j]->GetMaterialInstance())
@@ -189,6 +193,34 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 			}
 		}
 		ImGui::EndGroup();
+	}
+}
+
+void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
+{
+	ImGui::ImageButton(nullptr, ImVec2(100, 100));
+	// ImGui::Text(subMeshes[j]->GetName().c_str());
+
+	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+		const char*         str     = static_cast<const char*>(payload->Data);
+
+		auto metaData = Utils::Serialization::GetType(str);
+
+		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
+		{
+			Ptr<JAnimationClip> clip = MakePtr<JAnimationClip>();
+			if (!Utils::Serialization::DeSerialize(str, clip.get()))
+			{
+				LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+							   "Game/Animation/Unreal Take.jasset");
+			}
+
+			mMeshObject.lock()->SetAnimation(clip);
+
+			ImGui::EndDragDropTarget();
+		}
 	}
 }
 

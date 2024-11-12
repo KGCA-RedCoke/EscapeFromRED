@@ -20,6 +20,7 @@ private:
 	void DrawViewport() const;
 	void DrawProperty() const;
 	void DrawMaterialSlot() const;
+	void DrawAnimationPreview() const;
 	void DrawSaveButton() const;
 
 private:

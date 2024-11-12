@@ -80,7 +80,7 @@ void Application::Initialize()
 	Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
 														IManager.MeshManager->CreateOrClone(Path_Mesh_Sphere));
 	sampleActor->Initialize();
-	sampleActor->SetLocalScale({100, 100, 100});
+	sampleActor->SetLocalScale({4500, 4500, 4500});
 	
 
 	Actors.push_back(sampleActor);

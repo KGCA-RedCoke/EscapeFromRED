@@ -43,6 +43,16 @@ namespace JMath
 		w = F.f[3];
 	}
 
+	TQuaternion& TQuaternion::operator=(FXMVECTOR V)
+	{
+		x = XMVectorGetX(V);
+		y = XMVectorGetY(V);
+		z = XMVectorGetZ(V);
+		w = XMVectorGetW(V);
+
+		return *this;
+	}
+
 	bool TQuaternion::operator==(const TQuaternion& q) const
 	{
 		XMVECTOR q1 = XMLoadFloat4(this);
@@ -203,11 +213,11 @@ namespace JMath
 		}
 		else
 		{
-			XMVECTOR tv = XMVectorReplicate(t);
+			XMVECTOR tv  = XMVectorReplicate(t);
 			XMVECTOR t1v = XMVectorReplicate(1.f - t);
-			XMVECTOR X0 = XMVectorMultiply(Q0, t1v);
-			XMVECTOR X1 = XMVectorMultiply(Q1, tv);
-			R = XMVectorSubtract(X0, X1);
+			XMVECTOR X0  = XMVectorMultiply(Q0, t1v);
+			XMVECTOR X1  = XMVectorMultiply(Q1, tv);
+			R            = XMVectorSubtract(X0, X1);
 		}
 
 		XMStoreFloat4(&result, XMQuaternionNormalize(R));
@@ -227,11 +237,11 @@ namespace JMath
 		}
 		else
 		{
-			XMVECTOR tv = XMVectorReplicate(t);
+			XMVECTOR tv  = XMVectorReplicate(t);
 			XMVECTOR t1v = XMVectorReplicate(1.f - t);
-			XMVECTOR X0 = XMVectorMultiply(Q0, t1v);
-			XMVECTOR X1 = XMVectorMultiply(Q1, tv);
-			R = XMVectorSubtract(X0, X1);
+			XMVECTOR X0  = XMVectorMultiply(Q0, t1v);
+			XMVECTOR X1  = XMVectorMultiply(Q1, tv);
+			R            = XMVectorSubtract(X0, X1);
 		}
 
 		TQuaternion result;
@@ -316,7 +326,7 @@ namespace JMath
 	{
 		XMVECTOR q1 = XMLoadFloat4(&Q1);
 		XMVECTOR q2 = XMLoadFloat4(&Q2);
-		q2 = XMQuaternionInverse(q2);
+		q2          = XMQuaternionInverse(q2);
 
 		TQuaternion R;
 		XMStoreFloat4(&R, XMQuaternionMultiply(q1, q2));

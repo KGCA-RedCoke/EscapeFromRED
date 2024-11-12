@@ -19,7 +19,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	void BindMaterial(ID3D11DeviceContext* InDeviceContext);
+	void BindMaterial(ID3D11DeviceContext* InDeviceContext) const;
 	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const void* InData,
 							const uint32_t       InOffset = 0) const;
 	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,

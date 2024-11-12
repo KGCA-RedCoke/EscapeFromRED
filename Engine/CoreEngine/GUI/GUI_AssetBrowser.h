@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "GUI_Base.h"
+#include "Utils/GUI_Utils.h"
 
 namespace fs = std::filesystem;
 
@@ -166,14 +167,18 @@ private:
 	bool                  bStretchSpacing;
 
 	// ------------- data ---------------
-	AssetSelectionWithDeletion     mSelection;
-	std::vector<FBasicFilePreview> mFiles;
-	JWText                         mCurrentDirectory; // 현재 폴더 경로
-	JWText                         mCachedDirectory;  // 이전 폴더 경로
+	AssetSelectionWithDeletion mSelection;
+	JArray<FBasicFilePreview>  mFiles;
+	JArray<FBasicFilePreview*> mFilteredItems;
+	JWText                     mCurrentDirectory; // 현재 폴더 경로
+	JWText                     mCachedDirectory;  // 이전 폴더 경로
 
 	// -------------- Progress --------------
 	bool  bLoadProgress    = false;
 	float mCurrentProgress = 0.f;
+
+	// -------------- Utility --------------
+	Utils::GUI::FSearchBar mSearchBar;
 
 	JWText mTempRenameText;
 
