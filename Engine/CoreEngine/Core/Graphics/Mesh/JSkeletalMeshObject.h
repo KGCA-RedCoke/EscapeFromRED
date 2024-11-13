@@ -13,7 +13,7 @@ public:
 	Ptr<IManagedInterface> Clone() const override;
 
 protected:
-	void CreateBuffers() override;
+	// void CreateBuffers() override;
 	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:
@@ -25,8 +25,8 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
-	void Draw() override;
-	void DrawID(uint32_t ID) override;
+	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override;
 	void DrawBone();
 
 public:
@@ -35,7 +35,7 @@ public:
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
 	Ptr<JSkeletalMesh>           mSkeletalMesh;
-	Buffer::FBufferInstance_Bone mInstanceBuffer_Bone;
+	Buffer::FBufferBone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------
 	// Remove this

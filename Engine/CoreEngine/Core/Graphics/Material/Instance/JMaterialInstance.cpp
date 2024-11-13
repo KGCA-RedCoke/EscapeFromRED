@@ -20,7 +20,21 @@ JMaterialInstance::JMaterialInstance(JWTextView InName)
 
 Ptr<IManagedInterface> JMaterialInstance::Clone() const
 {
-	return nullptr;
+	JText copiedName = std::format("{0}_Copy.jasset", mFileName);
+	auto  cloned     = MakePtr<JMaterialInstance>(copiedName);
+
+	cloned->mFileName       = copiedName;
+	cloned->mParentMaterial = mParentMaterial;
+	cloned->mShader         = mShader;
+
+	// 깊은 복사
+	for (int32_t i = 0; i < mInstanceParams.size(); ++i)
+	{
+		cloned->mInstanceParams.push_back(mInstanceParams[i]);
+	}
+	cloned->mInstanceParams = mInstanceParams;
+
+	return cloned;
 }
 
 uint32_t JMaterialInstance::GetHash() const
@@ -30,7 +44,7 @@ uint32_t JMaterialInstance::GetHash() const
 
 uint32_t JMaterialInstance::GetType() const
 {
-	return StringHash("JMaterialInstance");
+	return HASH_ASSET_TYPE_MATERIAL_INSTANCE;
 }
 
 bool JMaterialInstance::Serialize_Implement(std::ofstream& FileStream)
@@ -43,8 +57,7 @@ bool JMaterialInstance::Serialize_Implement(std::ofstream& FileStream)
 	// Parent Material Path
 	if (!mParentMaterial)
 	{
-		JText empty = "NONE";
-		Utils::Serialization::Serialize_Text(empty, FileStream);
+		mParentMaterial = MMaterialManager::Get().CreateOrLoad(NAME_MAT_BASIC);
 	}
 	else
 	{

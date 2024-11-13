@@ -106,4 +106,12 @@ namespace Utils::DX
 
 
 	FVector ComputeFaceNormal(int32_t Index0, int32_t Index1, int32_t Index2, const float* InHeightMap);
+	float   GetDepthValue(ID3D11Device*         InDevice, ID3D11DeviceContext* InDeviceContext,
+						ID3D11DepthStencilView* InDepthStencilView,
+						const FVector2&         InScreenPos,
+						const FVector2&         InScreenSize);
+	FVector2 Screen2DToNDC(const FVector2& InScreenPos, const FVector2& InScreenSize);
+
+	FVector Screen2World(const FVector2& InScreenPos, const FVector2& InScreenSize,
+						 const FMatrix&  InViewMatrix, const FMatrix& InProjectionMatrix, const float InDepth);
 }

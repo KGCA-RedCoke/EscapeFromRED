@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <atlconv.h>
+#include <atlstr.h>
 #include <filesystem>
 #include <format>
 #include <fstream>

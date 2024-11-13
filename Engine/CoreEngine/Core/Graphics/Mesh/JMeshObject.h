@@ -34,22 +34,18 @@ public:
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
-	JText GetName() const { return ParseFile(mName); }
+public:
+	FMatrix GetWorldMatrix() const { return mWorldMatrix; }
+	JText   GetName() const { return ParseFile(mName); }
 
 public:
 	virtual void Tick(float DeltaTime) {};
 
 public:
 #pragma region Render Interface
-	void PreRender() override {}
-	void Render() override {}
-	void PostRender() override {}
-	void Draw() override;
-	void DrawID(uint32_t ID) override;
+	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override;
 #pragma endregion
-
-protected:
-	virtual void CreateBuffers();
 
 public:
 	void UpdateBuffer(const FMatrix& InWorldMatrix = FMatrix::Identity);
@@ -60,8 +56,7 @@ protected:
 	FMatrix mWorldMatrix = FMatrix::Identity;
 
 	// -------------------------------- Buffers --------------------------------------
-	JArray<Buffer::FBufferInstance> mInstanceBuffer;
-	CBuffer::MeshConstantBuffer     mMeshConstantBuffer;
+	CBuffer::MeshConstantBuffer mMeshConstantBuffer;
 
 	// ----------------------------- Model Primitive Data -----------------------------
 	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
@@ -71,17 +66,5 @@ private:
 	friend class Utils::Fbx::FbxFile;
 	friend class GUI_Editor_Mesh;
 	friend class GUI_Editor_Material;
+	friend class MMeshManager;
 };
-
-// -------------------------- Primitive Mesh --------------------------
-// Circle
-class JCircleComponent : public JMeshObject
-{};
-
-// Cube
-
-// Cylinder
-
-// Plane
-
-// Sphere

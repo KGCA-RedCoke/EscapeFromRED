@@ -1,6 +1,4 @@
 ﻿#include "JShader_Basic.h"
-#include "Core/Entity/Camera/JCamera.h"
-#include "Core/Entity/Component/Scene//JSceneComponent.h"
 #include "Core/Interface/MManagerInterface.h"
 
 extern CBuffer::Light g_LightData;

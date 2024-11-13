@@ -12,8 +12,7 @@ JFont::JFont(ID2D1RenderTarget* InRenderTarget)
 	  mFontStretch(DWRITE_FONT_STRETCH_NORMAL),
 	  mFontSize(18),
 	  mBrushColor({0, 0, 0, 1})
-{
-}
+{}
 
 JFont::~JFont() {}
 
@@ -24,14 +23,10 @@ void JFont::Initialize()
 
 void JFont::Update(float_t DeltaTime) {}
 
-void JFont::PreRender()
+void JFont::Draw(ID3D11DeviceContext* InDeviceContext)
 {
-	// Draw 호출 전 Begin
 	mRenderTarget->BeginDraw();
-}
 
-void JFont::Render()
-{
 	ID2D1SolidColorBrush* brush = IManager.RenderManager->GetBrush();
 	assert(brush, "invalid brush");
 
@@ -54,11 +49,7 @@ void JFont::Render()
 							 },
 							 IManager.RenderManager->GetBrush()
 							);
-}
 
-void JFont::PostRender()
-{
-	// Draw 호출 후 End
 	CheckResult(mRenderTarget->EndDraw());
 }
 
@@ -130,14 +121,14 @@ void JFont::AdjustTextFormat()
 	// DWrite에서는 Format만 관리
 	CheckResult(
 				IManager.RenderManager->GetWriteFactory()->
-						  CreateTextFormat(
-										   mFontFamily.c_str(),
-										   nullptr,
-										   mFontWeight,
-										   mFontStyle,
-										   mFontStretch,
-										   mFontSize,
-										   L"en-us",
-										   mTextFormat.GetAddressOf()
-										  ));
+						 CreateTextFormat(
+										  mFontFamily.c_str(),
+										  nullptr,
+										  mFontWeight,
+										  mFontStyle,
+										  mFontStretch,
+										  mFontSize,
+										  L"en-us",
+										  mTextFormat.GetAddressOf()
+										 ));
 }

@@ -26,8 +26,10 @@ constexpr const char* NAME_MAT_Displacement  = "Displacement";
 constexpr const char* NAME_MAT_DisplacementF = "DisplacementFactor";
 constexpr const char* NAME_MAT_Shininess     = "Shininess";
 
-constexpr const char* NAME_MAT_BASIC     = "Game/Materials/Engine/Material_Basic.jasset";
-constexpr const char* NAME_MAT_LANDSCAPE = "Game/Materials/Engine/Material_Landscape.jasset";
+constexpr const char* NAME_MAT_INS_DEFAULT = "Game/Materials/DefaultMaterial.jasset";
+constexpr const char* NAME_MAT_BASIC       = "Game/Materials/Engine/Material_Basic.jasset";
+constexpr const char* NAME_MAT_SKYSPHERE   = "Game/Materials/Engine/Material_SkySphere.jasset";
+constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
 
 /**
  * @brief Material parameter type
@@ -132,7 +134,8 @@ public:
 	/**
 	 * 머티리얼을 GPU에 바인딩
 	 */
-	virtual void BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext, const JArray<FMaterialParam>& InInstanceParams);
+	virtual void BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
+									  const JArray<FMaterialParam>& InInstanceParams);
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 

@@ -22,6 +22,7 @@ using WPtr = std::weak_ptr<T>;
 #define MakeUPtr std::make_unique
 #define MakePtr std::make_shared
 
+
 #define CONCATENATE(x, y) x##y // 토큰 결합
 #define STRINGIFY(x) #x // 문자열화
 #define CHECK_PREFIX(name, prefix) static_assert(std::string_view(STRINGIFY(name)).substr(0, 1) == #prefix, "DelegateName must start with '#prefix'");
@@ -48,4 +49,13 @@ inline JText WString2String(const JWText& InWString)
 {
 	USES_CONVERSION;
 	return JText{W2A(InWString.c_str())};
+}
+
+#define u8(x) reinterpret_cast<const char*>(u8##x)
+
+inline JText String2UTF8(const JText& Text)
+{
+	JWText unicodeString{CA2W(Text.c_str())}; // multi_byte -> unicode(utf_16)
+	return CW2A(unicodeString.c_str(), CP_UTF8).m_psz; // unicode(utf_16) -> utf_8
+
 }

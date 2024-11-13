@@ -19,8 +19,8 @@ public:
 public:
 	void Tick(float DeltaTime) override;
 
-	void Draw() override;
-	void DrawID(uint32_t ID) override;
+	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override;
 
 public:
 	FORCEINLINE void             SetMeshObject(const Ptr<JMeshObject>& InMeshObject) { mMeshObject = InMeshObject; }

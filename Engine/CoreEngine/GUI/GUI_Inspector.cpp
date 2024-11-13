@@ -1,6 +1,6 @@
 ﻿#include "GUI_Inspector.h"
 
-#include "Core/Entity/Component/Scene/JSceneComponent.h"
+#include "Core/Entity/Actor/JActor.h"
 #include "Core/Graphics/ShaderStructs.h"
 
 extern CBuffer::Light g_LightData;
@@ -8,15 +8,16 @@ extern CBuffer::Light g_LightData;
 GUI_Inspector::GUI_Inspector(const std::string& InTitle)
 	: GUI_Base(InTitle) {}
 
-void GUI_Inspector::AddSceneComponent(const JText& InName, const Ptr<JSceneComponent>& InSceneComponent)
+void GUI_Inspector::AddSceneComponent(const JText& InName, const Ptr<JActor>& InSceneComponent)
 {
 	mSceneComponents.try_emplace(InName, InSceneComponent);
 }
 
 void GUI_Inspector::Update_Implementation(float DeltaTime)
 {
-	DrawSearchBar();
+	ImGui::BeginChild("Hierarchy", ImVec2(0, 0), ImGuiChildFlags_ResizeY);
 
+	DrawSearchBar();
 	if (ImGui::CollapsingHeader("Light Settings"))
 	{
 		ImGui::ColorEdit3("Directional Light Color", &g_LightData.LightColor.x);
@@ -29,47 +30,22 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 	{
 		for (auto& element : mSceneComponents)
 		{
-			if (auto sceneComp = element.second.lock())
+			if (auto actor = element.second.lock())
 			{
-				if (mSearchBar.Filter.PassFilter(sceneComp->GetName().c_str()))
+				if (mSearchBar.Filter.PassFilter(actor->GetName().c_str()))
 				{
-					bool bIsDragging = false;
-
-					DrawTreeNode(sceneComp);
-
-					if (ImGui::CollapsingHeader(sceneComp->GetName().c_str()))
-					{
-						FVector location = sceneComp->GetLocalLocation();
-						FVector rotation = sceneComp->GetLocalRotation();
-						FVector scale    = sceneComp->GetLocalScale();
-
-						if (ImGui::DragFloat3("Position", &location.x, 1.f))
-						{
-							bIsDragging = true;
-						}
-
-						if (ImGui::DragFloat3("Rotation", &rotation.x, 0.1f, -360.0f, 360.0f))
-						{
-							bIsDragging = true;
-						}
-						if (ImGui::DragFloat3("Scale", &scale.x, 0.01f, 0.f, 10.0f))
-						{
-							bIsDragging = true;
-						}
-
-						if (bIsDragging)
-						{
-							sceneComp->SetLocalLocation(location);
-							sceneComp->SetLocalRotation(rotation);
-							sceneComp->SetLocalScale(scale);
-						}
-					}
+					DrawTreeNode(actor);
 				}
 			}
 		}
 		ImGui::EndTable();
 	}
 
+	ImGui::EndChild();
+
+	ImGui::Separator();
+
+	DrawDetails();
 }
 
 void GUI_Inspector::DrawSearchBar()
@@ -121,7 +97,7 @@ void GUI_Inspector::DrawTreeNode(const Ptr<JSceneComponent>& InSceneComponent)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 	}
-	if (ImGui::IsItemFocused())
+	if (ImGui::IsItemClicked())
 	{
 		mSelectedSceneComponent = InSceneComponent;
 	}
@@ -140,4 +116,42 @@ void GUI_Inspector::DrawTreeNode(const Ptr<JSceneComponent>& InSceneComponent)
 	}
 
 	ImGui::PopID();
+}
+
+void GUI_Inspector::DrawDetails()
+{
+	// 하위 그룹 생성
+	if (ImGui::BeginChild("Details", ImVec2(0, 200), ImGuiChildFlags_ResizeY))
+	{
+		if (mSelectedSceneComponent == nullptr)
+		{
+			ImGui::Text(u8("선택된 SceneComponent가 없음."));
+			ImGui::EndChild();
+			return;
+		}
+
+
+		if (ImGui::CollapsingHeader(mSelectedSceneComponent->GetName().c_str()))
+		{
+			FVector location = mSelectedSceneComponent->GetLocalLocation();
+			FVector rotation = mSelectedSceneComponent->GetLocalRotation();
+			FVector scale    = mSelectedSceneComponent->GetLocalScale();
+
+			if (ImGui::DragFloat3("Position", &location.x, 1.f))
+			{
+				mSelectedSceneComponent->SetLocalLocation(location);
+			}
+
+			if (ImGui::DragFloat3("Rotation", &rotation.x, 0.1f, -360.0f, 360.0f))
+			{
+				mSelectedSceneComponent->SetLocalRotation(rotation);
+			}
+			if (ImGui::DragFloat3("Scale", &scale.x, 0.01f, 0.f, 10.0f))
+			{
+				mSelectedSceneComponent->SetLocalScale(scale);
+			}
+		}
+	}
+	ImGui::EndChild();
+
 }

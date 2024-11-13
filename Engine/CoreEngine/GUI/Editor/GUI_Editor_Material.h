@@ -23,7 +23,6 @@ public:
 
 private:
 	void Update_Implementation(float DeltaTime) override;
-	void ShowMenuBar() override;
 
 private:
 	void SetMeshObject(JTextView InMeshPath);
@@ -33,7 +32,6 @@ private:
 	void HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const;
 
 	void ShowMaterialEditor();
-	void ShowFileBrowser();
 
 	void ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const;
 

@@ -74,25 +74,27 @@ void XD3DDevice::ClearCommandList()
 	mRenderCommandList.clear();
 }
 
-void XD3DDevice::QueueCommand(const uint32_t InGeometryType, const FRenderCommand& InCommandList)
+void XD3DDevice::QueueCommand(const uint32_t InGeometryTypeHash, const FRenderCommand& InCommandList)
 {
-	mRenderCommandList[InGeometryType].push_back(InCommandList);
+	mRenderCommandList[InGeometryTypeHash].push_back(InCommandList);
 }
 
 void XD3DDevice::Draw()
 {
+	// 인스턴스 드로잉을 하기 위한 작업
+
 	for (auto& [key, value] : mRenderCommandList)
 	{
-		for (auto& command : value)
-		{
-			command.ObjectToRender->Draw();
-		}
-		mImmediateContext->DrawIndexedInstanced(
-												0,
-												value.size(),
-												0,
-												0,
-												0);
+		// 인스턴스 갯수만큼의 인스턴스 버퍼 업데이트
+		// 인스턴스 버퍼 업데이트
+		// value[0].ObjectToRender->UpdateInstanceBuffer(mDevice.Get(), mImmediateContext.Get(), value.size());
+
+		// mImmediateContext->DrawIndexedInstanced(
+		// 										value[0].ObjectToRender->GetIndexCount(),
+		// 										value.size(),
+		// 										0,
+		// 										0,
+		// 										0);
 	}
 
 	// 후면 버퍼 렌더

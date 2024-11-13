@@ -4,7 +4,6 @@
 class MMaterialInstanceManager : public Manager_Base<JMaterialInstance, MMaterialInstanceManager>
 {
 public:
-public:
 #pragma region Singleton Boilerplate
 
 private:

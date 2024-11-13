@@ -66,7 +66,7 @@ void Application::Initialize()
 	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
 	auto viewportPtr = IManager.ViewportManager->FetchResource(Name_Editor_Viewport);
 	assert(viewportPtr);
-	viewportPtr->OnViewportResized.Bind([&](){
+	viewportPtr->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		mFpsText->SetRenderTarget(IManager.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
 	});
 	mFpsText = MakeUPtr<JFont>();
@@ -80,8 +80,8 @@ void Application::Initialize()
 	Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
 														IManager.MeshManager->CreateOrClone(Path_Mesh_Sphere));
 	sampleActor->Initialize();
-	sampleActor->SetLocalScale({4500, 4500, 4500});
-	
+	sampleActor->SetLocalScale({500, 500, 500});
+
 
 	Actors.push_back(sampleActor);
 }
@@ -129,13 +129,11 @@ void Application::Render()
 	for (int32_t i = 0; i < Actors.size(); ++i)
 	{
 		Actors[i]->Tick(mDeltaTime);
-		Actors[i]->Draw();
+		Actors[i]->Draw(IManager.RenderManager->GetImmediateDeviceContext());
 	}
 
-	mFpsText->PreRender();
-	mFpsText->Render();
-	mFpsText->PostRender();
-	
+	mFpsText->Draw(IManager.RenderManager->GetImmediateDeviceContext());
+
 	IManager.RenderManager->Draw();
 }
 

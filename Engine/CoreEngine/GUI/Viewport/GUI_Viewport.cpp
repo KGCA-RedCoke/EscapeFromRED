@@ -1,7 +1,7 @@
 ﻿#include "GUI_Viewport.h"
 
+#include "Core/Entity/Actor/JActor.h"
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Entity/Component/Scene/JSceneComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/MManagerInterface.h"
@@ -24,6 +24,15 @@ void GUI_Viewport::Initialize()
 	{
 		mViewportData = IManager.ViewportManager->FetchResource(mViewportTitle);
 	}
+	mViewportData->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
+		if (mEditorCameraRef)
+		{
+			mEditorCameraRef->SetProjParams(M_PI / 2,
+											static_cast<float>(InWidth) / static_cast<float>(InHeight),
+											10.f,
+											100000.f);
+		}
+	});
 }
 
 void GUI_Viewport::Update_Implementation(float DeltaTime)
@@ -60,17 +69,30 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 			mousePos.y -= ImGui::GetItemRectMin().y;
 			UpdateMousePickingBuffer(IManager.RenderManager->GetImmediateDeviceContext());
 			// Draw ID to Color Buffer
-			auto actors = IManager.GUIManager->GetInspector()->GetSelectedSceneComponent();
+			auto inspector = IManager.GUIManager->GetInspector();
+			auto actors    = inspector->GetSelectedSceneComponent();
 			for (auto& actor : actors)
 			{
 				auto ptr = actor.second.lock();
 				if (ptr)
 				{
-					ptr->DrawID((ptr->GetHash()));
+					ptr->DrawID(IManager.RenderManager->GetImmediateDeviceContext(), (ptr->GetHash()));
 				}
 			}
 
-			uint32_t id = GetMousePickingValue(IManager.RenderManager->GetImmediateDeviceContext(), mousePos);
+			uint32_t    id    = GetMousePickingValue(IManager.RenderManager->GetImmediateDeviceContext(), mousePos);
+			// const float depth = Utils::DX::GetDepthValue(IManager.RenderManager->GetDevice(),
+			// 											 IManager.RenderManager->GetImmediateDeviceContext(),
+			// 											 mViewportData->DepthStencilView.Get(),
+			// 											 FVector2(mousePos.x, mousePos.y),
+			// 											 FVector2(size.x, size.y));
+			// FVector worldPos = Utils::DX::Screen2World(FVector2{mousePos.x, mousePos.y},
+			// 										   FVector2{size.x, size.y},
+			// 										   mEditorCameraRef->GetViewMatrix(),
+			// 										   mEditorCameraRef->GetProjMatrix(),
+			// 										   depth);
+
+			// LOG_CORE_INFO("World Position : {0}, {1}, {2}", worldPos.x, worldPos.y, worldPos.z);
 
 			for (auto& actor : actors)
 			{
@@ -78,6 +100,8 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 				if (ptr && ptr->GetHash() == id)
 				{
 					LOG_CORE_INFO("Selected Actor : {0}", ptr->GetName());
+
+					inspector->SetSelectedActor(ptr);
 				}
 			}
 		}

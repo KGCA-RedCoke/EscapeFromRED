@@ -9,6 +9,7 @@ JMaterial_SkySphere::JMaterial_SkySphere(JTextView InName)
 {
 	JMaterial_SkySphere::InitializeParams();
 
+	// SetShader();
 }
 
 void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
@@ -23,12 +24,15 @@ void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InD
 
 	Renderer.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	int32_t slots = 0;
+	Renderer.SetSamplerState(ESamplerState::LinearWrap, &slots, 1);
+
 	// // 배경을 투평하게
 	Renderer.SetBlendState(EBlendState::Opaque);
 	// // 컬링 모드는 논컬링
 	Renderer.SetRasterState(ERasterState::CullNone);
 	// // 깊이 버퍼 읽기 쓰기 비활성화
-	// Renderer.SetDepthStencilState(EDepthStencilState::DepthNone);
+	Renderer.SetDepthStencilState(EDepthStencilState::DepthNone);
 
 	ID3D11ShaderResourceView* textureArray[3];
 

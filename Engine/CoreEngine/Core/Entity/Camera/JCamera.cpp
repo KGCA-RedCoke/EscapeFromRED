@@ -13,18 +13,18 @@ uint32_t JCamera::s_CameraNum = 0;
  */
 JCamera::JCamera() noexcept
 	: mName(std::format(L"JCam_{}", s_CameraNum++)),
-	  mDefaultEye(0, 500.f, -1500.f),
+	  mDefaultEye(0, 0, -1500.f),
 	  mDefaultLookAt(0, 0, 0),
 	  mEye(mDefaultEye),
 	  mLookAt(0, 0, 0),
 	  mYaw(0.f),
 	  mPitch(0.f),
-	  mFOV(0),
+	  mFOV(M_PI / 2),
 	  mAspect(0),
-	  mNearPlane(0.1f),
-	  mFarPlane(1000000.f),
+	  mNearPlane(10.f),
+	  mFarPlane(100000.f),
 	  mRotationValue(0.01f),
-	  mTranslationValue(500.f),
+	  mTranslationValue(100.f),	// cm 단위
 	  mInputKeyboard()
 {
 	JCamera::SetViewParams(mDefaultEye, mDefaultLookAt);
@@ -33,7 +33,7 @@ JCamera::JCamera() noexcept
 			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
 			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
 
-	JCamera::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+	JCamera::SetProjParams(mFOV, aspect, mNearPlane, mFarPlane);
 
 	JCamera::Initialize();
 }

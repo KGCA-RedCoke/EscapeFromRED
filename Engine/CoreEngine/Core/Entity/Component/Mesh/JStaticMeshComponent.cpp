@@ -25,24 +25,24 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	}
 }
 
-void JStaticMeshComponent::Draw()
+void JStaticMeshComponent::Draw(ID3D11DeviceContext* InDeviceContext)
 {
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		mMeshObject->Draw();
+		mMeshObject->Draw(InDeviceContext);
 	}
 
 	// Child SceneComponent Draw 호출
-	JSceneComponent::Draw();
+	JSceneComponent::Draw(InDeviceContext);
 }
 
-void JStaticMeshComponent::DrawID(uint32_t ID)
+void JStaticMeshComponent::DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID)
 {
 	if (mMeshObject)
 	{
-		mMeshObject->DrawID(ID);
+		mMeshObject->DrawID(InDeviceContext, ID);
 	}
 
-	JSceneComponent::DrawID(ID);
+	JSceneComponent::DrawID(InDeviceContext, ID);
 }

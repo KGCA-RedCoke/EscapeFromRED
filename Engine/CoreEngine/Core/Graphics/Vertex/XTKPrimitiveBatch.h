@@ -22,11 +22,8 @@ public:
 #pragma endregion
 
 #pragma region Render Interface
-	void PreRender() override;
-	void Render() override;
-	void PostRender() override;
-	void Draw() override;
-	void DrawID(uint32_t ID) override {};
+	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override {};
 #pragma endregion
 
 public:

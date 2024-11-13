@@ -1,5 +1,7 @@
 ﻿#include "JSceneComponent.h"
 
+#include <d3d11.h>
+
 #include "Core/Entity/Actor/JActor.h"
 
 JSceneComponent::JSceneComponent() {}
@@ -70,25 +72,25 @@ void JSceneComponent::Tick(float DeltaTime)
 	}
 }
 
-void JSceneComponent::Draw()
+void JSceneComponent::Draw(ID3D11DeviceContext* InDeviceContext)
 {
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		if (auto childComp = mChildSceneComponents[i].lock())
 		{
-			childComp->Draw();
+			childComp->Draw(InDeviceContext);
 		}
 	}
 }
 
-void JSceneComponent::DrawID(uint32_t ID)
+void JSceneComponent::DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID)
 {
 
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		if (auto childComp = mChildSceneComponents[i].lock())
 		{
-			childComp->DrawID(ID);
+			childComp->DrawID(InDeviceContext, ID);
 		}
 	}
 }

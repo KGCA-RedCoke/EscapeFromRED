@@ -1,7 +1,6 @@
 ﻿#include "GUI_AssetBrowser.h"
 
 #include "MGUIManager.h"
-#include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Utils/Utils.h"
@@ -22,7 +21,7 @@ GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 	  mIconSpacing(10),
 	  mLayoutColumnCount(0),
 	  mLayoutLineCount(0),
-	  mIconSize(64),
+	  mIconSize(96),
 	  mMultiSelectFlag(0),
 	  bOpen(false),
 	  bAllowBoxSelect(true),
@@ -32,7 +31,7 @@ GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 	  bShowTypeOverlay(true),
 	  bStretchSpacing(true)
 {
-	mCurrentDirectory = fs::absolute(L"Game");
+	mCurrentDirectory = fs::relative(L"Game");
 }
 
 
@@ -120,10 +119,10 @@ void GUI_AssetBrowser::Update(float DeltaTime)
 		ImGui::EndChild();
 	}
 
-	ImGui::Text("Selected: %d/%d items \t", mSelection.Size, mFiles.size());
+	ImGui::Text(u8("선택: %d/%d 개 \t"), mSelection.Size, mFiles.size());
 	ImGui::SameLine();
 
-	ImGui::Text("Current Path: %s", WString2String(mCurrentDirectory).c_str());
+	ImGui::Text(u8("현재 경로: %s"), WString2String(mCurrentDirectory).c_str());
 
 	ImGui::SameLine();
 	UpdateProgressBar();
@@ -157,7 +156,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			mFilteredItems.push_back(&item);
 		}
 	}
-	
+
 	ImGuiMultiSelectIO* msIO =
 			ImGui::BeginMultiSelect(
 									mMultiSelectFlag,
@@ -188,13 +187,13 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 	{
 		if (mSelection.Size > 0)
 		{
-			ImGui::Text("mSelection: %d items", mSelection.Size);
+			ImGui::Text(u8("현재 선택 아이템: %d 개"), mSelection.Size);
 			ImGui::Separator();
-			if (ImGui::MenuItem("Delete", "Del", false, mSelection.Size > 0))
+			if (ImGui::MenuItem(u8("삭제"), "Del", false, mSelection.Size > 0))
 			{
 				bRequestDelete = true;
 			}
-			if (ImGui::MenuItem("Rename", "F2", false, mSelection.Size == 1))
+			if (ImGui::MenuItem(u8("이름 변경"), "F2", false, mSelection.Size == 1))
 			{
 				bRequestRename = true;
 			}
@@ -202,23 +201,28 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 
 		else
 		{
-			if (ImGui::MenuItem("New Folder"))
+			if (ImGui::MenuItem(u8("새 폴더")))
 			{
 				// 코드를 추가하여 새 폴더 생성을 처리
 				fs::create_directory(mCurrentDirectory + L"/NewFolder");
 			}
-			if (ImGui::BeginMenu("New File"))
+			if (ImGui::BeginMenu(u8("새 파일")))
 			{
-				if (ImGui::MenuItem("Actor"))
+				if (ImGui::MenuItem(u8("액터 생성")))
 				{
 					JText newActorPath = WString2String(mCurrentDirectory) + "/NewActor.jasset";
 
 					// TODO: 액터 에디터 열기
 					MGUIManager::Get().CreateOrLoad<GUI_Editor_Actor>(newActorPath);
 				}
-				if (ImGui::MenuItem("Material"))
+				if (ImGui::MenuItem(u8("머티리얼 생성")))
 				{
 					// TODO: 머티리얼 에디터 열기
+					JText newMaterialPath = WString2String(mCurrentDirectory) + "/NewMaterial.jasset";
+					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(newMaterialPath))
+					{
+						ptr->OpenIfNotOpened();
+					}
 				}
 				ImGui::EndMenu();
 			}
@@ -395,10 +399,8 @@ void GUI_AssetBrowser::UpdateDragDrop(bool bIsItemSelected, const JText& ItemPat
 void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePreview* itemData)
 {
 	// Rendering parameters
-	bool bItemIsVisible = ImGui::IsRectVisible(mLayoutItemSize);
-
-	const ImU32 iconBgColor   = ImGui::GetColorU32(ImGuiCol_WindowBg);	// 아이콘 배경색은 창 배경색과 동일 (이게 더 깔끔)
-	const bool  bDisplayLabel = (mLayoutItemSize.x >= ImGui::CalcTextSize("999").x);
+	const bool bItemIsVisible = ImGui::IsRectVisible(mLayoutItemSize);
+	const bool bDisplayLabel  = (mLayoutItemSize.x >= ImGui::CalcTextSize("999").x);
 
 	// 자, 여기에 아이콘을 그리는 코드를 작성하면 된다.
 	if (bItemIsVisible)
@@ -410,46 +412,42 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 		ImVec2 boxMin(pos.x - 1, pos.y - 1);
 		ImVec2 boxMax(boxMin.x + mLayoutItemSize.x + 2, boxMin.y + mLayoutItemSize.y + 2); // Dubious
 
-		// 사각형으로 아이콘 배경을 그린다. 
-		drawList->AddRectFilled(boxMin, boxMax, iconBgColor, 5);
+		// 아이콘 배경색
+		const ImU32 iconBgColor = ImGui::GetColorU32(ImGuiCol_WindowBg);	// 아이콘 배경색은 창 배경색과 동일 (이게 더 깔끔)
 
+		// 사각형으로 아이콘 배경을 그린다. 
+		drawList->AddRectFilled(boxMin, ImVec2(boxMax.x, boxMax.y - 2), iconBgColor, 5);
+
+		// 아이콘을 선택할 텍스처 포인터
+		void* iconTexture = nullptr;
+
+		// 파일 종류에 따라 아이콘 텍스처 선택
 		JAssetMetaData metaData = Utils::Serialization::GetType(itemData->FilePath.string().c_str());
 		if (metaData.AssetType == HASH_ASSET_TYPE_Actor)
 		{
-			drawList->AddImage(g_IconList.FileIcon->GetSRV(),
-							   boxMin + ImVec2(2, 2),
-							   boxMax - ImVec2(2, 2));
+			iconTexture = g_IconList.FileIcon->GetSRV();
 		}
 		else if (metaData.AssetType == HASH_ASSET_TYPE_STATIC_MESH)
 		{
-			drawList->AddImage(g_IconList.StaticMeshIcon->GetSRV(),
-							   boxMin + ImVec2(2, 2),
-							   boxMax - ImVec2(2, 2));
+			iconTexture = g_IconList.StaticMeshIcon->GetSRV();
 		}
 		else if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
 		{
-			drawList->AddImage(g_IconList.SkeletalMeshIcon->GetSRV(),
-							   boxMin + ImVec2(2, 2),
-							   boxMax - ImVec2(2, 2));
+			iconTexture = g_IconList.SkeletalMeshIcon->GetSRV();
 		}
 		else if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
 		{
-			drawList->AddImage(g_IconList.MaterialIcon->GetSRV(),
-							   boxMin + ImVec2(2, 2),
-							   boxMax - ImVec2(2, 2));
+			iconTexture = g_IconList.MaterialIcon->GetSRV();
+		}
+		if (itemData->FileType == EFileType::Folder)
+		{
+			iconTexture = g_IconList.FolderIcon->GetSRV();
 		}
 
-		switch (itemData->FileType)
-		{
-		case EFileType::Folder:
-			drawList->AddImage(
-							   g_IconList.FolderIcon->GetSRV(),
-							   boxMin + ImVec2(2, 2),
-							   boxMax - ImVec2(2, 2));
-			break;
-		case EFileType::Asset:
-			break;
-		}
+		drawList->AddImage(iconTexture,
+						   boxMin + ImVec2(2, 2),
+						   boxMax - ImVec2(2, 2));
+
 
 		if (bDisplayLabel)
 		{
@@ -486,9 +484,8 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 			}
 			else
 			{
-				drawList->AddText(ImVec2(boxMin.x, boxMax.y - ImGui::GetFontSize()),
-								  label_col,
-								  WString2String(itemData->FileName).c_str());
+				ImVec2 textPos = ImVec2(boxMin.x, boxMax.y - ImGui::GetFontSize());
+				drawList->AddText(textPos, label_col, WString2String(itemData->FileName).c_str());
 			}
 		}
 	}
@@ -564,7 +561,7 @@ void GUI_AssetBrowser::HandleFile()
 	// 상위 디렉토리로 이동하는 버튼 추가를 위해 상위 디렉토리 경로 추가
 	if (currentPath.has_parent_path())
 	{
-		const fs::path parentPath = fs::absolute(mCurrentDirectory).parent_path();
+		const fs::path parentPath = fs::relative(mCurrentDirectory).parent_path();
 		mFiles.emplace_back(StringHash(parentPath.c_str()), L"..", parentPath, EFileType::Folder);
 	}
 

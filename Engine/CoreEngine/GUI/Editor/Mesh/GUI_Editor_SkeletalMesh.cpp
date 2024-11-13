@@ -1,6 +1,7 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -18,7 +19,7 @@ void GUI_Editor_SkeletalMesh::Render()
 	if (const auto& ptr = mMeshObject.lock())
 	{
 		ptr->UpdateBuffer();
-		ptr->Draw();
+		ptr->Draw(Renderer.GetImmediateDeviceContext());
 	}
 }
 
@@ -37,9 +38,13 @@ void GUI_Editor_SkeletalMesh::Update_Implementation(float DeltaTime)
 {
 	GUI_Editor_Base::Update_Implementation(DeltaTime);
 
+	DrawProperty();
+
+	ImGui::SameLine();
+
 	DrawViewport();
 
-	DrawProperty();
+	ImGui::SameLine();
 
 	DrawAnimationPreview();
 
@@ -72,7 +77,7 @@ void GUI_Editor_SkeletalMesh::DrawProperty() const
 
 	if (ImGui::BeginChild("Property",
 						  ImVec2(mWindowSize.x * 0.33f, 0),
-						  ImGuiChildFlags_AutoResizeX))
+						  ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{
 		if (const auto& ptr = mMeshObject.lock())
 		{
@@ -97,13 +102,9 @@ void GUI_Editor_SkeletalMesh::DrawProperty() const
 				}
 			}
 		}
-
 	}
 
-	// 창이 안보이는 경우 방지
-	ImVec2 size = ImGui::GetWindowSize();
-	if (size.x < 50 || size.y < 50)
-		ImGui::SetWindowSize(ImVec2(max(size.x, 50), max(size.y, 50)));
+	ImGui::EndChild();
 }
 
 void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
@@ -194,11 +195,16 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 		}
 		ImGui::EndGroup();
 	}
+
+	ImGui::EndChild();
 }
 
 void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 {
-	ImGui::ImageButton(nullptr, ImVec2(100, 100));
+	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+
+
+		ImGui::ImageButton(nullptr, ImVec2(100, 100));
 	// ImGui::Text(subMeshes[j]->GetName().c_str());
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
@@ -236,5 +242,4 @@ void GUI_Editor_SkeletalMesh::DrawSaveButton() const
 			Utils::Serialization::Serialize(mTitle.c_str(), ptr.get());
 		}
 	}
-	ImGui::EndChild();
 }

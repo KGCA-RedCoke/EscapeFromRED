@@ -62,7 +62,7 @@ public:
 
 	void ClearCommandList();
 
-	void QueueCommand(const uint32_t InGeometryType, const FRenderCommand& InCommandList);
+	void QueueCommand(const uint32_t InGeometryTypeHash, const FRenderCommand& InCommandList);
 
 	/**
 	 * 최종 렌더링을 화면에 출력한다.

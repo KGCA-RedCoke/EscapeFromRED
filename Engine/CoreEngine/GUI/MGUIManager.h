@@ -35,9 +35,6 @@ public:
 	void Render();
 
 public:
-	void AddGUI(EGUIType InType);
-	void HideGUI(EGUIType InType);
-	void DeleteGUI(EGUIType InType);
 	void ScaleAllSize(float InScale);
 
 	Ptr<GUI_Inspector> GetInspector() const;

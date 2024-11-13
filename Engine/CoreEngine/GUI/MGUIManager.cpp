@@ -19,6 +19,7 @@ constexpr char Name_AssetBrowser[] = "Asset Browser";
 
 MGUIManager::MGUIManager()
 {};
+
 MGUIManager::~MGUIManager() = default;
 
 /**
@@ -40,7 +41,7 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 뷰포트 활성화 
 
 	ImGui::Spectrum::StyleColorsSpectrum();	// 스펙트럼 테마 적용(테마는 io로 다양하게 설정이 가능하다)
-	ImGui::Spectrum::LoadFont();
+	ImGui::Spectrum::LoadFont(18);
 
 	/// NOTE:만약 특정 창에 대해서만 스타일을 설정하고 싶다면 (Push이후엔 Pop으로 설정을 되돌릴 수 있다, Pop을 안하면 계속 적용된다...)
 	/// ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -58,8 +59,6 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 	ImGui_ImplDX11_Init(InDevice, InDeviceContext);
 
 	InitializeStaticGUI();
-
-	ScaleAllSize(1.5f);
 }
 
 void MGUIManager::InitializeStaticGUI()
@@ -84,30 +83,30 @@ void MGUIManager::UpdateMainMenuBar()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (ImGui::BeginMenu("File"))
+		if (ImGui::BeginMenu(u8("파일")))
 		{
-			if (ImGui::MenuItem("New Scene"))
+			if (ImGui::MenuItem(u8("새 레벨 생성")))
 			{
 				// New Scene
 			}
-			if (ImGui::MenuItem("Open Scene"))
+			if (ImGui::MenuItem(u8("레벨 열기")))
 			{
 				// Open Scene
 			}
-			if (ImGui::MenuItem("Save Scene"))
+			if (ImGui::MenuItem(u8("현재 레벨 저장")))
 			{
 				// Save Scene
 			}
-			if (ImGui::MenuItem("Exit"))
+			if (ImGui::MenuItem(u8("FBX")))
 			{
-				// Exit
+				bOpenFileBrowser = true;
 			}
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Utils"))
+		if (ImGui::BeginMenu(u8("에디터")))
 		{
-			if (ImGui::MenuItem("Material Editor"))
+			if (ImGui::MenuItem(u8("머티리얼 에디터")))
 			{
 				if (!mMaterialEditorRef.lock())
 				{
@@ -120,7 +119,7 @@ void MGUIManager::UpdateMainMenuBar()
 
 			}
 
-			if (ImGui::MenuItem("LandScape Editor"))
+			if (ImGui::MenuItem(u8("지형 에디터")))
 			{
 				// LandScape Editor
 				if (!mLandScapeEditorRef.lock())
@@ -134,28 +133,23 @@ void MGUIManager::UpdateMainMenuBar()
 				mLandScapeEditorRef.lock()->bIsWindowOpen = true;
 			}
 
-			if (ImGui::MenuItem("Fbx Importer"))
-			{
-				bOpenFileBrowser = true;
-			}
-
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("RenderState"))
+		if (ImGui::BeginMenu(u8("렌더 상태 뷰")))
 		{
-			if (ImGui::MenuItem("WireFrame"))
+			if (ImGui::MenuItem(u8("와이어 프레임")))
 			{
 				bRenderWireFrame = true;
 			}
-			if (ImGui::MenuItem("Material"))
+			if (ImGui::MenuItem(u8("머티리얼")))
 			{
 				bRenderWireFrame = false;
 			}
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Camera"))
+		if (ImGui::BeginMenu(u8("카메라")))
 		{
 			if (ImGui::MenuItem("Frustum View"))
 			{
@@ -250,15 +244,6 @@ void MGUIManager::Render()
 		}
 	}
 }
-
-void MGUIManager::AddGUI(EGUIType InType)
-{}
-
-void MGUIManager::HideGUI(EGUIType InType)
-{}
-
-void MGUIManager::DeleteGUI(EGUIType InType)
-{}
 
 void MGUIManager::ScaleAllSize(float InScale)
 {

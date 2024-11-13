@@ -5,8 +5,8 @@
 class GUI_Base
 {
 public:
-	explicit GUI_Base(const JText& InTitle);
-	virtual  ~GUI_Base() = default;
+	GUI_Base(const JText& InTitle);
+	virtual ~GUI_Base() = default;
 
 public:
 	virtual void Initialize() {}

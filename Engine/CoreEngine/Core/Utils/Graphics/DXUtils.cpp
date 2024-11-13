@@ -80,7 +80,7 @@ namespace Utils::DX
 		depthStencilDesc.SampleDesc.Quality = 0;
 		depthStencilDesc.Usage              = D3D11_USAGE_DEFAULT;
 		depthStencilDesc.BindFlags          = D3D11_BIND_DEPTH_STENCIL;
-		depthStencilDesc.CPUAccessFlags     = 0;
+		depthStencilDesc.CPUAccessFlags     = 0; // CPU 접근 가능
 		depthStencilDesc.MiscFlags          = 0;
 		CheckResult(InDevice->CreateTexture2D(&depthStencilDesc, nullptr, OutTexture));
 
@@ -416,6 +416,124 @@ namespace Utils::DX
 		normal.Normalize();
 
 		return normal;
+	}
+
+	float GetDepthValue(ID3D11Device*           InDevice, ID3D11DeviceContext* InDeviceContext,
+						ID3D11DepthStencilView* InDepthStencilView,
+						const FVector2&         InScreenPos,
+						const FVector2&         InScreenSize)
+	{
+		float depthValue = 0.0f;
+
+		ComPtr<ID3D11Texture2D> depthStencilTexture = nullptr;
+		ComPtr<ID3D11Texture2D> pStagingTexture     = nullptr;
+
+		D3D11_TEXTURE2D_DESC stagingDesc;
+		stagingDesc.Width              = InScreenSize.x;
+		stagingDesc.Height             = InScreenSize.y;
+		stagingDesc.MipLevels          = 1;
+		stagingDesc.ArraySize          = 1;
+		stagingDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		stagingDesc.SampleDesc.Count   = 1;
+		stagingDesc.SampleDesc.Quality = 0;
+		stagingDesc.Usage              = D3D11_USAGE_STAGING;
+		stagingDesc.BindFlags          = 0;
+		stagingDesc.CPUAccessFlags     = D3D11_CPU_ACCESS_READ; // CPU 접근 가능
+		stagingDesc.MiscFlags          = 0;
+
+		CheckResult(InDevice->CreateTexture2D(&stagingDesc, nullptr, pStagingTexture.GetAddressOf()));
+
+		InDepthStencilView->GetResource(reinterpret_cast<ID3D11Resource**>(depthStencilTexture.GetAddressOf()));
+		InDeviceContext->CopyResource(pStagingTexture.Get(), depthStencilTexture.Get());
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		if (SUCCEEDED(InDeviceContext->Map(pStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mappedResource)))
+		{
+			uint32_t* data = static_cast<uint32_t*>(mappedResource.pData);
+
+			// 1픽셀당 4바이트이고, 텍스처는 32비트 깊이 값(24비트)과 8비트 스텐실 값을 포함하므로,
+			// 인덱스는 RowPitch와 텍스처 너비를 고려하여 계산해야 합니다.
+			const int32_t index = InScreenPos.y * mappedResource.RowPitch / sizeof(uint32_t) + InScreenPos.x;
+
+			// 깊이값만 추출 (하위 24비트)
+			uint32_t depthRaw = data[index];
+			depthValue        = static_cast<float>(depthRaw & 0xFFFFFF) / static_cast<float>(0xFFFFFF);
+
+			InDeviceContext->Unmap(pStagingTexture.Get(), 0);
+		}
+
+		return depthValue;
+	}
+
+	FVector2 Screen2DToNDC(const FVector2& InScreenPos, const FVector2& InScreenSize)
+	{
+		float ndcX = (2.0f * InScreenPos.x / InScreenSize.x) - 1.0f;
+		float ndcY = 1.0f - (2.0f * InScreenPos.y / InScreenSize.y);
+
+		return FVector2(ndcX, ndcY);
+	}
+
+	FVector Screen2World(const FVector2& InScreenPos, const FVector2&    InScreenSize, const FMatrix& InViewMatrix,
+						 const FMatrix&  InProjectionMatrix, const float InDepth)
+	{
+		// 정규화된 디바이스 좌표로 변환
+		FVector2 ndc = Screen2DToNDC(InScreenPos, InScreenSize);
+		
+		// NDC -> 클립 공간으로 변환
+		DirectX::XMVECTOR mouseNDC = DirectX::XMVectorSet(ndc.x, ndc.y, InDepth, 1.0f);
+		
+		// 역 프로젝션 매트릭스 계산
+		DirectX::XMMATRIX invProjection = DirectX::XMMatrixInverse(nullptr, InProjectionMatrix);
+		
+		// 클립 공간 -> 카메라 공간 변환
+		DirectX::XMVECTOR cameraSpacePos = DirectX::XMVector3TransformCoord(mouseNDC, invProjection);
+		
+		// 카메라 공간 -> 월드 공간 변환
+		DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(nullptr, InViewMatrix);
+		DirectX::XMVECTOR worldPos = DirectX::XMVector3TransformCoord(cameraSpacePos, invView);
+		
+		// 월드 좌표 반환
+		FVector result;
+		DirectX::XMStoreFloat3(&result, worldPos);
+		return result;
+
+		// // 정규화된 디바이스 좌표로 변환
+		// FVector2          ndc      = Screen2DToNDC(InScreenPos, InScreenSize);
+		// DirectX::XMVECTOR mouseNDC = DirectX::XMVectorSet(ndc.x, ndc.y, InDepth, 1.0f);
+		//
+		// // NDC -> 카메라 공간
+		// DirectX::XMMATRIX invProjection = DirectX::XMMatrixInverse(nullptr, InProjectionMatrix);
+		// DirectX::XMMATRIX invView       = DirectX::XMMatrixInverse(nullptr, InViewMatrix);
+		//
+		//
+		// DirectX::XMVECTOR cameraSpacePos = DirectX::XMVector3TransformCoord(mouseNDC, invProjection);
+		//
+		// // 카메라 공간 -> 월드 공간
+		//
+		// XMVECTOR worldPosition = XMVector4Transform(mouseNDC, invProjection);
+		// worldPosition          = XMVector4Transform(worldPosition, invView);
+		// FVector result;
+		// XMStoreFloat3(&result, worldPosition);
+		//
+		// return result;
+		// DirectX::XMVECTOR worldPos = DirectX::XMVector3TransformCoord(cameraSpacePos, invView);
+		//
+		// FVector returnValue;
+		// XMStoreFloat3(&returnValue, worldPos);
+		// XMFLOAT3 worldPosition;
+		// XMStoreFloat3(&worldPosition,
+		// 			  XMVector3Unproject(XMVectorSet(ndc.x, ndc.y, InDepth, 1.0f),
+		// 								 0,
+		// 								 0,
+		// 								 InScreenSize.x,
+		// 								 InScreenSize.y,
+		// 								 0.0f,
+		// 								 1.0f,
+		// 								 InProjectionMatrix,
+		// 								 InViewMatrix,
+		// 								 XMMatrixIdentity()));
+		//
+		// return FVector(worldPosition);
 	}
 
 

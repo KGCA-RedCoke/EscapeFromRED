@@ -3,7 +3,7 @@
 #include "Core/Manager/Manager_Base.h"
 #include "Core/Utils/Math/Color.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnViewportResized);
+DECLARE_DYNAMIC_DELEGATE(FOnViewportResized, uint32_t, uint32_t);
 
 constexpr const char* Name_Editor_Viewport     = "Editor Viewport";
 constexpr const char* Name_Editor_Viewport_Top = "Editor Viewport Top";

@@ -207,8 +207,8 @@ namespace Utils::Fbx
 		{
 			for (int32_t i = 0; i < mAnimations.size(); ++i)
 			{
-				auto& clip     = mAnimations[i];
-				JText filePath = std::format("Game/Animation/{0}.jasset", ParseFile(InFilePath));
+				const auto& clip     = mAnimations[i];
+				JText       filePath = std::format("Game/Animation/{0}.jasset", ParseFile(InFilePath));
 
 				if (!Serialization::Serialize(filePath.c_str(), clip.get()))
 				{
@@ -217,6 +217,7 @@ namespace Utils::Fbx
 				}
 			}
 		}
+
 
 		return true;
 	}
@@ -508,8 +509,8 @@ namespace Utils::Fbx
 						vertex.Position.y = static_cast<float>(finalPosition.mData[2]);
 						vertex.Position.z = static_cast<float>(finalPosition.mData[1]);
 						// Get Scale Info
-						FVector scale = Mat2ScaleVector(InMeshData->mInitialModelTransform);
-						vertex.Position *= scale;
+						// FVector scaleFactor = Mat2ScaleVector(InMeshData->mInitialModelTransform);
+						// vertex.Position *= scaleFactor;
 
 						vertex.Normal.x = static_cast<float>(finalNormal.mData[0]);
 						vertex.Normal.y = static_cast<float>(finalNormal.mData[2]);
@@ -590,10 +591,9 @@ namespace Utils::Fbx
 		if (deformerCount == 0)	// 스킨이 없으면
 			return;
 
-
 		// SkinData에 메시 정보를 집어넣자
 		const int32_t     vertexCount  = InMesh->GetControlPointsCount();	// 영향을 받는 정점 개수
-		constexpr int32_t vertexStride = 4;									// 가중치 용량 (몇개의 본에서 영향을 받나? 8개까지 넘어가는건 괴물 같은 메시)
+		constexpr int32_t vertexStride = 8;									// 가중치 용량 (몇개의 본에서 영향을 받나? 8개까지 넘어가는건 괴물 같은 메시)
 
 		InSkinData->Initialize(vertexCount, vertexStride);
 
@@ -690,6 +690,8 @@ namespace Utils::Fbx
 		{
 			ParseAnimationStack(InScene, animStackNameArray.GetAt(i));
 		}
+
+		animStackNameArray.Clear();
 	}
 
 	void FbxFile::ParseAnimationStack(FbxScene* Scene, FbxString* AnimStackName)
@@ -720,11 +722,11 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(animClip->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(animClip->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		Ptr<JAnimationClip> anim      = MakePtr<JAnimationClip>();
-		anim->mName                   = animClip->mName.Buffer();
-		anim->mStartTime              = startTime;
-		anim->mEndTime                = endTime;
-		anim->mSourceSamplingInterval = sampleTime;
+		const Ptr<JAnimationClip> anim = MakePtr<JAnimationClip>();
+		anim->mName                    = animStack->GetName();
+		anim->mStartTime               = startTime;
+		anim->mEndTime                 = endTime;
+		anim->mSourceSamplingInterval  = sampleTime;
 
 		mAnimations.push_back(anim);
 
@@ -839,13 +841,15 @@ namespace Utils::Fbx
 				const JText saveFilePath     = std::format("Game/Materials/{0}", InMesh->GetName());
 				bool        bShouldSerialize = false;
 
+				Ptr<JMaterialInstance> materialInstance = MMaterialInstanceManager::Get().
+						CreateOrLoad(NAME_MAT_INS_DEFAULT);
+
 				/// 다수의 머티리얼이 존재하면 sub-mesh(기존과 다른 vertexBuffer를 생성)가 필요하다.
 				/// SubMesh를 통해 서로 다른 머티리얼을 가진 메시를 하나의 메시로 표현할 수 있다.
 				if (layerMaterialNum > 1)
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, i, bShouldSerialize);
 						materials.push_back(materialInstance);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
@@ -883,8 +887,12 @@ namespace Utils::Fbx
 				{
 					InMeshData->mMaterialRefNum = 1;
 
+					// !주의! : 언리얼에서 메시 가져오면 어차피 머티리얼 정보는 가져올 수 없고 텍스처도 따로 가져와야한다.
+					// 그럴바엔 그냥 fbx파싱할 때 기본 머티리얼로 설정해놓고 새로운 머티리얼 생성 후 할당하는게 낫다.
+					// !!!!!!!! 이 프로젝트에만 유효
 					// 머티리얼 정보만 가져와서 저장해놓자.
-					Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
+					// Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
+					// materials.push_back(materialInstance);
 					materials.push_back(materialInstance);
 
 					if (bShouldSerialize)

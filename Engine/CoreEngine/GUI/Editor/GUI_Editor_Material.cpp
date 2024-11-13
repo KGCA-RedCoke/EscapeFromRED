@@ -9,8 +9,7 @@
 GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	: GUI_Editor_Base(InTitle),
 	  bOpenFileBrowser(false),
-	  bOpenFolder(false),
-	  mFilePath{"Game/Materials"}
+	  bOpenFolder(false)
 {
 	if (std::filesystem::exists(InTitle) && std::filesystem::is_regular_file(InTitle))
 	{
@@ -18,6 +17,8 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	}
 
 	SetMeshObject(Path_Mesh_Sphere);
+
+	mMaterialToEdit->mFileName = InTitle;
 }
 
 void GUI_Editor_Material::Render()
@@ -28,25 +29,7 @@ void GUI_Editor_Material::Render()
 
 	// 변경사항 적용 Draw
 	mPreviewMeshObject->UpdateBuffer();
-	mPreviewMeshObject->Draw();
-}
-
-void GUI_Editor_Material::ShowMenuBar()
-{
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
-			if (ImGui::MenuItem("Open Material"))
-			{
-				bOpenFileBrowser = true;
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
+	mPreviewMeshObject->Draw(IManager.RenderManager->GetImmediateDeviceContext());
 }
 
 void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
@@ -58,7 +41,7 @@ void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
 	if (!mMaterialToEdit)
 	{
-		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/NewMaterial.jasset");
+		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
 		assert(mMaterialToEdit);
 	}
 
@@ -219,14 +202,6 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	ImGui::Separator();
 
-	ImGui::InputText("##SavePath", mFilePath, 256);
-	ImGui::SameLine();
-	if (ImGui::Button("Open"))
-	{
-		bOpenFileBrowser = true;
-		bOpenFolder      = true;
-	}
-
 	if (ImGui::Button("Cancel"))
 	{}
 
@@ -238,23 +213,6 @@ void GUI_Editor_Material::ShowMaterialEditor()
 	}
 
 	ImGui::EndChild();
-}
-
-void GUI_Editor_Material::ShowFileBrowser()
-{
-	ImGui::FileBrowserOption option = bOpenFolder ? ImGui::FileBrowserOption::DIRECTORY : ImGui::FileBrowserOption::FILE;
-	std::set<JText>          extent = {".jasset"};
-
-	if (ImGui::OpenFileBrowser(mFilePath, option, extent))
-	{
-		JText filePath;
-		if (ImGui::FetchFileBrowserResult(mFilePath, filePath))
-		{
-			Utils::Serialization::DeSerialize(filePath.c_str(), mMaterialToEdit.get());
-			bOpenFileBrowser = false;
-			bOpenFolder      = false;
-		}
-	}
 }
 
 void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const
@@ -324,11 +282,6 @@ void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 	mDeltaTime = DeltaTime;
 
 	ShowMaterialEditor();
-
-	if (bOpenFileBrowser)
-	{
-		ShowFileBrowser();
-	}
 
 	if (bOpenNewParamPopup)
 	{

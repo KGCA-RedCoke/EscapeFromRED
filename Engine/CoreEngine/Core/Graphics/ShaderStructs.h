@@ -242,7 +242,7 @@ namespace Buffer
 	};
 
 	// Basic 버퍼 인스턴스
-	struct FBufferInstance
+	struct FBufferGeometry
 	{
 		JArray<ComPtr<ID3D11Buffer>> Buffer_Vertex;			// Vertex 
 		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;			// Index
@@ -258,10 +258,21 @@ namespace Buffer
 	};
 
 	// Bone 버퍼 인스턴스
-	struct FBufferInstance_Bone
+	struct FBufferBone
 	{
 		ComPtr<ID3D11Buffer>             Buffer_Bone;	// Bone
 		ComPtr<ID3D11ShaderResourceView> Resource_Bone;	// Bone
+	};
+
+	struct FBufferInstance
+	{
+		ComPtr<ID3D11Buffer> Buffer_Instance;	// 인스턴싱 버퍼
+	};
+
+	struct FCombinedBuffer
+	{
+		FBufferGeometry BufferGeometry;
+		FBufferInstance BufferInstance;
 	};
 }
 

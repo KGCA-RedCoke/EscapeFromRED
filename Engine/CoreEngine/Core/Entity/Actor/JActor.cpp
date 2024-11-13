@@ -40,13 +40,13 @@ void JActor::Destroy()
 	JSceneComponent::Destroy();
 }
 
-void JActor::Draw()
+void JActor::Draw(ID3D11DeviceContext* InDeviceContext)
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
 		if (auto ptr = sceneComponent.lock())
 		{
-			ptr->Draw();
+			ptr->Draw(InDeviceContext);
 		}
 	}
 }

@@ -52,7 +52,7 @@ public:
 	 */
 	template <class ReturnType = ManagedType, typename... Args>
 	Ptr<ReturnType> CreateOrLoad(const JWText& InName, Args&&... InArgs);
-	
+
 	/**
 	 * Args에 뭘 넣을지 잘 모르겠으면 생성자 확인
 	 * @param InName 고유 이름 
@@ -73,6 +73,11 @@ public:
 
 	void SafeRemove(const JWText& InName);
 	void SafeRemove(const JText& InName);
+
+	/**
+	 * 매니저에서 Create이후 추가 작업이 필요하다면 여기에 구현 (CreateOrLoad, CreateOrClone 후에 자동 호출)
+	 */
+	virtual void PostInitialize(const JText& ParsedName, const uint32_t NameHash, void* Entity) {}
 
 	JArray<Ptr<ManagedType>> GetManagedList();
 
@@ -111,6 +116,8 @@ Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::stri
 
 	LeaveCriticalSection(&mCriticalSection);
 
+	PostInitialize(id, hash, obj.get());
+
 	return obj;
 }
 
@@ -125,8 +132,8 @@ template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args> Ptr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(
 	const JText& InName, Args&&... InArgs)
 {
-	std::string id   = ParseFile(InName);
-	uint32_t    hash = StringHash(id.c_str());
+	JText    id   = ParseFile(InName);
+	uint32_t hash = StringHash(id.c_str());
 
 	EnterCriticalSection(&mCriticalSection);
 
@@ -145,6 +152,8 @@ template <class ReturnType, typename... Args> Ptr<ReturnType> Manager_Base<Manag
 	mManagedList.try_emplace(hash, clone);
 
 	LeaveCriticalSection(&mCriticalSection);
+
+	PostInitialize(id, hash, clone.get());
 
 	return clone;
 }

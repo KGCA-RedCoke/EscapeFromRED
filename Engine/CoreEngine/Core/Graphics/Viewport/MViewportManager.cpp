@@ -67,7 +67,7 @@ void FViewportData::Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t In
 
 	Create(InDevice, InWidth, InHeight);
 
-	OnViewportResized.Execute();
+	OnViewportResized.Execute(InWidth, InHeight);
 }
 
 void FViewportData::Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight)
