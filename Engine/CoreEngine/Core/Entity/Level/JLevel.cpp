@@ -36,12 +36,12 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	// DeSerialize Actors
 	size_t actorSize;
 	Utils::Serialization::DeSerialize_Primitive(&actorSize, sizeof(actorSize), InFileStream);
-	// mActors.resize(actorSize);
-	// for (int32_t i = 0; i < actorSize; ++i)
-	// {
-	// 	mActors[i] = new JActor();
-	// 	mActors[i]->DeSerialize_Implement(InFileStream);
-	// }
+	mActors.resize(actorSize);
+	for (int32_t i = 0; i < actorSize; ++i)
+	{
+		mActors[i] = new JActor();
+		mActors[i]->DeSerialize_Implement(InFileStream);
+	}
 
 
 	return true;

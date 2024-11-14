@@ -1,6 +1,4 @@
 ﻿#pragma once
-#include <d3d11.h>
-
 #include "Core/Entity/Component/JActorComponent.h"
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/Math/TMatrix.h"
@@ -9,7 +7,9 @@
  * 2D 스크린에 배치되는 컴포넌트
  */
 class JSceneComponent_2D : public IRenderable
-{};
+{
+	
+};
 
 
 /**
@@ -38,8 +38,11 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
-	void Draw(ID3D11DeviceContext* InDeviceContext) override;
-	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override;
+	void PreRender() override {}
+	void Render() override {};
+	void PostRender() override {};
+	void Draw() override;
+	void DrawID(uint32_t ID) override;
 
 public:
 	FORCEINLINE [[nodiscard]] FMatrix GetWorldMatrix() const { return mWorldMat; }

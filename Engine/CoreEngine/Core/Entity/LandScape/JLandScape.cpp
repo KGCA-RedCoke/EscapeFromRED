@@ -30,7 +30,7 @@ void JLandScape::Destroy()
 	JActor::Destroy();
 }
 
-void JLandScape::Draw(ID3D11DeviceContext* InDeviceContext)
+void JLandScape::Draw()
 {
 	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 	assert(deviceContext);

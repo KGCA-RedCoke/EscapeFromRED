@@ -1,7 +1,6 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -19,7 +18,7 @@ void GUI_Editor_SkeletalMesh::Render()
 	if (const auto& ptr = mMeshObject.lock())
 	{
 		ptr->UpdateBuffer();
-		ptr->Draw(Renderer.GetImmediateDeviceContext());
+		ptr->Draw();
 	}
 }
 
@@ -203,8 +202,8 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 {
 	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 
-
-		ImGui::ImageButton(nullptr, ImVec2(100, 100));
+	
+	ImGui::ImageButton(nullptr, ImVec2(100, 100));
 	// ImGui::Text(subMeshes[j]->GetName().c_str());
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())

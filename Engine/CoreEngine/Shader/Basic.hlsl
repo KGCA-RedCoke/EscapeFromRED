@@ -31,8 +31,8 @@ float4x4 FetchBoneTransform(uint Bone)
 PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 {
 	PixelInput_Base output;
-	output.Color = Input.Color;
-	// output.Pos      = float4(, 1.f);	// 로컬 좌표계
+
+	output.Color    = Input.Color;
 	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
 	float4 localPos = output.Pos;
 	float3 normal;
@@ -73,7 +73,7 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 		normal = Input.Normal;
 	}
 
-	output.Pos     = mul(output.Pos, Input.InstanceMatrix);
+	output.Pos     = mul(output.Pos, World);
 	float3 viewDir = WorldCameraPos.xyz - output.Pos.xyz;
 
 	output.Pos = mul(output.Pos, View);

@@ -26,7 +26,7 @@ public:
 	void Destroy() override;
 
 public:
-	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void Draw() override;
 
 public:
 	bool Serialize_Implement(std::ofstream& FileStream) override;

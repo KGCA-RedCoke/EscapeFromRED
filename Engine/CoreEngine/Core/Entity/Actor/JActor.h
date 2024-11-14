@@ -18,7 +18,7 @@ public:
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
 
-	void Draw(ID3D11DeviceContext* InDeviceContext) override;
+	void Draw() override;
 
 	bool Serialize_Implement(std::ofstream& FileStream) override;
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;

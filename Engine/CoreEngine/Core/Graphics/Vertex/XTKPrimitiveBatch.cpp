@@ -49,13 +49,17 @@ void XTKPrimitiveBatch::Release()
 	mBatchInputLayout = nullptr;
 }
 
-void XTKPrimitiveBatch::Draw(ID3D11DeviceContext* InDeviceContext)
+void XTKPrimitiveBatch::PreRender()
 {
 	mBatchEffect->Apply(IManager.RenderManager->GetImmediateDeviceContext());
 
-	InDeviceContext->IASetInputLayout(mBatchInputLayout.Get());
+	IManager.RenderManager->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
 
 	mBatch->Begin();
+}
+
+void XTKPrimitiveBatch::Render()
+{
 
 	constexpr FVector4 origin = {0, 0, 0, 0};
 
@@ -84,10 +88,15 @@ void XTKPrimitiveBatch::Draw(ID3D11DeviceContext* InDeviceContext)
 								   false,
 								   {0.f, 1.f, 0.f, 1.f}
 								  );
-
-	mBatch->End();
-
 }
+
+void XTKPrimitiveBatch::PostRender()
+{
+	mBatch->End();
+}
+
+void XTKPrimitiveBatch::Draw()
+{}
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
 {

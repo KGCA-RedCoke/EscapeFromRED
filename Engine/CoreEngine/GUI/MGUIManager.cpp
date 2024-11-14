@@ -59,6 +59,8 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 	ImGui_ImplDX11_Init(InDevice, InDeviceContext);
 
 	InitializeStaticGUI();
+
+	ScaleAllSize(1.5f);
 }
 
 void MGUIManager::InitializeStaticGUI()

@@ -1,7 +1,6 @@
 ﻿#include "GUI_Editor_Mesh.h"
 
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -19,7 +18,7 @@ void GUI_Editor_Mesh::Render()
 	if (const auto& ptr = mMeshObject.lock())
 	{
 		ptr->UpdateBuffer();
-		ptr->Draw(Renderer.GetImmediateDeviceContext());
+		ptr->Draw();
 	}
 }
 

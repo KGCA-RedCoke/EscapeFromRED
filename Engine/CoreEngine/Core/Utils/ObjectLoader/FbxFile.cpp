@@ -217,7 +217,7 @@ namespace Utils::Fbx
 				}
 			}
 		}
-
+		
 
 		return true;
 	}
@@ -509,8 +509,8 @@ namespace Utils::Fbx
 						vertex.Position.y = static_cast<float>(finalPosition.mData[2]);
 						vertex.Position.z = static_cast<float>(finalPosition.mData[1]);
 						// Get Scale Info
-						// FVector scaleFactor = Mat2ScaleVector(InMeshData->mInitialModelTransform);
-						// vertex.Position *= scaleFactor;
+						FVector scale = Mat2ScaleVector(InMeshData->mInitialModelTransform);
+						vertex.Position *= scale;
 
 						vertex.Normal.x = static_cast<float>(finalNormal.mData[0]);
 						vertex.Normal.y = static_cast<float>(finalNormal.mData[2]);
@@ -591,9 +591,10 @@ namespace Utils::Fbx
 		if (deformerCount == 0)	// 스킨이 없으면
 			return;
 
+
 		// SkinData에 메시 정보를 집어넣자
 		const int32_t     vertexCount  = InMesh->GetControlPointsCount();	// 영향을 받는 정점 개수
-		constexpr int32_t vertexStride = 8;									// 가중치 용량 (몇개의 본에서 영향을 받나? 8개까지 넘어가는건 괴물 같은 메시)
+		constexpr int32_t vertexStride = 4;									// 가중치 용량 (몇개의 본에서 영향을 받나? 8개까지 넘어가는건 괴물 같은 메시)
 
 		InSkinData->Initialize(vertexCount, vertexStride);
 
@@ -722,11 +723,11 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(animClip->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(animClip->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		const Ptr<JAnimationClip> anim = MakePtr<JAnimationClip>();
-		anim->mName                    = animStack->GetName();
-		anim->mStartTime               = startTime;
-		anim->mEndTime                 = endTime;
-		anim->mSourceSamplingInterval  = sampleTime;
+		const Ptr<JAnimationClip> anim      = MakePtr<JAnimationClip>();
+		anim->mName                   = animStack->GetName();
+		anim->mStartTime              = startTime;
+		anim->mEndTime                = endTime;
+		anim->mSourceSamplingInterval = sampleTime;
 
 		mAnimations.push_back(anim);
 

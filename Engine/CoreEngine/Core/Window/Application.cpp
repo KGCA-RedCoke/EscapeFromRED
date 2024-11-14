@@ -80,8 +80,8 @@ void Application::Initialize()
 	Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
 														IManager.MeshManager->CreateOrClone(Path_Mesh_Sphere));
 	sampleActor->Initialize();
-	sampleActor->SetLocalScale({500, 500, 500});
-
+	sampleActor->SetLocalScale({4500, 4500, 4500});
+	
 
 	Actors.push_back(sampleActor);
 }
@@ -129,11 +129,13 @@ void Application::Render()
 	for (int32_t i = 0; i < Actors.size(); ++i)
 	{
 		Actors[i]->Tick(mDeltaTime);
-		Actors[i]->Draw(IManager.RenderManager->GetImmediateDeviceContext());
+		Actors[i]->Draw();
 	}
 
-	mFpsText->Draw(IManager.RenderManager->GetImmediateDeviceContext());
-
+	mFpsText->PreRender();
+	mFpsText->Render();
+	mFpsText->PostRender();
+	
 	IManager.RenderManager->Draw();
 }
 

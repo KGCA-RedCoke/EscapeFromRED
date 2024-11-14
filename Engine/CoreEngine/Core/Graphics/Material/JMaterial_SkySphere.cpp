@@ -32,7 +32,7 @@ void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InD
 	// // 컬링 모드는 논컬링
 	Renderer.SetRasterState(ERasterState::CullNone);
 	// // 깊이 버퍼 읽기 쓰기 비활성화
-	Renderer.SetDepthStencilState(EDepthStencilState::DepthNone);
+	// Renderer.SetDepthStencilState(EDepthStencilState::DepthNone);
 
 	ID3D11ShaderResourceView* textureArray[3];
 

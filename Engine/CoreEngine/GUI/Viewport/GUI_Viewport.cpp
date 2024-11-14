@@ -27,10 +27,10 @@ void GUI_Viewport::Initialize()
 	mViewportData->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		if (mEditorCameraRef)
 		{
-			mEditorCameraRef->SetProjParams(M_PI / 2,
+			mEditorCameraRef->SetProjParams(M_PI / 4,
 											static_cast<float>(InWidth) / static_cast<float>(InHeight),
-											10.f,
-											100000.f);
+											0.1f,
+											1000000.f);
 		}
 	});
 }
@@ -76,7 +76,7 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 				auto ptr = actor.second.lock();
 				if (ptr)
 				{
-					ptr->DrawID(IManager.RenderManager->GetImmediateDeviceContext(), (ptr->GetHash()));
+					ptr->DrawID((ptr->GetHash()));
 				}
 			}
 
@@ -84,10 +84,12 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 			// const float depth = Utils::DX::GetDepthValue(IManager.RenderManager->GetDevice(),
 			// 											 IManager.RenderManager->GetImmediateDeviceContext(),
 			// 											 mViewportData->DepthStencilView.Get(),
-			// 											 FVector2(mousePos.x, mousePos.y),
-			// 											 FVector2(size.x, size.y));
+			// 											 FVector2(mousePos.x, mousePos.y));
 			// FVector worldPos = Utils::DX::Screen2World(FVector2{mousePos.x, mousePos.y},
-			// 										   FVector2{size.x, size.y},
+			// 										   FVector2{
+			// 											   size.x,
+			// 											   size.y
+			// 										   },
 			// 										   mEditorCameraRef->GetViewMatrix(),
 			// 										   mEditorCameraRef->GetProjMatrix(),
 			// 										   depth);

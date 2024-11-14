@@ -19,12 +19,12 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const std::vector<
 	else
 	{
 		mPrimitiveMeshData = InData;
-		// JSkeletalMeshObject::CreateBuffers();
+		JSkeletalMeshObject::CreateBuffers();
 	}
 
 	assert(mPrimitiveMeshData.size() > 0);
 
-	// mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
+	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
 
 	mSampleAnimation = MakePtr<JAnimationClip>();
 	if (!Utils::Serialization::DeSerialize("Game/Animation/Lucy_Idle.jasset", mSampleAnimation.get()))
@@ -47,7 +47,7 @@ Ptr<IManagedInterface> JSkeletalMeshObject::Clone() const
 	return clone;
 }
 
-/*void JSkeletalMeshObject::CreateBuffers()
+void JSkeletalMeshObject::CreateBuffers()
 {
 	ID3D11Device* device = IManager.RenderManager->GetDevice();
 	assert(device);
@@ -76,7 +76,7 @@ Ptr<IManagedInterface> JSkeletalMeshObject::Clone() const
 													 mInstanceBuffer_Bone.Resource_Bone.GetAddressOf()));
 	}
 
-}*/
+}
 
 void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 {
@@ -139,7 +139,7 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mPrimitiveMeshData.push_back(archivedData);
 	}
 
-	// CreateBuffers();
+	CreateBuffers();
 
 	return true;
 }
@@ -149,7 +149,7 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 	mSampleAnimation->TickAnim(DeltaTime);
 }
 
-void JSkeletalMeshObject::Draw(ID3D11DeviceContext* InDeviceContext)
+void JSkeletalMeshObject::Draw()
 {
 	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
 	assert(deviceContext);
@@ -160,7 +160,7 @@ void JSkeletalMeshObject::Draw(ID3D11DeviceContext* InDeviceContext)
 	// 최종 본 행렬 업데이트
 	UpdateBoneBuffer(deviceContext);
 
-	/*for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
+	for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
 	{
 		auto& instanceBuffer = mGeometryBuffer[i];
 		auto& meshData       = mPrimitiveMeshData[i];
@@ -183,14 +183,14 @@ void JSkeletalMeshObject::Draw(ID3D11DeviceContext* InDeviceContext)
 
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
-	}*/
+	}
 	// JMeshObject::Draw();
 
 }
 
-void JSkeletalMeshObject::DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID)
+void JSkeletalMeshObject::DrawID(uint32_t ID)
 {
-	JMeshObject::DrawID(InDeviceContext, ID);
+	JMeshObject::DrawID(ID);
 }
 
 void JSkeletalMeshObject::DrawBone()
@@ -199,7 +199,7 @@ void JSkeletalMeshObject::DrawBone()
 	auto* deviceContext = Renderer.GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	/*for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
+	for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
 	{
 		Ptr<JSkeletalMesh> meshData = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[i]);
 
@@ -215,11 +215,11 @@ void JSkeletalMeshObject::DrawBone()
 
 				FMatrix newMat = parentInv * boneWorld;
 				sphere->UpdateBuffer(newMat);
-				// sphere->Draw();
+				sphere->Draw();
 			}
 		}
 		//
-	}*/
+	}
 }
 
 void JSkeletalMeshObject::SetAnimation(const Ptr<JAnimationClip>& InAnimation)

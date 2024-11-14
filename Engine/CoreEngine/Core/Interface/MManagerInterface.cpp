@@ -46,7 +46,7 @@ void MManagerInterface::Initialize()
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
-	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
+	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));
 	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc/GameResource/Horror_Farm)"));
 }
@@ -68,7 +68,12 @@ void MManagerInterface::Render()
 	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::TrueBlack);
 	ShaderManager->UpdateCamera(IManager.CameraManager->GetCurrentMainCam());
 
-	G_DebugBatch.Draw(RenderManager->GetImmediateDeviceContext());
+	G_DebugBatch.PreRender();
+
+	G_DebugBatch.Render();
+
+	G_DebugBatch.PostRender();
+
 }
 
 void MManagerInterface::Release()

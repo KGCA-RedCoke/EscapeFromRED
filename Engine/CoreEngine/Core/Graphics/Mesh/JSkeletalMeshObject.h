@@ -13,7 +13,7 @@ public:
 	Ptr<IManagedInterface> Clone() const override;
 
 protected:
-	// void CreateBuffers() override;
+	void CreateBuffers() override;
 	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:
@@ -25,8 +25,8 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
-	void Draw(ID3D11DeviceContext* InDeviceContext) override;
-	void DrawID(ID3D11DeviceContext* InDeviceContext, uint32_t ID) override;
+	void Draw() override;
+	void DrawID(uint32_t ID) override;
 	void DrawBone();
 
 public:

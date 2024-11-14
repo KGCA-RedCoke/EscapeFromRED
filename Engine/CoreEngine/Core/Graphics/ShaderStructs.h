@@ -268,12 +268,6 @@ namespace Buffer
 	{
 		ComPtr<ID3D11Buffer> Buffer_Instance;	// 인스턴싱 버퍼
 	};
-
-	struct FCombinedBuffer
-	{
-		FBufferGeometry BufferGeometry;
-		FBufferInstance BufferInstance;
-	};
 }
 
 // 인스턴싱 버퍼 구조체

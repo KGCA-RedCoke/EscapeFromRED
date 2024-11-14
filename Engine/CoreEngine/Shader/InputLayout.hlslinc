@@ -45,9 +45,7 @@ struct VertexIn_Base
 	float3 Binormal : BINORMAL;	// 이접 벡터
 
 	float4 BoneIndices : INDEX;
-	float4 BoneWeights : WEIGHT;
-
-	matrix InstanceMatrix : INST_WORLD;	// 인스턴스 매트릭스
+	float  BoneWeights[4] : WEIGHT;
 };
 
 struct PixelInput_Base

@@ -29,7 +29,7 @@ void GUI_Editor_Material::Render()
 
 	// 변경사항 적용 Draw
 	mPreviewMeshObject->UpdateBuffer();
-	mPreviewMeshObject->Draw(IManager.RenderManager->GetImmediateDeviceContext());
+	mPreviewMeshObject->Draw();
 }
 
 void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)

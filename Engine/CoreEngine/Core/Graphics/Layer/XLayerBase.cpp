@@ -13,11 +13,11 @@ void XLayerBase::Render() const
 
 	for (int32_t i = 0; i < objNum; ++i)
 	{
-		// mRenderObjects[i]->PreRender();
-		//
-		// mRenderObjects[i]->Render();
-		//
-		// mRenderObjects[i]->PostRender();
+		mRenderObjects[i]->PreRender();
+
+		mRenderObjects[i]->Render();
+
+		mRenderObjects[i]->PostRender();
 	}
 }
 
