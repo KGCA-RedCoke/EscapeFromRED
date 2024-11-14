@@ -16,6 +16,7 @@ struct VertexIn_3D
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
 	float2 UV : TEXCOORD0;	// UV 좌표
+	float4 Color : COLOR;
 	float3 Normal : NORMAL;	// 법선 벡터
 };
 

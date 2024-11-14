@@ -16,8 +16,8 @@
 static const int g_TextureCount = 3;
 
 // Sky Color (블렌딩을 위한 색상)
-static const float4 g_SkyColor_01 = float4(0.02f, 0.02f, 0.02f, 1.f);
-static const float4 g_SkyColor_02 = float4(0.013802, 0.30778, 0.05, 1.f);
+static const float4 g_SkyColor_01 = float4(0.15f, 0.15f, 0.15f, 1.f);
+static const float4 g_SkyColor_02 = float4(0.02, 0.02, 0.02, 1.f);
 
 // Cloud Color (블렌딩을 위한 색상)
 static const float4 g_CloudColor_01 = float4(0.200000, 0.200000, 0.200000, 1.f);
@@ -74,8 +74,7 @@ float4 PS(PixelInput_3D Input) : SV_TARGET
 													 1.0f,
 													 clamp(frac(CustomSine(GameTime, 10.f, 0.8f)), 0, 1));
 
-	float3 alpha = WorldAlignedBlend(normalize(Input.Normal), -0.9, -3);
-
+	float3 alpha = WorldAlignedBlend(normalize(Input.Normal), -1.869581, 0.075672f);
 	float3 emissiveColor = LerpFloat3(g_SkyColor_01.rgb, lerpedCloudColor.rgb, cloud_01);
 	emissiveColor        = LerpFloat3(emissiveColor, lerpedCloudColor.rgb, sampleTexture);
 	emissiveColor        = LerpFloat3(emissiveColor, g_CloudColor_02.rgb, cloud_02);

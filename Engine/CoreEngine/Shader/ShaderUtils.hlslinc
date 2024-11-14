@@ -37,19 +37,17 @@ float2 Panner(float2 InUV, float2 InSpeed, float InTime)
 float WorldAlignedBlend(float3 InPixelNormal, float InputBlendSharpness, float InputBlendBias)
 {
 	// Z 축을 기준으로 법선과의 각도를 측정
-	float blendFactor = dot(normalize(InPixelNormal), float3(0, 0, 1));
-    
+	float blendFactor = dot(InPixelNormal, float3(0, -1, 0));
+
 	// blendFactor를 0.5로 스케일링하고 Offset을 적용
 	blendFactor = blendFactor * 0.5f + 0.5f;
-    
+
+	blendFactor = blendFactor * InputBlendSharpness;
+
 	// BlendSharpness와 BlendBias를 사용해 값 조정
-	blendFactor = blendFactor * InputBlendSharpness + InputBlendBias;
+	blendFactor = blendFactor + (InputBlendBias - (InputBlendSharpness * 0.5f));
+
     
 	// 결과값을 0과 1 사이로 clamp
 	return clamp(blendFactor, 0.0f, 1.0f);
-	return clamp(
-				 dot(InPixelNormal, float3(0, 0, 1)) * 0.5f + 0.5f * InputBlendSharpness + (InputBlendBias
-				 - (InputBlendSharpness * 0.5f)),
-				 0,
-				 1);
 }
