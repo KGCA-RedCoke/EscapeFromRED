@@ -100,11 +100,11 @@ struct AssetSelectionWithDeletion : ImGuiSelectionBasicStorage
 
 struct AssetBrowserIconList
 {
-	Ptr<class JTexture> FolderIcon;
-	Ptr<JTexture>       FileIcon;
-	Ptr<JTexture>       StaticMeshIcon;
-	Ptr<JTexture>       SkeletalMeshIcon;
-	Ptr<JTexture>       MaterialIcon;
+	class JTexture* FolderIcon;
+	JTexture*       FileIcon;
+	JTexture*       StaticMeshIcon;
+	JTexture*       SkeletalMeshIcon;
+	JTexture*       MaterialIcon;
 };
 
 struct FBasicFilePreview
@@ -115,6 +115,7 @@ struct FBasicFilePreview
 	EFileType FileType;
 };
 
+DECLARE_DYNAMIC_DELEGATE(FOnBrowserChange);
 
 class GUI_AssetBrowser : public GUI_Base
 {
@@ -139,7 +140,10 @@ private:
 	void UpdateProgressBar() const;
 
 	void HandleFile();
-	void ParseAsset(FBasicFilePreview* ItemData);
+	void HandleAssetClicked(FBasicFilePreview* ItemData);
+
+public:
+	FOnBrowserChange OnBrowserChange;
 
 private:
 	float mIconHitSpacing;

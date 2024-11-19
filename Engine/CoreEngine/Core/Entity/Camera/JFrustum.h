@@ -18,6 +18,9 @@ private:
 	FMatrix mViewMatrix;
 	FMatrix mProjMatrix;
 
+	FVector mNearCenter = FVector::ZeroVector;	// Near Plane의 중심좌표
+	FVector mFarCenter  = FVector::ZeroVector;	// Far Plane의 중심좌표
+
 	FVector                          mFrustum[8];
 	JArray<Vertex::FVertexInfo_Base> mVertexData;
 

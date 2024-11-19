@@ -1,15 +1,8 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "Core/Manager/IManagedInterface.h"
+#include "Core/Manager/MClassFactory.h"
 #include "Core/Utils/FileIO/JSerialization.h"
-
-enum class EObjectType : uint8_t
-{
-	BaseObject,
-	ActorComponent,
-	SceneComponent,
-	Level
-};
 
 enum EObjectFlags : uint32_t
 {
@@ -21,15 +14,24 @@ enum EObjectFlags : uint32_t
 	DontDestroy   = 1 << 4, // 소멸하지 않는 상태 (레벨 전환 시 소멸되지 않음)
 };
 
-class JObject : public IManagedInterface, public ISerializable, public std::enable_shared_from_this<JObject>
+class JObject : public JAsset,
+				public IManagedInterface
 {
 public:
 	JObject();
 	explicit JObject(JTextView InName);
-	~JObject() override = default;
+	~JObject() override;
 
-	Ptr<IManagedInterface> Clone() const override;
+public:
+	uint32_t                GetHash() const override;
+	UPtr<IManagedInterface> Clone() const override;
 
+public:
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
 	virtual void Initialize() {}
 	virtual void BeginPlay() {}
 	virtual void Tick(float DeltaTime) {}
@@ -39,42 +41,7 @@ public:
 		mObjectFlags |= EObjectFlags::IsPendingKill;
 	}
 
-	virtual EObjectType GetObjectType() const { return EObjectType::BaseObject; }
-
-	uint32_t GetHash() const override;
-	uint32_t GetType() const override;
-	bool     Serialize_Implement(std::ofstream& FileStream) override;
-	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
-
-	template <class ObjectType, typename... Args>
-	Ptr<ObjectType> CreateDefaultSubObject(Args... args)
-	{
-		static_assert(std::is_base_of_v<JObject, ObjectType>, "ObjectType is not derived from JObject");
-
-		Ptr<ObjectType> obj = MakePtr<ObjectType>(std::forward<Args>(args)...);
-
-		uint32_t nameHash = obj->GetHash();
-		if (!mChildObjHash.contains(nameHash))
-		{
-			obj->mParentObj = shared_from_this();
-			mChildObjHash.insert({obj->GetHash(), mChildObjs.size()});
-			mChildObjs.push_back(obj);
-		}
-		else
-		{
-			const int32_t index = mChildObjHash[nameHash];
-			obj                 = std::dynamic_pointer_cast<ObjectType>(mChildObjs[index]);
-		}
-
-		return obj;
-	}
-
-	// 타입 추론 버전
-	template <class ObjectType>
-	auto GetThisPtr() -> Ptr<ObjectType>
-	{
-		return std::dynamic_pointer_cast<ObjectType>(shared_from_this());
-	}
+	JText GetObjectType() const { return mObjectType; }
 
 	[[nodiscard]] bool IsVisible() const { return mObjectFlags & EObjectFlags::IsVisible; }
 	[[nodiscard]] bool IsValid() const { return mObjectFlags & EObjectFlags::IsValid; }
@@ -88,19 +55,15 @@ public:
 		bVisible ? mObjectFlags |= EObjectFlags::IsVisible : mObjectFlags &= ~EObjectFlags::IsVisible;
 	}
 
-	[[nodiscard]] FORCEINLINE JText        GetName() const { return mName; }
-	[[nodiscard]] FORCEINLINE Ptr<JObject> GetParentObject() const { return mParentObj.lock(); }
-	[[nodiscard]] FORCEINLINE size_t       GetChildCount() const { return mChildObjs.empty() ? 0 : mChildObjs.size(); }
+	[[nodiscard]] FORCEINLINE JText GetName() const { return mName; }
 
 protected:
 	JText    mName;
+	JText    mObjectType  = NAME_OBJECT_BASE;
 	uint32_t mObjectFlags = 0;
-
-	WPtr<JObject>            mParentObj;
-	JArray<Ptr<JObject>>     mChildObjs;
-	JHash<uint32_t, int32_t> mChildObjHash;
 
 protected:
 	static uint32_t g_DefaultObjectNum;
-
 };
+
+REGISTER_CLASS_TYPE(JObject);

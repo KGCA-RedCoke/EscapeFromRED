@@ -2,7 +2,7 @@
 
 #include "JMaterial_Basic.h"
 #include "JMaterial_SkySphere.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 void MMaterialManager::SaveEngineMaterials()
 {
@@ -12,7 +12,7 @@ void MMaterialManager::SaveEngineMaterials()
 	// Utils::Serialization::Serialize(NAME_MAT_BASIC, basicMat.get());
 
 	// Ptr<JMaterial> skySphere = CreateOrLoad<JMaterial_SkySphere>("SkySphere");
-	// skySphere->SetShader(IManager.ShaderManager->CreateOrLoad("Shader/SkySphere.hlsl"));
+	// skySphere->SetShader(GetWorld.ShaderManager->CreateOrLoad("Shader/SkySphere.hlsl"));
 	//
 	// assert(skySphere != nullptr);
 	//

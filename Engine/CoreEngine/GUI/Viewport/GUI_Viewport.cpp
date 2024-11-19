@@ -2,10 +2,12 @@
 
 #include "Core/Entity/Actor/JActor.h"
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 #include "GUI/GUI_Inspector.h"
+#include "GUI/MGUIManager.h"
 
 
 GUI_Viewport::GUI_Viewport(const JText& InTitle)
@@ -22,7 +24,7 @@ void GUI_Viewport::Initialize()
 {
 	if (!mViewportData)
 	{
-		mViewportData = IManager.ViewportManager->FetchResource(mViewportTitle);
+		mViewportData = GetWorld.ViewportManager->FetchResource(mViewportTitle);
 	}
 	mViewportData->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		if (mEditorCameraRef)
@@ -51,8 +53,8 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 	{
 		mCachedViewportWidth  = size.x;
 		mCachedViewportHeight = size.y;
-		mViewportData->Resize(IManager.RenderManager->GetDevice(), size.x, size.y);
-		CreateMousePickingBuffer(IManager.RenderManager->GetDevice());
+		mViewportData->Resize(GetWorld.D3D11API->GetDevice(), (uint32_t)size.x, (uint32_t)size.y);
+		CreateMousePickingBuffer(GetWorld.D3D11API->GetDevice());
 	}
 
 	ImGui::Image(mViewportData->SRV.Get(), ImGui::GetContentRegionAvail());
@@ -67,38 +69,24 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 			ImVec2 mousePos = ImGui::GetMousePos();
 			mousePos.x -= ImGui::GetItemRectMin().x;
 			mousePos.y -= ImGui::GetItemRectMin().y;
-			UpdateMousePickingBuffer(IManager.RenderManager->GetImmediateDeviceContext());
+			UpdateMousePickingBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
 			// Draw ID to Color Buffer
-			auto inspector = IManager.GUIManager->GetInspector();
-			auto actors    = inspector->GetSelectedSceneComponent();
-			for (auto& actor : actors)
+			auto inspector    = GetWorld.GUIManager->GetInspector();
+			auto currentLevel = GetWorld.LevelManager->GetActiveLevel();
+
+			for (auto& actor : currentLevel->mActors)
 			{
-				auto ptr = actor.second.lock();
-				if (ptr)
+				if (auto ptr = actor.get())
 				{
 					ptr->DrawID((ptr->GetHash()));
 				}
 			}
 
-			uint32_t    id    = GetMousePickingValue(IManager.RenderManager->GetImmediateDeviceContext(), mousePos);
-			// const float depth = Utils::DX::GetDepthValue(IManager.RenderManager->GetDevice(),
-			// 											 IManager.RenderManager->GetImmediateDeviceContext(),
-			// 											 mViewportData->DepthStencilView.Get(),
-			// 											 FVector2(mousePos.x, mousePos.y));
-			// FVector worldPos = Utils::DX::Screen2World(FVector2{mousePos.x, mousePos.y},
-			// 										   FVector2{
-			// 											   size.x,
-			// 											   size.y
-			// 										   },
-			// 										   mEditorCameraRef->GetViewMatrix(),
-			// 										   mEditorCameraRef->GetProjMatrix(),
-			// 										   depth);
+			uint32_t id = GetMousePickingValue(GetWorld.D3D11API->GetImmediateDeviceContext(), mousePos);
 
-			// LOG_CORE_INFO("World Position : {0}, {1}, {2}", worldPos.x, worldPos.y, worldPos.z);
-
-			for (auto& actor : actors)
+			for (auto& actor : currentLevel->mActors)
 			{
-				auto ptr = actor.second.lock();
+				auto ptr = actor.get();
 				if (ptr && ptr->GetHash() == id)
 				{
 					LOG_CORE_INFO("Selected Actor : {0}", ptr->GetName());

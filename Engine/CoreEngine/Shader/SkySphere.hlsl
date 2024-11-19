@@ -11,7 +11,6 @@
 // Shading Model : Unlit
 // ------------------------------------------------------------------
 
-
 // 텍스처 4장이 필요하다.
 static const int g_TextureCount = 3;
 
@@ -75,6 +74,7 @@ float4 PS(PixelInput_3D Input) : SV_TARGET
 													 clamp(frac(CustomSine(GameTime, 10.f, 0.8f)), 0, 1));
 
 	float3 alpha = WorldAlignedBlend(normalize(Input.Normal), -1.869581, 0.075672f);
+
 	float3 emissiveColor = LerpFloat3(g_SkyColor_01.rgb, lerpedCloudColor.rgb, cloud_01);
 	emissiveColor        = LerpFloat3(emissiveColor, lerpedCloudColor.rgb, sampleTexture);
 	emissiveColor        = LerpFloat3(emissiveColor, g_CloudColor_02.rgb, cloud_02);

@@ -42,7 +42,7 @@ enum class ESamplerState : uint8_t
 
 
 // 이 클래스 매크로 추천
-#define Renderer XD3DDevice::Get()
+#define G_Device XD3DDevice::Get()
 
 class XD3DDevice final : public TSingleton<XD3DDevice>
 {
@@ -132,7 +132,7 @@ private:
 
 private:
 	friend class TSingleton<XD3DDevice>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	XD3DDevice();
 	~XD3DDevice();

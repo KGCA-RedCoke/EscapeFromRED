@@ -1,16 +1,19 @@
 ﻿#pragma once
 #include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Graphics/Shader/JShader.h"
+#include "Core/Manager/IManagedInterface.h"
 
 class JMaterialInstance : public IManagedInterface, public ISerializable
 {
 public:
 	JMaterialInstance(JTextView InName);
 	JMaterialInstance(JWTextView InName);
+	JMaterialInstance(const JMaterialInstance& Other);
 	~JMaterialInstance() override = default;
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
+	UPtr<IManagedInterface> Clone() const override;
+	void SetAsDefaultMaterial();
 
 public:
 	uint32_t GetHash() const override;
@@ -40,23 +43,23 @@ public:
 	FORCEINLINE int32_t  GetParamCount() const { return mInstanceParams.size(); }
 	FORCEINLINE uint32_t GetInputLayoutSize() const
 	{
-		if (const auto ptr = mShader.lock())
+		if (mShader)
 		{
-			return ptr->GetInputLayoutSize();
+			return mShader->GetInputLayoutSize();
 		}
 		return 0;
 	}
 
 public:
-	void SetParentMaterial(const Ptr<JMaterial>& InParentMaterial);
+	void SetParentMaterial(JMaterial* InParentMaterial);
 
 private:
 	void GetInstanceParams();
 
 protected:
 	JText                  mFileName;		// 파일 이름
-	Ptr<JMaterial>         mParentMaterial;	// 부모 머티리얼 레퍼런스
-	WPtr<JShader>          mShader;			// 셰이더 레퍼런스
+	JMaterial*             mParentMaterial;	// 부모 머티리얼 레퍼런스
+	JShader*               mShader;			// 셰이더 레퍼런스
 	JArray<FMaterialParam> mInstanceParams;	// 인스턴스 파라미터 (편집 가능)
 
 	friend class GUI_Editor_Material;

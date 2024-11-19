@@ -40,7 +40,7 @@ class JTexture;
 
 /**
  * Shader파일 단위 관리
- * IManager->ShaderManager
+ * GetWorld->ShaderManager
  *
  * Shader, Blob Buffer(Vertex, Pixel), InputLayout에 대해서는 기본으로 가지고있다.
  * 파일내부의 실행함수를 변경하여 적용하려면 Load...Shader(FuncName)을 실행
@@ -112,14 +112,15 @@ private:
 
 public:
 	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
-	[[nodiscard]] FORCEINLINE uint32_t GetInputLayoutSize() const { return mShaderData.VertexInputLayoutSize; }
-	void SetTargetCamera(const Ptr<class JCamera>& InCamera) { mTargetCamera = InCamera; }
+	[[nodiscard]] FORCEINLINE uint32_t      GetInputLayoutSize() const { return mDefaultShaderData.VertexInputLayoutSize; }
+	void                                    SetTargetCamera(class JCamera* InCamera) { mTargetCamera = InCamera; }
 
 protected:
-	JWText      mShaderFile;
-	FShaderData mShaderData;
+	JWText                    mShaderFile;
+	FShaderData               mDefaultShaderData;
+	JHash<JText, FShaderData> mSubShaderData;
 
-	Ptr<class JCamera> mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
+	JCamera* mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
 
 	CBuffer::Space  mCachedSpaceData;
 	CBuffer::Camera mCachedCameraData;

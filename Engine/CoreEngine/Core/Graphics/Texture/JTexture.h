@@ -1,35 +1,26 @@
 ﻿#pragma once
 #include "common_include.h"
 #include "Core/Graphics/graphics_common_include.h"
-#include "Core/Manager/IManagedInterface.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 
 /**
  * 텍스처 관련 리소스 집합
- * IManager->TextureManager로 관리된다.
+ * GetWorld->TextureManager로 관리된다.
  */
-class JTexture : public IManagedInterface, public ISerializable
+class JTexture final
 {
 public:
-	JTexture();
 	explicit JTexture(JWTextView InName, bool bEnableEdit = false);
 	explicit JTexture(JTextView InName, bool bEnableEdit = false);
-	~JTexture() override = default;
+	~JTexture();
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
+	static void SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, int32_t InSlot = 0,
+								   JTexture*            InTexture                       = nullptr);
 
 public:
-	uint32_t GetHash() const override;
-	uint32_t GetType() const override;
-	bool     Serialize_Implement(std::ofstream& FileStream) override;
-	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
-
-public:
-	static void SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, int32_t InSlot = 0, const Ptr<JTexture>& InTexture = nullptr);
-
-public:
-	[[nodiscard]] FORCEINLINE JWText                          GetPath() const { return mTextureName; }
+	[[nodiscard]] FORCEINLINE JWText                          GetTextureName() const { return mTextureName; }
+	[[nodiscard]] FORCEINLINE uint32_t                        GetSlot() const { return mSlot; }
 	[[nodiscard]] FORCEINLINE ID3D11ShaderResourceView*       GetSRV() const { return mShaderResourceView.Get(); }
 	[[nodiscard]] FORCEINLINE D3D11_SHADER_RESOURCE_VIEW_DESC GetSrvDesc() const { return mSRVDesc; }
 	[[nodiscard]] FORCEINLINE D3D11_TEXTURE2D_DESC            GetTextureDesc() const { return mTextureDesc; }

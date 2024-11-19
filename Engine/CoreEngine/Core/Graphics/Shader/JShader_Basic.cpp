@@ -1,5 +1,5 @@
 ﻿#include "JShader_Basic.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 extern CBuffer::Light g_LightData;
 

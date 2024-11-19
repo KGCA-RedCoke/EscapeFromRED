@@ -1,8 +1,12 @@
 ﻿#include "JLandScape.h"
 
 #include "Core/Graphics/ShaderStructs.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Material/MMaterialInstanceManager.h"
+#include "Core/Graphics/Material/Instance/JMaterialInstance.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Math/Color.h"
+#include "GUI/MGUIManager.h"
 
 JLandScape::JLandScape() {}
 
@@ -32,7 +36,7 @@ void JLandScape::Destroy()
 
 void JLandScape::Draw()
 {
-	ID3D11DeviceContext* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	ID3D11DeviceContext* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
 	mMaterial->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMat));
@@ -44,11 +48,11 @@ void JLandScape::Draw()
 	deviceContext->IASetVertexBuffers(0, 1, mInstanceBuffer.Buffer_Vertex[0].GetAddressOf(), &stride, &offset);
 	deviceContext->IASetIndexBuffer(mInstanceBuffer.Buffer_Index[0].Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	IManager.RenderManager->SetRasterState(IManager.GUIManager->IsRenderWireFrame()
+	GetWorld.D3D11API->SetRasterState(GetWorld.GUIManager->IsRenderWireFrame()
 											   ? ERasterState::WireFrame
 											   : ERasterState::CullNone);
 
-	IManager.RenderManager->SetBlendState(EBlendState::AlphaBlend);
+	GetWorld.D3D11API->SetBlendState(EBlendState::AlphaBlend);
 
 
 	mMaterial->BindMaterial(deviceContext);
@@ -77,7 +81,7 @@ void JLandScape::GenerateLandScape()
 	GenVertexNormal();
 	GenBuffer();
 
-	mMaterial = IManager.MaterialInstanceManager->CreateOrLoad("Game/Materials/Cube/DefaultMaterial.jasset");
+	mMaterial = GetWorld.MaterialInstanceManager->CreateOrLoad("Game/Materials/Cube/DefaultMaterial.jasset");
 
 	if (mAlbedoMap)
 	{
@@ -212,7 +216,7 @@ void JLandScape::GenVertexNormal()
 
 void JLandScape::GenBuffer()
 {
-	ID3D11Device* device = IManager.RenderManager->GetDevice();
+	ID3D11Device* device = GetWorld.D3D11API->GetDevice();
 	assert(device);
 
 

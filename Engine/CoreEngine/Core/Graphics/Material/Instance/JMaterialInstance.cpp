@@ -1,40 +1,52 @@
 ﻿#include "JMaterialInstance.h"
 
+#include "Core/Entity/Camera/JCamera.h"
 #include "Core/Graphics/Material/JMaterial_Basic.h"
+#include "Core/Graphics/Material/MMaterialInstanceManager.h"
 #include "Core/Graphics/Material/MMaterialManager.h"
 #include "Core/Graphics/Shader/InputLayouts.h"
 #include "Core/Graphics/Shader/JShader_Basic.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 JMaterialInstance::JMaterialInstance(JTextView InName)
 	: mFileName(InName)
-{
-	if (std::filesystem::exists(mFileName) && std::filesystem::is_regular_file(mFileName))
-	{
-		Utils::Serialization::DeSerialize(mFileName.c_str(), this);
-	}
-}
+{}
 
 JMaterialInstance::JMaterialInstance(JWTextView InName)
 	: JMaterialInstance(WString2String(InName.data())) {}
 
-Ptr<IManagedInterface> JMaterialInstance::Clone() const
+JMaterialInstance::JMaterialInstance(const JMaterialInstance& Other)
+	: mFileName(std::format("{0}_Copy.jasset", Other.mFileName)),
+	  mParentMaterial(Other.mParentMaterial),
+	  mShader(Other.mShader)
 {
-	JText copiedName = std::format("{0}_Copy.jasset", mFileName);
-	auto  cloned     = MakePtr<JMaterialInstance>(copiedName);
+	mInstanceParams.clear();
+	mInstanceParams.reserve(Other.mInstanceParams.size());
 
-	cloned->mFileName       = copiedName;
-	cloned->mParentMaterial = mParentMaterial;
-	cloned->mShader         = mShader;
-
-	// 깊은 복사
-	for (int32_t i = 0; i < mInstanceParams.size(); ++i)
+	for (const auto& param : Other.mInstanceParams)
 	{
-		cloned->mInstanceParams.push_back(mInstanceParams[i]);
+		mInstanceParams.push_back(param);
 	}
-	cloned->mInstanceParams = mInstanceParams;
+}
 
-	return cloned;
+UPtr<IManagedInterface> JMaterialInstance::Clone() const
+{
+	return MakeUPtr<JMaterialInstance>(*this);
+}
+
+void JMaterialInstance::SetAsDefaultMaterial()
+{
+	mParentMaterial = MMaterialManager::Get().CreateOrLoad(NAME_MAT_BASIC);
+	mShader         = mParentMaterial->GetShader();
+
+	GetInstanceParams();
+
+	JMaterialInstance* defaultInstance = MMaterialInstanceManager::Get().CreateOrLoad(NAME_MAT_INS_DEFAULT);
+
+	for (int32_t i = 0; i < defaultInstance->mInstanceParams.size(); ++i)
+	{
+		mInstanceParams[i] = defaultInstance->mInstanceParams[i];
+	}
 }
 
 uint32_t JMaterialInstance::GetHash() const
@@ -95,6 +107,7 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Get Instance Params
 	int32_t paramCount;
 	Utils::Serialization::DeSerialize_Primitive(&paramCount, sizeof(paramCount), InFileStream);
+	mInstanceParams.clear();
 	mInstanceParams.reserve(paramCount);
 
 	for (int32_t i = 0; i < paramCount; ++i)
@@ -115,52 +128,52 @@ void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext) const
 void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
 										   const void*          InData, const uint32_t        InOffset) const
 {
-	if (mShader.expired())
+	if (!mShader)
 		return;
 
-	mShader.lock()->UpdateConstantData(InDeviceContext, InBufferName, InData, InOffset);
+	mShader->UpdateConstantData(InDeviceContext, InBufferName, InData, InOffset);
 }
 
 void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
 										   const JText&         InDataName, const void*       InData) const
 {
-	if (mShader.expired())
+	if (!mShader)
 		return;
 
-	mShader.lock()->UpdateConstantData(InDeviceContext, InBufferName, InDataName, InData);
+	mShader->UpdateConstantData(InDeviceContext, InBufferName, InDataName, InData);
 }
 
 void JMaterialInstance::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const
 {
-	if (mShader.expired())
+	if (!mShader)
 		return;
 
-	mShader.lock()->UpdateConstantData(InDeviceContext,
-									   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
-									   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_WORLD,
-									   &InWorldMatrix);
+	mShader->UpdateConstantData(InDeviceContext,
+								CBuffer::NAME_CONSTANT_BUFFER_SPACE,
+								CBuffer::NAME_CONSTANT_VARIABLE_SPACE_WORLD,
+								&InWorldMatrix);
 }
 
 void JMaterialInstance::UpdateCamera(ID3D11DeviceContext* InDeviceContext, const Ptr<JCamera>& InCameraObj) const
 {
-	if (mShader.expired())
+	if (!mShader)
 		return;
 	// mParentMaterial->mShader->
 	FVector4 camPos = {InCameraObj->GetEyePositionFVector(), 1.f};
-	mShader.lock()->UpdateConstantData(InDeviceContext,
-									   CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
-									   CBuffer::NAME_CONSTANT_VARIABLE_CAMERA_POS,
-									   &camPos);
+	mShader->UpdateConstantData(InDeviceContext,
+								CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
+								CBuffer::NAME_CONSTANT_VARIABLE_CAMERA_POS,
+								&camPos);
 }
 
 void JMaterialInstance::UpdateLightColor(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightColor) const
 {
-	if (mShader.expired())
+	if (!mShader)
 		return;
-	mShader.lock()->UpdateConstantData(InDeviceContext,
-									   CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
-									   CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_COLOR,
-									   &InLightColor);
+	mShader->UpdateConstantData(InDeviceContext,
+								CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
+								CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_COLOR,
+								&InLightColor);
 }
 
 void JMaterialInstance::UpdateLightLoc(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightLoc) const
@@ -224,6 +237,7 @@ void JMaterialInstance::EditInstanceParam(const JText& InParamName, const FMater
 
 void JMaterialInstance::GetInstanceParams()
 {
+	mInstanceParams.clear();
 	for (int32_t i = 0; i < mParentMaterial->mMaterialParams.size(); ++i)
 	{
 		if (mParentMaterial->mMaterialParams[i].bInstanceParam)
@@ -233,7 +247,7 @@ void JMaterialInstance::GetInstanceParams()
 	}
 }
 
-void JMaterialInstance::SetParentMaterial(const Ptr<JMaterial>& InParentMaterial)
+void JMaterialInstance::SetParentMaterial(JMaterial* InParentMaterial)
 {
 	assert(InParentMaterial);
 

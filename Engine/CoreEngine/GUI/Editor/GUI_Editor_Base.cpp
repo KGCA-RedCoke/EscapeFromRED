@@ -27,13 +27,6 @@ void GUI_Editor_Base::Render()
 	MShaderManager::Get().UpdateCamera(mCamera);
 }
 
-void GUI_Editor_Base::OpenIfNotOpened()
-{
-	if (!bIsWindowOpen)
-	{
-		bIsWindowOpen = true;
-	}
-}
 
 void GUI_Editor_Base::Update_Implementation(float DeltaTime)
 {

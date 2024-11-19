@@ -65,7 +65,7 @@ private:
 
 private:
 	friend class TSingleton<MLayerManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	MLayerManager() { CreateLayers(); }
 

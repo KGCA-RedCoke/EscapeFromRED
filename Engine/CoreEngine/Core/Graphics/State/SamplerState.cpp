@@ -1,7 +1,7 @@
 ﻿#include "SamplerState.h"
 
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 
 SamplerState::SamplerState(const UINT InSlot, const ESamplerType InSamplerType, const FLinearColor& InColor)
@@ -49,7 +49,7 @@ void SamplerState::Initialize()
 	}
 
 
-	CheckResult(IManager.RenderManager->GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
+	CheckResult(GetWorld.D3D11API->GetDevice()->CreateSamplerState(&samplerDesc, mSampler.GetAddressOf()));
 
 }
 
@@ -57,7 +57,7 @@ void SamplerState::Update(float DeltaTime) {}
 
 void SamplerState::Render()
 {
-	IManager.RenderManager->GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
+	GetWorld.D3D11API->GetImmediateDeviceContext()->PSSetSamplers(mSlot, 1, mSampler.GetAddressOf());
 }
 
 void SamplerState::Release()

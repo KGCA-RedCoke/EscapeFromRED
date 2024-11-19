@@ -46,17 +46,6 @@ bool JAnimBoneTrack::IsTrackEmpty() const
 	return false;
 }
 
-JAnimationClip::JAnimationClip()
-{}
-
-JAnimationClip::~JAnimationClip()
-{}
-
-uint32_t JAnimationClip::GetType() const
-{
-	return HASH_ASSET_TYPE_ANIMATION_CLIP;
-}
-
 bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 {
 	if (!Utils::Serialization::SerializeMetaData(FileStream, this))

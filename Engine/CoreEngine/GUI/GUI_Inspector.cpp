@@ -1,14 +1,16 @@
 ﻿#include "GUI_Inspector.h"
 
 #include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/ShaderStructs.h"
+#include "Core/Interface/JWorld.h"
 
 extern CBuffer::Light g_LightData;
 
 GUI_Inspector::GUI_Inspector(const std::string& InTitle)
 	: GUI_Base(InTitle) {}
 
-void GUI_Inspector::AddSceneComponent(const JText& InName, const Ptr<JActor>& InSceneComponent)
+void GUI_Inspector::AddSceneComponent(const JText& InName, JActor* InSceneComponent)
 {
 	mSceneComponents.try_emplace(InName, InSceneComponent);
 }
@@ -28,9 +30,11 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 
 	if (ImGui::BeginTable("bg", 1, ImGuiTableFlags_RowBg))
 	{
-		for (auto& element : mSceneComponents)
+		mLevel = GetWorld.LevelManager->GetActiveLevel();
+
+		for (auto& element : mLevel->mActors)
 		{
-			if (auto actor = element.second.lock())
+			if (auto actor = element.get())
 			{
 				if (mSearchBar.Filter.PassFilter(actor->GetName().c_str()))
 				{
@@ -70,7 +74,7 @@ void GUI_Inspector::DrawSearchBar()
 	ImGui::PopItemFlag();
 }
 
-void GUI_Inspector::DrawTreeNode(const Ptr<JSceneComponent>& InSceneComponent)
+void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 {
 	// 테이블의 다음 행, 다음 열로 이동
 	ImGui::TableNextRow();
@@ -105,12 +109,9 @@ void GUI_Inspector::DrawTreeNode(const Ptr<JSceneComponent>& InSceneComponent)
 	const bool bIsOpen = ImGui::TreeNodeEx("", treeNodeFlags, "%s", InSceneComponent->GetName().c_str());
 	if (bIsOpen)
 	{
-		for (auto& child : InSceneComponent->GetChildSceneComponents())
+		for (int32_t i = 0; i < InSceneComponent->GetChildCount(); ++i)
 		{
-			if (auto ptr = child.lock())
-			{
-				DrawTreeNode(ptr);
-			}
+			DrawTreeNode(InSceneComponent->mChildSceneComponents[i].get());
 		}
 		ImGui::TreePop();
 	}

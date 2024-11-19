@@ -4,26 +4,29 @@
 #include "GUI_Base.h"
 #include "Utils/GUI_Utils.h"
 
+class JLevel;
+
 class GUI_Inspector : public GUI_Base
 {
 public:
 	GUI_Inspector(const std::string& InTitle);
 	~GUI_Inspector() override = default;
 
-	void AddSceneComponent(const JText& InName, const Ptr<class JActor>& InSceneComponent);
+	void AddSceneComponent(const JText& InName, class JActor* InSceneComponent);
 
-	JHash<JText, WPtr<class JActor>> GetSelectedSceneComponent() const { return mSceneComponents; }
-	void SetSelectedActor(const Ptr<class JSceneComponent>& Ptr) { mSelectedSceneComponent = Ptr; }
+	JHash<JText, JActor*> GetSelectedSceneComponent() const { return mSceneComponents; }
+	void                  SetSelectedActor(class JSceneComponent* Ptr) { mSelectedSceneComponent = Ptr; }
 
 private:
 	void Update_Implementation(float DeltaTime) override;
 
 	void DrawSearchBar();
-	void DrawTreeNode(const Ptr<class JSceneComponent>& InSceneComponent);
+	void DrawTreeNode(JSceneComponent* InSceneComponent);
 	void DrawDetails();
 
 private:
-	Utils::GUI::FSearchBar           mSearchBar;
-	Ptr<JSceneComponent>             mSelectedSceneComponent;
-	JHash<JText, WPtr<class JActor>> mSceneComponents;
+	Utils::GUI::FSearchBar mSearchBar;
+	JSceneComponent*       mSelectedSceneComponent;
+	JLevel*                mLevel;
+	JHash<JText, JActor*>  mSceneComponents;
 };

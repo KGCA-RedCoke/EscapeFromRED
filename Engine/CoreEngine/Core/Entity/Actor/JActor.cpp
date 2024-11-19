@@ -1,28 +1,24 @@
 ﻿#include "JActor.h"
 
-#include "Core/Interface/MManagerInterface.h"
-#include "GUI/GUI_Inspector.h"
+#include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Interface/JWorld.h"
+#include "GUI/MGUIManager.h"
 
 
-JActor::JActor() {}
+JActor::JActor()
+{
+	mObjectType = NAME_OBJECT_ACTOR;
+}
 
 JActor::JActor(JTextView InName)
 	: JSceneComponent(InName)
-{}
+{
+	mObjectType = NAME_OBJECT_ACTOR;
+}
 
 void JActor::Initialize()
 {
 	JSceneComponent::Initialize();
-
-	Ptr<JActor> thisPtr = GetThisPtr<JActor>();
-
-	mRootComponent = CreateDefaultSubObject<JSceneComponent>("RootComponent", thisPtr, thisPtr);
-	mRootComponent->SetupAttachment(thisPtr);
-
-	// TODO: Editor에서 Initialize 시에 호출되도록 수정
-	// Case 1. 매크로 사용
-	// Case 2. 생각 필요
-	IManager.GUIManager->GetInspector()->AddSceneComponent(mName, thisPtr);
 }
 
 void JActor::BeginPlay()
@@ -44,19 +40,35 @@ void JActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
-		if (auto ptr = sceneComponent.lock())
+		if (sceneComponent)
 		{
-			ptr->Draw();
+			sceneComponent->Draw();
 		}
 	}
 }
 
+uint32_t JActor::GetType() const
+{
+	return JSceneComponent::GetType();
+}
+
 bool JActor::Serialize_Implement(std::ofstream& FileStream)
 {
-	return JSceneComponent::Serialize_Implement(FileStream);
+	if (!JSceneComponent::Serialize_Implement(FileStream))
+	{
+		return false;
+	}
+
+
+	return true;
 }
 
 bool JActor::DeSerialize_Implement(std::ifstream& InFileStream)
 {
-	return JSceneComponent::DeSerialize_Implement(InFileStream);
+	if (!JSceneComponent::DeSerialize_Implement(InFileStream))
+	{
+		return false;
+	}
+
+	return true;
 }

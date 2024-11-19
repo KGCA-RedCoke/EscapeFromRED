@@ -1,10 +1,13 @@
 ﻿#include "GUI_Viewport_Scene.h"
 
 #include "Core/Entity/Actor/JStaticMeshActor.h"
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
-#include "Core/Interface/MManagerInterface.h"
-#include "Core/Window/Application.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -15,17 +18,19 @@ GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 void GUI_Viewport_Scene::Initialize()
 {
 	// mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
-
-	mEditorCameraRef = IManager.CameraManager->FetchResource(L"EditorCamera");
+	
+	mEditorCameraRef = GetWorld.CameraManager->FetchResource(L"EditorCamera");
 	assert(mEditorCameraRef);
 
-	mPauseIcon = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/PauseButton On@2x.png");
-	mPlayIcon  = IManager.TextureManager->CreateOrLoad(L"rsc/Icons/PlayButton On@2x.png");
+	mPauseIcon = GetWorld.TextureManager->CreateOrLoad(L"rsc/Icons/PauseButton On@2x.png");
+	mPlayIcon  = GetWorld.TextureManager->CreateOrLoad(L"rsc/Icons/PlayButton On@2x.png");
 
 }
 
 void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 {
+	ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S);
+	// ImGui::Shortcut
 	ShowTopMenu();
 
 	using Base = GUI_Viewport;
@@ -35,32 +40,28 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 	{
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
 		{
-			const char* str = (const char*)payload->Data;
+			JLevel*     activeLevel = GetWorld.LevelManager->GetActiveLevel();
+			const char* str         = (const char*)payload->Data;
 
 			auto  metaData = Utils::Serialization::GetType(str);
-			JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
+			// JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
 
-			if (metaData.AssetType == HASH_ASSET_TYPE_STATIC_MESH)
+			switch (metaData.AssetType)
 			{
+			case HASH_ASSET_TYPE_STATIC_MESH:
+				activeLevel->CreateActor<JStaticMeshActor>(str, nullptr, str);
 
-				auto newActor = MakePtr<JStaticMeshActor>(name, IManager.MeshManager->CreateOrClone(str));
-				newActor->Initialize();
+				break;
+			case HASH_ASSET_TYPE_SKELETAL_MESH:
 
-				Application::s_AppInstance->Actors.push_back(newActor);
+				break;
 
+			default:
+				LOG_CORE_WARN("지원하지 않는 메시 타입.");
+				break;
 			}
-			else if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
-			{
-				auto newActor = MakePtr<JActor>();
-				newActor->Initialize();
+			
 
-				Ptr<JSkeletalMeshObject>  mesh          = IManager.MeshManager->CreateOrClone<JSkeletalMeshObject>(str);
-				Ptr<JStaticMeshComponent> meshComponent = MakePtr<JStaticMeshComponent>(ParseFile(str));
-				meshComponent->SetMeshObject(mesh);
-				meshComponent->AttachToActor(newActor);
-
-				Application::s_AppInstance->Actors.push_back(newActor);
-			}
 
 		}
 		ImGui::EndDragDropTarget();
@@ -101,7 +102,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	ImGui::SameLine(0, spacing); // 버튼 간격 띄우기
 
 	// Play 버튼
-	if (ImGui::ImageButton("PlayBtn",mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
+	if (ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;

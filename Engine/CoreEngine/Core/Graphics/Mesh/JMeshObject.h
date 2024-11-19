@@ -14,19 +14,19 @@ constexpr const char* Path_Mesh_Circle   = "Game/Mesh/Circle.jasset";
 /**
  * 메시데이터를 가지고있고 버퍼를 생성한다.
  */
-class JMeshObject : public IManagedInterface,
-					public ISerializable,
+class JMeshObject : public JAsset,
+					public IManagedInterface,
 					public IRenderable
 {
 public:
 	JMeshObject() = default;
-	JMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
-	JMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
+	JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData = {});
+	JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>& InData = {});
 	JMeshObject(const JMeshObject& Other);
 	~JMeshObject() override = default;
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
+	UPtr<IManagedInterface> Clone() const override;
 
 public:
 	uint32_t GetHash() const override;
@@ -50,10 +50,16 @@ public:
 #pragma endregion
 
 protected:
-	virtual void CreateBuffers();
+	virtual void CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList);
 
 public:
 	void UpdateBuffer(const FMatrix& InWorldMatrix = FMatrix::Identity);
+
+	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
+	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, const JText& InName);
+
+	JMaterialInstance* GetMaterialInstance(uint32_t InIndex = 0) const;
+	JMaterialInstance* GetMaterialInstance(const JText& InName) const;
 
 protected:
 	// ----------------------------- Model Data -----------------------------
@@ -68,21 +74,12 @@ protected:
 	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
 	uint32_t               mVertexSize;
 
+	// ----------------------------- Material Reference -----------------------------
+	JArray<JMaterialInstance*> mMaterialInstances;
+
 private:
 	friend class Utils::Fbx::FbxFile;
 	friend class GUI_Editor_Mesh;
 	friend class GUI_Editor_Material;
+	friend class MMeshManager;
 };
-
-// -------------------------- Primitive Mesh --------------------------
-// Circle
-class JCircleComponent : public JMeshObject
-{};
-
-// Cube
-
-// Cylinder
-
-// Plane
-
-// Sphere

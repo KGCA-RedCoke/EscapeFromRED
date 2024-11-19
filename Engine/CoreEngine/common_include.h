@@ -22,6 +22,12 @@ using WPtr = std::weak_ptr<T>;
 #define MakeUPtr std::make_unique
 #define MakePtr std::make_shared
 
+template <typename Target, typename Source>
+UPtr<Target> UPtrCast(UPtr<Source>&& source)
+{
+	return UPtr<Target>(static_cast<Target*>(source.release()));
+}
+
 
 #define CONCATENATE(x, y) x##y // 토큰 결합
 #define STRINGIFY(x) #x // 문자열화

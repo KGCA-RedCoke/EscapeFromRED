@@ -2,8 +2,9 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/InputLayouts.h"
 #include "Core/Graphics/Shader/JShader.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Utils.h"
 
 
@@ -103,7 +104,7 @@ bool FMaterialParam::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	if (ParamValue == EMaterialParamValue::Texture2D && !StringValue.empty())
 	{
-		TextureValue = IManager.TextureManager->CreateOrLoad(StringValue.c_str());
+		TextureValue = GetWorld.TextureManager->CreateOrLoad(StringValue.c_str());
 	}
 
 	Key = StringHash(Name.c_str());
@@ -124,7 +125,7 @@ JMaterial::JMaterial(JTextView InMaterialName)
 {
 	mMaterialPath = {InMaterialName.begin(), InMaterialName.end()};
 	mMaterialName = ParseFile(mMaterialPath);
-	SetShader(IManager.ShaderManager->BasicShader);
+	SetShader(GetWorld.ShaderManager->BasicShader);
 
 	if (std::filesystem::exists(InMaterialName) && std::filesystem::is_regular_file(InMaterialName))
 	{
@@ -135,16 +136,6 @@ JMaterial::JMaterial(JTextView InMaterialName)
 JMaterial::JMaterial(JWTextView InMaterialName)
 	: JMaterial(WString2String(InMaterialName.data()))
 {}
-
-Ptr<IManagedInterface> JMaterial::Clone() const
-{
-	return nullptr;
-}
-
-uint32_t JMaterial::GetHash() const
-{
-	return StringHash(mMaterialName.c_str());
-}
 
 uint32_t JMaterial::GetType() const
 {
@@ -176,7 +167,7 @@ bool JMaterial::Serialize_Implement(std::ofstream& FileStream)
 
 	// Shader File Name
 	if (!mShader)
-		mShader = IManager.ShaderManager->BasicShader;
+		mShader = GetWorld.ShaderManager->BasicShader;
 	JWText shaderName = mShader->GetShaderFile();
 	Utils::Serialization::Serialize_Text(shaderName, FileStream);
 
@@ -215,11 +206,11 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
 	if (!shaderName.empty())
 	{
-		mShader = IManager.ShaderManager->CreateOrLoad<JShader>(shaderName);
+		mShader = GetWorld.ShaderManager->CreateOrLoad<JShader>(shaderName);
 	}
 	else
 	{
-		mShader = IManager.ShaderManager->BasicShader;
+		mShader = GetWorld.ShaderManager->BasicShader;
 	}
 
 	return true;
@@ -274,7 +265,7 @@ FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName)
 	return nullptr;
 }
 
-void JMaterial::SetShader(const Ptr<JShader>& InShader)
+void JMaterial::SetShader(JShader* InShader)
 {
 	mShader = InShader;
 
@@ -297,7 +288,7 @@ FMaterialParam Utils::Material::CreateTextureParam(const char* ParamName, const 
 	materialParams.ParamValue     = EMaterialParamValue::Texture2D;
 	materialParams.StringValue    = FileName;
 	materialParams.bInstanceParam = true;
-	materialParams.TextureValue   = IManager.TextureManager->CreateOrLoad(FileName);
+	materialParams.TextureValue   = GetWorld.TextureManager->CreateOrLoad(FileName);
 
 	return materialParams;
 }

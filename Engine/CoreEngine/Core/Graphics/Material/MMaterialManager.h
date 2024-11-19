@@ -14,7 +14,7 @@ public:
 
 private:
 	friend class TSingleton<MMaterialManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	MMaterialManager();
 	~MMaterialManager() = default;

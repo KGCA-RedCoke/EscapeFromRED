@@ -4,8 +4,9 @@
 #include <d3dcompiler.h>
 #include "InputLayouts.h"
 #include "JConstantBuffer.h"
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
 JShader::JShader(const JText& InName, LPCSTR VSEntryPoint, LPCSTR PSEntryPoint)
@@ -32,14 +33,14 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	}
 
 	// 입력 레이아웃 설정
-	InDeviceContext->IASetInputLayout(mShaderData.InputLayout.Get());
+	InDeviceContext->IASetInputLayout(mDefaultShaderData.InputLayout.Get());
 
 	// 셰이더 설정
-	InDeviceContext->VSSetShader(mShaderData.VertexShader.Get(), nullptr, 0);
-	InDeviceContext->HSSetShader(mShaderData.HullShader.Get(), nullptr, 0);
-	InDeviceContext->DSSetShader(mShaderData.DomainShader.Get(), nullptr, 0);
-	InDeviceContext->GSSetShader(mShaderData.GeometryShader.Get(), nullptr, 0);
-	InDeviceContext->PSSetShader(mShaderData.PixelShader.Get(), nullptr, 0);
+	InDeviceContext->VSSetShader(mDefaultShaderData.VertexShader.Get(), nullptr, 0);
+	InDeviceContext->HSSetShader(mDefaultShaderData.HullShader.Get(), nullptr, 0);
+	InDeviceContext->DSSetShader(mDefaultShaderData.DomainShader.Get(), nullptr, 0);
+	InDeviceContext->GSSetShader(mDefaultShaderData.GeometryShader.Get(), nullptr, 0);
+	InDeviceContext->PSSetShader(mDefaultShaderData.PixelShader.Get(), nullptr, 0);
 
 	UpdateGlobalConstantBuffer(InDeviceContext);
 }
@@ -102,7 +103,7 @@ void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 {
 	if (!mTargetCamera)
 	{
-		mTargetCamera = IManager.CameraManager->GetCurrentMainCam();
+		mTargetCamera = GetWorld.CameraManager->GetCurrentMainCam();
 	}
 
 	if (const auto viewMat = XMMatrixTranspose(mTargetCamera->GetViewMatrix()); mCachedSpaceData.View != viewMat)
@@ -129,20 +130,21 @@ void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_CAMERA, &mCachedCameraData);
 	}
 
-	for (int32_t i = 0; i < mShaderData.ConstantBuffers.size(); ++i)
+	for (int32_t i = 0; i < mDefaultShaderData.ConstantBuffers.size(); ++i)
 	{
-		mShaderData.ConstantBuffers.at(i).SetConstantBuffer(InDeviceContext);
+		mDefaultShaderData.ConstantBuffers.at(i).SetConstantBuffer(InDeviceContext);
 	}
 }
 
 void JShader::LoadVertexShader(LPCSTR FuncName)
 {
+
 	CheckResult(
 				Utils::DX::LoadVertexShader(
-											IManager.RenderManager->GetDevice(),
+											GetWorld.D3D11API->GetDevice(),
 											mShaderFile.data(),
-											mShaderData.VertexShader.GetAddressOf(),
-											mShaderData.VertexShaderBuf.GetAddressOf(),
+											mDefaultShaderData.VertexShader.GetAddressOf(),
+											mDefaultShaderData.VertexShaderBuf.GetAddressOf(),
 											FuncName
 										   ));
 
@@ -152,10 +154,10 @@ void JShader::LoadPixelShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadPixelShader(
-										   IManager.RenderManager->GetDevice(),
+										   GetWorld.D3D11API->GetDevice(),
 										   mShaderFile.data(),
-										   mShaderData.PixelShader.GetAddressOf(),
-										   mShaderData.PixelShaderBuf.GetAddressOf(),
+										   mDefaultShaderData.PixelShader.GetAddressOf(),
+										   mDefaultShaderData.PixelShaderBuf.GetAddressOf(),
 										   FuncName
 										  ));
 }
@@ -164,10 +166,10 @@ void JShader::LoadGeometryShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadGeometryShader(
-											  IManager.RenderManager->GetDevice(),
+											  GetWorld.D3D11API->GetDevice(),
 											  mShaderFile.data(),
-											  mShaderData.GeometryShader.GetAddressOf(),
-											  mShaderData.GeometryShaderBuf.GetAddressOf(),
+											  mDefaultShaderData.GeometryShader.GetAddressOf(),
+											  mDefaultShaderData.GeometryShaderBuf.GetAddressOf(),
 											  FuncName));
 }
 
@@ -175,10 +177,10 @@ void JShader::LoadHullShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadHullShaderFile(
-											  IManager.RenderManager->GetDevice(),
+											  GetWorld.D3D11API->GetDevice(),
 											  mShaderFile.data(),
-											  mShaderData.HullShader.GetAddressOf(),
-											  mShaderData.HullShaderBuf.GetAddressOf(),
+											  mDefaultShaderData.HullShader.GetAddressOf(),
+											  mDefaultShaderData.HullShaderBuf.GetAddressOf(),
 											  FuncName));
 }
 
@@ -186,10 +188,10 @@ void JShader::LoadDomainShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadDomainShaderFile(
-												IManager.RenderManager->GetDevice(),
+												GetWorld.D3D11API->GetDevice(),
 												mShaderFile.data(),
-												mShaderData.DomainShader.GetAddressOf(),
-												mShaderData.DomainShaderBuf.GetAddressOf(),
+												mDefaultShaderData.DomainShader.GetAddressOf(),
+												mDefaultShaderData.DomainShaderBuf.GetAddressOf(),
 												FuncName));
 }
 
@@ -197,10 +199,10 @@ void JShader::LoadComputeShader(LPCSTR FuncName)
 {
 	CheckResult(
 				Utils::DX::LoadComputeShaderFile(
-												 IManager.RenderManager->GetDevice(),
+												 GetWorld.D3D11API->GetDevice(),
 												 mShaderFile.data(),
-												 mShaderData.ComputeShader.GetAddressOf(),
-												 mShaderData.ComputeShaderBuf.GetAddressOf(),
+												 mDefaultShaderData.ComputeShader.GetAddressOf(),
+												 mDefaultShaderData.ComputeShaderBuf.GetAddressOf(),
 												 FuncName));
 }
 
@@ -211,17 +213,17 @@ void JShader::LoadShaderReflectionData()
 	// 컴파일된 셰이더 바이트코드에서 리플렉션 생성
 	ComPtr<ID3D11ShaderReflection> vertexShaderReflection = nullptr;
 	ComPtr<ID3D11ShaderReflection> pixelShaderReflection  = nullptr;
-	
+
 	CheckResult(D3DReflect(
-						   mShaderData.VertexShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
-						   mShaderData.VertexShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기
+						   mDefaultShaderData.VertexShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
+						   mDefaultShaderData.VertexShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기
 						   IID_ID3D11ShaderReflection,						// 리플렉션 인터페이스의 IID
 						   (void**)vertexShaderReflection.GetAddressOf()	// 리플렉션 인터페이스 포인터
 						  ));
-	
+
 	CheckResult(D3DReflect(
-						   mShaderData.PixelShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
-						   mShaderData.PixelShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기
+						   mDefaultShaderData.PixelShaderBuf->GetBufferPointer(), // 셰이더의 바이트코드 포인터
+						   mDefaultShaderData.PixelShaderBuf->GetBufferSize(),    // 셰이더의 바이트코드 크기
 						   IID_ID3D11ShaderReflection,						// 리플렉션 인터페이스의 IID
 						   (void**)pixelShaderReflection.GetAddressOf()		// 리플렉션 인터페이스 포인터
 						  ));
@@ -232,7 +234,7 @@ void JShader::LoadShaderReflectionData()
 	CheckResult(pixelShaderReflection->GetDesc(&pixelShaderDesc));
 
 	// ---------------------------------------------- Input Layout 생성 ----------------------------------------------
-	mShaderData.VertexInputLayoutSize = 0;
+	mDefaultShaderData.VertexInputLayoutSize = 0;
 	JArray<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
 	for (int32_t i = 0; i < vertexShaderDesc.InputParameters; ++i)
 	{
@@ -258,7 +260,7 @@ void JShader::LoadShaderReflectionData()
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
 
-			mShaderData.VertexInputLayoutSize += 4;
+			mDefaultShaderData.VertexInputLayoutSize += 4;
 		} // 1 Byte
 		else if (paramDesc.Mask <= 3)
 		{
@@ -269,7 +271,7 @@ void JShader::LoadShaderReflectionData()
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
 
-			mShaderData.VertexInputLayoutSize += 8;
+			mDefaultShaderData.VertexInputLayoutSize += 8;
 		}	// 2 Byte
 		else if (paramDesc.Mask <= 7)
 		{
@@ -280,7 +282,7 @@ void JShader::LoadShaderReflectionData()
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 
-			mShaderData.VertexInputLayoutSize += 12;
+			mDefaultShaderData.VertexInputLayoutSize += 12;
 		}	// 3 Byte
 		else if (paramDesc.Mask <= 15)
 		{
@@ -291,7 +293,7 @@ void JShader::LoadShaderReflectionData()
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32)
 				elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-			mShaderData.VertexInputLayoutSize += 16;
+			mDefaultShaderData.VertexInputLayoutSize += 16;
 		} // 4 Byte
 		inputLayoutDesc.push_back(elementDesc);
 	}
@@ -330,11 +332,12 @@ void JShader::LoadShaderReflectionData()
 			constantBuffer.VariableHashTable.emplace(variable.Hash, j);
 		}
 
-		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
+		if (!mDefaultShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
 		{
-			constantBuffer.GenBuffer(IManager.RenderManager->GetDevice());
-			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash, mShaderData.ConstantBuffers.size());
-			mShaderData.ConstantBuffers.push_back(constantBuffer);
+			constantBuffer.GenBuffer(GetWorld.D3D11API->GetDevice());
+			mDefaultShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash,
+															   mDefaultShaderData.ConstantBuffers.size());
+			mDefaultShaderData.ConstantBuffers.push_back(constantBuffer);
 		}
 
 	}
@@ -351,12 +354,13 @@ void JShader::LoadShaderReflectionData()
 		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 		CheckResult(pixelShaderReflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc));
 
-		if (auto it = mShaderData.ConstantBufferHashTable.find(StringHash(bufferDesc.Name)); it != mShaderData.
+		if (auto it = mDefaultShaderData.ConstantBufferHashTable.find(StringHash(bufferDesc.Name)); it !=
+			mDefaultShaderData.
 			ConstantBufferHashTable.
 			end())
 		{
 			int32_t index = it->second;
-			mShaderData.ConstantBuffers[index].Flags |= EConstantFlags::PassPixel;
+			mDefaultShaderData.ConstantBuffers[index].Flags |= EConstantFlags::PassPixel;
 			continue;
 		}
 
@@ -381,21 +385,23 @@ void JShader::LoadShaderReflectionData()
 			constantBuffer.VariableHashTable.emplace(variable.Hash, j);
 		}
 
-		if (!mShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
+		if (!mDefaultShaderData.ConstantBufferHashTable.contains(constantBuffer.Hash))
 		{
-			constantBuffer.GenBuffer(IManager.RenderManager->GetDevice());
-			mShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash, mShaderData.ConstantBuffers.size());
-			mShaderData.ConstantBuffers.push_back(constantBuffer);
+			constantBuffer.GenBuffer(GetWorld.D3D11API->GetDevice());
+			mDefaultShaderData.ConstantBufferHashTable.emplace(constantBuffer.Hash,
+															   mDefaultShaderData.ConstantBuffers.size());
+			mDefaultShaderData.ConstantBuffers.push_back(constantBuffer);
 		}
 	}
 
 	CheckResult(
-				IManager.RenderManager->GetDevice()->CreateInputLayout(
+				GetWorld.D3D11API->GetDevice()->CreateInputLayout(
 																	   &inputLayoutDesc[0],
 																	   inputLayoutDesc.size(),
-																	   mShaderData.VertexShaderBuf->GetBufferPointer(),
-																	   mShaderData.VertexShaderBuf->GetBufferSize(),
-																	   mShaderData.InputLayout.GetAddressOf()
+																	   mDefaultShaderData.VertexShaderBuf->
+																	   GetBufferPointer(),
+																	   mDefaultShaderData.VertexShaderBuf->GetBufferSize(),
+																	   mDefaultShaderData.InputLayout.GetAddressOf()
 																	  ));
 
 
@@ -403,10 +409,11 @@ void JShader::LoadShaderReflectionData()
 
 JConstantBuffer* JShader::GetConstantBuffer(const JText& InBufferName)
 {
-	if (auto it = mShaderData.ConstantBufferHashTable.find(StringHash(InBufferName.c_str())); it != mShaderData.
+	if (auto it = mDefaultShaderData.ConstantBufferHashTable.find(StringHash(InBufferName.c_str())); it !=
+		mDefaultShaderData.
 		ConstantBufferHashTable.end())
 	{
-		return &mShaderData.ConstantBuffers[it->second];
+		return &mDefaultShaderData.ConstantBuffers[it->second];
 	}
 	return nullptr;
 }

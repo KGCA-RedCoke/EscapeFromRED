@@ -75,14 +75,14 @@ struct JAnimBoneTrack
 };
 
 
-class JAnimationClip : public ISerializable
+class JAnimationClip : public JAsset
 {
 public:
-	JAnimationClip();
-	~JAnimationClip() override;
+	JAnimationClip()           = default;
+	~JAnimationClip() override = default;
 
 public:
-	uint32_t GetType() const override;
+	uint32_t GetType() const override { return HASH_ASSET_TYPE_ANIMATION_CLIP; }
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 

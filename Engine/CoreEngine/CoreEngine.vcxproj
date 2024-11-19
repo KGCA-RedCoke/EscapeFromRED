@@ -104,6 +104,7 @@
     <ClInclude Include="common_pch.h" />
     <ClInclude Include="Core\Entity\Actor\JActor.h" />
     <ClInclude Include="Core\Entity\Actor\JStaticMeshActor.h" />
+    <ClInclude Include="Core\Entity\Actor\MActorManager.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
     <ClInclude Include="Core\Entity\Camera\JCamera.h" />
@@ -118,7 +119,6 @@
     <ClInclude Include="Core\Entity\Level\JLevel.h" />
     <ClInclude Include="Core\Entity\Level\MLevelManager.h" />
     <ClInclude Include="Core\Entity\Light\JLightComponent.h" />
-    <ClInclude Include="Core\Entity\World\JWorld.h" />
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
     <ClInclude Include="Core\Graphics\Font\JFont.h" />
     <ClInclude Include="Core\Graphics\Font\XTKFont.h" />
@@ -152,8 +152,9 @@
     <ClInclude Include="Core\Input\XKeyboardMouse.h" />
     <ClInclude Include="Core\Interface\ICoreInterface.h" />
     <ClInclude Include="Core\Interface\IRenderable.h" />
-    <ClInclude Include="Core\Interface\MManagerInterface.h" />
+    <ClInclude Include="Core\Interface\JWorld.h" />
     <ClInclude Include="Core\Manager\IManagedInterface.h" />
+    <ClInclude Include="Core\Manager\MClassFactory.h" />
     <ClInclude Include="Core\Manager\Manager_Base.h" />
     <ClInclude Include="Core\Thread\ThreadPool.h" />
     <ClInclude Include="Core\Thread\ThreadQueue.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="GUI\Utils\GUI_Utils.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
+    <ClInclude Include="Vender\include\inifile_cpp\inicpp.h" />
     <None Include="Shader\Basic_2D.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -234,6 +236,7 @@
   <ItemGroup>
     <ClCompile Include="Core\Entity\Actor\JActor.cpp" />
     <ClCompile Include="Core\Entity\Actor\JStaticMeshActor.cpp" />
+    <ClCompile Include="Core\Entity\Actor\MActorManager.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
@@ -248,7 +251,6 @@
     <ClCompile Include="Core\Entity\Level\JLevel.cpp" />
     <ClCompile Include="Core\Entity\Level\MLevelManager.cpp" />
     <ClCompile Include="Core\Entity\Light\JLightComponent.cpp" />
-    <ClCompile Include="Core\Entity\World\JWorld.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
@@ -276,9 +278,10 @@
     <ClCompile Include="Core\Graphics\Viewport\MViewportManager.cpp" />
     <ClCompile Include="Core\Input\XController.cpp" />
     <ClCompile Include="Core\Input\XKeyboardMouse.cpp" />
-    <ClCompile Include="Core\Interface\MManagerInterface.cpp" />
+    <ClCompile Include="Core\Interface\JWorld.cpp" />
     <ClCompile Include="Core\Manager\BaseManager.cpp" />
     <ClCompile Include="Core\Manager\IManagedInterface.cpp" />
+    <ClCompile Include="Core\Manager\MClassFactory.cpp" />
     <ClCompile Include="Core\Thread\ThreadPool.cpp" />
     <ClCompile Include="Core\Thread\ThreadQueue.cpp" />
     <ClCompile Include="Core\Utils\Collision\CollisionUtils.cpp" />
@@ -328,6 +331,9 @@
     <ClCompile Include="Vender\include\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Configs\engine.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

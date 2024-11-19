@@ -2,15 +2,18 @@
 
 #include "Core/Entity/Actor/JActor.h"
 
-JSceneComponent::JSceneComponent() {}
+JSceneComponent::JSceneComponent()
+	: mParentSceneComponent(nullptr)
+{
+	mObjectType = NAME_OBJECT_SCENE_COMPONENT;
+}
 
-JSceneComponent::JSceneComponent(JTextView InName)
-	: JActorComponent(InName) {}
-
-JSceneComponent::JSceneComponent(JTextView                   InName, const Ptr<JActor>& InOwnerActor,
-								 const Ptr<JSceneComponent>& InParentSceneComponent)
+JSceneComponent::JSceneComponent(JTextView        InName, JActor* InOwnerActor,
+								 JSceneComponent* InParentSceneComponent)
 	: JActorComponent(InName)
 {
+	mObjectType = NAME_OBJECT_SCENE_COMPONENT;
+
 	mOwnerActor           = InOwnerActor;
 	mParentSceneComponent = InParentSceneComponent;
 }
@@ -23,6 +26,20 @@ bool JSceneComponent::Serialize_Implement(std::ofstream& FileStream)
 	{
 		return false;
 	}
+
+	int32_t childCount = mChildSceneComponents.size();
+	Utils::Serialization::Serialize_Primitive(&childCount, sizeof(int32_t), FileStream);
+
+
+	for (int32_t i = 0; i < childCount; ++i)
+	{
+		JText childType = mChildSceneComponents[i]->GetObjectType();
+
+		Utils::Serialization::Serialize_Text(childType, FileStream);
+
+		mChildSceneComponents[i]->Serialize_Implement(FileStream);
+	}
+
 
 	// World Transform Data
 	Utils::Serialization::Serialize_Primitive(&mWorldLocation, sizeof(FVector), FileStream);
@@ -44,6 +61,27 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		return false;
 	}
 
+	int32_t childCount;
+	Utils::Serialization::DeSerialize_Primitive(&childCount, sizeof(int32_t), InFileStream);
+
+	mChildSceneComponents.reserve(childCount);
+
+	for (int32_t i = 0; i < childCount; ++i)
+	{
+		// 자식 씬 컴포넌트의 이름
+		JText childType;
+		Utils::Serialization::DeSerialize_Text(childType, InFileStream);
+
+		UPtr<JSceneComponent> newObj  = UPtrCast<JSceneComponent>(MClassFactory::Get().Create(childType));
+		newObj->mParentSceneComponent = this;
+		newObj->SetOwnerActor(mOwnerActor);
+
+		newObj->DeSerialize_Implement(InFileStream);
+		mChildSceneComponentIndices[newObj->GetName()] = i;
+		mChildSceneComponents.push_back(std::move(newObj));
+	}
+
+
 	// World Transform Data
 	Utils::Serialization::DeSerialize_Primitive(&mWorldLocation, sizeof(FVector), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&mWorldRotation, sizeof(FVector), InFileStream);
@@ -61,12 +99,9 @@ void JSceneComponent::Tick(float DeltaTime)
 {
 	UpdateTransform();
 
-	for (int32_t i = 0; i < mChildObjs.size(); ++i)
+	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
-		if (auto childComp = mChildObjs[i])
-		{
-			childComp->Tick(DeltaTime);
-		}
+		mChildSceneComponents[i]->Tick(DeltaTime);
 	}
 }
 
@@ -74,10 +109,7 @@ void JSceneComponent::Draw()
 {
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
-		if (auto childComp = mChildSceneComponents[i].lock())
-		{
-			childComp->Draw();
-		}
+		mChildSceneComponents[i]->Draw();
 	}
 }
 
@@ -86,78 +118,125 @@ void JSceneComponent::DrawID(uint32_t ID)
 
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
-		if (auto childComp = mChildSceneComponents[i].lock())
-		{
-			childComp->DrawID(ID);
-		}
+		mChildSceneComponents[i]->DrawID(ID);
 	}
 }
 
-void JSceneComponent::AddChildSceneComponent(const Ptr<JSceneComponent>& Ptr)
+void JSceneComponent::SetWorldLocation(const FVector& InTranslation)
 {
-	mChildSceneComponents.push_back(Ptr);
-}
+	mWorldLocation = InTranslation;
+	UpdateWorldTransform();
 
-void JSceneComponent::SetupAttachment(const Ptr<JSceneComponent>& InParentComponent)
-{
-	auto thisPtr = GetThisPtr<JSceneComponent>();
-
-	if (!InParentComponent->mChildObjHash.contains(GetHash()))
+	// 로컬 위치 계산
+	if (mParentSceneComponent)
 	{
-		mParentObj = InParentComponent;
-		InParentComponent->mChildObjs.push_back(thisPtr);
-		InParentComponent->mChildObjHash.insert({GetHash(), InParentComponent->mChildObjs.size()});
+		FMatrix parentWorldInverse = mParentSceneComponent->mWorldMat.Invert();
+		mLocalMat                  = parentWorldInverse * mWorldMat;
+		mLocalLocation             = FVector(mLocalMat.m[3][0], mLocalMat.m[3][1], mLocalMat.m[3][2]);
 	}
-	mParentSceneComponent = InParentComponent;
-	InParentComponent->mChildSceneComponents.push_back(thisPtr);
-
-	mOwnerActor = InParentComponent->GetOwnerActor();
+	else
+	{
+		mLocalLocation = InTranslation;
+	}
 }
 
-void JSceneComponent::AttachComponent(const Ptr<JSceneComponent>& InChildComponent)
+void JSceneComponent::SetWorldRotation(const FVector& InRotation)
 {
-	assert(InChildComponent);
+	mWorldRotation = InRotation;
+	UpdateWorldTransform();
 
-	InChildComponent->DetachFromComponent();
+	if (mParentSceneComponent)
+	{
+		// 월드 회전을 쿼터니언으로 변환
+		DirectX::XMVECTOR worldQuat = DirectX::XMQuaternionRotationRollPitchYaw(
+																				DirectX::XMConvertToRadians(InRotation.x),
+																				DirectX::XMConvertToRadians(InRotation.y),
+																				DirectX::XMConvertToRadians(InRotation.z));
 
-	InChildComponent->SetupAttachment(GetThisPtr<JSceneComponent>());
+		// 부모 월드 회전을 쿼터니언으로 변환
+		DirectX::XMVECTOR parentQuat    = XMQuaternionRotationMatrix(mParentSceneComponent->mWorldMat);
+		DirectX::XMVECTOR parentQuatInv = DirectX::XMQuaternionInverse(parentQuat);
+
+		// 로컬 회전 = 부모 월드 회전의 역 * 월드 회전
+		DirectX::XMVECTOR localQuat = DirectX::XMQuaternionMultiply(parentQuatInv, worldQuat);
+
+		// 로컬 회전을 오일러 각도로 변환
+		DirectX::XMVECTOR axis;
+		float             angle;
+		DirectX::XMQuaternionToAxisAngle(&axis, &angle, localQuat);
+
+		mLocalRotation.x = axis.m128_f32[0] * angle;
+		mLocalRotation.y = axis.m128_f32[1] * angle;
+		mLocalRotation.z = axis.m128_f32[2] * angle;
+	}
+	else
+	{
+		mLocalRotation = InRotation;
+	}
+}
+
+void JSceneComponent::SetWorldScale(const FVector& InScale)
+{
+	mWorldScale = InScale;
+	UpdateWorldTransform();
+
+	if (mParentSceneComponent)
+	{
+		FMatrix parentWorldInverse = mParentSceneComponent->mWorldMat.Invert();
+		mLocalMat                  = parentWorldInverse * mWorldMat;
+
+		// 각 축 벡터의 길이로 스케일 계산
+		FVector scaleX(mLocalMat.m[0][0], mLocalMat.m[0][1], mLocalMat.m[0][2]);
+		FVector scaleY(mLocalMat.m[1][0], mLocalMat.m[1][1], mLocalMat.m[1][2]);
+		FVector scaleZ(mLocalMat.m[2][0], mLocalMat.m[2][1], mLocalMat.m[2][2]);
+
+		mLocalScale = FVector(scaleX.Length(), scaleY.Length(), scaleZ.Length());
+	}
+	else
+	{
+		mLocalScale = InScale;
+	}
+}
+
+void JSceneComponent::AddChildSceneComponent(JSceneComponent* Ptr)
+{}
+
+void JSceneComponent::SetupAttachment(JSceneComponent* InParentComponent)
+{
+	if (!InParentComponent || InParentComponent == mParentSceneComponent)
+	{
+		return;
+	}
+
+	const int32_t index = mOwnerActor->mChildSceneComponentIndices[GetName()];
+
+	InParentComponent->mChildSceneComponentIndices[GetName()] = InParentComponent->mChildSceneComponents.size();
+	InParentComponent->mChildSceneComponents.push_back(std::move(mOwnerActor->mChildSceneComponents[index]));
+
+	// 원래 존재하던 mParentSceneComponent의 배열 업데이트
+	mOwnerActor->mChildSceneComponentIndices.erase(GetName());
+	mOwnerActor->mChildSceneComponents.erase(mOwnerActor->mChildSceneComponents.begin() + index);
+
+	mParentSceneComponent = InParentComponent;
+	SetOwnerActor(InParentComponent->GetOwnerActor());
+}
+
+void JSceneComponent::AttachComponent(JSceneComponent* InChildComponent)
+{
+	if (!InChildComponent)
+	{
+		return;
+	}
+
 }
 
 void JSceneComponent::AttachToComponent(const Ptr<JSceneComponent>& InParentComponent)
-{
-	assert(InParentComponent);
+{}
 
-	Ptr<JActor> parentActor = InParentComponent->GetOwnerActor();
-	assert(parentActor);
+void JSceneComponent::AttachToActor(JActor* InParentActor, const JText& InComponentAttachTo)
+{}
 
-	DetachFromComponent();
-
-	SetupAttachment(InParentComponent);
-}
-
-void JSceneComponent::AttachToActor(const Ptr<JActor>& InParentActor, const JText& InComponentAttachTo)
-{
-	assert(InParentActor);
-
-	const uint32_t componentHash = StringHash(InComponentAttachTo.c_str());
-
-	// 붙일 액터에 컴포넌트 유무 확인 (액터 내부에 최소한 RootComponent는 존재)
-	assert(InParentActor->mChildObjHash.contains(componentHash));
-
-	// 오브젝트 해시 테이블에서 컴포넌트 인덱스를 가져옴
-	const int32_t index = InParentActor->mChildObjHash[componentHash];
-
-	// 오브젝트를 씬 컴포넌트로 캐스팅
-	const Ptr<JSceneComponent> componentToAttach = std::dynamic_pointer_cast<
-		JSceneComponent>(InParentActor->mChildObjs[index]);
-
-	assert(componentToAttach);
-
-	// 부모 컴포넌트에 부착
-	componentToAttach->AttachComponent(GetThisPtr<JSceneComponent>());
-}
-
-void JSceneComponent::AttachToActor(const Ptr<JActor>& InParentActor, const Ptr<JSceneComponent>& InComponentAttachTo)
+void JSceneComponent::AttachToActor(JActor* InParentActor, JSceneComponent* InComponentAttachTo)
 {
 	assert(InParentActor);
 
@@ -165,20 +244,16 @@ void JSceneComponent::AttachToActor(const Ptr<JActor>& InParentActor, const Ptr<
 }
 
 void JSceneComponent::DetachFromComponent()
-{
-	if (Ptr<JSceneComponent> parentPtr = mParentSceneComponent.lock())
-	{
-		// 부모 씬 컴포넌트의 자식 목록에서 제거
-		auto it = std::ranges::find(parentPtr->mChildObjs, GetThisPtr<JSceneComponent>());
-		if (it != parentPtr->mChildObjs.end())
-		{
-			parentPtr->mChildObjs.erase(it);
-		}
+{}
 
-		//  부모 씬 컴포넌트와의 연결을 해제
-		mParentObj.reset();
-		mParentSceneComponent.reset();
+JSceneComponent* JSceneComponent::GetComponentByName(const JText& InName)
+{
+	auto it = mChildSceneComponentIndices.find(InName);
+	if (it != mChildSceneComponentIndices.end())
+	{
+		return mChildSceneComponents[it->second].get();
 	}
+	return nullptr;
 }
 
 void JSceneComponent::UpdateTransform()
@@ -196,9 +271,9 @@ void JSceneComponent::UpdateTransform()
 
 
 	// Step2. 부모 씬 컴포넌트가 존재한다면, 로컬 행렬을 계산
-	if (Ptr<JSceneComponent> parentPtr = mParentSceneComponent.lock())
+	if (mParentSceneComponent)
 	{
-		mWorldMat = parentPtr->mWorldMat * mLocalMat;
+		mWorldMat = mParentSceneComponent->mWorldMat * mLocalMat;
 	}
 	else // 부모가 없는 씬 컴포넌트는 그 자체 위치를 월드 위치로 사용
 	{
@@ -210,4 +285,20 @@ void JSceneComponent::UpdateTransform()
 	mWorldLocation = loc;
 	mWorldRotation = rot;
 	mWorldScale    = scale;
+}
+
+void JSceneComponent::UpdateWorldTransform()
+{
+	mWorldMat = DirectX::XMMatrixScaling(
+										 mWorldScale.x,
+										 mWorldScale.y,
+										 mWorldScale.z) *
+			DirectX::XMMatrixRotationRollPitchYaw(
+												  DirectX::XMConvertToRadians(mWorldRotation.x),
+												  DirectX::XMConvertToRadians(mWorldRotation.y),
+												  DirectX::XMConvertToRadians(mWorldRotation.z)) *
+			DirectX::XMMatrixTranslation(
+										 mWorldLocation.x,
+										 mWorldLocation.y,
+										 mWorldLocation.z);
 }

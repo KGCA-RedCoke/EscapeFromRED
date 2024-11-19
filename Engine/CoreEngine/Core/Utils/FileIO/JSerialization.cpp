@@ -6,6 +6,20 @@
 namespace Utils::Serialization
 {
 
+	bool IsJAssetFileAndExist(const char* InFilePath)
+	{
+		std::filesystem::path path(InFilePath);
+
+		// 1. 파일인지 확인
+		if (!is_regular_file(path))
+		{
+			return false; // 파일이 아니면 false 반환
+		}
+
+		// 2. 확장자가 ".jasset"인지 확인
+		return path.extension() == ".jasset";
+	}
+
 	JAssetMetaData GetType(const char* InFilePath)
 	{
 		std::ifstream archive(InFilePath, std::ios::binary);
@@ -93,9 +107,22 @@ namespace Utils::Serialization
 
 	bool Serialize(const char* InFilePath, ISerializable* InData)
 	{
+		// 경로가 없으면 생성
+		std::filesystem::path path(InFilePath);
+		std::filesystem::path directory = path.parent_path();
+		// 디렉터리가 없으면 생성
+		if (!directory.empty() && !std::filesystem::exists(directory))
+		{
+			std::filesystem::create_directories(directory);
+		}
+
 		std::ofstream archive(InFilePath, std::ios::binary);
+
+		// 경로가 없거나 파일이 없을 경우
 		if (!archive.is_open())
+		{
 			return false;
+		}
 
 		archive.clear();
 

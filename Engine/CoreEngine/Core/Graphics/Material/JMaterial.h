@@ -77,8 +77,8 @@ struct FMaterialParam : public ISerializable
 
 	EMaterialParamValue ParamValue = EMaterialParamValue::String; /** 머티리얼 변수 값 타입 */
 
-	Ptr<JTexture> TextureValue = nullptr;
-	JText         StringValue;
+	JTexture* TextureValue = nullptr;
+	JText     StringValue;
 
 	union
 	{
@@ -102,6 +102,7 @@ struct FMaterialParam : public ISerializable
 
 	uint32_t GetType() const override;
 
+
 	bool Serialize_Implement(std::ofstream& FileStream) override;
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
@@ -111,7 +112,7 @@ struct FMaterialParam : public ISerializable
 /**
  * @brief Material class
  */
-class JMaterial : public IManagedInterface, public ISerializable
+class JMaterial : public JAsset
 {
 public:
 	explicit JMaterial(JTextView InMaterialName);
@@ -119,10 +120,6 @@ public:
 	~JMaterial() override = default;
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
-
-public:
-	uint32_t GetHash() const override;
 	uint32_t GetType() const override;
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
@@ -148,9 +145,9 @@ public:
 	[[nodiscard]] FORCEINLINE const JText&                  GetMaterialPath() const { return mMaterialPath; }
 	[[nodiscard]] FORCEINLINE const JText&                  GetMaterialName() const { return mMaterialName; }
 	[[nodiscard]] FORCEINLINE bool                          HasMaterial() const { return !mMaterialParams.empty(); }
-	[[nodiscard]] FORCEINLINE Ptr<JShader>                  GetShader() const { return mShader; }
+	[[nodiscard]] FORCEINLINE JShader*                      GetShader() const { return mShader; }
 
-	FORCEINLINE void SetShader(const Ptr<JShader>& InShader);
+	FORCEINLINE void SetShader(JShader* InShader);
 
 protected:
 	JText    mMaterialPath;
@@ -159,7 +156,7 @@ protected:
 
 	JConstantBuffer        mMaterialBuffer;
 	JArray<FMaterialParam> mMaterialParams;
-	Ptr<JShader>           mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
+	JShader*               mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 
 	friend class GUI_Editor_Material;
 	friend class JMaterialInstance;

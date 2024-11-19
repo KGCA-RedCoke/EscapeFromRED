@@ -1,14 +1,10 @@
 ﻿#include "JTexture.h"
 #include <directxtk/WICTextureLoader.h>
-#include "Core/Interface/MManagerInterface.h"
+
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Interface/JWorld.h"
 
 #include "Core/Utils/Utils.h"
-
-JTexture::JTexture()
-	: mSlot(0),
-	  mSRVDesc(),
-	  mTextureDesc()
-{}
 
 JTexture::JTexture(JWTextView InName, bool bEnableEdit)
 	: mSlot(0),
@@ -30,59 +26,10 @@ JTexture::JTexture(JWTextView InName, bool bEnableEdit)
 JTexture::JTexture(JTextView InName, bool bEnableEdit)
 	: JTexture(String2WString(InName.data()), bEnableEdit) {}
 
-
-Ptr<IManagedInterface> JTexture::Clone() const
-{
-	return nullptr;
-}
-
-uint32_t JTexture::GetHash() const
-{
-	return StringHash(ParseFile(mTextureName).c_str());
-}
-
-uint32_t JTexture::GetType() const
-{
-	return StringHash("JTexture");
-}
-
-bool JTexture::Serialize_Implement(std::ofstream& FileStream)
-{
-	if (!Utils::Serialization::SerializeMetaData(FileStream, this))
-	{
-		return false;
-	}
-
-	// Slot
-	Utils::Serialization::Serialize_Primitive(&mSlot, sizeof(mSlot), FileStream);
-
-	// Texture Name
-	Utils::Serialization::Serialize_Text(mTextureName, FileStream);
-
-	return true;
-}
-
-bool JTexture::DeSerialize_Implement(std::ifstream& InFileStream)
-{
-	JAssetMetaData metaData;
-	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
-	{
-		return false;
-	}
-
-	// Slot
-	Utils::Serialization::DeSerialize_Primitive(&mSlot, sizeof(mSlot), InFileStream);
-
-	// Texture Name
-	Utils::Serialization::DeSerialize_Text(mTextureName, InFileStream);
-
-	LoadFromFile();
-
-	return true;
-}
+JTexture::~JTexture() {}
 
 void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, const int32_t InSlot,
-								  const Ptr<JTexture>& InTexture)
+								  JTexture*            InTexture)
 {
 	ID3D11ShaderResourceView* srv = nullptr;
 	if (InTexture)
@@ -110,20 +57,20 @@ void JTexture::LoadFromFile()
 
 
 	if (FAILED(CreateWICTextureFromFileEx(
-					   Renderer.GetDevice(),
-					   mTextureName.c_str(),
-					   0,
-					   D3D11_USAGE_DEFAULT,
-					   D3D11_BIND_SHADER_RESOURCE,
-					   0,
-					   0,
-					   WIC_LOADER_FORCE_RGBA32,
-					   textureResource.GetAddressOf(),
-					   mShaderResourceView.GetAddressOf()
-				   )))
+				   G_Device.GetDevice(),
+				   mTextureName.c_str(),
+				   0,
+				   D3D11_USAGE_DEFAULT,
+				   D3D11_BIND_SHADER_RESOURCE,
+				   0,
+				   0,
+				   WIC_LOADER_FORCE_RGBA32,
+				   textureResource.GetAddressOf(),
+				   mShaderResourceView.GetAddressOf()
+			   )))
 	// 여기서는 CheckResult를 하지 않는다. 텍스처 파일이 없을 경우 디폴트 텍스처 적용
 	// if (FAILED(CreateWICTextureFromFile(
-	// 			   Renderer.GetDevice(),
+	// 			   G_Device.GetDevice(),
 	// 			   mTextureName.c_str(),
 	// 			   textureResource.GetAddressOf(),
 	// 			   mShaderResourceView.GetAddressOf())))
@@ -149,7 +96,7 @@ void JTexture::LoadFromFileEx()
 	ComPtr<ID3D11Texture2D> texture;
 
 	if (FAILED(CreateWICTextureFromFileEx(
-				   Renderer.GetDevice(),
+				   G_Device.GetDevice(),
 				   mTextureName.c_str(),
 				   0,
 				   D3D11_USAGE_STAGING,
@@ -180,7 +127,7 @@ void JTexture::LoadFromFileEx()
 
 void JTexture::CacheRGBAData(const ComPtr<ID3D11Texture2D>& InTex2D)
 {
-	auto context = IManager.RenderManager->GetImmediateDeviceContext();
+	auto context = G_Device.GetImmediateDeviceContext();
 	assert(context);
 
 	mRGBAData.resize(mTextureDesc.Width * mTextureDesc.Height);

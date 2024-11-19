@@ -1,6 +1,7 @@
 ﻿#include "GUI_AssetBrowser.h"
 
 #include "MGUIManager.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Utils/Utils.h"
@@ -32,6 +33,7 @@ GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 	  bStretchSpacing(true)
 {
 	mCurrentDirectory = fs::relative(L"Game");
+	OnBrowserChange.Bind(std::bind(&GUI_AssetBrowser::HandleFile, this));
 }
 
 
@@ -51,7 +53,11 @@ void GUI_AssetBrowser::Initialize()
 void GUI_AssetBrowser::Update(float DeltaTime)
 {
 	// 파일 목록 업데이트 (디렉토리 변경 시)
-	HandleFile();
+	if (mCachedDirectory != mCurrentDirectory)
+	{
+		HandleFile();
+	}
+
 
 	// 파일 브라우저 창 크기 설정 (Desired Size)
 	SetWindowSize(10, 15);
@@ -192,10 +198,12 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			if (ImGui::MenuItem(u8("삭제"), "Del", false, mSelection.Size > 0))
 			{
 				bRequestDelete = true;
+				OnBrowserChange.Execute();
 			}
 			if (ImGui::MenuItem(u8("이름 변경"), "F2", false, mSelection.Size == 1))
 			{
 				bRequestRename = true;
+				OnBrowserChange.Execute();
 			}
 		}
 
@@ -205,23 +213,42 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			{
 				// 코드를 추가하여 새 폴더 생성을 처리
 				fs::create_directory(mCurrentDirectory + L"/NewFolder");
+
+				OnBrowserChange.Execute();
 			}
 			if (ImGui::BeginMenu(u8("새 파일")))
 			{
+				JText newRelativePath = WString2String(mCurrentDirectory);
+				JText newFileName;
+				if (ImGui::MenuItem(u8("레벨 생성")))
+				{
+					newFileName = GenerateUniqueFileName(newRelativePath, "NewLevel", ".jasset");
+
+					JLevel* newLevel = MLevelManager::Get().CreateLevel(newFileName);
+
+					if (Utils::Serialization::Serialize(newFileName.c_str(), newLevel))
+					{
+						OnBrowserChange.Execute();
+					}
+				}
 				if (ImGui::MenuItem(u8("액터 생성")))
 				{
-					JText newActorPath = WString2String(mCurrentDirectory) + "/NewActor.jasset";
+					newFileName = GenerateUniqueFileName(newRelativePath, "NewActor", ".jasset");
 
 					// TODO: 액터 에디터 열기
-					MGUIManager::Get().CreateOrLoad<GUI_Editor_Actor>(newActorPath);
+					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Actor>(newFileName))
+					{
+						ptr->OpenIfNotOpened();
+						OnBrowserChange.Execute();
+					}
 				}
 				if (ImGui::MenuItem(u8("머티리얼 생성")))
 				{
-					// TODO: 머티리얼 에디터 열기
-					JText newMaterialPath = WString2String(mCurrentDirectory) + "/NewMaterial.jasset";
-					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(newMaterialPath))
+					newFileName = GenerateUniqueFileName(newRelativePath, "NewMaterial", ".jasset");
+					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(newFileName))
 					{
 						ptr->OpenIfNotOpened();
+						OnBrowserChange.Execute();
 					}
 				}
 				ImGui::EndMenu();
@@ -343,7 +370,7 @@ void GUI_AssetBrowser::UpdateClipperAndItemSpacing(ImGuiMultiSelectIO* msIO, ImV
 						mCurrentDirectory = itemData->FilePath;
 						break;
 					case EFileType::Asset: // 에셋 창 열기(너무 복잡, 그냥 DragDrop만 가능하도록 수정)
-						ParseAsset(itemData);
+						HandleAssetClicked(itemData);
 						break;
 					}
 				}
@@ -544,9 +571,6 @@ void GUI_AssetBrowser::UpdateProgressBar() const
 void GUI_AssetBrowser::HandleFile()
 {
 	// 디렉토리가 변경되었을 때만 업데이트
-	if (mCachedDirectory == mCurrentDirectory)
-		return;
-
 	// 파일 목록 초기화
 	mFiles.clear();
 
@@ -585,7 +609,7 @@ void GUI_AssetBrowser::HandleFile()
 	}
 }
 
-void GUI_AssetBrowser::ParseAsset(FBasicFilePreview* ItemData)
+void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 {
 	JText fullFileName = ItemData->FilePath.string();
 
@@ -593,37 +617,33 @@ void GUI_AssetBrowser::ParseAsset(FBasicFilePreview* ItemData)
 
 	uint32_t assetType = metaData.AssetType;
 
-	if (assetType == HASH_ASSET_TYPE_STATIC_MESH)
+	switch (assetType)
 	{
-		LOG_CORE_INFO("Static Mesh");
+	case HASH_ASSET_TYPE_STATIC_MESH:
 		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
-	}
-	else if (assetType == HASH_ASSET_TYPE_SKELETAL_MESH)
-	{
-		LOG_CORE_INFO("Skeletal Mesh");
+		break;
+	case HASH_ASSET_TYPE_SKELETAL_MESH:
 		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_SkeletalMesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
-	}
-	else if (assetType == HASH_ASSET_TYPE_MATERIAL || assetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
-	{
+		break;
+	case HASH_ASSET_TYPE_MATERIAL:
+	case HASH_ASSET_TYPE_MATERIAL_INSTANCE:
 		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
-	}
+		break;
 
-	else if
-	(assetType
-		==
-		HASH_ASSET_TYPE_Actor
-	)
-	{
-		LOG_CORE_INFO("Actor");
+	case HASH_ASSET_TYPE_LEVEL:
+		MLevelManager::Get().SetActiveLevel(MLevelManager::Get().CreateOrLoad(fullFileName));
+		break;
+	default:
+		LOG_CORE_WARN("Asset Browser : Unknown Asset Type");
+		break;
 	}
-
 }

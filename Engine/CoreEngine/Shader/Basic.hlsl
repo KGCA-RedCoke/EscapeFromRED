@@ -48,25 +48,11 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 			output.Pos += (100 * weight *
 				mul(localPos, boneTransform));	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
 
-			if (i == 0)
-			{
-				output.Color.x = weight;
-			}
-			else if (i == 1)
-			{
-				output.Color.y = weight;
-			}
-			else if (i == 2)
-			{
-				output.Color.z = weight;
-			}
-			else if (i == 3)
-			{
-				output.Color.w = weight;
-			}
 			normal += mul(Input.Normal, (float3x3)boneTransform) *
 					weight;	// normal(원래 메시 노말) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
 		}
+
+		output.Color = Input.BoneWeights;
 	}
 	else
 	{
@@ -161,6 +147,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
 
+	// return float4(normalColor, 1.f);
 	return float4(finalColor, 1.f);
 
 }

@@ -22,25 +22,22 @@ enum class EMeshType : uint8_t
 /**
  * Mesh 
  */
-class JMeshData : public IManagedInterface,
-				  public ISerializable,
+class JMeshData : public ISerializable,
+				  public IManagedInterface,
 				  public std::enable_shared_from_this<JMeshData>// 직렬화 해서 저장
 {
 public:
 	JMeshData() = default;
+	JMeshData(const JMeshData& Other);
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
+	UPtr<IManagedInterface> Clone() const override;
 
 public:
 	uint32_t GetHash() const override;
 	uint32_t GetType() const override;
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
-
-public:
-	void UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const;
-	void PassMaterial(ID3D11DeviceContext* InDeviceContext) const;
 
 public:
 	virtual void AddInfluenceBone(const JText& InBoneName, FMatrix InBindPose) {};
@@ -57,18 +54,10 @@ public:
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetChildMesh() const { return mChildMesh; }
 	[[nodiscard]] const Ptr<JVertexData<Vertex::FVertexInfo_Base>>& GetVertexData() const { return mVertexData; }
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
-	[[nodiscard]] Ptr<JMaterialInstance> GetMaterialInstance() const { return mMaterialInstance; }
-
-	[[nodiscard]] FORCEINLINE int32_t GetMaterialRefNum() const { return mMaterialRefNum; }
+	[[nodiscard]] FORCEINLINE int32_t GetSubMaterialNum() const { return mMaterialRefNum; }
 
 	[[nodiscard]] FORCEINLINE bool IsSkeletalMesh() const { return mClassType == EMeshType::Skeletal; }
 	[[nodiscard]] FORCEINLINE bool IsStaticMesh() const { return mClassType == EMeshType::Static; }
-
-public:
-	FORCEINLINE void SetMaterialInstance(const Ptr<JMaterialInstance>& InMaterialInstance)
-	{
-		mMaterialInstance = InMaterialInstance;
-	}
 
 protected:
 	// -------------------------- Mesh Info --------------------------
@@ -87,9 +76,11 @@ protected:
 	// -------------------------- Vertex Data --------------------------
 	Ptr<JVertexData<Vertex::FVertexInfo_Base>> mVertexData;
 
+
+	// DEPRECATED: 2024-11-17 이후로 JEngine에서 머티리얼과 메시는 완전히 분리 (하지만 머티리얼 갯수는 여전히 필요)
 	// -------------------------- Material Reference --------------------------
-	Ptr<JMaterialInstance> mMaterialInstance;
-	int32_t                mMaterialRefNum;
+	// JMaterialInstance* mMaterialInstances;
+	int32_t mMaterialRefNum;
 
 	// -------------------------- Initial Model Transform --------------------------
 	FMatrix mInitialModelTransform;
@@ -138,7 +129,7 @@ protected:
 /**
  * Skin Mesh
  */
-class JSkinData : public ISerializable
+class JSkinData : public JAsset
 {
 public:
 	JSkinData() = default;

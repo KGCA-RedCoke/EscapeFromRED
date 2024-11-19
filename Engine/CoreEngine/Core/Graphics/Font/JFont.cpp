@@ -1,7 +1,7 @@
 ﻿#include "JFont.h"
 
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Math/Color.h"
 
 JFont::JFont(ID2D1RenderTarget* InRenderTarget)
@@ -32,7 +32,7 @@ void JFont::PreRender()
 
 void JFont::Render()
 {
-	ID2D1SolidColorBrush* brush = IManager.RenderManager->GetBrush();
+	ID2D1SolidColorBrush* brush = GetWorld.D3D11API->GetBrush();
 	assert(brush, "invalid brush");
 
 	D2D1_COLOR_F brushColor;
@@ -52,7 +52,7 @@ void JFont::Render()
 								 mScreenPosition.x + 600.f,
 								 mScreenPosition.y + 600.f
 							 },
-							 IManager.RenderManager->GetBrush()
+							 GetWorld.D3D11API->GetBrush()
 							);
 }
 
@@ -129,7 +129,7 @@ void JFont::AdjustTextFormat()
 
 	// DWrite에서는 Format만 관리
 	CheckResult(
-				IManager.RenderManager->GetWriteFactory()->
+				GetWorld.D3D11API->GetWriteFactory()->
 						  CreateTextFormat(
 										   mFontFamily.c_str(),
 										   nullptr,

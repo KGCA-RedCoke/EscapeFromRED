@@ -2,7 +2,7 @@
 
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Window/Application.h"
 
@@ -55,7 +55,7 @@ void JCamera::Initialize()
 	mInputKeyboard.Initialize();
 
 
-	Utils::DX::CreateBuffer(IManager.RenderManager->GetDevice(),
+	Utils::DX::CreateBuffer(GetWorld.D3D11API->GetDevice(),
 							D3D11_BIND_CONSTANT_BUFFER,
 							nullptr,
 							sizeof(CBuffer::Camera),
@@ -86,7 +86,7 @@ void JCamera::Update(float_t DeltaTime)
 	XMVECTOR posDelta   = velocity * DeltaTime;
 	XMMATRIX mCameraRot = XMMatrixRotationRollPitchYaw(mPitch, mYaw, 0);
 
-	// World 기저 벡터를 CameraRotation만큼 회전
+	// LevelManager 기저 벡터를 CameraRotation만큼 회전
 	XMVECTOR worldUp       = XMVector3TransformCoord(M_UpVector, mCameraRot);
 	XMVECTOR worldAhead    = XMVector3TransformCoord(M_ForwardVector, mCameraRot);
 	XMVECTOR posDeltaWorld = XMVector3TransformCoord(posDelta, mCameraRot);
@@ -110,7 +110,7 @@ void JCamera::Update(float_t DeltaTime)
 	// Update the camera constant buffer
 	CBuffer::Camera camPos;
 	camPos.CameraPos = FVector4(mEye, 1.f);
-	Utils::DX::UpdateDynamicBuffer(IManager.RenderManager->GetImmediateDeviceContext(),
+	Utils::DX::UpdateDynamicBuffer(GetWorld.D3D11API->GetImmediateDeviceContext(),
 								   mCameraConstantBuffer.Get(),
 								   &mEye,
 								   sizeof(CBuffer::Camera));
@@ -124,7 +124,7 @@ uint32_t JCamera::GetHash() const
 	return StringHash(ParseFile(mName.data()).c_str());
 }
 
-Ptr<IManagedInterface> JCamera::Clone() const
+UPtr<IManagedInterface> JCamera::Clone() const
 {
 	return nullptr;
 }
@@ -139,7 +139,7 @@ void JCamera::Reset()
 // 매개변수로 XMVECTOR가 아닌 FXMVECTOR를 사용하는 이유는
 // 매개변수로 받을 때는 FXMVECTOR를 사용하고, 내부에서는 XMVECTOR를 사용하는 것이 좋다고 한다..
 // 너무 많은 데이터를 레지스터에 넣을 수 있기때문(성능 저하) 
-void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec)
+void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR InUpVec)
 {
 	/// 카메라가 사용하는 공간(뷰 공간)을 정의해보자.
 	/// View Space의 원점은 카메라 렌즈의 정 중앙이고 이를 기준으로 3개의 축을 만들 수 있다.
@@ -159,7 +159,7 @@ void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec)
 	/// UP Vector는 보통 (0,1,0)을 사용한다.
 	/// 왜냐? Roll(회전)을 하지 않는다면 카메라의 Up Vector는 항상 (0,1,0)에서 바뀔 이유가 없다.
 	/// Roll회전을 할거면 Up Vector를 바꿔야 한다.
-	XMMATRIX viewMat = XMMatrixLookAtLH(InEyeVec, InLookAtVec, M_UpVector);
+	XMMATRIX viewMat = XMMatrixLookAtLH(InEyeVec, InLookAtVec, InUpVec);
 	XMStoreFloat4x4(&mView, viewMat);
 
 	// 역행렬 (의미상, 카메라 -> 월드행렬로 변환하는 행렬) 그러면 카메라의 월드 좌표계에서의 위치와 방향을 알 수 있다.
@@ -190,10 +190,10 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 
 void JCamera::SetCameraConstantBuffer(uint32_t InSlot)
 {
-	IManager.RenderManager->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot,
+	GetWorld.D3D11API->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot,
 																			  1,
 																			  mCameraConstantBuffer.GetAddressOf());
-	IManager.RenderManager->GetImmediateDeviceContext()->PSSetConstantBuffers(InSlot,
+	GetWorld.D3D11API->GetImmediateDeviceContext()->PSSetConstantBuffers(InSlot,
 																			  1,
 																			  mCameraConstantBuffer.GetAddressOf());
 }

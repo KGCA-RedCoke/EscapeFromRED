@@ -56,7 +56,7 @@ namespace ImGui
 		FileBrowserOption mOption = FileBrowserOption::FILE;
 
 		const float mWidth  = 500.0f;
-		const float mHeight = 400.0f;
+		const float mHeight = 500.0f;
 
 		std::vector<JText> mDirectories;
 		std::vector<JText> mFiles;

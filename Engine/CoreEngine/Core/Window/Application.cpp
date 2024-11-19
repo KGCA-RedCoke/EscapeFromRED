@@ -1,19 +1,21 @@
 ﻿#include "Application.h"
-
 #include "Core/Entity/Actor/JActor.h"
-#include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Camera/JCamera.h"
-#include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Timer.h"
 #include "Core/Utils/Math/Color.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
+#include "inifile_cpp/inicpp.h"
 
+
+// ---------------------------- Default Settings -------------------------
+ini::IniFile   g_settings;
 CBuffer::Light g_LightData = {FVector4(1, 2, -1, 0), FVector4::OneVector};
-
 
 Application* Application::s_AppInstance = nullptr;
 
@@ -55,19 +57,21 @@ void Application::Initialize()
 		LOG_CORE_ERROR("Application is already running.");
 		return;
 	}
+	g_settings.setMultiLineValues(true);
+	g_settings.load("Configs/engine.ini");
 
 	ResetValues();
 
 	//---------------------------------- 초기화 --------------------------------------------
 	mWindow->Initialize();	// 가장 먼저 윈도우 창을 초기화한다.
 
-	IManager.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 MManagerInterface.cpp 참조)
+	GetWorld.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 JWorld.cpp 참조)
 
 	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
-	auto viewportPtr = IManager.ViewportManager->FetchResource(Name_Editor_Viewport);
+	auto viewportPtr = GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport);
 	assert(viewportPtr);
 	viewportPtr->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
-		mFpsText->SetRenderTarget(IManager.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
+		mFpsText->SetRenderTarget(GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
 	});
 	mFpsText = MakeUPtr<JFont>();
 	mFpsText->Initialize();
@@ -77,13 +81,13 @@ void Application::Initialize()
 
 	Actors.reserve(10);
 
-	Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
-														IManager.MeshManager->CreateOrClone(Path_Mesh_Sphere));
-	sampleActor->Initialize();
-	sampleActor->SetLocalScale({4500, 4500, 4500});
-	
-
-	Actors.push_back(sampleActor);
+	// Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
+	// 													GetWorld.MeshManager->CreateOrClone(Path_Mesh_Sphere));
+	// sampleActor->Initialize();
+	// sampleActor->SetLocalScale({4500, 4500, 4500});
+	//
+	//
+	// Actors.push_back(sampleActor);
 }
 
 void Application::Run()
@@ -113,7 +117,7 @@ void Application::Run()
 
 void Application::Update(float DeltaTime)
 {
-	IManager.Update(DeltaTime);
+	GetWorld.Update(DeltaTime);
 
 	mFpsText->Update(DeltaTime);
 	mFpsText->SetText(std::format(L"fps: {:d}", mFramesPerSec));
@@ -121,9 +125,9 @@ void Application::Update(float DeltaTime)
 
 void Application::Render()
 {
-	IManager.RenderManager->ClearColor(FLinearColor::TrueBlack);
+	GetWorld.D3D11API->ClearColor(FLinearColor::TrueBlack);
 
-	IManager.Render(); // GUI Render
+	GetWorld.Render(); // GUI Render
 
 
 	for (int32_t i = 0; i < Actors.size(); ++i)
@@ -135,15 +139,15 @@ void Application::Render()
 	mFpsText->PreRender();
 	mFpsText->Render();
 	mFpsText->PostRender();
-	
-	IManager.RenderManager->Draw();
+
+	GetWorld.D3D11API->Draw();
 }
 
 void Application::Release()
 {
 	mFpsText = nullptr;
 
-	IManager.Release();
+	GetWorld.Release();
 }
 
 void Application::HandleFrame()

@@ -50,7 +50,7 @@ private:
 	UPtr<JFont> mFpsText = nullptr;
 
 public:
-	JArray<Ptr<JActor>> Actors;
+	JArray<JActor*> Actors;
 
 public:
 	Application();

@@ -1,8 +1,10 @@
 ﻿#include "JMaterial_Basic.h"
 
 #include "Core/Graphics/ShaderStructs.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/JShader.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
+#include "GUI/MGUIManager.h"
 
 JMaterial_Basic::JMaterial_Basic(JTextView InName)
 	: JMaterial(InName)
@@ -15,14 +17,14 @@ void JMaterial_Basic::BindMaterialPipeline(ID3D11DeviceContext*          InDevic
 {
 	JMaterial::BindMaterialPipeline(InDeviceContext, InInstanceParams);
 
-	Renderer.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	int32_t slots[2] = {0, 1};
-	Renderer.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
-	Renderer.SetRasterState(IManager.GUIManager->IsRenderWireFrame()
+	G_Device.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
+	G_Device.SetRasterState(GetWorld.GUIManager->IsRenderWireFrame()
 											   ? ERasterState::WireFrame
 											   : ERasterState::CCW);
-	Renderer.SetBlendState(EBlendState::AlphaBlend);
-	Renderer.SetDepthStencilState(EDepthStencilState::DepthDefault);
+	G_Device.SetBlendState(EBlendState::AlphaBlend);
+	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);
 
 	// 텍스처맵 슬롯 바인딩
 	for (int32_t i = 0; i < InInstanceParams.size(); ++i)

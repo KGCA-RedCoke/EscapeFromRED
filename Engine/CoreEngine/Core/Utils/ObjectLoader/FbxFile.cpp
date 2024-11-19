@@ -6,7 +6,7 @@
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 namespace Utils::Fbx
 {
@@ -126,18 +126,18 @@ namespace Utils::Fbx
 			const int32_t materialNum = mesh->mMaterialRefNum - 1;
 			assert(materialNum >= 0);
 
-			JArray<Ptr<JMaterialInstance>> materials = mMaterialList[meshIndex];
+			JArray<JMaterialInstance*> materials = mMaterialList[meshIndex];
 			if (!materials.empty())
 			{
 				// 머티리얼이 한개일 경우 서브메시를 사용하지 않는다.
 				if (materials.size() == 1)
 				{
-					Ptr<JMaterialInstance> subMaterial = materials[0];
+					JMaterialInstance* subMaterial = materials[0];
 
 					// 단일 메시를 생성한다 (실제 생성이 아니라 정점, 인덱스 배열을 생성).
 					data->GenerateIndexArray(data->TriangleList);
 
-					mesh->mMaterialInstance = subMaterial;
+					// mesh->mMaterialInstances = subMaterial;
 
 					mNumVertex += data->VertexArray.size();
 					mNumIndex += data->IndexArray.size();
@@ -146,7 +146,7 @@ namespace Utils::Fbx
 				{
 					for (int subMeshIndex = 0; subMeshIndex < mesh->mSubMesh.size();)
 					{
-						Ptr<JMaterialInstance> subMaterial = materials[subMeshIndex];
+						JMaterialInstance* subMaterial = materials[subMeshIndex];
 
 						auto& subMesh = mesh->mSubMesh[subMeshIndex];
 						auto& subData = subMesh->mVertexData;
@@ -159,7 +159,7 @@ namespace Utils::Fbx
 
 						subData->GenerateIndexArray(subData->TriangleList);
 
-						subMesh->mMaterialInstance = subMaterial;
+						// subMesh->mMaterialInstances = subMaterial;
 
 						mNumVertex += data->VertexArray.size();
 						mNumIndex += data->IndexArray.size();
@@ -191,6 +191,15 @@ namespace Utils::Fbx
 									? MakePtr<JSkeletalMeshObject>(filePath, mMeshList)
 									: MakePtr<JMeshObject>(filePath, mMeshList);
 
+			{
+				object->mMaterialInstances.resize(mMaterialList[0].size());
+
+				for (int32_t i = 0; i < mMaterialList[0].size(); ++i)
+				{
+					object->mMaterialInstances[i] = mMaterialList[0][i];
+				}
+			}
+
 			if (!Serialization::Serialize(filePath.c_str(), object.get()))
 			{
 				LOG_CORE_ERROR("Failed to serialize mesh object, {0} {1}", __FILE__, __LINE__);
@@ -217,7 +226,7 @@ namespace Utils::Fbx
 				}
 			}
 		}
-		
+
 
 		return true;
 	}
@@ -723,11 +732,11 @@ namespace Utils::Fbx
 		float startTime = static_cast<float>(animClip->mLocalTimeSpan.GetStart().GetSecondDouble());
 		float endTime   = static_cast<float>(animClip->mLocalTimeSpan.GetStop().GetSecondDouble());
 
-		const Ptr<JAnimationClip> anim      = MakePtr<JAnimationClip>();
-		anim->mName                   = animStack->GetName();
-		anim->mStartTime              = startTime;
-		anim->mEndTime                = endTime;
-		anim->mSourceSamplingInterval = sampleTime;
+		const Ptr<JAnimationClip> anim = MakePtr<JAnimationClip>();
+		anim->mName                    = animStack->GetName();
+		anim->mStartTime               = startTime;
+		anim->mEndTime                 = endTime;
+		anim->mSourceSamplingInterval  = sampleTime;
 
 		mAnimations.push_back(anim);
 
@@ -804,7 +813,7 @@ namespace Utils::Fbx
 			InMesh->GenerateTangentsData(0);
 		}
 
-		JArray<Ptr<JMaterialInstance>> materials;
+		JArray<JMaterialInstance*> materials;
 
 		/// 레이어별로 NormalMap, Tangent, Color, UV, 머티리얼(정점에 다수의 텍스처가 매핑 되어있을 경우) 있으면 정보를 넣어놓는다.
 		/// 보통은 Layer0에만 존재하는데, 
@@ -837,13 +846,13 @@ namespace Utils::Fbx
 			{
 				layer.VertexMaterialSets.push_back(material);
 
-				const int32_t layerMaterialNum = InMesh->GetNode()->GetMaterialCount();
+				FbxNode*      node             = InMesh->GetNode();
+				const int32_t layerMaterialNum = node->GetMaterialCount();
 
 				const JText saveFilePath     = std::format("Game/Materials/{0}", InMesh->GetName());
 				bool        bShouldSerialize = false;
 
-				Ptr<JMaterialInstance> materialInstance = MMaterialInstanceManager::Get().
-						CreateOrLoad(NAME_MAT_INS_DEFAULT);
+				JMaterialInstance* materialInstance = nullptr;
 
 				/// 다수의 머티리얼이 존재하면 sub-mesh(기존과 다른 vertexBuffer를 생성)가 필요하다.
 				/// SubMesh를 통해 서로 다른 머티리얼을 가진 메시를 하나의 메시로 표현할 수 있다.
@@ -851,6 +860,8 @@ namespace Utils::Fbx
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
+						materialInstance = ParseLayerMaterial(InMesh, i, bShouldSerialize);
+
 						materials.push_back(materialInstance);
 
 						// 서브메시를 만들자. (자세한 정보는 나중에 채워질 것)
@@ -859,9 +870,7 @@ namespace Utils::Fbx
 
 						// subMesh의 이름을 정하는게 좀 애매한데
 						// 우선 메시 이름 + 머티리얼 이름 으로 설정
-						subMesh->mName = std::format("{0}_{1}",
-													 InMeshData->mName,
-													 materialInstance->GetMaterialName());
+						subMesh->mName = node->GetMaterial(i)->GetName();
 
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
 						subMesh->mVertexData = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();
@@ -879,7 +888,7 @@ namespace Utils::Fbx
 								std::filesystem::create_directories(saveFilePath);
 							}
 							Utils::Serialization::Serialize(materialInstance->GetMaterialPath().c_str(),
-															materialInstance.get());
+															materialInstance);
 						}
 					}
 				}
@@ -894,16 +903,13 @@ namespace Utils::Fbx
 					// 머티리얼 정보만 가져와서 저장해놓자.
 					// Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
 					// materials.push_back(materialInstance);
+					materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
 					materials.push_back(materialInstance);
 
 					if (bShouldSerialize)
 					{
-						if (!std::filesystem::exists(saveFilePath))
-						{
-							std::filesystem::create_directories(saveFilePath);
-						}
 						Utils::Serialization::Serialize(materialInstance->GetMaterialPath().c_str(),
-														materialInstance.get());
+														materialInstance);
 					}
 				}
 			}

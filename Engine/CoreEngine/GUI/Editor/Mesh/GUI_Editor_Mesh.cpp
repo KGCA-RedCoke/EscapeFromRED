@@ -15,10 +15,10 @@ void GUI_Editor_Mesh::Render()
 {
 	GUI_Editor_Base::Render();
 
-	if (const auto& ptr = mMeshObject.lock())
+	if (mMeshObject)
 	{
-		ptr->UpdateBuffer();
-		ptr->Draw();
+		mMeshObject->UpdateBuffer();
+		mMeshObject->Draw();
 	}
 }
 
@@ -68,16 +68,16 @@ void GUI_Editor_Mesh::DrawProperty() const
 						  ImVec2(mWindowSize.x * 0.33f, 0),
 						  ImGuiChildFlags_AutoResizeX))
 	{
-		if (const auto& ptr = mMeshObject.lock())
+		if (mMeshObject)
 		{
 			// 원시 파일 경로 표시
 			ImGui::Text("Mesh Name");
-			ImGui::Text(&ptr->mName[0]);
+			ImGui::Text(&mMeshObject->mName[0]);
 
 			// 메시 타입 표시
 			ImGui::Text("Mesh Type : ");
 			ImGui::SameLine();
-			ImGui::Text(ptr->mPrimitiveMeshData[0]->GetClassType() == EMeshType::Skeletal ? "Skeletal" : "Static");
+			ImGui::Text(mMeshObject->mPrimitiveMeshData[0]->GetClassType() == EMeshType::Skeletal ? "Skeletal" : "Static");
 		}
 
 	}
@@ -91,25 +91,25 @@ void GUI_Editor_Mesh::DrawProperty() const
 void GUI_Editor_Mesh::DrawMaterialSlot() const
 {
 
-	if (const auto& ptr = mMeshObject.lock())
+	if (mMeshObject)
 	{
+		ImGui::Separator();
+
 		ImGui::BeginGroup();
 
 		ImGui::Text("Material Slot");
 
-		const int32_t meshDataSize = ptr->mPrimitiveMeshData.size();
+		const int32_t meshDataSize = mMeshObject->mPrimitiveMeshData.size();
 		for (int32_t i = 0; i < meshDataSize; ++i)
 		{
-			auto& subMeshes    = ptr->mPrimitiveMeshData[i]->GetSubMesh();
-			auto  materialSlot = ptr->mPrimitiveMeshData[i]->GetMaterialInstance();
+			int32_t materialSize = mMeshObject->mPrimitiveMeshData[0]->GetSubMaterialNum();
 
-			const int32_t subMeshSize = subMeshes.size();
-
-			if (subMeshSize == 0)
+			for (int32_t j = 0; j < materialSize; ++j)
 			{
-
+				ImGui::Text(mMeshObject->mMaterialInstances[j]->GetMaterialName().c_str());
 				ImGui::ImageButton("MaterialSlot", nullptr, ImVec2(100, 100));
-
+				// ImGui::Separator();
+				
 				if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 				{
 					const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
@@ -121,51 +121,7 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 					{
 						if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
 						{
-							ptr->mPrimitiveMeshData[i]->SetMaterialInstance(matInstancePtr);
-						}
-					}
-
-				}
-
-				ImGui::SameLine();
-				if (materialSlot)
-				{
-					ImGui::Text(materialSlot->GetMaterialName().c_str());
-				}
-				else
-				{
-					ImGui::Text("None Selected");
-				}
-
-
-			}
-			else
-			{
-				for (int32_t j = 0; j < subMeshSize; ++j)
-				{
-					ImGui::ImageButton("MaterialSlot", nullptr, ImVec2(100, 100));
-
-					if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
-					{
-						const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-						const char*         str     = static_cast<const char*>(payload->Data);
-
-						auto metaData = Utils::Serialization::GetType(str);
-
-						if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
-						{
-							if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
-							{
-								subMeshes[j]->SetMaterialInstance(matInstancePtr);
-							}
-						}
-						if (materialSlot)
-						{
-							ImGui::Text(materialSlot->GetMaterialName().c_str());
-						}
-						else
-						{
-							ImGui::Text("NONE");
+							mMeshObject->SetMaterialInstance(matInstancePtr, j);
 						}
 					}
 				}
@@ -179,14 +135,12 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 
 void GUI_Editor_Mesh::DrawSaveButton() const
 {
-	ImGui::Separator();
 
 	if (ImGui::Button("Save"))
 	{
-		auto ptr = mMeshObject.lock();
-		if (ptr)
+		if (mMeshObject)
 		{
-			Utils::Serialization::Serialize(mTitle.c_str(), ptr.get());
+			Utils::Serialization::Serialize(mTitle.c_str(), mMeshObject);
 		}
 	}
 	ImGui::EndChild();

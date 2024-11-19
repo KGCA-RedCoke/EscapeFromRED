@@ -55,7 +55,7 @@ private:
 
 private:
 	friend class TSingleton<MViewportManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 	MViewportManager();
 	~MViewportManager() = default;
 

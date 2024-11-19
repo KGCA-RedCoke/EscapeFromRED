@@ -13,7 +13,7 @@ public:
 
 private:
 	friend class TSingleton<MTextureManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	MTextureManager()  = default;
 	~MTextureManager() = default;

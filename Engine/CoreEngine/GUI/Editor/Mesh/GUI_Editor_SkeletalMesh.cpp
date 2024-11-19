@@ -15,7 +15,7 @@ void GUI_Editor_SkeletalMesh::Render()
 {
 	GUI_Editor_Base::Render();
 
-	if (const auto& ptr = mMeshObject.lock())
+	if (const auto& ptr = mMeshObject)
 	{
 		ptr->UpdateBuffer();
 		ptr->Draw();
@@ -30,7 +30,10 @@ void GUI_Editor_SkeletalMesh::Initialize()
 void GUI_Editor_SkeletalMesh::Update(float DeltaTime)
 {
 	GUI_Editor_Base::Update(DeltaTime);
-	mMeshObject.lock()->Tick(DeltaTime);
+	if (mMeshObject)
+	{
+		mMeshObject->Tick(DeltaTime);
+	}
 }
 
 void GUI_Editor_SkeletalMesh::Update_Implementation(float DeltaTime)
@@ -78,15 +81,15 @@ void GUI_Editor_SkeletalMesh::DrawProperty() const
 						  ImVec2(mWindowSize.x * 0.33f, 0),
 						  ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{
-		if (const auto& ptr = mMeshObject.lock())
+		if (mMeshObject)
 		{
 			// 원시 파일 경로 표시
 			ImGui::Text("Mesh Name");
-			ImGui::Text(&ptr->mName[0]);
+			ImGui::Text(&mMeshObject->mName[0]);
 
 			// Bone Hierachy 표시
 			ImGui::Text("Bone Hierachy");
-			const auto& skeletal = std::dynamic_pointer_cast<JSkeletalMesh>(ptr->mPrimitiveMeshData[0]);
+			const auto& skeletal = std::dynamic_pointer_cast<JSkeletalMesh>(mMeshObject->mPrimitiveMeshData[0]);
 			if (skeletal)
 			{
 				const auto&   jointData = skeletal->GetSkeletonData().Joints;
@@ -108,17 +111,17 @@ void GUI_Editor_SkeletalMesh::DrawProperty() const
 
 void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 {
-	if (const auto& ptr = mMeshObject.lock())
+	if (mMeshObject)
 	{
 		ImGui::BeginGroup();
 
 		ImGui::Text("Material Slot");
 
-		const int32_t meshDataSize = ptr->mPrimitiveMeshData.size();
+		const int32_t meshDataSize = mMeshObject->mPrimitiveMeshData.size();
 		for (int32_t i = 0; i < meshDataSize; ++i)
 		{
-			auto& subMeshes    = ptr->mPrimitiveMeshData[i]->GetSubMesh();
-			auto  materialSlot = ptr->mPrimitiveMeshData[i]->GetMaterialInstance();
+			auto& subMeshes    = mMeshObject->mPrimitiveMeshData[i]->GetSubMesh();
+			// auto  materialSlot = mMeshObject->mPrimitiveMeshData[i]->GetMaterialInstance();
 
 			const int32_t subMeshSize = subMeshes.size();
 
@@ -136,23 +139,23 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 
 					if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
 					{
-						if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
-						{
-							ptr->mPrimitiveMeshData[i]->SetMaterialInstance(matInstancePtr);
-						}
+						// if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
+						// {
+						// 	mMeshObject->mPrimitiveMeshData[i]->SetMaterialInstance(matInstancePtr);
+						// }
 					}
 
 				}
 
 				ImGui::SameLine();
-				if (materialSlot)
-				{
-					ImGui::Text(materialSlot->GetMaterialName().c_str());
-				}
-				else
-				{
-					ImGui::Text("None Selected");
-				}
+				// if (materialSlot)
+				// {
+				// 	ImGui::Text(materialSlot->GetMaterialName().c_str());
+				// }
+				// else
+				// {
+				// 	ImGui::Text("None Selected");
+				// }
 
 
 			}
@@ -171,23 +174,23 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 
 						auto metaData = Utils::Serialization::GetType(str);
 
-						if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
-						{
-							if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
-							{
-								subMeshes[j]->SetMaterialInstance(matInstancePtr);
-								ImGui::EndDragDropTarget();
-
-							}
-						}
-						if (auto subMat = subMeshes[j]->GetMaterialInstance())
-						{
-							ImGui::Text(subMat->GetMaterialName().c_str());
-						}
-						else
-						{
-							ImGui::Text("NONE");
-						}
+						// if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
+						// {
+						// 	if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
+						// 	{
+						// 		subMeshes[j]->SetMaterialInstance(matInstancePtr);
+						// 		ImGui::EndDragDropTarget();
+						//
+						// 	}
+						// }
+						// if (auto subMat = subMeshes[j]->GetMaterialInstance())
+						// {
+						// 	ImGui::Text(subMat->GetMaterialName().c_str());
+						// }
+						// else
+						// {
+						// 	ImGui::Text("NONE");
+						// }
 					}
 				}
 			}
@@ -202,8 +205,8 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 {
 	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 
-	
-	ImGui::ImageButton(nullptr, ImVec2(100, 100));
+
+		ImGui::ImageButton(nullptr, ImVec2(100, 100));
 	// ImGui::Text(subMeshes[j]->GetName().c_str());
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
@@ -222,7 +225,7 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 							   "Game/Animation/Unreal Take.jasset");
 			}
 
-			mMeshObject.lock()->SetAnimation(clip);
+			mMeshObject->SetAnimation(clip);
 
 			ImGui::EndDragDropTarget();
 		}
@@ -235,10 +238,9 @@ void GUI_Editor_SkeletalMesh::DrawSaveButton() const
 
 	if (ImGui::Button("Save"))
 	{
-		auto ptr = mMeshObject.lock();
-		if (ptr)
+		if (mMeshObject)
 		{
-			Utils::Serialization::Serialize(mTitle.c_str(), ptr.get());
+			Utils::Serialization::Serialize(mTitle.c_str(), mMeshObject);
 		}
 	}
 }

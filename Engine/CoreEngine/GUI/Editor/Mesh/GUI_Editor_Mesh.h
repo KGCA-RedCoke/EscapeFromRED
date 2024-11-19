@@ -21,5 +21,5 @@ private:
 	void DrawSaveButton() const;
 
 private:
-	WPtr<class JMeshObject> mMeshObject;
+	class JMeshObject* mMeshObject;
 };

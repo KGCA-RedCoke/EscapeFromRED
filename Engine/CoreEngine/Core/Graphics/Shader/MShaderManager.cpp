@@ -10,7 +10,7 @@ MShaderManager::MShaderManager()
 	Initialize_Initialize();
 }
 
-void MShaderManager::UpdateCamera(const Ptr<JCamera>& InCameraObj) const
+void MShaderManager::UpdateCamera(JCamera* InCameraObj) const
 {
 	for (auto& shader : mManagedList | std::ranges::views::values)
 	{

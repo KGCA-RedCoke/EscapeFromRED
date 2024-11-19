@@ -19,6 +19,6 @@ private:
 	void ShowTopMenu();
 
 private:
-	Ptr<JTexture> mPauseIcon;
-	Ptr<JTexture> mPlayIcon;
+	JTexture* mPauseIcon;
+	JTexture* mPlayIcon;
 };

@@ -9,19 +9,19 @@ private:
 	void Initialize_Internal();
 
 public:
-	FORCEINLINE Ptr<JCamera> GetCurrentMainCam() const { return mCurrentCamera; }
+	FORCEINLINE JCamera* GetCurrentMainCam() const { return mCurrentCamera; }
 
 public:
 	void SetCurrentMainCam(JWTextView InName);
 
 private:
-	Ptr<JCamera> mCurrentCamera;
+	JCamera* mCurrentCamera;
 
 #pragma region Singleton Boilerplate
 
 private:
 	friend class TSingleton<MCameraManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	MCameraManager();
 

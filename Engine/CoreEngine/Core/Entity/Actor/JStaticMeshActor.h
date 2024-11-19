@@ -1,17 +1,13 @@
 ﻿#pragma once
 #include "JActor.h"
 
+class JStaticMeshComponent;
 class JMeshObject;
 
 class JStaticMeshActor : public JActor
 {
 public:
-	/**
-	 * 단순한 메시 오브젝트로부터 액터 생성
-	 * @param InName 오브젝트 고유 네임
-	 * @param InMeshObject 메시 오브젝트 (Manager에서 생성된 메시 오브젝트(버퍼를 가지고 있는)) 
-	 */
-	JStaticMeshActor(JTextView InName, const Ptr<JMeshObject>& InMeshObject);
+	JStaticMeshActor();
 
 	/**
 	 * 단순한 메시 오브젝트로부터 액터 생성
@@ -23,9 +19,18 @@ public:
 public:
 	void Initialize() override;
 
-private:
-	void CreateMeshComponent(const Ptr<JMeshObject>& InMeshObject);
+public:
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 
 private:
-	Ptr<JMeshObject> mMeshObject = nullptr;
+	void CreateMeshComponent(JTextView InMeshObject);
+
+private:
+	JStaticMeshComponent* mStaticMeshComponent = nullptr;
 };
+
+REGISTER_CLASS_TYPE(JStaticMeshActor);

@@ -17,6 +17,7 @@ public:
 public:
 	[[nodiscard]] bool             IsWindowDocked() const;
 	FORCEINLINE [[nodiscard]] bool IsWindowOpen() const { return bIsWindowOpen; }
+	void OpenIfNotOpened();
 
 protected:
 	/** 창 메뉴바 구성은 여기서 */

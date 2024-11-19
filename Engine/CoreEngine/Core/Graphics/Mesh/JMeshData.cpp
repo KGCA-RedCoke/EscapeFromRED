@@ -1,55 +1,24 @@
 ﻿#include "JMeshData.h"
-#include "Core/Graphics/Material/JMaterial.h"
 #include "Core/Graphics/Material/Instance/JMaterialInstance.h"
-#include "Core/Graphics/Texture/JTexture.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
-Ptr<IManagedInterface> JMeshData::Clone() const
+JMeshData::JMeshData(const JMeshData& Other)
+	: mIndex(Other.mIndex),
+	  mClassType(Other.mClassType),
+	  mFaceCount(Other.mFaceCount),
+	  mMaterialRefNum(Other.mMaterialRefNum),
+	  mInitialModelTransform(Other.mInitialModelTransform)
 {
-	Ptr<JMeshData> clonedMesh = MakePtr<JMeshData>();
+	mName       = Other.mName;
+	mParentMesh = Other.mParentMesh;
+	mSubMesh    = Other.mSubMesh;
+	mChildMesh  = Other.mChildMesh;
+	mVertexData = Other.mVertexData;
+}
 
-	// 이 값들은 그냥 l-value로 복사해도 무방하다.
-	clonedMesh->mName                  = mName;
-	clonedMesh->mIndex                 = mIndex;
-	clonedMesh->mClassType             = mClassType;
-	clonedMesh->mFaceCount             = mFaceCount;
-	clonedMesh->mMaterialRefNum        = mMaterialRefNum;
-	clonedMesh->mInitialModelTransform = mInitialModelTransform;
-
-	// 부모 메시까지 같이 복사해야한다.
-	if (mParentMesh.lock())
-	{
-		Ptr<JMeshData> parentMesh = mParentMesh.lock();
-		clonedMesh->mParentMesh   = dynamic_pointer_cast<JMeshData>(parentMesh->Clone());
-	}
-
-	// 머티리얼은 복사하는게 아니라 인스턴스를 참조한다.
-	if (mMaterialInstance)
-	{
-		clonedMesh->mMaterialInstance = mMaterialInstance;
-	}
-	// 버텍스 데이터도 마찬가지로 참조한다. (공유하고 행렬데이터는 따로 관리된다)
-	if (mVertexData)
-	{
-		clonedMesh->mVertexData = mVertexData;
-	}
-
-	clonedMesh->mSubMesh.reserve(mSubMesh.size());
-	clonedMesh->mChildMesh.reserve(mChildMesh.size());
-
-	// 서브 메시와 자식 메시는 재귀적으로 확인
-	for (int32_t i = 0; i < mSubMesh.size(); ++i)
-	{
-		clonedMesh->mSubMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mSubMesh[i]->Clone()));
-	}
-
-	for (int32_t i = 0; i < mChildMesh.size(); ++i)
-	{
-		clonedMesh->mChildMesh.push_back(std::dynamic_pointer_cast<JMeshData>(mChildMesh[i]->Clone()));
-	}
-
-
-	return clonedMesh;
+UPtr<IManagedInterface> JMeshData::Clone() const
+{
+	return MakeUPtr<JMeshData>(*this);
 }
 
 uint32_t JMeshData::GetHash() const
@@ -104,14 +73,8 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 		mVertexData->Serialize_Implement(FileStream);
 	}
 
-	// Material
-	bool bMaterialValid = mMaterialInstance != nullptr;
-	Utils::Serialization::Serialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), FileStream);
-	if (bMaterialValid)
-	{
-		JText path = mMaterialInstance->GetMaterialPath();
-		Utils::Serialization::Serialize_Text(path, FileStream);
-	}
+	// Material Count
+	Utils::Serialization::Serialize_Primitive(&mMaterialRefNum, sizeof(mMaterialRefNum), FileStream);
 
 	// Initial Transform
 	Utils::Serialization::Serialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), FileStream);
@@ -166,30 +129,13 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 	mVertexData = bVertexDataValid ? std::make_shared<JVertexData<Vertex::FVertexInfo_Base>>() : nullptr;
 	mVertexData->DeSerialize_Implement(InFileStream);
 
-	// Material
-	bool bMaterialValid;
-	Utils::Serialization::DeSerialize_Primitive(&bMaterialValid, sizeof(bMaterialValid), InFileStream);
-	if (bMaterialValid)
-	{
-		JText path;
-		Utils::Serialization::DeSerialize_Text(path, InFileStream);
-		mMaterialInstance = MMaterialInstanceManager::Get().CreateOrLoad(path);
-	}
+	// Material Ref Count
+	Utils::Serialization::DeSerialize_Primitive(&mMaterialRefNum, sizeof(mMaterialRefNum), InFileStream);
 
 	// Initial Transform
 	Utils::Serialization::DeSerialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), InFileStream);
 
 	return true;
-}
-
-void JMeshData::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const
-{
-	mMaterialInstance->UpdateWorldMatrix(InDeviceContext, InWorldMatrix);
-}
-
-void JMeshData::PassMaterial(ID3D11DeviceContext* InDeviceContext) const
-{
-	mMaterialInstance->BindMaterial(InDeviceContext);
 }
 
 bool JSkeletalMesh::Serialize_Implement(std::ofstream& FileStream)

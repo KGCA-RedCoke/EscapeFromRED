@@ -209,6 +209,16 @@ namespace Vertex
 			// BoneWeights
 			InFileStream.read(reinterpret_cast<char*>(&BoneWeights), sizeof(BoneWeights));
 		}
+
+		bool operator==(const FVertexInfo_Base&) const
+		{
+			return Position == Position &&
+					UV == UV &&
+					Color == Color &&
+					Normal == Normal &&
+					BoneIndices == BoneIndices &&
+					BoneWeights == BoneWeights;
+		}
 	};
 
 }
@@ -244,17 +254,8 @@ namespace Buffer
 	// Basic 버퍼 인스턴스
 	struct FBufferGeometry
 	{
-		JArray<ComPtr<ID3D11Buffer>> Buffer_Vertex;			// Vertex 
-		JArray<ComPtr<ID3D11Buffer>> Buffer_Index;			// Index
-
-		void Resize(const int32_t Size)
-		{
-			Buffer_Vertex.clear();
-			Buffer_Index.clear();
-
-			Buffer_Vertex.resize(Size);
-			Buffer_Index.resize(Size);
-		}
+		ComPtr<ID3D11Buffer> Buffer_Vertex;			// Vertex 
+		ComPtr<ID3D11Buffer> Buffer_Index;			// Index
 	};
 
 	// Bone 버퍼 인스턴스
@@ -337,7 +338,64 @@ struct IsVertexSame
 
 	bool operator()(T& Value)
 	{
-		return Value.Position == Vertex.Position && Value.UV == Vertex.UV && Value.Color == Vertex.Color;
+		return Value.Position == Vertex.Position &&
+				Value.UV == Vertex.UV &&
+				Value.Color == Vertex.Color &&
+				Value.Normal == Vertex.Normal;
+	}
+};
+
+template <typename T>
+struct VertexHash
+{
+	size_t operator()(const T& vertex) const
+	{
+		size_t seed = 0;
+
+		// Position
+		seed ^= std::hash<float>()(vertex.Position.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Position.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Position.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		// Normal
+		seed ^= std::hash<float>()(vertex.Normal.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Normal.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Normal.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		// UV
+		seed ^= std::hash<float>()(vertex.UV.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.UV.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		// Color
+		seed ^= std::hash<float>()(vertex.Color.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Color.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Color.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.Color.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		// BoneIndices
+		seed ^= std::hash<float>()(vertex.BoneIndices.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneIndices.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneIndices.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneIndices.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		// BoneWeights
+		seed ^= std::hash<float>()(vertex.BoneWeights.x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneWeights.y) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneWeights.z) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= std::hash<float>()(vertex.BoneWeights.w) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+
+		return seed;
+	}
+};
+
+struct VectorHash
+{
+	std::size_t operator()(const DirectX::XMFLOAT3& pos) const
+	{
+		auto h1 = std::hash<float>()(pos.x);
+		auto h2 = std::hash<float>()(pos.y);
+		auto h3 = std::hash<float>()(pos.z);
+		return h1 ^ (h2 << 1) ^ (h3 << 2);
 	}
 };
 
@@ -426,7 +484,6 @@ struct JVertexData final : public ISerializable
 		return true;
 	}
 
-
 	/**
 	 * 삼각형들을 순회하면서 IndexArray를 생성한다.
 	 * FIXME: 중복된 정점을 처리할 수 있도록 수정해야 한다.
@@ -435,8 +492,8 @@ struct JVertexData final : public ISerializable
 	 * @param StartTriangle 삼각형 시작 인덱스
 	 * @return 
 	 */
-	int32_t GenerateIndexArray(std::vector<FTriangle<T>>& TriangleList, int32_t Material = -1,
-							   int32_t                    StartTriangle                  = 0)
+	int32_t GenerateIndexArray(JArray<FTriangle<T>>& TriangleList, int32_t Material = -1,
+							   int32_t               StartTriangle                  = 0)
 	{
 		int32_t faceNum = TriangleList.size();
 
@@ -454,21 +511,36 @@ struct JVertexData final : public ISerializable
 		{
 			for (int32_t i = 0; i < 3; ++i)
 			{
-				auto vertex = TriangleList[StartTriangle + face].Vertex[i];
+				auto& vertex = TriangleList[StartTriangle + face].Vertex[i];
 
 				auto foundedVertex = std::find_if(VertexArray.begin(), VertexArray.end(), IsVertexSame<T>(vertex));
 				if (foundedVertex != VertexArray.end())
 				{
 					int32_t vertexIndex = std::distance(VertexArray.begin(), foundedVertex); // 찾은 것의 Index가 필요
 					IndexArray.push_back(vertexIndex);									// IndexArray에 추가
+					// normalMap[vertex.Position] += vertex.Normal;						// NormalMap에 추가
 				}
 				else
 				{
-					VertexArray.push_back(vertex);
-					IndexArray.push_back(VertexArray.size() - 1);
+					int32_t newIndex = VertexArray.size();								// 새로운 Index
+					VertexArray.push_back(vertex);										// VertexArray에 추가
+					// vertexMapWithPosition[&vertex] = newIndex;								// VertexMap에 추가
+					IndexArray.push_back(newIndex);
+
+					// normalMap[vertex.Position] = vertex.Normal;
 				}
 			}
 		}
+
+		// // 평균화된 노말 계산 및 정점 업데이트
+		// for (auto& vertex : VertexArray)
+		// {
+		// 	auto it = normalMap.find(vertex.Position);
+		// 	if (it != normalMap.end())
+		// 	{
+		// 		it->second.Normalize(vertex.Normal); // 정규화된 평균 노말 값 설정
+		// 	}
+		// }
 		return faceNum;
 	}
 };

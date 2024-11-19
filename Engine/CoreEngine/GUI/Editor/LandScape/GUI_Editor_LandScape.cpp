@@ -1,6 +1,7 @@
 ﻿#include "GUI_Editor_LandScape.h"
 
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
 
 GUI_Editor_LandScape::GUI_Editor_LandScape(const JText& InTitle)
@@ -22,42 +23,42 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 
 	if (ImGui::BeginCombo("##AlbedoMap", WString2String(mAlbedoTexture).c_str()))
 	{
-		const JArray<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+		const JArray<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 		for (auto& loadedTexture : loaded)
 		{
-			JText texPath = WString2String(loadedTexture->GetPath());
-			if (ImGui::Selectable(texPath.c_str()))
-			{
-				mAlbedoTexture = loadedTexture->GetPath();
-			}
+			// JText texPath = WString2String(loadedTexture->GetPath());
+			// if (ImGui::Selectable(texPath.c_str()))
+			// {
+			// 	mAlbedoTexture = loadedTexture->GetPath();
+			// }
 		}
 		ImGui::EndCombo();
 	}
 
 	if (ImGui::BeginCombo("##HeightMap", WString2String(mHeightTexture).c_str()))
 	{
-		const JArray<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+		const JArray<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 		for (auto& loadedTexture : loaded)
 		{
-			JText texPath = WString2String(loadedTexture->GetPath());
-			if (ImGui::Selectable(texPath.c_str()))
-			{
-				mHeightTexture = loadedTexture->GetPath();
-			}
+			// JText texPath = WString2String(loadedTexture->GetPath());
+			// if (ImGui::Selectable(texPath.c_str()))
+			// {
+			// 	mHeightTexture = loadedTexture->GetPath();
+			// }
 		}
 		ImGui::EndCombo();
 	}
 
 	if (ImGui::BeginCombo("##NormalMap", WString2String(mNormalTexture).c_str()))
 	{
-		const JArray<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+		const JArray<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 		for (auto& loadedTexture : loaded)
 		{
-			JText texPath = WString2String(loadedTexture->GetPath());
-			if (ImGui::Selectable(texPath.c_str()))
-			{
-				mNormalTexture = loadedTexture->GetPath();
-			}
+			// JText texPath = WString2String(loadedTexture->GetPath());
+			// if (ImGui::Selectable(texPath.c_str()))
+			// {
+			// 	mNormalTexture = loadedTexture->GetPath();
+			// }
 		}
 		ImGui::EndCombo();
 	}
@@ -72,26 +73,26 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 
 void GUI_Editor_LandScape::GenerateLandScape()
 {
-	Ptr<JLandScape> newLandScape  = MakePtr<JLandScape>("LandScape");
-	newLandScape->mMapDescription = mLandScapeDesc;
-
-	newLandScape->Initialize();
-
-	if (!mAlbedoTexture.empty())
-	{
-		newLandScape->mAlbedoMap = IManager.TextureManager->CreateOrLoad(mAlbedoTexture);
-	}
-	if (!mHeightTexture.empty())
-	{
-		newLandScape->mHeightMap = IManager.TextureManager->CreateOrLoad(mHeightTexture);
-		newLandScape->mHeightMap->SetEditable();
-	}
-	if (!mNormalTexture.empty())
-	{
-		newLandScape->mNormalMap = IManager.TextureManager->CreateOrLoad(mNormalTexture);
-	}
-
-	newLandScape->GenerateLandScape();
-
-	Application::s_AppInstance->Actors.push_back(newLandScape);
+	// JLandScape* newLandScape      = MakePtr<JLandScape>("LandScape");
+	// newLandScape->mMapDescription = mLandScapeDesc;
+	//
+	// newLandScape->Initialize();
+	//
+	// if (!mAlbedoTexture.empty())
+	// {
+	// 	newLandScape->mAlbedoMap = GetWorld.TextureManager->CreateOrLoad(mAlbedoTexture);
+	// }
+	// if (!mHeightTexture.empty())
+	// {
+	// 	newLandScape->mHeightMap = GetWorld.TextureManager->CreateOrLoad(mHeightTexture);
+	// 	newLandScape->mHeightMap->SetEditable();
+	// }
+	// if (!mNormalTexture.empty())
+	// {
+	// 	newLandScape->mNormalMap = GetWorld.TextureManager->CreateOrLoad(mNormalTexture);
+	// }
+	//
+	// newLandScape->GenerateLandScape();
+	//
+	// Application::s_AppInstance->Actors.push_back(newLandScape);
 }

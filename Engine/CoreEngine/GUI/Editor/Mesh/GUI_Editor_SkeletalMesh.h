@@ -24,5 +24,5 @@ private:
 	void DrawSaveButton() const;
 
 private:
-	WPtr<class JSkeletalMeshObject> mMeshObject;
+	class JSkeletalMeshObject* mMeshObject;
 };

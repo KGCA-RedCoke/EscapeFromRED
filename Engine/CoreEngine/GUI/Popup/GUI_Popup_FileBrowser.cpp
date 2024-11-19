@@ -110,7 +110,7 @@ bool ImGui::FileBrowser::FetchInternal(const JText& InPath, JText& OutSelectedPa
 	SetNextWindowSize({mWidth, mHeight});
 	SetNextWindowPos(io.DisplaySize * 0.5f, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	SetNextWindowFocus();
-	if (BeginPopupModal(GetLabel().c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	if (BeginPopupModal(GetLabel().c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		EditNavigation();
 		Spacing();

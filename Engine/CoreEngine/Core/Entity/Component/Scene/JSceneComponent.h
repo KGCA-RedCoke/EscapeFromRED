@@ -7,9 +7,7 @@
  * 2D 스크린에 배치되는 컴포넌트
  */
 class JSceneComponent_2D : public IRenderable
-{
-	
-};
+{};
 
 
 /**
@@ -20,15 +18,13 @@ class JSceneComponent : public JActorComponent, public IRenderable
 {
 public:
 	JSceneComponent();
-	JSceneComponent(JTextView InName);
-	JSceneComponent(JTextView                   InName,
-					const Ptr<JActor>&          InOwnerActor,
-					const Ptr<JSceneComponent>& InParentSceneComponent);
+	JSceneComponent(JTextView        InName,
+					JActor*          InOwnerActor           = nullptr,
+					JSceneComponent* InParentSceneComponent = nullptr);
 	~JSceneComponent() override;
 
 public:
-	EObjectType GetObjectType() const override { return EObjectType::SceneComponent; }
-	uint32_t    GetType() const override { return StringHash("JSceneComponent"); }
+	uint32_t GetType() const override { return StringHash("JSceneComponent"); }
 
 public:
 	bool Serialize_Implement(std::ofstream& FileStream) override;
@@ -50,9 +46,9 @@ public:
 	FORCEINLINE [[nodiscard]] FVector GetWorldRotation() const { return mWorldRotation; }
 	FORCEINLINE [[nodiscard]] FVector GetWorldScale() const { return mWorldScale; }
 
-	void SetWorldLocation(const FVector& InTranslation) { mWorldLocation = InTranslation; }
-	void SetWorldRotation(const FVector& InRotation) { mWorldRotation = InRotation; }
-	void SetWorldScale(const FVector& InScale) { mWorldScale = InScale; }
+	void SetWorldLocation(const FVector& InTranslation);
+	void SetWorldRotation(const FVector& InRotation);
+	void SetWorldScale(const FVector& InScale);
 
 	FORCEINLINE [[nodiscard]] FVector GetLocalLocation() const { return mLocalLocation; }
 	FORCEINLINE [[nodiscard]] FVector GetLocalRotation() const { return mLocalRotation; }
@@ -62,17 +58,16 @@ public:
 	void SetLocalRotation(const FVector& InRotation) { mLocalRotation = InRotation; }
 	void SetLocalScale(const FVector& InScale) { mLocalScale = InScale; }
 
-	void SetParentSceneComponent(const Ptr<JSceneComponent>& Ptr) { mParentSceneComponent = Ptr; }
-	JArray<WPtr<JSceneComponent>>& GetChildSceneComponents() { return mChildSceneComponents; }
-	void AddChildSceneComponent(const Ptr<JSceneComponent>& Ptr);
+	void SetParentSceneComponent(JSceneComponent* Ptr) { mParentSceneComponent = Ptr; }
+	void AddChildSceneComponent(JSceneComponent* Ptr);
 
 	/**
 	 *	씬 컴포넌트를 부모 컴포넌트에 부착
 	 * @param InParentComponent 
 	 */
-	void SetupAttachment(const Ptr<JSceneComponent>& InParentComponent);
+	void SetupAttachment(JSceneComponent* InParentComponent);
 
-	void AttachComponent(const Ptr<JSceneComponent>& InChildComponent);
+	void AttachComponent(JSceneComponent* InChildComponent);
 
 	/**
 	 * 씬 컴포넌트를 다른 씬 컴포넌트에 부착
@@ -80,20 +75,26 @@ public:
 	 */
 	void AttachToComponent(const Ptr<JSceneComponent>& InParentComponent);
 
-	void AttachToActor(const Ptr<JActor>& InParentActor, const JText& InComponentAttachTo = "RootComponent");
-	void AttachToActor(const Ptr<JActor>& InParentActor, const Ptr<JSceneComponent>& InComponentAttachTo);
+	void AttachToActor(JActor* InParentActor, const JText& InComponentAttachTo = "RootComponent");
+	void AttachToActor(JActor* InParentActor, JSceneComponent* InComponentAttachTo);
 
 	void DetachFromComponent();
 
+	JSceneComponent* GetComponentByName(const JText& InName);
+
+	int32_t GetChildCount() const { return mChildSceneComponents.size(); }
+
 public:
 	void UpdateTransform();
+	void UpdateWorldTransform();
 
 protected:
-	// ----------------------------- Scene Component Data -----------------------------
-	WPtr<JSceneComponent>         mParentSceneComponent;
-	JArray<WPtr<JSceneComponent>> mChildSceneComponents;
+	// ----------------------------- Hierarchical Data -----------------------------
+	JSceneComponent*              mParentSceneComponent;
+	JHash<JText, int32_t>         mChildSceneComponentIndices;
+	JArray<UPtr<JSceneComponent>> mChildSceneComponents;
 
-	// ----------------------------- World Transform Data -----------------------------
+	// ----------------------------- LevelManager Transform Data -----------------------------
 	FVector mWorldLocation = FVector::ZeroVector;
 	FVector mWorldRotation = FVector::ZeroVector;
 	FVector mWorldScale    = FVector::OneVector;
@@ -114,4 +115,7 @@ protected:
 	FMatrix mLocalMat         = FMatrix::Identity;
 
 	friend class GUI_Editor_Actor;
+	friend class GUI_Inspector;
 };
+
+REGISTER_CLASS_TYPE(JSceneComponent);

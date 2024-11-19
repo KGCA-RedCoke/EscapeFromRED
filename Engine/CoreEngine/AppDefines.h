@@ -13,7 +13,6 @@ constexpr uint32_t QHD_Y = 1440;
 // ---------------------------- Name -------------------------
 constexpr wchar_t Name_Engine_Version[] = L"J.01";
 
-
 #if defined(_DEBUG)
 	#define RUN(Engine_V, Resolution_X, Resolution_Y)\
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);\

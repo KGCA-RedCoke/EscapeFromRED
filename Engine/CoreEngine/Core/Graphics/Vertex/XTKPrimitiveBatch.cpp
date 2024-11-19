@@ -1,7 +1,8 @@
 ﻿#include "XTKPrimitiveBatch.h"
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
 XTKPrimitiveBatch::XTKPrimitiveBatch() = default;
 
@@ -12,8 +13,8 @@ XTKPrimitiveBatch::~XTKPrimitiveBatch()
 
 void XTKPrimitiveBatch::Initialize()
 {
-	mBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(IManager.RenderManager->GetImmediateDeviceContext());
-	mBatchEffect = std::make_unique<BasicEffect>(IManager.RenderManager->GetDevice());
+	mBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(GetWorld.D3D11API->GetImmediateDeviceContext());
+	mBatchEffect = std::make_unique<BasicEffect>(GetWorld.D3D11API->GetDevice());
 	mBatchEffect->SetVertexColorEnabled(true);
 
 	{
@@ -22,7 +23,7 @@ void XTKPrimitiveBatch::Initialize()
 
 		mBatchEffect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
 
-		CheckResult(IManager.RenderManager->GetDevice()->
+		CheckResult(GetWorld.D3D11API->GetDevice()->
 							 CreateInputLayout(
 											   VertexPositionColor::InputElements, // Pos, Color
 											   VertexPositionColor::InputElementCount, // 2
@@ -35,7 +36,7 @@ void XTKPrimitiveBatch::Initialize()
 
 void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
-	Ptr<JCamera> cam = IManager.CameraManager->GetCurrentMainCam();
+	JCamera* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
 	mBatchEffect->SetWorld(FMatrix::Identity);
 	mBatchEffect->SetView(cam->GetViewMatrix());
@@ -51,9 +52,9 @@ void XTKPrimitiveBatch::Release()
 
 void XTKPrimitiveBatch::PreRender()
 {
-	mBatchEffect->Apply(IManager.RenderManager->GetImmediateDeviceContext());
+	mBatchEffect->Apply(GetWorld.D3D11API->GetImmediateDeviceContext());
 
-	IManager.RenderManager->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
+	GetWorld.D3D11API->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());
 
 	mBatch->Begin();
 }

@@ -10,8 +10,11 @@ public:
 	JActorComponent(JTextView InName);
 	~JActorComponent() override;
 
-	EObjectType GetObjectType() const override { return EObjectType::ActorComponent; }
-	uint32_t    GetType() const override { return StringHash("ActorComponent"); }
+public:
+	uint32_t GetType() const override { return StringHash("ActorComponent"); }
+
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 	void Initialize() override;
 	void BeginPlay() override;
@@ -22,16 +25,17 @@ public:
 	FORCEINLINE bool IsActivated() const { return bIsActivated; }
 	FORCEINLINE void SetActivated(bool bInActivated) { bIsActivated = bInActivated; }
 
-	FORCEINLINE void        SetOwnerActor(const Ptr<JActor>& InActor) { mOwnerActor = InActor; }
-	FORCEINLINE Ptr<JActor> GetOwnerActor() const { return mOwnerActor.lock(); }
+	FORCEINLINE void    SetOwnerActor(JActor* InActor) { mOwnerActor = InActor; }
+	FORCEINLINE JActor* GetOwnerActor() const { return mOwnerActor; }
 
 	FORCEINLINE JArray<uint32_t>&       GetComponentTags() { return mComponentTags; }
 	FORCEINLINE const JArray<uint32_t>& GetComponentTags() const { return mComponentTags; }
 
 protected:
-	WPtr<JActor> mOwnerActor;
+	JActor* mOwnerActor;
 
 	JArray<uint32_t> mComponentTags;
 	bool             bIsActivated = true;
-
 };
+
+REGISTER_CLASS_TYPE(JActorComponent)

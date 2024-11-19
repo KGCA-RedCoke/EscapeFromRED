@@ -9,12 +9,15 @@ class JStaticMeshComponent : public JSceneComponent
 {
 public:
 	JStaticMeshComponent();
-	JStaticMeshComponent(JTextView InName);
+	JStaticMeshComponent(JTextView        InName,
+						 JActor*          InOwnerActor           = nullptr,
+						 JSceneComponent* InParentSceneComponent = nullptr);
 	~JStaticMeshComponent() override;
 
 public:
-	EObjectType GetObjectType() const override { return EObjectType::SceneComponent; }
-	uint32_t    GetType() const override { return StringHash("StaticMeshComponent"); }
+	uint32_t GetType() const override { return StringHash("StaticMeshComponent"); }
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
 	void Tick(float DeltaTime) override;
@@ -23,9 +26,13 @@ public:
 	void DrawID(uint32_t ID) override;
 
 public:
-	FORCEINLINE void             SetMeshObject(const Ptr<JMeshObject>& InMeshObject) { mMeshObject = InMeshObject; }
-	FORCEINLINE Ptr<JMeshObject> GetMeshObject() const { return mMeshObject; }
+	void SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InSlot = 0);
+
+public:
+	void SetMeshObject(JTextView InMeshObject);
 
 protected:
-	Ptr<JMeshObject> mMeshObject = nullptr;
+	UPtr<JMeshObject> mMeshObject = nullptr;
 };
+
+REGISTER_CLASS_TYPE(JStaticMeshComponent);

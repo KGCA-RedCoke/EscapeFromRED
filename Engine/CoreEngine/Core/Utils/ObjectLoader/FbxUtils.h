@@ -57,7 +57,7 @@ namespace Utils::Fbx
 		FbxAMatrix          WorldTransform;
 		UPtr<FKeyFrameData> NextKeyFrameData = nullptr;
 	};
-	
+
 	inline const FFbxProperty FbxMaterialProperties[] =
 	{
 		// Diffuse
@@ -495,6 +495,7 @@ namespace Utils::Fbx
 		///  - 더 복잡한 방식으로 텍스처들이 혼합되었기 때문에 여러 텍스처가 있을 수 있음
 		FMaterialParam materialParams;
 		{
+			materialParams.Name         = ParamName;
 			materialParams.TextureValue = nullptr;
 		}
 
@@ -615,8 +616,8 @@ namespace Utils::Fbx
 		return world;
 	}
 
-	[[nodiscard]] inline Ptr<JMaterialInstance> ParseLayerMaterial(const FbxMesh* InMesh, const int32_t InMaterialIndex,
-																   bool&          bShouldSerialize)
+	[[nodiscard]] inline JMaterialInstance* ParseLayerMaterial(const FbxMesh* InMesh, const int32_t InMaterialIndex,
+															   bool&          bShouldSerialize)
 	{
 		FbxSurfaceMaterial* fbxMaterial = InMesh->GetNode()->GetMaterial(InMaterialIndex);
 		assert(fbxMaterial);
@@ -624,13 +625,15 @@ namespace Utils::Fbx
 		JText fileName = std::format("Game/Materials/{0}/{1}.jasset", InMesh->GetName(), fbxMaterial->GetName());
 		/** 셰이딩 모델은 거의 PhongShading */
 
-		Ptr<JMaterialInstance> matInstance = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
+		JMaterialInstance* matInstance = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
 		// 머티리얼이 이미 존재할 경우 아래 파싱 과정 생략
-		if (matInstance->GetParamCount() > 0)
+		if (Serialization::IsJAssetFileAndExist(fileName.c_str()))
 		{
 			bShouldSerialize = false;
 			return matInstance;
 		}
+
+		matInstance->SetAsDefaultMaterial();
 
 		/// 머티리얼 파싱
 		/// FBX SDK에서 정확히 Property Name이 어떻게 설정되어있는지 모르겠다.
@@ -651,7 +654,7 @@ namespace Utils::Fbx
 			{
 				ParseMaterialProps(property,
 								   textureParams.PropertyName,
-								   matInstance.get());
+								   matInstance);
 			}
 		}
 

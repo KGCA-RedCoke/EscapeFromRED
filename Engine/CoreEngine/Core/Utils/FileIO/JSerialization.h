@@ -104,8 +104,19 @@ public:
 	virtual bool     DeSerialize_Implement(std::ifstream& InFileStream) = 0;
 };
 
+class JAsset : public ISerializable
+{
+public:
+	FORCEINLINE JText GetPath() const { return mPath; }
+
+protected:
+	JText mPath;
+};
+
 namespace Utils::Serialization
 {
+	bool IsJAssetFileAndExist(const char* InFilePath);
+
 	JAssetMetaData GetType(const char* InFilePath);
 
 	bool SerializeHeader(std::ofstream& FileStream);

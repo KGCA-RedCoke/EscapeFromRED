@@ -6,25 +6,56 @@ class JActor;
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
  */
-class JLevel : public ISerializable
+class JLevel : public JAsset
 {
 public:
-	JLevel(const JText& InName);
+	JLevel(const JText& InPath);
 	~JLevel() override;
-	
 
+public:
 	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
-	bool Serialize_Implement(std::ofstream& FileStream) override;
-	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+public:
+	JText GetName() const { return mName; }
 
+public:
+	void InitializeLevel();
+	void UpdateLevel(float DeltaTime);
+	void RenderLevel();
 
-	void AddActor(JActor* InActor);
-	void LoadActorFromPath(const JText& InPath);
+public:
+	// void AddActor(const Ptr<JActor>& InActor);
 
-	JActor* CreateActor(const JText& InName);
+	JActor* LoadActorFromPath(const JText& InPath);
+
+	template <typename T, typename... Args>
+	T* CreateActor(const JText& InName, JActor* Template = nullptr, Args&&... InArgs);
 
 private:
-	JArray<JActor*> mActors;
+	JText mName;	// 레벨 이름
 
+	JArray<UPtr<JActor>> mActors;	// 레벨에 속한 액터들
+
+	// TODO : 레벨과 관련된 변수들 추가
+	// Time, Mission, States ... etc
+
+
+	friend class GUI_Inspector;
+	friend class GUI_Viewport;
 };
+
+template <typename T = JActor, typename... Args>
+T* JLevel::CreateActor(const JText& InName, JActor* Template, Args&&... InArgs)
+{
+	static_assert(std::is_base_of<JActor, T>::value, "T must be derived from JActor");
+
+	UPtr<T> newActor = MakeUPtr<T>(InName, std::forward<Args>(InArgs)...);
+
+	T* ptr = newActor.get();
+
+	mActors.push_back(std::move(newActor));
+
+	return ptr;
+}

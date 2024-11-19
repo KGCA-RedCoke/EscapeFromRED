@@ -7,19 +7,17 @@ public:
 	GUI_Editor_Base(const JText& InTitle);
 	~GUI_Editor_Base() override = default;
 
-	void Render() override;
-
 public:
-	void OpenIfNotOpened();
+	void Render() override;
 
 protected:
 	void Update_Implementation(float DeltaTime) override;
 	void ShowMenuBar() override;
 
 protected:
-	Ptr<class JCamera>       mCamera;	// 뷰포트 카메라
-	Ptr<class FViewportData> mViewport;	// 뷰포트
-	float                    mDeltaTime;
+	class JCamera*       mCamera;	// 뷰포트 카메라
+	class FViewportData* mViewport;	// 뷰포트
+	float                mDeltaTime;
 
 	ImVec2 mWindowSize;
 

@@ -31,6 +31,14 @@ bool GUI_Base::IsWindowDocked() const
 	return node != nullptr;
 }
 
+void GUI_Base::OpenIfNotOpened()
+{
+	if (!bIsWindowOpen)
+	{
+		bIsWindowOpen = true;
+	}
+}
+
 void GUI_Base::ChangeWindowStyleIfNotDocked()
 {
 	if (!IsWindowDocked())

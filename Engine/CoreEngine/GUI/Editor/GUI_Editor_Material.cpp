@@ -1,7 +1,11 @@
 ﻿#include "GUI_Editor_Material.h"
+
+#include "Core/Entity/Camera/JCamera.h"
 #include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Logger.h"
 #include "GUI/Popup/GUI_Popup_FileBrowser.h"
 
@@ -13,12 +17,12 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 {
 	if (std::filesystem::exists(InTitle) && std::filesystem::is_regular_file(InTitle))
 	{
-		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrLoad(InTitle);
+		mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrLoad(InTitle);
 	}
 
 	SetMeshObject(Path_Mesh_Sphere);
 
-	mMaterialToEdit->mFileName = InTitle;
+	
 }
 
 void GUI_Editor_Material::Render()
@@ -35,17 +39,17 @@ void GUI_Editor_Material::Render()
 void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 {
 	// 3. 구체 메시를 생성 (굳이 구체가 아니어도 상관없음, 대부분의 엔진에서는 구체를 사용)
-	mPreviewMeshObject = IManager.MeshManager->CreateOrClone(InMeshPath.data());
+	mPreviewMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshPath.data())->Clone());
 	assert(mPreviewMeshObject);
 
 	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
 	if (!mMaterialToEdit)
 	{
-		mMaterialToEdit = IManager.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
+		mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
 		assert(mMaterialToEdit);
 	}
 
-	mPreviewMeshObject->mPrimitiveMeshData[0]->mMaterialInstance = mMaterialToEdit;
+	mPreviewMeshObject->mMaterialInstances[0] = mMaterialToEdit;
 }
 
 void GUI_Editor_Material::HandleIntegerType(FMaterialParam& MaterialParam)
@@ -129,7 +133,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 	// Mesh Selector
 	if (ImGui::BeginCombo("MeshSelector", mPreviewMeshObject->mName.c_str()))
 	{
-		const JArray<Ptr<JMeshObject>>& loaded = IManager.MeshManager->GetManagedList();
+		const JArray<JMeshObject*>& loaded = GetWorld.MeshManager->GetManagedList();
 		for (auto& loadedMesh : loaded)
 		{
 			JText meshName = loadedMesh->mName;
@@ -156,7 +160,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 		ImGui::SameLine();
 		if (ImGui::BeginCombo("##ParentMaterial", materialRef ? materialRef->GetMaterialName().c_str() : "None Selected"))
 		{
-			const JArray<Ptr<JMaterial>>& loaded = IManager.MaterialManager->GetManagedList();
+			const JArray<JMaterial*>& loaded = GetWorld.MaterialManager->GetManagedList();
 			for (auto& loadedMaterial : loaded)
 			{
 				JText materialName = loadedMaterial->GetMaterialName();
@@ -186,6 +190,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 			case EMaterialParamValue::Float2:
 				HandleFloat2Type(param);
 				break;
+			case EMaterialParamValue::Float3:
 			case EMaterialParamValue::Float4:
 				HandleFloat4Type(param, i);
 				break;
@@ -209,7 +214,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	if (ImGui::Button("Save"))
 	{
-		Utils::Serialization::Serialize(mMaterialToEdit->mFileName.c_str(), mMaterialToEdit.get());
+		Utils::Serialization::Serialize(mMaterialToEdit->mFileName.c_str(), mMaterialToEdit);
 	}
 
 	ImGui::EndChild();
@@ -243,18 +248,18 @@ void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index)
 	// Texture Path
 	if (ImGui::BeginCombo(label.c_str(), Param.StringValue.c_str()))
 	{
-		std::vector<Ptr<JTexture>> loaded = IManager.TextureManager->GetManagedList();
+		std::vector<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 
 		for (const auto& tex : loaded)
 		{
-			JText texName = WString2String(tex->GetPath());
-			if (ImGui::Selectable(texName.c_str()))
-			{
-				Param.StringValue  = texName;
-				Param.TextureValue = tex;
-
-				break;
-			}
+			// JText texName = WString2String(tex->GetPath());
+			// if (ImGui::Selectable(texName.c_str()))
+			// {
+			// 	Param.StringValue  = texName;
+			// 	Param.TextureValue = tex;
+			//
+			// 	break;
+			// }
 		}
 
 		ImGui::EndCombo();

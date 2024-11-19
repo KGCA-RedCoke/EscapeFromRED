@@ -69,9 +69,9 @@ void MGUIManager::InitializeStaticGUI()
 	mStaticGUI[1] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
 	mStaticGUI[2] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
 
-	mStaticGUI[0].lock()->Initialize();
-	mStaticGUI[1].lock()->Initialize();
-	mStaticGUI[2].lock()->Initialize();
+	mStaticGUI[0]->Initialize();
+	mStaticGUI[1]->Initialize();
+	mStaticGUI[2]->Initialize();
 }
 
 void MGUIManager::Release()
@@ -110,29 +110,29 @@ void MGUIManager::UpdateMainMenuBar()
 		{
 			if (ImGui::MenuItem(u8("머티리얼 에디터")))
 			{
-				if (!mMaterialEditorRef.lock())
+				if (!mMaterialEditorRef)
 				{
-					if (Ptr<GUI_Editor_Material> materialEditor = CreateOrLoad<GUI_Editor_Material>("Material Editor"))
+					if (GUI_Editor_Material* materialEditor = CreateOrLoad<GUI_Editor_Material>("Material Editor"))
 					{
 						mMaterialEditorRef = materialEditor;
 					}
 				}
-				mMaterialEditorRef.lock()->bIsWindowOpen = true;
+				mMaterialEditorRef->bIsWindowOpen = true;
 
 			}
 
 			if (ImGui::MenuItem(u8("지형 에디터")))
 			{
 				// LandScape Editor
-				if (!mLandScapeEditorRef.lock())
+				if (!mLandScapeEditorRef)
 				{
-					if (Ptr<GUI_Editor_LandScape> landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
+					if (GUI_Editor_LandScape* landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
 					{
 						mLandScapeEditorRef = landScapeEditor;
 					}
 				}
 
-				mLandScapeEditorRef.lock()->bIsWindowOpen = true;
+				mLandScapeEditorRef->bIsWindowOpen = true;
 			}
 
 			ImGui::EndMenu();
@@ -253,11 +253,11 @@ void MGUIManager::ScaleAllSize(float InScale)
 	style.ScaleAllSizes(InScale);
 }
 
-Ptr<GUI_Inspector> MGUIManager::GetInspector() const
+GUI_Inspector* MGUIManager::GetInspector() const
 {
-	if (mStaticGUI[2].expired())
+	if (!mStaticGUI[2])
 	{
 		return nullptr;
 	}
-	return std::dynamic_pointer_cast<GUI_Inspector>(mStaticGUI[2].lock());
+	return dynamic_cast<GUI_Inspector*>(mStaticGUI[2]);
 }

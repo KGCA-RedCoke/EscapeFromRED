@@ -14,12 +14,12 @@ public:
 
 protected:
 	void Initialize() override;
-	
+
 protected:
 	void Update_Implementation(float DeltaTime) override;
 
 public:
-	FORCEINLINE void SetCamera(const Ptr<JCamera>& InCamera) { mEditorCameraRef = InCamera; }
+	FORCEINLINE void SetCamera(JCamera* InCamera) { mEditorCameraRef = InCamera; }
 
 	[[nodiscard]] FORCEINLINE bool IsFocused() const { return bIsFocused; }
 	[[nodiscard]] FORCEINLINE bool IsHovered() const { return bIsHovered; }
@@ -33,8 +33,8 @@ protected:
 	bool bIsFocused;
 	bool bIsHovered;
 
-	Ptr<JCamera>       mEditorCameraRef;
-	Ptr<FViewportData> mViewportData;
+	JCamera*       mEditorCameraRef;
+	FViewportData* mViewportData;
 
 	JText mViewportTitle;
 	float mCachedViewportWidth;

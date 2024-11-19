@@ -44,6 +44,6 @@ private:
 
 	char mFilePath[256];
 
-	Ptr<JMeshObject>       mPreviewMeshObject;	// 머티리얼 적용 표면
-	Ptr<JMaterialInstance> mMaterialToEdit;		// 머티리얼
+	UPtr<JMeshObject>  mPreviewMeshObject;	// 머티리얼 적용 표면
+	JMaterialInstance* mMaterialToEdit;		// 머티리얼
 };

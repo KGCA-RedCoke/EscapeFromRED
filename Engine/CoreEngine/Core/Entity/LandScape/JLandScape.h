@@ -51,11 +51,11 @@ protected:
 	JArray<IndexGroup>                mVertexGroup;
 	Buffer::FBufferInstance_LandScape mInstanceBuffer;
 
-	Ptr<class JMaterialInstance> mMaterial;
+	class JMaterialInstance* mMaterial;
 
-	Ptr<JTexture> mAlbedoMap;
-	Ptr<JTexture> mHeightMap;
-	Ptr<JTexture> mNormalMap;
+	JTexture* mAlbedoMap;
+	JTexture* mHeightMap;
+	JTexture* mNormalMap;
 
 	friend class GUI_Editor_LandScape;
 };

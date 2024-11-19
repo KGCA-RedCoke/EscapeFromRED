@@ -4,16 +4,16 @@
 class JSkeletalMeshObject : public JMeshObject
 {
 public:
-	JSkeletalMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
+	JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JMeshObject& Other);
 	~JSkeletalMeshObject() override = default;
 
 public:
-	Ptr<IManagedInterface> Clone() const override;
+	UPtr<IManagedInterface> Clone() const override;
 
 protected:
-	void CreateBuffers() override;
+	void CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList) override;
 	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:
@@ -34,7 +34,7 @@ public:
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
-	Ptr<JSkeletalMesh>           mSkeletalMesh;
+	Ptr<JSkeletalMesh>  mSkeletalMesh;
 	Buffer::FBufferBone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------
@@ -44,4 +44,5 @@ protected:
 
 
 	friend class GUI_Editor_SkeletalMesh;
+	friend class MMeshManager;
 };

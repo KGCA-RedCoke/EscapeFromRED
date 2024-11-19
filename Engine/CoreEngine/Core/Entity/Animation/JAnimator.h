@@ -8,7 +8,6 @@ public:
 	~JAnimator() override = default;
 
 public:
-	EObjectType GetObjectType() const override;
 	uint32_t    GetType() const override;
 
 public:

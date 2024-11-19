@@ -1,9 +1,10 @@
 ﻿#include "JSkeletalMeshObject.h"
 
+#include "MMeshManager.h"
 #include "Core/Graphics/XD3DDevice.h"
-#include "Core/Interface/MManagerInterface.h"
+#include "Core/Interface/JWorld.h"
 
-JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const std::vector<Ptr<JMeshData>>& InData)
+JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 {
 	mName                         = InName;
 	mVertexSize                   = sizeof(Vertex::FVertexInfo_Base);
@@ -19,7 +20,7 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const std::vector<
 	else
 	{
 		mPrimitiveMeshData = InData;
-		JSkeletalMeshObject::CreateBuffers();
+		// JSkeletalMeshObject::CreateBuffers(TODO, TODO);
 	}
 
 	assert(mPrimitiveMeshData.size() > 0);
@@ -41,18 +42,17 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JWText& InName, const std::vector
 JSkeletalMeshObject::JSkeletalMeshObject(const JMeshObject& Other)
 	: JMeshObject(Other) {}
 
-Ptr<IManagedInterface> JSkeletalMeshObject::Clone() const
+UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 {
-	auto clone = MakePtr<JSkeletalMeshObject>(*this);
-	return clone;
+	return MakeUPtr<JSkeletalMeshObject>(*this);
 }
 
-void JSkeletalMeshObject::CreateBuffers()
+void JSkeletalMeshObject::CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList)
 {
-	ID3D11Device* device = IManager.RenderManager->GetDevice();
+	ID3D11Device* device = GetWorld.D3D11API->GetDevice();
 	assert(device);
 
-	JMeshObject::CreateBuffers();
+	// JMeshObject::CreateBuffers(TODO, TODO);
 
 	// Bone 버퍼 생성
 	Utils::DX::CreateBuffer(device,
@@ -139,7 +139,13 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mPrimitiveMeshData.push_back(archivedData);
 	}
 
-	CreateBuffers();
+	for (int32_t i = 0; i < mPrimitiveMeshData[0]->GetSubMaterialNum(); ++i)
+	{
+		JText materialPath;
+		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
+		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
+		mMaterialInstances.push_back(matInstance);
+	}
 
 	return true;
 }
@@ -151,41 +157,13 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 
 void JSkeletalMeshObject::Draw()
 {
-	auto* deviceContext = IManager.RenderManager->GetImmediateDeviceContext();
+	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
-
-	// Topology 설정
-	IManager.RenderManager->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// 최종 본 행렬 업데이트
 	UpdateBoneBuffer(deviceContext);
 
-	for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
-	{
-		auto& instanceBuffer = mGeometryBuffer[i];
-		auto& meshData       = mPrimitiveMeshData[i];
-		auto& subMeshes      = meshData->GetSubMesh();
-
-		for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
-		{
-			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-
-			uint32_t offset = 0;
-
-			mVertexSize = currMesh->GetVertexData()->GetVertexSize();
-
-			currMesh->PassMaterial(deviceContext);
-			int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
-
-			// 버퍼 설정
-			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex[j].GetAddressOf(), &mVertexSize, &offset);
-			deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index[j].Get(), DXGI_FORMAT_R32_UINT, 0);
-
-			deviceContext->DrawIndexed(indexNum, 0, 0);
-		}
-	}
-	// JMeshObject::Draw();
-
+	JMeshObject::Draw();
 }
 
 void JSkeletalMeshObject::DrawID(uint32_t ID)
@@ -195,31 +173,32 @@ void JSkeletalMeshObject::DrawID(uint32_t ID)
 
 void JSkeletalMeshObject::DrawBone()
 {
+	//
+	// auto* deviceContext = G_Device.GetImmediateDeviceContext();
+	// assert(deviceContext);
+	//
+	// for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
+	// {
+	// 	Ptr<JSkeletalMesh> meshData = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[i]);
+	//
+	// 	const auto& pose = meshData->GetSkinData()->GetBindPoseWorldMap();
+	//
+	// 	for (auto& mat : pose)
+	// 	{
+	// 		Ptr<JMeshObject* sphere = GetWorld.MeshManager->CreateOrClone("Game/Mesh/Sphere.jasset");
+	// 		if (sphere)
+	// 		{
+	// 			auto boneWorld = mat.second;
+	// 			auto parentInv = mSkeletalMesh->GetSkinData()->GetInfluenceBoneInverseBindPose(mat.first);
+	//
+	// 			FMatrix newMat = parentInv * boneWorld;
+	// 			sphere->UpdateBuffer(newMat);
+	// 			sphere->Draw();
+	// 		}
+	// 	}
+	// 	//
+	// }
 
-	auto* deviceContext = Renderer.GetImmediateDeviceContext();
-	assert(deviceContext);
-
-	for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
-	{
-		Ptr<JSkeletalMesh> meshData = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[i]);
-
-		const auto& pose = meshData->GetSkinData()->GetBindPoseWorldMap();
-
-		for (auto& mat : pose)
-		{
-			Ptr<JMeshObject> sphere = IManager.MeshManager->CreateOrClone("Game/Mesh/Sphere.jasset");
-			if (sphere)
-			{
-				auto boneWorld = mat.second;
-				auto parentInv = mSkeletalMesh->GetSkinData()->GetInfluenceBoneInverseBindPose(mat.first);
-
-				FMatrix newMat = parentInv * boneWorld;
-				sphere->UpdateBuffer(newMat);
-				sphere->Draw();
-			}
-		}
-		//
-	}
 }
 
 void JSkeletalMeshObject::SetAnimation(const Ptr<JAnimationClip>& InAnimation)

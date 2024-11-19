@@ -12,23 +12,16 @@ JObject::JObject(JTextView InName)
 	: mName(InName)
 {}
 
-Ptr<IManagedInterface> JObject::Clone() const
-{
-	Ptr<JObject> clone = MakePtr<JObject>(*this);
-
-	clone->mName      = std::format("{}_Clone", mName);
-	clone->mParentObj = mParentObj;
-	for (const auto& child : mChildObjs)
-	{
-		clone->mChildObjs.push_back(std::dynamic_pointer_cast<JObject>(child->Clone()));
-	}
-
-	return clone;
-}
+JObject::~JObject() {}
 
 uint32_t JObject::GetHash() const
 {
 	return StringHash(ParseFile(mName).c_str());
+}
+
+UPtr<IManagedInterface> JObject::Clone() const
+{
+	return nullptr;
 }
 
 uint32_t JObject::GetType() const
@@ -46,15 +39,11 @@ bool JObject::Serialize_Implement(std::ofstream& FileStream)
 	// Name
 	Utils::Serialization::Serialize_Text(mName, FileStream);
 
-	// Child Count
-	size_t childCount = mChildObjs.size();
-	FileStream.write(reinterpret_cast<char*>(&childCount), sizeof(childCount));
+	// Object Type
+	Utils::Serialization::Serialize_Text(mObjectType, FileStream);
 
-	// Child Objects
-	for (int32_t i = 0; i < childCount; ++i)
-	{
-		mChildObjs[i]->Serialize_Implement(FileStream);
-	}
+	// Object Flags
+	Utils::Serialization::Serialize_Primitive(&mObjectFlags, sizeof(mObjectFlags), FileStream);
 
 	return true;
 }
@@ -70,18 +59,11 @@ bool JObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Name
 	Utils::Serialization::DeSerialize_Text(mName, InFileStream);
 
-	// Child Count
-	size_t childCount;
-	Utils::Serialization::DeSerialize_Primitive(&childCount, sizeof(childCount), InFileStream);
+	// Object Type
+	Utils::Serialization::DeSerialize_Text(mObjectType, InFileStream);
 
-	// Child Objects
-	mChildObjs.reserve(childCount);
-	for (int32_t i = 0; i < childCount; ++i)
-	{
-		mChildObjs.emplace_back(MakeUPtr<JObject>());
-		mChildObjs[i]->mParentObj = shared_from_this();
-		mChildObjs[i]->DeSerialize_Implement(InFileStream);
-	}
+	// Object Flags
+	Utils::Serialization::DeSerialize_Primitive(&mObjectFlags, sizeof(mObjectFlags), InFileStream);
 
 	return true;
 }

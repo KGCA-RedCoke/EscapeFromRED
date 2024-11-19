@@ -37,7 +37,7 @@ public:
 public:
 	void ScaleAllSize(float InScale);
 
-	Ptr<GUI_Inspector> GetInspector() const;
+	GUI_Inspector* GetInspector() const;
 
 	bool IsRenderWireFrame() const { return bRenderWireFrame; }
 
@@ -52,17 +52,17 @@ private:
 	void UpdateGUIs(float DeltaTime) const;
 
 private:
-	WPtr<GUI_Editor_Material>  mMaterialEditorRef;
-	WPtr<GUI_Editor_LandScape> mLandScapeEditorRef;
-	WPtr<GUI_Base>             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
-	bool                       bOpenFileBrowser;
-	bool                       bRenderWireFrame = false;
+	GUI_Editor_Material*  mMaterialEditorRef;
+	GUI_Editor_LandScape* mLandScapeEditorRef;
+	GUI_Base*             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
+	bool                  bOpenFileBrowser;
+	bool                  bRenderWireFrame = false;
 
 #pragma region Singleton Boilerplate
 
 private:
 	friend class TSingleton<MGUIManager>;
-	friend class MManagerInterface;
+	friend class JWorld;
 
 	MGUIManager();
 	~MGUIManager();

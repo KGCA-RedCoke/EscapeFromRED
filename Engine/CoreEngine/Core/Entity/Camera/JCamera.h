@@ -24,8 +24,8 @@ public:
 	void Release() override;
 #pragma endregion
 
-	uint32_t               GetHash() const override;
-	Ptr<IManagedInterface> Clone() const override;
+	uint32_t                GetHash() const override;
+	UPtr<IManagedInterface> Clone() const override;
 
 	//---------------------------------------------- Camera ---------------------------------------------------------------
 	virtual void Reset();
@@ -33,8 +33,9 @@ public:
 	 * View Matrix를 새로 구성 
 	 * @param InEyeVec 카메라 위치벡터 
 	 * @param InLookAtVec 카메라 타겟벡터
+	 * @param InUpVec
 	 */
-	virtual void SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec);
+	virtual void SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR InUpVec = M_UpVector);
 	/**
 	 * Projection Matrix를 새로 구성
 	 * @param InFOV 시야각 (Field of View)

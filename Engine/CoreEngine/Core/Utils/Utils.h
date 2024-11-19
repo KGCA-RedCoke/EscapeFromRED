@@ -1,11 +1,23 @@
 #pragma once
+#include <regex>
+
 #include "common_include.h"
+#include "Math/MathUtility.h"
 
 inline JHash<JText, uint32_t> g_HashCache;
 inline std::mutex             g_HashCacheMutex;
 
 //--------------------------------------------- String Func -------------------------------------------------------------
 inline uint32_t djb2_impl(const char* InString, uint32_t PrevHash)
+{
+	int32_t c;
+	while ((c    = *InString++))
+		PrevHash = ((PrevHash << 5) + PrevHash) + c;
+
+	return PrevHash;
+}
+
+constexpr uint32_t djb2_imple_CompileTime(const char* InString, uint32_t PrevHash)
 {
 	int32_t c;
 	while ((c    = *InString++))
@@ -45,29 +57,72 @@ inline uint32_t StringHash(const wchar_t* InString)
 	return djb2_impl(WString2String(InString).data(), 5381);
 }
 
+constexpr uint32_t StringHash_CompileTime(const char* InString)
+{
+	return djb2_imple_CompileTime(InString, 5381);
+}
+
+inline JText GenerateUniqueFileName(const JText& InDirectory, const JText& InBaseName, const JText& InExtension)
+{
+	namespace fs = std::filesystem;
+
+	int        maxIndex = 0;
+	std::regex filePattern(InBaseName + R"((\d+)?)" + InExtension);
+
+	// 같은 경로 내에서 순회 (같은 이름을 가진 파일이 있는지 확인)
+	for (const auto& entry : fs::directory_iterator(InDirectory))
+	{
+		if (entry.is_regular_file())
+		{
+			std::smatch match;
+			std::string filename = entry.path().filename().string();
+			if (std::regex_match(filename, match, filePattern))
+			{
+				if (match.size() > 1 && match[1].matched)
+				{
+					maxIndex = FMath::Max(maxIndex, std::stoi(match[1].str()));
+				}
+			}
+		}
+	}
+
+	// 새 파일 이름 생성
+	return std::format("{}/{}{}{}", InDirectory, InBaseName, maxIndex + 1, InExtension);
+}
+
 //--------------------------------------------- String Func -------------------------------------------------------------
 
 
 // ------------------------------------------- JHash Table ---------------------------------------------------------------
-const uint32_t JAssetHash = StringHash("JASSET\0");
+constexpr const char* NAME_OBJECT_BASE              = "JObject";
+constexpr const char* NAME_OBJECT_ACTOR_COMPONENT   = "JActorComponent";
+constexpr const char* NAME_OBJECT_SCENE_COMPONENT   = "JSceneComponent";
+constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT = "JStaticMeshComponent";
+constexpr const char* NAME_OBJECT_ACTOR             = "JActor";
+constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR = "JStaticMeshActor";
+constexpr const char* NAME_OBJECT_LEVEL             = "JLevel";
 
-const uint32_t HASH_ASSET_TYPE_Actor             = StringHash("JActor");
-const uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash("J3DObject");
-const uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash("JSkeletalMesh");
-const uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash("JMaterial");
-const uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash("JMaterialInstance");
-const uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash("JAnimationClip");
 
-const uint32_t Hash_EXT_FBX    = StringHash(".fbx");
-const uint32_t Hash_EXT_JASSET = StringHash(".jasset");
+constexpr uint32_t JAssetHash = StringHash_CompileTime("JASSET\0");
 
-const uint32_t HASH_EXT_PNG = StringHash(".png");
-const uint32_t HASH_EXT_JPG = StringHash(".jpg");
-const uint32_t HASH_EXT_TGA = StringHash(".tga");
-const uint32_t HASH_EXT_BMP = StringHash(".bmp");
-const uint32_t HASH_EXT_DDS = StringHash(".dds");
+constexpr uint32_t HASH_ASSET_TYPE_LEVEL             = StringHash_CompileTime("JLevel");
+constexpr uint32_t HASH_ASSET_TYPE_Actor             = StringHash_CompileTime("JActor");
+constexpr uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash_CompileTime("J3DObject");
+constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash_CompileTime("JSkeletalMesh");
+constexpr uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash_CompileTime("JMaterial");
+constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash_CompileTime("JMaterialInstance");
+constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash_CompileTime("JAnimationClip");
 
-const uint32_t HASH_EXT_HLSL = StringHash(".hlsl");
+constexpr uint32_t Hash_EXT_FBX    = StringHash_CompileTime(".fbx");
+constexpr uint32_t Hash_EXT_JASSET = StringHash_CompileTime(".jasset");
+
+constexpr uint32_t HASH_EXT_PNG = StringHash_CompileTime(".png");
+constexpr uint32_t HASH_EXT_JPG = StringHash_CompileTime(".jpg");
+constexpr uint32_t HASH_EXT_TGA = StringHash_CompileTime(".tga");
+constexpr uint32_t HASH_EXT_BMP = StringHash_CompileTime(".bmp");
+constexpr uint32_t HASH_EXT_DDS = StringHash_CompileTime(".dds");
+
+constexpr uint32_t HASH_EXT_HLSL = StringHash_CompileTime(".hlsl");
 //---------------------------------------------- String Func --------------------------------------------------------------
 
 
