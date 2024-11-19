@@ -28,7 +28,7 @@ float4x4 FetchBoneTransform(uint Bone)
 	return Matrix;
 }
 
-PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
+PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
 	PixelInput_Base output;
 
@@ -59,15 +59,15 @@ PixelInput_Base VS(VertexIn_Base Input, uint InstanceID : SV_InstanceID)
 		normal = Input.Normal;
 	}
 
-	output.Pos     = mul(output.Pos, World);
+	output.Pos     = mul(output.Pos, Instance.InstancePos);
 	float3 viewDir = WorldCameraPos.xyz - output.Pos.xyz;
 
 	output.Pos = mul(output.Pos, View);
 	output.Pos = mul(output.Pos, Projection);
 
-	float3 worldNormal   = mul(normal, (float3x3)World);
-	float3 worldTangent  = mul(Input.Tangent, (float3x3)World);
-	float3 worldBinormal = mul(Input.Binormal, (float3x3)World);
+	float3 worldNormal   = mul(normal, (float3x3)Instance.InstancePos);
+	float3 worldTangent  = mul(Input.Tangent, (float3x3)Instance.InstancePos);
+	float3 worldBinormal = mul(Input.Binormal, (float3x3)Instance.InstancePos);
 
 	output.UV      = Input.UV;
 	output.ViewDir = normalize(viewDir);

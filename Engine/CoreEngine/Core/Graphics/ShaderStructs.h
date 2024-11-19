@@ -269,12 +269,22 @@ namespace Buffer
 	{
 		ComPtr<ID3D11Buffer> Buffer_Instance;	// 인스턴싱 버퍼
 	};
+
+	struct FBufferMesh
+	{
+		FBufferGeometry Geometry;
+		FBufferBone     Bone;
+		FBufferInstance Instance;
+
+		int32_t IndexCount = 0;
+	};
+
 }
 
 // 인스턴싱 버퍼 구조체
 struct FInstanceData
 {
-	FMatrix WorldMatrix;	// 각 인스턴스 별로 다른 월드 행렬
+	alignas(16) FMatrix WorldMatrix;	// 각 인스턴스 별로 다른 월드 행렬
 
 	// Etc... 머티리얼
 };

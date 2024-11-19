@@ -18,7 +18,7 @@ GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 void GUI_Viewport_Scene::Initialize()
 {
 	// mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
-	
+
 	mEditorCameraRef = GetWorld.CameraManager->FetchResource(L"EditorCamera");
 	assert(mEditorCameraRef);
 
@@ -43,7 +43,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			JLevel*     activeLevel = GetWorld.LevelManager->GetActiveLevel();
 			const char* str         = (const char*)payload->Data;
 
-			auto  metaData = Utils::Serialization::GetType(str);
+			auto metaData = Utils::Serialization::GetType(str);
 			// JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
 
 			switch (metaData.AssetType)
@@ -60,7 +60,6 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 				LOG_CORE_WARN("지원하지 않는 메시 타입.");
 				break;
 			}
-			
 
 
 		}

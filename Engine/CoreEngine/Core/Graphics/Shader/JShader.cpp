@@ -234,6 +234,9 @@ void JShader::LoadShaderReflectionData()
 	CheckResult(pixelShaderReflection->GetDesc(&pixelShaderDesc));
 
 	// ---------------------------------------------- Input Layout 생성 ----------------------------------------------
+
+	bool bInstanceEncountered = false;
+
 	mDefaultShaderData.VertexInputLayoutSize = 0;
 	JArray<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
 	for (int32_t i = 0; i < vertexShaderDesc.InputParameters; ++i)
@@ -249,6 +252,22 @@ void JShader::LoadShaderReflectionData()
 		elementDesc.AlignedByteOffset    = D3D11_APPEND_ALIGNED_ELEMENT;
 		elementDesc.InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
 		elementDesc.InstanceDataStepRate = 0;
+
+		if (strncmp(paramDesc.SemanticName, "INSTANCE_", 9) == 0)
+		{
+			elementDesc.InputSlot            = 1; // 인스턴스 데이터는 슬롯 1
+			elementDesc.InputSlotClass       = D3D11_INPUT_PER_INSTANCE_DATA;
+			elementDesc.InstanceDataStepRate = 1;
+			if (!bInstanceEncountered)
+			{
+				elementDesc.AlignedByteOffset = 0;
+				bInstanceEncountered          = true;
+			}
+			else
+			{
+				elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+			}
+		}
 
 		// Format은 Masking정보를 통해 설정
 		if (paramDesc.Mask == 1)
@@ -396,13 +415,13 @@ void JShader::LoadShaderReflectionData()
 
 	CheckResult(
 				GetWorld.D3D11API->GetDevice()->CreateInputLayout(
-																	   &inputLayoutDesc[0],
-																	   inputLayoutDesc.size(),
-																	   mDefaultShaderData.VertexShaderBuf->
-																	   GetBufferPointer(),
-																	   mDefaultShaderData.VertexShaderBuf->GetBufferSize(),
-																	   mDefaultShaderData.InputLayout.GetAddressOf()
-																	  ));
+																  &inputLayoutDesc[0],
+																  inputLayoutDesc.size(),
+																  mDefaultShaderData.VertexShaderBuf->
+																  GetBufferPointer(),
+																  mDefaultShaderData.VertexShaderBuf->GetBufferSize(),
+																  mDefaultShaderData.InputLayout.GetAddressOf()
+																 ));
 
 
 }

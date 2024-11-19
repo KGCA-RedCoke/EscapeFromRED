@@ -27,6 +27,10 @@ void MMeshManager::PostInitialize(const JText& OriginalNameOrPath, const JText& 
 
 			CreateBuffers(meshObject);
 		}
+		else if (!meshObject->mPrimitiveMeshData.empty())
+		{
+			CreateBuffers(meshObject);
+		}
 
 	}
 }
@@ -51,6 +55,8 @@ void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshOb
 	// 메시가 여러개인 경우는 거의 LOD일 것임
 	const int32_t lodCount = MeshObject->mPrimitiveMeshData.size();
 
+	MeshObject->mGeometryBuffer.clear();
+
 	// LOD별로 버퍼를 생성한다.
 	for (int32_t i = 0; i < lodCount; ++i)
 	{
@@ -63,10 +69,17 @@ void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshOb
 		for (int32_t j = 0; j < subMeshCount; ++j)
 		{
 			Buffer::FBufferGeometry geometryBuffer;
+			Buffer::FBufferInstance instanceBuffer;
 
 			const auto&    currentMesh     = bHasSubMesh ? subMeshes[j] : mesh;
 			const auto&    currentMeshData = currentMesh->GetVertexData();
 			const uint32_t meshHash        = currentMesh->GetHash();
+
+			if (auto it = mBufferList.find(meshHash); it != mBufferList.end())
+			{
+				MeshObject->mGeometryBuffer.push_back(geometryBuffer);
+				continue;
+			}
 
 			// Vertex 버퍼 생성
 			Utils::DX::CreateBuffer(InDevice,
@@ -75,6 +88,16 @@ void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshOb
 									sizeof(Vertex::FVertexInfo_Base)/*MeshObject->mVertexSize*/,
 									currentMeshData->VertexArray.size(),
 									geometryBuffer.Buffer_Vertex.GetAddressOf());
+
+			// Instance 버퍼 생성
+			Utils::DX::CreateBuffer(InDevice,
+									D3D11_BIND_VERTEX_BUFFER,
+									nullptr,
+									sizeof(FInstanceData),
+									MAX_INSTANCE,
+									instanceBuffer.Buffer_Instance.GetAddressOf(),
+									D3D11_USAGE_DYNAMIC,
+									D3D11_CPU_ACCESS_WRITE);
 
 			// Index 버퍼 생성
 			Utils::DX::CreateBuffer(InDevice,
@@ -86,14 +109,17 @@ void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshOb
 
 			// 이미 존재하면 덮어쓰기
 			MeshObject->mGeometryBuffer.push_back(geometryBuffer);
-			mBufferList.insert_or_assign(meshHash, geometryBuffer);
+			mBufferList[meshHash].Geometry   = geometryBuffer;
+			mBufferList[meshHash].Instance   = instanceBuffer;
+			mBufferList[meshHash].IndexCount = currentMeshData->IndexArray.size();
+			mMaterialInstance[meshHash]      = MeshObject->mMaterialInstances[j];
 		}
 	}
 }
 
 void MMeshManager::GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject)
 {
-	auto& bone         = mBoneBufferList[MeshObject->GetHash()];
+	auto& bone         = mBufferList[MeshObject->GetHash()].Bone;
 	bone.Buffer_Bone   = nullptr;
 	bone.Resource_Bone = nullptr;
 
@@ -123,12 +149,56 @@ void MMeshManager::GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject
 	assert(skel);
 
 	skel->mInstanceBuffer_Bone = bone;
-	mBoneBufferList.insert_or_assign(MeshObject->GetHash(), bone);
+}
+
+void MMeshManager::UpdateInstanceBuffer(uint32_t NameHash, int32_t NumInstances)
+{}
+
+void MMeshManager::PushCommand(uint32_t NameHash, const FMatrix& InWorldMatrix)
+{
+	mInstanceData[NameHash].push_back({InWorldMatrix});
+}
+
+void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
+{
+	JMaterialInstance* materialInstance = MMaterialInstanceManager::Get().CreateOrLoad(NAME_MAT_INS_DEFAULT);
+
+	for (auto& [nameHash, instanceData] : mInstanceData)
+	{
+		materialInstance->BindMaterial(InContext);
+
+		// 인스턴스 갯수 만큼 버퍼 업데이트
+		if (mBufferList.contains(nameHash))
+		{
+			mMaterialInstance[nameHash]->BindMaterial(InContext);
+			auto& buffer         = mBufferList[nameHash];
+			auto& instanceBuffer = mBufferList[nameHash].Instance.Buffer_Instance;
+
+			Utils::DX::UpdateDynamicBuffer(InContext,
+										   instanceBuffer.Get(),
+										   instanceData.data(),
+										   sizeof(FInstanceData) * instanceData.size());
+
+			ID3D11Buffer* buffers[] = {
+				buffer.Geometry.Buffer_Vertex.Get(),
+				instanceBuffer.Get()
+			};
+
+			uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData)};
+			uint32_t offset[2] = {0, 0};
+
+			InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);
+			InContext->IASetIndexBuffer(buffer.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+			InContext->DrawIndexedInstanced(buffer.IndexCount, instanceData.size(), 0, 0, 0);
+		}
+	}
+
+	mInstanceData.clear();
 }
 
 
 void MMeshManager::GenInstanceBuffer(ID3D11Device*  InDevice, uint32_t NameHash,
-										JArray<void*>& InstanceData)
+									 JArray<void*>& InstanceData)
 {
 	assert(mBufferList.contains(NameHash));
 

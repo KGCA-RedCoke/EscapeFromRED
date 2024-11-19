@@ -50,6 +50,7 @@ bool JStaticMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		mMeshObject = MakeUPtr<JMeshObject>();
 		mMeshObject->DeSerialize_Implement(InFileStream);
+		GetWorld.MeshManager->CreateBuffers(mMeshObject.get());
 	}
 
 
@@ -75,7 +76,7 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		mMeshObject->Draw();
+		mMeshObject->Render();
 	}
 
 	// Child SceneComponent Draw 호출

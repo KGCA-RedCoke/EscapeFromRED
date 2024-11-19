@@ -13,11 +13,15 @@ void GUI_Base::Update(float DeltaTime)
 
 	ImGui::Begin(mTitle.c_str(), &bIsWindowOpen, mWindowFlags);
 	{
-		ChangeWindowStyleIfNotDocked();
+		if (!ImGui::IsWindowCollapsed())
+		{
+			ChangeWindowStyleIfNotDocked();
 
-		ShowMenuBar();
+			ShowMenuBar();
 
-		Update_Implementation(DeltaTime);
+			Update_Implementation(DeltaTime);
+		}
+		
 
 		ImGui::End();
 	}

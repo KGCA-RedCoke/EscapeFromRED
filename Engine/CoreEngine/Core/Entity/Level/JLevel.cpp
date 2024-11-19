@@ -1,6 +1,8 @@
 ﻿#include "JLevel.h"
 
 #include "Core/Entity/Actor/JActor.h"
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
 
 JLevel::JLevel(const JText& InPath)
 	: mName(ParseFile(InPath))
@@ -88,6 +90,8 @@ void JLevel::RenderLevel()
 	{
 		mActors[i]->Draw();
 	}
+
+	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 }
 
 // void JLevel::AddActor(const Ptr<JActor>& InActor)

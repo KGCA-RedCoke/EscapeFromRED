@@ -8,15 +8,14 @@
 #include "Core/Interface/JWorld.h"
 
 JMeshObject::JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData)
-	: mName(InAssetPath),
+	: mName(ParseFile(InAssetPath)),
+	  mMeshConstantBuffer(),
 	  mVertexSize(sizeof(Vertex::FVertexInfo_Base))
 {
 	mPath = InAssetPath;
 	mName = ParseFile(mPath);
 
 	mPrimitiveMeshData = InData;
-
-
 }
 
 JMeshObject::JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>& InData)
@@ -216,13 +215,27 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(const JText& InName) const
 	return nullptr;
 }
 
+void JMeshObject::Render()
+{
+	const int32_t lodCount = mPrimitiveMeshData.size();
+
+	for (int32_t i = 0; i < lodCount; ++i)
+	{
+		auto&         meshData     = mPrimitiveMeshData[i];
+		auto&         subMeshes    = meshData->GetSubMesh();
+		const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+		for (int32_t j = 0; j < subMeshCount; ++j)
+		{
+			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mWorldMatrix);
+		}
+	}
+}
+
 void JMeshObject::Draw()
 {
-	if (mGeometryBuffer.empty())
-	{
-		GetWorld.MeshManager->CreateBuffers(this);
-	}
-
 	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
@@ -238,8 +251,6 @@ void JMeshObject::Draw()
 		{
 			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-			Buffer::FBufferGeometry* buffer = MMeshManager::Get().GetBuffer(currMesh->GetHash());
-
 			uint32_t offset = 0;
 
 			mVertexSize = currMesh->GetVertexData()->GetVertexSize();
@@ -251,8 +262,12 @@ void JMeshObject::Draw()
 			int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
 
 			// 버퍼 설정
-			deviceContext->IASetVertexBuffers(0, 1, buffer->Buffer_Vertex.GetAddressOf(), &mVertexSize, &offset);
-			deviceContext->IASetIndexBuffer(buffer->Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->IASetVertexBuffers(0,
+											  1,
+											  mGeometryBuffer[j].Buffer_Vertex.GetAddressOf(),
+											  &mVertexSize,
+											  &offset);
+			deviceContext->IASetIndexBuffer(mGeometryBuffer[j].Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
@@ -316,9 +331,4 @@ void JMeshObject::DrawID(uint32_t ID)
 			deviceContext->DrawIndexed(indexNum, 0, 0);
 		}
 	}
-}
-
-uint32_t JMeshObject::GetIndexCount() const
-{
-	return IRenderable::GetIndexCount();
 }

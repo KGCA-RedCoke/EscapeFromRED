@@ -36,7 +36,6 @@ void GUI_Camera_Debug_Frustum::Update_Implementation(float DeltaTime)
 
 void GUI_Camera_Debug_Frustum::Render()
 {
-
 	// 렌더 타겟을 현재 뷰포트로 설정
 	GetWorld.ViewportManager->SetRenderTarget(mTitle.c_str());
 

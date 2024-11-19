@@ -41,12 +41,11 @@ public:
 
 public:
 #pragma region Render Interface
-	void     PreRender() override {}
-	void     Render() override {}
-	void     PostRender() override {}
-	void     Draw() override;
-	void     DrawID(uint32_t ID) override;
-	uint32_t GetIndexCount() const override;
+	void PreRender() override {}
+	void Render() override;
+	void PostRender() override {}
+	void Draw() override;
+	void DrawID(uint32_t ID) override;
 #pragma endregion
 
 protected:

@@ -49,6 +49,11 @@ struct VertexIn_Base
 	float4 BoneWeights : WEIGHT;
 };
 
+struct InstanceData
+{
+	row_major matrix InstancePos : INSTANCE_TRANSFORM;
+};
+
 struct PixelInput_Base
 {
 	float4 Pos : SV_POSITION;
