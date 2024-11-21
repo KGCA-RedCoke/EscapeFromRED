@@ -169,7 +169,5 @@ protected:
 	bool bClipToBoundary;
 	bool bResetCursorAfterMove;
 
-	ComPtr<ID3D11Buffer> mCameraConstantBuffer;
-
 	static uint32_t s_CameraNum;
 };

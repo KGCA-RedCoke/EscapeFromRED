@@ -12,8 +12,7 @@ JFont::JFont(ID2D1RenderTarget* InRenderTarget)
 	  mFontStretch(DWRITE_FONT_STRETCH_NORMAL),
 	  mFontSize(18),
 	  mBrushColor({0, 0, 0, 1})
-{
-}
+{}
 
 JFont::~JFont() {}
 
@@ -30,8 +29,19 @@ void JFont::PreRender()
 	mRenderTarget->BeginDraw();
 }
 
-void JFont::Render()
+void JFont::AddInstance()
+{}
+
+void JFont::PostRender()
 {
+	// Draw 호출 후 End
+	CheckResult(mRenderTarget->EndDraw());
+}
+
+void JFont::Draw()
+{
+	PreRender();
+
 	ID2D1SolidColorBrush* brush = GetWorld.D3D11API->GetBrush();
 	assert(brush, "invalid brush");
 
@@ -54,12 +64,8 @@ void JFont::Render()
 							 },
 							 GetWorld.D3D11API->GetBrush()
 							);
-}
 
-void JFont::PostRender()
-{
-	// Draw 호출 후 End
-	CheckResult(mRenderTarget->EndDraw());
+	PostRender();
 }
 
 void JFont::SetRenderTarget(ID2D1RenderTarget* InRenderTarget)
@@ -130,14 +136,14 @@ void JFont::AdjustTextFormat()
 	// DWrite에서는 Format만 관리
 	CheckResult(
 				GetWorld.D3D11API->GetWriteFactory()->
-						  CreateTextFormat(
-										   mFontFamily.c_str(),
-										   nullptr,
-										   mFontWeight,
-										   mFontStyle,
-										   mFontStretch,
-										   mFontSize,
-										   L"en-us",
-										   mTextFormat.GetAddressOf()
-										  ));
+						 CreateTextFormat(
+										  mFontFamily.c_str(),
+										  nullptr,
+										  mFontWeight,
+										  mFontStyle,
+										  mFontStretch,
+										  mFontSize,
+										  L"en-us",
+										  mTextFormat.GetAddressOf()
+										 ));
 }

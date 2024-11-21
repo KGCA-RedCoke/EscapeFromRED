@@ -18,6 +18,19 @@ void MShaderManager::UpdateCamera(JCamera* InCameraObj) const
 	}
 }
 
+void MShaderManager::UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader* InShader)
+{
+	if (mCachedShader == InShader)
+	{
+		InShader->UpdateGlobalConstantBuffer(InDeviceContext);
+		return;
+	}
+	
+	mCachedShader = InShader;
+
+	InShader->BindShaderPipeline(InDeviceContext);
+}
+
 void MShaderManager::Initialize_Initialize()
 {
 	BasicShader = CreateOrLoad<JShader_Basic>(NAME_SHADER_BASIC);

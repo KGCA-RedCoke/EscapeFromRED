@@ -1,27 +1,3 @@
-cbuffer ModelViewProjectionConstantBuffer : register(b0)
-{
-	matrix World;
-	matrix View;
-	matrix Projection;
-};
-
-cbuffer LightConstantBuffer : register(b1)
-{
-	float4 DirectionalLightPos;
-	float4 DirectionalLightColor;
-}
-
-cbuffer CameraConstantBuffer : register(b2)
-{
-	float4 WorldCameraPos;
-}
-
-cbuffer MeshConstantBuffer : register(b3)
-{
-	uint MeshFlags;
-}
-
-
 #define TEXTURE_USE_NONE 0
 #define TEXTURE_USE_DIFFUSE (1 << 0)			// 0000 0001	
 #define TEXTURE_USE_NORMAL (1 << 1)				// 0000 0010
@@ -33,6 +9,23 @@ cbuffer MeshConstantBuffer : register(b3)
 #define FLAG_MESH_SKINNED (1 << 0)
 #define FLAG_MESH_ANIMATED (1 << 1)
 
+cbuffer CameraConstantBuffer : register(b0)
+{
+	float4 WorldCameraPos;
+	matrix View;
+	matrix Projection;
+};
+
+cbuffer LightConstantBuffer : register(b1)
+{
+	float4 DirectionalLightPos;
+	float4 DirectionalLightColor;
+}
+
+cbuffer MeshConstantBuffer : register(b2)
+{
+	uint MeshFlags;
+}
 
 struct ColorParam
 {
@@ -46,7 +39,7 @@ struct ValueParam
 	float Factor;
 };
 
-cbuffer BasicMaterialConstantBuffer : register(b4)
+cbuffer BasicMaterialConstantBuffer : register(b3)
 {
 	ColorParam Diffuse;
 	ColorParam Normal;
@@ -59,7 +52,7 @@ cbuffer BasicMaterialConstantBuffer : register(b4)
 }
 
 
-cbuffer TimeConstantBuffer : register(b5)
+cbuffer TimeConstantBuffer : register(b4)
 {
 	float GameTime;
 	float DeltaTime;

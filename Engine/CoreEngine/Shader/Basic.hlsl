@@ -32,6 +32,13 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
 	PixelInput_Base output;
 
+	output.Material.BaseColor = Instance.BaseColor;
+	output.Material.Metallic  = Instance.Metallic;
+	output.Material.Roughness = Instance.Roughness;
+	output.Material.Occlusion = Instance.Occlusion;
+	output.Material.Emissive  = Instance.Emissive;
+
+
 	output.Color    = Input.Color;
 	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
 	float4 localPos = output.Pos;
@@ -89,7 +96,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	// 	return float4(Input.Color.rgb, 1);
 	// }
 
-	float3 diffuseColor = Diffuse.Color;
+	float3 diffuseColor = /*Diffuse.Color*/ Input.Material.BaseColor;
 
 	float3 normalColor = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
 

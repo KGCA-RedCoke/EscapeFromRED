@@ -9,7 +9,7 @@ JObject::JObject()
 {}
 
 JObject::JObject(JTextView InName)
-	: mName(InName)
+	: mName(ParseFile(InName.data()))
 {}
 
 JObject::~JObject() {}

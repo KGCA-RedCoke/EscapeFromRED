@@ -41,15 +41,15 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
 		{
 			JLevel*     activeLevel = GetWorld.LevelManager->GetActiveLevel();
-			const char* str         = (const char*)payload->Data;
+			const char* assetPath   = static_cast<const char*>(payload->Data);
 
-			auto metaData = Utils::Serialization::GetType(str);
-			// JText name     = std::format("{}_{}", ParseFile(str), Application::s_AppInstance->Actors.size());
+			auto  metaData = Utils::Serialization::GetType(assetPath);
+			JText name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
 
 			switch (metaData.AssetType)
 			{
 			case HASH_ASSET_TYPE_STATIC_MESH:
-				activeLevel->CreateActor<JStaticMeshActor>(str, nullptr, str);
+				activeLevel->CreateActor<JStaticMeshActor>(name, "", assetPath);
 
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:

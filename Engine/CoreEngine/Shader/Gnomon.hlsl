@@ -31,7 +31,7 @@ PSInput VS(VSInput input)
 
 	output.Position = float4(input.Position, 1.f);
 
-	output.Position = mul(output.Position, World);
+	// output.Position = mul(output.Position, World);
 	output.Position = mul(output.Position, View);
 	output.Position = mul(output.Position, Projection);
     

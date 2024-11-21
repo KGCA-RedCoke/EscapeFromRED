@@ -28,12 +28,12 @@ Texture2D g_BaseTextureArray[g_TextureCount] : register(t0);
 
 SamplerState g_SamplerLinearWrap : register(s0);
 
-VertexOut_3D VS(VertexIn_3D Input)
+VertexOut_3D VS(VertexIn_3D Input, InstanceData Instance)
 {
 	VertexOut_3D output;
 
 	output.Pos = float4(Input.Pos, 1.f);
-	output.Pos = mul(output.Pos, World);
+	output.Pos = mul(output.Pos, Instance.InstancePos);
 	output.Pos = mul(output.Pos, View);
 	output.Pos = mul(output.Pos, Projection);
 

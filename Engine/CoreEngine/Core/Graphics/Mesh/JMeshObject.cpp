@@ -178,7 +178,6 @@ void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 		for (int32_t j = 0; j < subMeshCount; ++j)
 		{
 			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-			mMaterialInstances[j]->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMatrix));
 			mMaterialInstances[j]->UpdateConstantData(deviceContext,
 													  CBuffer::NAME_CONSTANT_BUFFER_MESH,
 													  &mMeshConstantBuffer);
@@ -215,7 +214,7 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(const JText& InName) const
 	return nullptr;
 }
 
-void JMeshObject::Render()
+void JMeshObject::AddInstance()
 {
 	const int32_t lodCount = mPrimitiveMeshData.size();
 
@@ -229,7 +228,9 @@ void JMeshObject::Render()
 		{
 			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mWorldMatrix);
+			FInstanceData_Mesh data;
+			data.WorldMatrix = mWorldMatrix;
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
 		}
 	}
 }
@@ -258,7 +259,7 @@ void JMeshObject::Draw()
 			// Topology 설정
 
 			mMaterialInstances[j]->BindMaterial(deviceContext);
-			// currMesh->PassMaterial(deviceContext);
+
 			int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
 
 			// 버퍼 설정
@@ -304,14 +305,19 @@ void JMeshObject::DrawID(uint32_t ID)
 
 			auto cam = GetWorld.CameraManager->GetCurrentMainCam();
 
-			CBuffer::Space space;
-			space.Model      = XMMatrixTranspose(mWorldMatrix);
-			space.View       = XMMatrixTranspose(cam->GetViewMatrix());
-			space.Projection = XMMatrixTranspose(cam->GetProjMatrix());
+			CBuffer::Camera camera;
+			camera.CameraPos  = FVector4::ZeroVector;
+			camera.View       = XMMatrixTranspose(cam->GetViewMatrix());
+			camera.Projection = XMMatrixTranspose(cam->GetProjMatrix());
 
 			idShader->UpdateConstantData(deviceContext,
-										 CBuffer::NAME_CONSTANT_BUFFER_SPACE,
-										 &space);
+										 CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
+										 &camera);
+
+			FMatrix worldMatrix = XMMatrixTranspose(mWorldMatrix);
+			idShader->UpdateConstantData(deviceContext,
+										 "WorldConstantBuffer",
+										 &worldMatrix);
 
 			FVector4 color = Hash2Color(ID);
 			idShader->UpdateConstantData(deviceContext, CBuffer::NAME_CONSTANT_BUFFER_COLOR_ID, &color);

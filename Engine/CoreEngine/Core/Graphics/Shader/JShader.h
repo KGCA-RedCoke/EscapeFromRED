@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "JConstantBuffer.h"
+#include "FConstantBuffer.h"
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Graphics/ShaderStructs.h"
 
@@ -10,7 +10,7 @@ constexpr const char* NAME_SHADER_ID     = "Shader/FBMP.hlsl";
 const uint32_t HASH_SHADER_BASIC  = StringHash(NAME_SHADER_BASIC);
 const uint32_t HASH_SHADER_GNOMON = StringHash(NAME_SHADER_GNOMON);
 
-struct JConstantBuffer;
+struct FConstantBuffer;
 
 struct FShaderData
 {
@@ -31,7 +31,7 @@ struct FShaderData
 
 	uint32_t VertexInputLayoutSize;
 
-	JArray<JConstantBuffer>  ConstantBuffers;
+	JArray<FConstantBuffer>  ConstantBuffers;
 	JHash<uint32_t, int32_t> ConstantBufferHashTable;
 };
 
@@ -82,7 +82,7 @@ public:
 	void UpdateConstantDataTemplate(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
 									const BufferData&    InData)
 	{
-		if (JConstantBuffer* buffer = GetConstantBuffer(InBufferName))
+		if (FConstantBuffer* buffer = GetConstantBuffer(InBufferName))
 		{
 			memcpy_s(buffer->Data.data(),
 					 buffer->Data.size(),
@@ -99,7 +99,7 @@ public:
 	virtual void UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:
-	JConstantBuffer* GetConstantBuffer(const JText& InBufferName);
+	FConstantBuffer* GetConstantBuffer(const JText& InBufferName);
 
 private:
 	void LoadVertexShader(LPCSTR FuncName);

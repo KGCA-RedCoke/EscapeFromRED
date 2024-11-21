@@ -2,6 +2,7 @@
 
 #include "JSkeletalMeshObject.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 
 void MMeshManager::PostInitialize(const JText& OriginalNameOrPath, const JText& ParsedName, const uint32_t NameHash,
 								  void*        Entity)
@@ -151,22 +152,16 @@ void MMeshManager::GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject
 	skel->mInstanceBuffer_Bone = bone;
 }
 
-void MMeshManager::UpdateInstanceBuffer(uint32_t NameHash, int32_t NumInstances)
-{}
-
-void MMeshManager::PushCommand(uint32_t NameHash, const FMatrix& InWorldMatrix)
+void MMeshManager::PushCommand(uint32_t NameHash, const FInstanceData_Mesh& InInstanceData)
 {
-	mInstanceData[NameHash].push_back({InWorldMatrix});
+	mInstanceData[NameHash].emplace_back(InInstanceData);
 }
 
 void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 {
-	JMaterialInstance* materialInstance = MMaterialInstanceManager::Get().CreateOrLoad(NAME_MAT_INS_DEFAULT);
 
 	for (auto& [nameHash, instanceData] : mInstanceData)
 	{
-		materialInstance->BindMaterial(InContext);
-
 		// 인스턴스 갯수 만큼 버퍼 업데이트
 		if (mBufferList.contains(nameHash))
 		{
@@ -194,6 +189,8 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 	}
 
 	mInstanceData.clear();
+	MShaderManager::Get().mCachedShader = nullptr;
+
 }
 
 
@@ -221,9 +218,6 @@ void MMeshManager::GenInstanceBuffer(ID3D11Device*  InDevice, uint32_t NameHash,
 	// 						D3D11_CPU_ACCESS_WRITE);
 }
 
-MMeshManager::MMeshManager()
-{
-	// CreateOrLoad(Path_Mesh_Sphere);
-}
+MMeshManager::MMeshManager() {}
 
 MMeshManager::~MMeshManager() {}

@@ -1,7 +1,7 @@
 // MousePicking을 위한 프레임 버퍼
-cbuffer ModelViewProjectionConstantBuffer : register(b0)
+cbuffer CameraConstantBuffer : register(b0)
 {
-	matrix World;
+	float4 WorldCameraPos;
 	matrix View;
 	matrix Projection;
 };
@@ -9,6 +9,11 @@ cbuffer ModelViewProjectionConstantBuffer : register(b0)
 cbuffer ColorIDConstantBuffer : register(b1)
 {
 	float4 color;
+};
+
+cbuffer WorldConstantBuffer : register(b2)
+{
+	matrix World;
 };
 
 struct VertexIn_Base
@@ -33,8 +38,6 @@ PixelInput VS(VertexIn_Base Input)
 
 	return output;
 }
-
-
 
 float4 PS() : SV_TARGET
 {

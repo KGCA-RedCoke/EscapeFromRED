@@ -49,9 +49,25 @@ struct VertexIn_Base
 	float4 BoneWeights : WEIGHT;
 };
 
+struct FMaterialInstance
+{
+	float4 BaseColor : MAT_BASECOLOR;
+	float  Occlusion : MAT_SPECULAR;
+	float  Roughness : MAT_ROUGHNESS;
+	float  Metallic : MAT_METALLIC;
+	float  Emissive : MAT_EMISSIVE;
+};
+
 struct InstanceData
 {
-	row_major matrix InstancePos : INSTANCE_TRANSFORM;
+	row_major matrix InstancePos : INST_TRANSFORM;
+
+	// ------------ Material ----------------
+	float4 BaseColor : INST_MAT_BASECOLOR;
+	float  Occlusion : INST_MAT_SPECULAR;
+	float  Roughness : INST_MAT_ROUGHNESS;
+	float  Metallic : INST_MAT_METALLIC;
+	float  Emissive : INST_MAT_EMISSIVE;
 };
 
 struct PixelInput_Base
@@ -65,4 +81,6 @@ struct PixelInput_Base
 	float3 Normal : TEXCOORD2;
 	float3 Tangent : TEXCOORD3;
 	float3 Binormal : TEXCOORD4;
+
+	FMaterialInstance Material : MATERIAL;
 };

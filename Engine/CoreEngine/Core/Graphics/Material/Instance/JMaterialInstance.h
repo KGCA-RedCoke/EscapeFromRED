@@ -13,7 +13,7 @@ public:
 
 public:
 	UPtr<IManagedInterface> Clone() const override;
-	void SetAsDefaultMaterial();
+	void                    SetAsDefaultMaterial();
 
 public:
 	uint32_t GetHash() const override;
@@ -27,10 +27,6 @@ public:
 							const uint32_t       InOffset = 0) const;
 	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,
 							const void*          InData) const;
-	void UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const;
-	void UpdateCamera(ID3D11DeviceContext* InDeviceContext, const Ptr<class JCamera>& InCameraObj) const;
-	void UpdateLightColor(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightColor) const;
-	void UpdateLightLoc(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightLoc) const;
 
 public:
 	FMaterialParam* GetInstanceParam(const JText& InParamName);
@@ -38,17 +34,9 @@ public:
 	void            EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue);
 
 public:
-	FORCEINLINE JText    GetMaterialName() const { return ParseFile(mFileName); }
-	FORCEINLINE JText    GetMaterialPath() const { return mFileName; }
-	FORCEINLINE int32_t  GetParamCount() const { return mInstanceParams.size(); }
-	FORCEINLINE uint32_t GetInputLayoutSize() const
-	{
-		if (mShader)
-		{
-			return mShader->GetInputLayoutSize();
-		}
-		return 0;
-	}
+	FORCEINLINE JText   GetMaterialName() const { return ParseFile(mFileName); }
+	FORCEINLINE JText   GetMaterialPath() const { return mFileName; }
+	FORCEINLINE int32_t GetParamCount() const { return mInstanceParams.size(); }
 
 public:
 	void SetParentMaterial(JMaterial* InParentMaterial);

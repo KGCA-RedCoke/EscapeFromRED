@@ -39,8 +39,6 @@ void JLandScape::Draw()
 	ID3D11DeviceContext* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	mMaterial->UpdateWorldMatrix(deviceContext, XMMatrixTranspose(mWorldMat));
-
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	uint32_t offset = 0;

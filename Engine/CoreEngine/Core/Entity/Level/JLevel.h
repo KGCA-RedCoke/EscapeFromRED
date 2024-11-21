@@ -18,7 +18,8 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	JText GetName() const { return mName; }
+	JText   GetName() const { return mName; }
+	int32_t GetActorCount() const { return mActors.size(); }
 
 public:
 	void InitializeLevel();
@@ -31,7 +32,7 @@ public:
 	JActor* LoadActorFromPath(const JText& InPath);
 
 	template <typename T, typename... Args>
-	T* CreateActor(const JText& InName, JActor* Template = nullptr, Args&&... InArgs);
+	T* CreateActor(const JText& InName, const JText& Template = nullptr, Args&&... InArgs);
 
 private:
 	JText mName;	// 레벨 이름
@@ -47,7 +48,7 @@ private:
 };
 
 template <typename T = JActor, typename... Args>
-T* JLevel::CreateActor(const JText& InName, JActor* Template, Args&&... InArgs)
+T* JLevel::CreateActor(const JText& InName, const JText& Template, Args&&... InArgs)
 {
 	static_assert(std::is_base_of<JActor, T>::value, "T must be derived from JActor");
 

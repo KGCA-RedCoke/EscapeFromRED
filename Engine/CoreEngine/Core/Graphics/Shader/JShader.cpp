@@ -2,8 +2,8 @@
 
 #include <d3d11shader.h>
 #include <d3dcompiler.h>
+#include "FConstantBuffer.h"
 #include "InputLayouts.h"
-#include "JConstantBuffer.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/JWorld.h"
@@ -48,7 +48,7 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const void* InData,
 								 const uint32_t       InOffset)
 {
-	if (JConstantBuffer* buffer = GetConstantBuffer(InBufferName))
+	if (FConstantBuffer* buffer = GetConstantBuffer(InBufferName))
 	{
 		if (InData == nullptr)
 		{
@@ -67,7 +67,7 @@ void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JTe
 void JShader::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,
 								 const void*          InData)
 {
-	JConstantBuffer* buffer = GetConstantBuffer(InBufferName);
+	FConstantBuffer* buffer = GetConstantBuffer(InBufferName);
 	if (!buffer)
 	{
 		LOG_CORE_ERROR("Buffer Name is not found in Shader Constant Buffer Table");
@@ -106,29 +106,11 @@ void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 		mTargetCamera = GetWorld.CameraManager->GetCurrentMainCam();
 	}
 
-	if (const auto viewMat = XMMatrixTranspose(mTargetCamera->GetViewMatrix()); mCachedSpaceData.View != viewMat)
-	{
-		mCachedSpaceData.View = viewMat;
-		UpdateConstantData(InDeviceContext,
-						   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
-						   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_VIEW,
-						   &mCachedSpaceData.View);
-	}
+	mCachedCameraData.CameraPos  = FVector4{mTargetCamera->GetEyePositionFVector(), 1.f};
+	mCachedCameraData.View       = XMMatrixTranspose(mTargetCamera->GetViewMatrix());
+	mCachedCameraData.Projection = XMMatrixTranspose(mTargetCamera->GetProjMatrix());
 
-	if (const auto projMat = XMMatrixTranspose(mTargetCamera->GetProjMatrix()); mCachedSpaceData.Projection != projMat)
-	{
-		mCachedSpaceData.Projection = projMat;
-		UpdateConstantData(InDeviceContext,
-						   CBuffer::NAME_CONSTANT_BUFFER_SPACE,
-						   CBuffer::NAME_CONSTANT_VARIABLE_SPACE_PROJ,
-						   &mCachedSpaceData.Projection);
-	}
-
-	if (const auto camPos = FVector4(mTargetCamera->GetEyePositionFVector(), 1.0f); mCachedCameraData.CameraPos != camPos)
-	{
-		mCachedCameraData.CameraPos = camPos;
-		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_CAMERA, &mCachedCameraData);
-	}
+	UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_CAMERA, &mCachedCameraData);
 
 	for (int32_t i = 0; i < mDefaultShaderData.ConstantBuffers.size(); ++i)
 	{
@@ -253,7 +235,7 @@ void JShader::LoadShaderReflectionData()
 		elementDesc.InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
 		elementDesc.InstanceDataStepRate = 0;
 
-		if (strncmp(paramDesc.SemanticName, "INSTANCE_", 9) == 0)
+		if (strncmp(paramDesc.SemanticName, "INST_", 5) == 0)
 		{
 			elementDesc.InputSlot            = 1; // 인스턴스 데이터는 슬롯 1
 			elementDesc.InputSlotClass       = D3D11_INPUT_PER_INSTANCE_DATA;
@@ -266,6 +248,22 @@ void JShader::LoadShaderReflectionData()
 			else
 			{
 				elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+			}
+
+			// "INSTANCE_MATERIAL"인지 확인
+			if (strncmp(paramDesc.SemanticName, "INST_MAT_", 9) == 0)
+			{
+				// INSTANCE_MATERIAL 처리 로직
+				if (paramDesc.Mask == 1)
+				{}
+				else if (paramDesc.Mask <= 3)
+				{}
+				else if (paramDesc.Mask <= 7)
+				{}
+				else if (paramDesc.Mask <= 15)
+				{}
+
+				// mShaderMaterialParams.push_back();
 			}
 		}
 
@@ -330,7 +328,7 @@ void JShader::LoadShaderReflectionData()
 		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 		CheckResult(vertexShaderReflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc));
 
-		JConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, true, false);
+		FConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, true, false);
 		constantBuffer.Data.resize(bufferDesc.Size);
 
 		// 상수 버퍼 내부의 변수 정보를 가져옴
@@ -383,7 +381,7 @@ void JShader::LoadShaderReflectionData()
 			continue;
 		}
 
-		JConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, false, true);
+		FConstantBuffer constantBuffer(bufferDesc.Name, bufferDesc.Size, bindDesc.BindPoint, false, true);
 		constantBuffer.Data.resize(bufferDesc.Size);
 
 		// 상수 버퍼 내부의 변수 정보를 가져옴
@@ -426,7 +424,7 @@ void JShader::LoadShaderReflectionData()
 
 }
 
-JConstantBuffer* JShader::GetConstantBuffer(const JText& InBufferName)
+FConstantBuffer* JShader::GetConstantBuffer(const JText& InBufferName)
 {
 	if (auto it = mDefaultShaderData.ConstantBufferHashTable.find(StringHash(InBufferName.c_str())); it !=
 		mDefaultShaderData.

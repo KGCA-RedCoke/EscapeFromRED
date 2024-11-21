@@ -17,6 +17,9 @@ public:
 	void Release();
 
 public:
+	[[nodiscard]] float GetDeltaSeconds() const;
+	[[nodiscard]] float GetGameTime() const;
+
 	JActor* SpawnActor(const JText&   InName,
 					   const FVector& InLocation = FVector::ZeroVector,
 					   const FVector& InRotation = FVector::ZeroVector,
@@ -28,6 +31,7 @@ private:
 	static void ParseFiles_Recursive(const std::filesystem::path& InPath);
 
 public:
+	class Application*              Application;			// 애플리케이션
 	class MGUIManager*              GUIManager;				// GUI
 	class MViewportManager*         ViewportManager;		// 뷰포트
 	class MCameraManager*           CameraManager;			// 카메라
@@ -39,6 +43,7 @@ public:
 	class MActorManager*            ActorManager;			// 액터
 	class MLevelManager*            LevelManager;			// 레벨
 	class XD3DDevice*               D3D11API;				// 디바이스
+
 
 	Thread::ThreadPool ThreadPool;		// 스레드
 

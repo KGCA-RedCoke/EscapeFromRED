@@ -2,6 +2,7 @@
 
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/JShader.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
 
 JMaterial_SkySphere::JMaterial_SkySphere(JTextView InName)
@@ -15,9 +16,9 @@ JMaterial_SkySphere::JMaterial_SkySphere(JTextView InName)
 void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
 											   const JArray<FMaterialParam>& InInstanceParams)
 {
-	float gameTime = Application::s_AppInstance->GetCurrentTime();
+	float gameTime = GetWorld.GetGameTime();
 	// Time버퍼를(상수) 넘겨줘야한다.
-	mShader->UpdateConstantData(InDeviceContext, "TimeConstantBuffer", "GameTime", &gameTime);
+	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
 
 	// 상수버퍼, 셰이더 세팅
 	JMaterial::BindMaterialPipeline(InDeviceContext, InInstanceParams);

@@ -143,49 +143,6 @@ void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext,
 	mShader->UpdateConstantData(InDeviceContext, InBufferName, InDataName, InData);
 }
 
-void JMaterialInstance::UpdateWorldMatrix(ID3D11DeviceContext* InDeviceContext, const FMatrix& InWorldMatrix) const
-{
-	if (!mShader)
-		return;
-
-	mShader->UpdateConstantData(InDeviceContext,
-								CBuffer::NAME_CONSTANT_BUFFER_SPACE,
-								CBuffer::NAME_CONSTANT_VARIABLE_SPACE_WORLD,
-								&InWorldMatrix);
-}
-
-void JMaterialInstance::UpdateCamera(ID3D11DeviceContext* InDeviceContext, const Ptr<JCamera>& InCameraObj) const
-{
-	if (!mShader)
-		return;
-	// mParentMaterial->mShader->
-	FVector4 camPos = {InCameraObj->GetEyePositionFVector(), 1.f};
-	mShader->UpdateConstantData(InDeviceContext,
-								CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
-								CBuffer::NAME_CONSTANT_VARIABLE_CAMERA_POS,
-								&camPos);
-}
-
-void JMaterialInstance::UpdateLightColor(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightColor) const
-{
-	if (!mShader)
-		return;
-	mShader->UpdateConstantData(InDeviceContext,
-								CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
-								CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_COLOR,
-								&InLightColor);
-}
-
-void JMaterialInstance::UpdateLightLoc(ID3D11DeviceContext* InDeviceContext, const FVector4& InLightLoc) const
-{
-	if (!mParentMaterial)
-		return;
-	mParentMaterial->mShader->UpdateConstantData(InDeviceContext,
-												 CBuffer::NAME_CONSTANT_BUFFER_LIGHT,
-												 CBuffer::NAME_CONSTANT_VARIABLE_LIGHT_POS,
-												 &InLightLoc);
-}
-
 FMaterialParam* JMaterialInstance::GetInstanceParam(const JText& InParamName)
 {
 	if (mInstanceParams.empty())

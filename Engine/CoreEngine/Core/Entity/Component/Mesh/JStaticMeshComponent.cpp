@@ -76,7 +76,7 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		mMeshObject->Render();
+		mMeshObject->AddInstance();
 	}
 
 	// Child SceneComponent Draw 호출

@@ -15,7 +15,7 @@ void XLayerBase::Render() const
 	{
 		mRenderObjects[i]->PreRender();
 
-		mRenderObjects[i]->Render();
+		mRenderObjects[i]->AddInstance();
 
 		mRenderObjects[i]->PostRender();
 	}

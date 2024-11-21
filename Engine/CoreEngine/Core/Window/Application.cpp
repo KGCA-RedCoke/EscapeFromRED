@@ -136,9 +136,7 @@ void Application::Render()
 		Actors[i]->Draw();
 	}
 
-	mFpsText->PreRender();
-	mFpsText->Render();
-	mFpsText->PostRender();
+	mFpsText->Draw();
 
 	GetWorld.D3D11API->Draw();
 }

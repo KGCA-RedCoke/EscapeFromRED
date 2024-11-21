@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "common_include.h"
-#include "Core/Graphics/Shader/JConstantBuffer.h"
+#include "Core/Graphics/Shader/FConstantBuffer.h"
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
@@ -154,7 +154,7 @@ protected:
 	JText    mMaterialName;
 	uint32_t mMaterialID;
 
-	JConstantBuffer        mMaterialBuffer;
+	FConstantBuffer        mMaterialBuffer;
 	JArray<FMaterialParam> mMaterialParams;
 	JShader*               mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 

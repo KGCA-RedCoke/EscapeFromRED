@@ -154,6 +154,8 @@ void GUI_Viewport::UpdateMousePickingBuffer(ID3D11DeviceContext* InDeviceContext
 	// 렌더 타겟 초기화
 	InDeviceContext->OMSetRenderTargets(1, mMousePickingBuffer.RTV.GetAddressOf(), nullptr);
 	InDeviceContext->ClearRenderTargetView(mMousePickingBuffer.RTV.Get(), FLinearColor::TrueBlack.RGBA);
+
+	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);
 }
 
 uint32_t GUI_Viewport::GetMousePickingValue(ID3D11DeviceContext* InDeviceContext, const ImVec2& InMousePos)

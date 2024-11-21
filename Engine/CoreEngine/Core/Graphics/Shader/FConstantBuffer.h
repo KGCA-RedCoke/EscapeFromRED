@@ -43,7 +43,7 @@ DECLARE_DYNAMIC_DELEGATE(FOnConstantBufferPropertyChanged,
 						 void* InData,
 						 uint32_t InSize)
 
-struct JConstantBuffer
+struct FConstantBuffer
 {
 	JText                    Name;
 	uint32_t                 Hash;
@@ -117,9 +117,9 @@ struct JConstantBuffer
 		OnConstantBufferPropertyChanged.Execute(InDeviceContext, Buffer.Get(), Data.data(), Data.size());
 	}
 
-	JConstantBuffer() = default;
+	FConstantBuffer() = default;
 
-	JConstantBuffer(const JText& InName,
+	FConstantBuffer(const JText& InName,
 					uint32_t     InSize,
 					uint32_t     InSlot                = 0,
 					bool         bInPassToVertexShader = false,

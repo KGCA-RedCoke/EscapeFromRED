@@ -13,7 +13,7 @@ XTKPrimitiveBatch::~XTKPrimitiveBatch()
 
 void XTKPrimitiveBatch::Initialize()
 {
-	mBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(GetWorld.D3D11API->GetImmediateDeviceContext());
+	mBatch       = std::make_unique<PrimitiveBatch<VertexPositionColor>>(GetWorld.D3D11API->GetImmediateDeviceContext());
 	mBatchEffect = std::make_unique<BasicEffect>(GetWorld.D3D11API->GetDevice());
 	mBatchEffect->SetVertexColorEnabled(true);
 
@@ -59,8 +59,17 @@ void XTKPrimitiveBatch::PreRender()
 	mBatch->Begin();
 }
 
-void XTKPrimitiveBatch::Render()
+void XTKPrimitiveBatch::AddInstance()
+{}
+
+void XTKPrimitiveBatch::PostRender()
 {
+	mBatch->End();
+}
+
+void XTKPrimitiveBatch::Draw()
+{
+	PreRender();
 
 	constexpr FVector4 origin = {0, 0, 0, 0};
 
@@ -89,15 +98,9 @@ void XTKPrimitiveBatch::Render()
 								   false,
 								   {0.f, 1.f, 0.f, 1.f}
 								  );
-}
 
-void XTKPrimitiveBatch::PostRender()
-{
-	mBatch->End();
+	PostRender();
 }
-
-void XTKPrimitiveBatch::Draw()
-{}
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
 {

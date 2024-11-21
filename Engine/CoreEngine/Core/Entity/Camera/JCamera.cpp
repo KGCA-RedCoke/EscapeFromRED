@@ -53,16 +53,6 @@ JCamera::JCamera(const JWText& InName)
 void JCamera::Initialize()
 {
 	mInputKeyboard.Initialize();
-
-
-	Utils::DX::CreateBuffer(GetWorld.D3D11API->GetDevice(),
-							D3D11_BIND_CONSTANT_BUFFER,
-							nullptr,
-							sizeof(CBuffer::Camera),
-							1,
-							mCameraConstantBuffer.GetAddressOf(),
-							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE);
 }
 
 void JCamera::Update(float_t DeltaTime)
@@ -104,16 +94,7 @@ void JCamera::Update(float_t DeltaTime)
 	XMStoreFloat4x4(&mView, view);
 
 	mWorld = XMMatrixInverse(nullptr, view);
-	// XMMATRIX mTrans = XMMatrixTranslation(0, 0, mVelocity.z * DeltaTime);
-	// XMStoreFloat4x4(&mWorld, mTrans);
 
-	// Update the camera constant buffer
-	CBuffer::Camera camPos;
-	camPos.CameraPos = FVector4(mEye, 1.f);
-	Utils::DX::UpdateDynamicBuffer(GetWorld.D3D11API->GetImmediateDeviceContext(),
-								   mCameraConstantBuffer.Get(),
-								   &mEye,
-								   sizeof(CBuffer::Camera));
 }
 
 void JCamera::Release()
@@ -186,16 +167,6 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 
 	XMMATRIX projMat = XMMatrixPerspectiveFovLH(InFOV, InAspect, InNearPlane, InFarPlane);
 	XMStoreFloat4x4(&mProj, projMat);
-}
-
-void JCamera::SetCameraConstantBuffer(uint32_t InSlot)
-{
-	GetWorld.D3D11API->GetImmediateDeviceContext()->VSSetConstantBuffers(InSlot,
-																			  1,
-																			  mCameraConstantBuffer.GetAddressOf());
-	GetWorld.D3D11API->GetImmediateDeviceContext()->PSSetConstantBuffers(InSlot,
-																			  1,
-																			  mCameraConstantBuffer.GetAddressOf());
 }
 
 void JCamera::UpdateVelocity(float DeltaTime)

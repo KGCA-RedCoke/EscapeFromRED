@@ -221,7 +221,7 @@ void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext, const
 	assert(mShader);
 
 	// 셰이더를 적용
-	mShader->BindShaderPipeline(InDeviceContext);
+	GetWorld.ShaderManager->UpdateShader(InDeviceContext, mShader);
 }
 
 void JMaterial::EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam)

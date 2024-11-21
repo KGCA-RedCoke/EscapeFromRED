@@ -11,6 +11,7 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Window/Application.h"
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
 
@@ -30,6 +31,8 @@ JWorld::JWorld()
 
 void JWorld::Initialize()
 {
+	Application = Application::s_AppInstance;
+
 	G_Logger.Initialize();			 // Logger
 
 	D3D11API = &XD3DDevice::Get();
@@ -87,12 +90,7 @@ void JWorld::Render()
 
 	LevelManager->Render();
 
-	G_DebugBatch.PreRender();
-
-	G_DebugBatch.Render();
-
-	G_DebugBatch.PostRender();
-
+	G_DebugBatch.Draw();
 }
 
 void JWorld::Release()
@@ -104,6 +102,16 @@ void JWorld::Release()
 	D3D11API->Release();
 
 	Utils::Fbx::FbxFile::Release();
+}
+
+float JWorld::GetDeltaSeconds() const
+{
+	return Application->GetDeltaSeconds();
+}
+
+float JWorld::GetGameTime() const
+{
+	return Application->GetCurrentTime();
 }
 
 JActor* JWorld::SpawnActor(const JText&   InName,

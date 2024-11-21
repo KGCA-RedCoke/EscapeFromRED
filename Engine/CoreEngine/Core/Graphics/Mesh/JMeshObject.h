@@ -42,7 +42,7 @@ public:
 public:
 #pragma region Render Interface
 	void PreRender() override {}
-	void Render() override;
+	void AddInstance() override;
 	void PostRender() override {}
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
