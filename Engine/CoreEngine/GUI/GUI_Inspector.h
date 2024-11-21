@@ -29,4 +29,6 @@ private:
 	JSceneComponent*       mSelectedSceneComponent;
 	JLevel*                mLevel;
 	JHash<JText, JActor*>  mSceneComponents;
+
+	bool bRequestDelete = false;
 };

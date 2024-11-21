@@ -172,14 +172,14 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 			Utils::DX::UpdateDynamicBuffer(InContext,
 										   instanceBuffer.Get(),
 										   instanceData.data(),
-										   sizeof(FInstanceData) * instanceData.size());
+										   sizeof(FInstanceData_Mesh) * instanceData.size());
 
 			ID3D11Buffer* buffers[] = {
 				buffer.Geometry.Buffer_Vertex.Get(),
 				instanceBuffer.Get()
 			};
 
-			uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData)};
+			uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
 			uint32_t offset[2] = {0, 0};
 
 			InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);

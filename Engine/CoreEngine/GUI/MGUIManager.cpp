@@ -5,6 +5,7 @@
 #include "GUI_Inspector.h"
 #include "GUI_Themes.h"
 #include "Camera/GUI_Camera_Debug_Frustum.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
@@ -97,6 +98,8 @@ void MGUIManager::UpdateMainMenuBar()
 			}
 			if (ImGui::MenuItem(u8("현재 레벨 저장")))
 			{
+				JLevel* activeLevel = MLevelManager::Get().GetActiveLevel();
+				Utils::Serialization::Serialize("Game/Levels/Level1.jasset" /*activeLevel->GetPath().c_str()*/, activeLevel);
 				// Save Scene
 			}
 			if (ImGui::MenuItem(u8("FBX")))

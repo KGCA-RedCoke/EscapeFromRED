@@ -43,6 +43,13 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 			}
 		}
 		ImGui::EndTable();
+
+		if (bRequestDelete)
+		{
+			mSelectedSceneComponent->Destroy();
+			mSelectedSceneComponent = nullptr;
+			bRequestDelete          = false;
+		}
 	}
 
 	ImGui::EndChild();
@@ -76,6 +83,7 @@ void GUI_Inspector::DrawSearchBar()
 
 void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 {
+
 	// 테이블의 다음 행, 다음 열로 이동
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
@@ -101,12 +109,18 @@ void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 	}
+
+	const bool bIsOpen = ImGui::TreeNodeEx("", treeNodeFlags, "%s", InSceneComponent->GetName().c_str());
 	if (ImGui::IsItemClicked())
 	{
 		mSelectedSceneComponent = InSceneComponent;
 	}
 
-	const bool bIsOpen = ImGui::TreeNodeEx("", treeNodeFlags, "%s", InSceneComponent->GetName().c_str());
+	if (mSelectedSceneComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
+	{
+		bRequestDelete = true;
+	}
+
 	if (bIsOpen)
 	{
 		for (int32_t i = 0; i < InSceneComponent->GetChildCount(); ++i)

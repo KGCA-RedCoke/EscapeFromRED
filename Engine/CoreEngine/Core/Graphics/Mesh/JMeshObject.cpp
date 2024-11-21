@@ -230,6 +230,13 @@ void JMeshObject::AddInstance()
 
 			FInstanceData_Mesh data;
 			data.WorldMatrix = mWorldMatrix;
+
+			FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
+			if (diffuse)
+			{
+				data.MaterialData.BaseColor = diffuse->Float4Value;
+			}
+
 			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
 		}
 	}
