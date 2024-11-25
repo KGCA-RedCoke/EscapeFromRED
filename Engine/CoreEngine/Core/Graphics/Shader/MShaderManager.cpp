@@ -25,7 +25,7 @@ void MShaderManager::UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader*
 		InShader->UpdateGlobalConstantBuffer(InDeviceContext);
 		return;
 	}
-	
+
 	mCachedShader = InShader;
 
 	InShader->BindShaderPipeline(InDeviceContext);
@@ -35,6 +35,8 @@ void MShaderManager::Initialize_Initialize()
 {
 	BasicShader = CreateOrLoad<JShader_Basic>(NAME_SHADER_BASIC);
 	IDShader    = CreateOrLoad(NAME_SHADER_ID);
+	ColorShader = CreateOrLoad(NAME_SHADER_SIMPLE_COLOR);
+
 	CreateOrLoad(NAME_SHADER_GNOMON);
 
 }

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Core/Entity/Component/Scene/JSceneComponent.h"
+#include "Core/Entity/Component/Scene/Shape/JShape.h"
 #include "Core/Graphics/ShaderStructs.h"
 
 class JMeshObject;
@@ -31,7 +32,10 @@ public:
 public:
 	void SetMeshObject(JTextView InMeshObject);
 
-protected:
+public:
+	FBoxShape BoxShape;
+
+private:
 	UPtr<JMeshObject> mMeshObject = nullptr;
 };
 

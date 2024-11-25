@@ -73,12 +73,6 @@ namespace CBuffer
 		FMatrix  Projection;
 	};
 
-	struct MeshConstantBuffer  // slot 3
-	{
-		uint32_t MeshFlags = 0;	// Default : Static
-		float    Padding[3];
-	};
-
 	enum ETextureUsage : uint32_t
 	{
 		None             = 0,
@@ -135,6 +129,13 @@ namespace Vertex
 	{
 		FVector  Position = FVector::ZeroVector;
 		FVector2 UV       = FVector2::ZeroVector;
+	};
+
+	struct FVertexInfo_Simple
+	{
+		FVector  Position = FVector::ZeroVector;
+		FVector  Normal   = FVector::ZeroVector;
+		FVector4 Color    = FVector4::OneVector;
 	};
 
 	struct FVertexInfo_2D
@@ -289,11 +290,12 @@ struct FInstanceData
 
 struct FMaterialInstanceData
 {
-	FVector4 BaseColor;
-	float    Occlusion;
-	float    Roughness;
-	float    Metallic;
-	float    Emissive;
+	FVector4 BaseColor = FVector4(0.2f, 0.2f, 0.2f, 1.f);
+	float    Occlusion = 0.5f;
+	float    Roughness = 0.5f;
+	float    Metallic  = 0.5f;
+	float    Emissive  = 0.1f;
+	uint32_t Flag      = 0;
 };
 
 struct FInstanceData_Mesh

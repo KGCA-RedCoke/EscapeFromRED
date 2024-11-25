@@ -6,8 +6,57 @@
 /**
  * 2D 스크린에 배치되는 컴포넌트
  */
-class JSceneComponent_2D : public IRenderable
-{};
+class JSceneComponent_2D : public JActorComponent, public IRenderable
+{
+public:
+	JSceneComponent_2D();
+	JSceneComponent_2D(JTextView InName, JActor* InOwnerActor = nullptr);
+	~JSceneComponent_2D() override;
+
+public:
+	uint32_t GetType() const override { return StringHash("JSceneComponent_2D"); }
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void Tick(float DeltaTime) override;
+
+public:
+	void PreRender() override {}
+	void AddInstance() override {};
+	void PostRender() override {};
+	void Draw() override {};
+	void DrawID(uint32_t ID) override {};
+
+public:
+	FORCEINLINE [[nodiscard]] FVector2 GetLocalPosition() const { return mLocalPosition; }
+	FORCEINLINE [[nodiscard]] FVector2 GetLocalRotation() const { return mLocalRotation; }
+	FORCEINLINE [[nodiscard]] FVector2 GetLocalSize() const { return mLocalSize; }
+
+	FORCEINLINE [[nodiscard]] FVector2 GetWorldPosition() const { return mWorldPosition; }
+	FORCEINLINE [[nodiscard]] FVector2 GetWorldRotation() const { return mWorldRotation; }
+	FORCEINLINE [[nodiscard]] FVector2 GetWorldSize() const { return mWorldSize; }
+
+	void SetLocalPosition(const FVector2& InPosition) { mLocalPosition = InPosition; }
+	void SetLocalRotation(const FVector2& InRotation) { mLocalRotation = InRotation; }
+	void SetLocalSize(const FVector2& InSize) { mLocalSize = InSize; }
+
+	void SetWorldPosition(const FVector2& InPosition) { mWorldPosition = InPosition; }
+	void SetWorldRotation(const FVector2& InRotation) { mWorldRotation = InRotation; }
+	void SetWorldSize(const FVector2& InSize) { mWorldSize = InSize; }
+
+protected:
+	FVector2 mLocalPosition = FVector2::ZeroVector;
+	FVector2 mLocalRotation = FVector2::ZeroVector;
+	FVector2 mLocalSize     = FVector2::UnitVector;
+
+	FVector2 mWorldPosition = FVector2::ZeroVector;
+	FVector2 mWorldRotation = FVector2::ZeroVector;
+	FVector2 mWorldSize     = FVector2::UnitVector;
+
+	FMatrix mWorldMat = FMatrix::Identity;
+	FMatrix mLocalMat = FMatrix::Identity;
+};
 
 
 /**

@@ -1,8 +1,10 @@
 ﻿#include "JLevel.h"
 
 #include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Interface/JWorld.h"
 
 JLevel::JLevel(const JText& InPath)
 	: mName(ParseFile(InPath))
@@ -92,6 +94,8 @@ void JLevel::RenderLevel()
 	}
 
 	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
+
+	// GetWorld.CameraManager->GetCurrentMainCam()->PreRender(G_Device.GetImmediateDeviceContext());
 }
 
 // void JLevel::AddActor(const Ptr<JActor>& InActor)

@@ -31,10 +31,10 @@ void JMaterial_Basic::BindMaterialPipeline(ID3D11DeviceContext*          InDevic
 	{
 		const FMaterialParam& param = InInstanceParams[i];
 
-		mShader->UpdateConstantData(InDeviceContext,
-									CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-									param.Name,
-									&param.Float4Value);
+		// mShader->UpdateConstantData(InDeviceContext,
+		// 							CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
+		// 							param.Name,
+		// 							&param.Float4Value);
 
 		param.BindMaterialParam(InDeviceContext, i);
 	}

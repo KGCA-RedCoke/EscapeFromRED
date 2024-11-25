@@ -19,7 +19,7 @@ void GUI_Viewport_Scene::Initialize()
 {
 	// mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
 
-	mEditorCameraRef = GetWorld.CameraManager->FetchResource(L"EditorCamera");
+	mEditorCameraRef = GetWorld.CameraManager->FetchResource<JCamera_Debug>(L"EditorCamera");
 	assert(mEditorCameraRef);
 
 	mPauseIcon = GetWorld.TextureManager->CreateOrLoad(L"rsc/Icons/PauseButton On@2x.png");

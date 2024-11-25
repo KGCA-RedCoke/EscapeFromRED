@@ -6,6 +6,7 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Utils/Graphics/DXUtils.h"
 #include "GUI/GUI_Inspector.h"
 #include "GUI/MGUIManager.h"
 
@@ -31,8 +32,8 @@ void GUI_Viewport::Initialize()
 		{
 			mEditorCameraRef->SetProjParams(M_PI / 4,
 											static_cast<float>(InWidth) / static_cast<float>(InHeight),
-											0.1f,
-											1000000.f);
+											10.f,
+											100000.f);
 		}
 	});
 }
@@ -136,6 +137,23 @@ void GUI_Viewport::CreateMousePickingBuffer(ID3D11Device* InDevice)
 	textureDesc.CPUAccessFlags     = 0;
 	textureDesc.MiscFlags          = 0;
 
+	// ------------------------- DepthBuffer & Depth Stencil View -------------------------
+	ComPtr<ID3D11Texture2D> depthBuffer;
+	Utils::DX::CreateDepthStencilView(
+									  InDevice,
+									  mCachedViewportWidth,
+									  mCachedViewportHeight,
+									  mMousePickingBuffer.DepthBuffer.GetAddressOf(),
+									  depthBuffer.GetAddressOf());
+
+	// ------------------------- Depth Stencil State -------------------------
+	Utils::DX::CreateDepthStencilState(InDevice,
+									   true,
+									   D3D11_DEPTH_WRITE_MASK_ALL,
+									   D3D11_COMPARISON_LESS_EQUAL,
+									   mMousePickingBuffer.DepthState.GetAddressOf());
+
+
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
 	ZeroMemory(&rtvDesc, sizeof(rtvDesc));
 	rtvDesc.Format             = textureDesc.Format;
@@ -146,13 +164,19 @@ void GUI_Viewport::CreateMousePickingBuffer(ID3D11Device* InDevice)
 												 &rtvDesc,
 												 mMousePickingBuffer.RTV.GetAddressOf()));
 
+	depthBuffer = nullptr;
+
 }
 
 void GUI_Viewport::UpdateMousePickingBuffer(ID3D11DeviceContext* InDeviceContext)
 {
 
 	// 렌더 타겟 초기화
-	InDeviceContext->OMSetRenderTargets(1, mMousePickingBuffer.RTV.GetAddressOf(), nullptr);
+	InDeviceContext->ClearDepthStencilView(mMousePickingBuffer.DepthBuffer.Get(),
+										   D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+										   1.0f,
+										   0);
+	InDeviceContext->OMSetRenderTargets(1, mMousePickingBuffer.RTV.GetAddressOf(), mMousePickingBuffer.DepthBuffer.Get());
 	InDeviceContext->ClearRenderTargetView(mMousePickingBuffer.RTV.Get(), FLinearColor::TrueBlack.RGBA);
 
 	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);

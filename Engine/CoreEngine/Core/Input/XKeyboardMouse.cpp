@@ -10,16 +10,40 @@ void XKeyboardMouse::Initialize()
 	ClearMouse();
 }
 
-void XKeyboardMouse::Update()
+void XKeyboardMouse::Update(float DeltaTime)
 {
 	UpdateKeys();
 	UpdateMouse();
+
+	UpdateBindings(DeltaTime);
+}
+
+void XKeyboardMouse::AddInputBinding(const EKeyCode Key, const EKeyState KeyState, FOnKeyPressed Delegate)
+{
+	switch (KeyState)
+	{
+	case EKeyState::None:
+		LOG_CORE_WARN("Key State is None. Please Check Key State.");
+		return;
+	case EKeyState::Up:
+		OnKeyReleased.emplace(Key, Delegate);
+		break;
+	case EKeyState::Down:
+		OnKeyPressed.emplace(Key, Delegate);
+		break;
+	case EKeyState::Pressed:
+		OnKeyHold.emplace(Key, Delegate);
+		break;
+	}
 }
 
 void XKeyboardMouse::CreateKeys()
 {
 	mKeys.clear();
 	mKeys.reserve(static_cast<uint8_t>(EKeyCode::End));
+	OnKeyPressed.reserve(30);
+	OnKeyReleased.reserve(30);
+	OnKeyHold.reserve(30);
 
 	for (size_t i = 0; i < static_cast<uint8_t>(EKeyCode::End); ++i)
 	{
@@ -91,6 +115,33 @@ void XKeyboardMouse::UpdateMouse()
 
 	mMousePosition.x = mousePoint.x;
 	mMousePosition.y = mousePoint.y;
+}
+
+void XKeyboardMouse::UpdateBindings(const float DeltaTime)
+{
+	for (auto& [key, delegate] : OnKeyPressed)
+	{
+		if (IsKeyDown(key))
+		{
+			delegate.Execute(DeltaTime);
+		}
+	}
+
+	for (auto& [key, delegate] : OnKeyReleased)
+	{
+		if (IsKeyUp(key))
+		{
+			delegate.Execute(DeltaTime);
+		}
+	}
+
+	for (auto& [key, delegate] : OnKeyHold)
+	{
+		if (IsKeyPressed(key))
+		{
+			delegate.Execute(DeltaTime);
+		}
+	}
 }
 
 void XKeyboardMouse::ClearKeys()

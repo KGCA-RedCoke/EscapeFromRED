@@ -29,15 +29,15 @@ namespace JMath
 
 		TVector operator-() const;
 
-		inline TVector operator+(const TVector& V) const;
-		inline TVector operator-(const TVector& V) const;
-		inline TVector operator*(const TVector& V) const;
-		inline TVector operator/(const TVector& V) const;
-		inline TVector operator|(const TVector& V) const;
-		inline TVector operator^(const TVector& V) const;
+		TVector operator+(const TVector& V) const;
+		TVector operator-(const TVector& V) const;
+		TVector operator*(const TVector& V) const;
+		TVector operator/(const TVector& V) const;
+		TVector operator|(const TVector& V) const;
+		TVector operator^(const TVector& V) const;
 
-		inline TVector operator*(float Scale) const;
-		inline TVector operator*(TVector2 InVector2) const;
+		TVector operator*(float Scale) const;
+		TVector operator*(TVector2 InVector2) const;
 
 		// ------------------------ 비교 연산자 ----------------------------
 		bool operator==(const TVector&) const;

@@ -268,15 +268,6 @@ FMaterialParam* JMaterial::GetMaterialParam(const JText& InParamName)
 void JMaterial::SetShader(JShader* InShader)
 {
 	mShader = InShader;
-
-	if (auto* ref = mShader->GetConstantBuffer(CBuffer::NAME_CONSTANT_BUFFER_MATERIAL))
-	{
-		mMaterialBuffer = *ref;
-	}
-	else
-	{
-		LOG_CORE_ERROR("Failed to set shader to material. Shader does not have material buffer.");
-	}
 }
 
 FMaterialParam Utils::Material::CreateTextureParam(const char* ParamName, const char* FileName, int32_t Index)

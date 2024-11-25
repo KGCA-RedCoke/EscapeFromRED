@@ -12,6 +12,8 @@ struct FKeyboardData
 	std::chrono::milliseconds             PressDuration;
 };
 
+DECLARE_DYNAMIC_DELEGATE(FOnKeyPressed, float)
+
 class XKeyboardMouse
 {
 public:
@@ -20,7 +22,7 @@ public:
 
 public:
 	void Initialize();
-	void Update();
+	void Update(float DeltaTime);
 
 public:
 	FORCEINLINE bool                   IsKeyDown(const EKeyCode Key) const { return IsKeyDown_Internal(Key); }
@@ -28,6 +30,9 @@ public:
 	FORCEINLINE bool                   IsKeyPressed(const EKeyCode Key) const { return IsKeyPressed_Internal(Key); }
 	FORCEINLINE const JMath::TVector2& GetMousePosition() const { return mMousePosition; }
 	FORCEINLINE POINT                  GetCurMouseDelta() const { return mCurrentMouseDelta; }
+
+public:
+	void AddInputBinding(const EKeyCode Key, const EKeyState KeyState, FOnKeyPressed Delegate);
 
 private:
 	void CreateKeys();
@@ -38,6 +43,8 @@ private:
 	void UpdateKeyUp(FKeyboardData& InKey);
 
 	void UpdateMouse();
+
+	void UpdateBindings(const float DeltaTime);
 
 	void ClearKeys();
 	void ClearMouse();
@@ -63,10 +70,16 @@ private:
 		return GetAsyncKeyState(ASCII[static_cast<uint8_t>(InKey)]) & 0x8000;
 	}
 
+public:
+	JHash<EKeyCode, FOnKeyPressed> OnKeyPressed;
+	JHash<EKeyCode, FOnKeyPressed> OnKeyReleased;
+	JHash<EKeyCode, FOnKeyPressed> OnKeyHold;
+
 private:
-	std::vector<FKeyboardData> mKeys;
-	JMath::TVector2            mLastMousePosition;
-	JMath::TVector2            mMousePosition;
+	JArray<FKeyboardData> mKeys;
+	JMath::TVector2       mLastMousePosition;
+	JMath::TVector2       mMousePosition;
+
 
 	POINT mCurrentMouseDelta;
 };

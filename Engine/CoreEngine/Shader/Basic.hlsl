@@ -7,7 +7,7 @@ Texture2D g_AmbientOcclusionTexture : register(t2);
 Texture2D g_RoughnessTexture : register(t3);
 Texture2D g_MetallicTexture : register(t4);
 
-Buffer<float4> g_BoneTransforms : register(t5);
+StructuredBuffer<float4> g_BoneTransforms : register(t5);
 
 SamplerState g_DiffuseSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
@@ -37,6 +37,7 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.Material.Roughness = Instance.Roughness;
 	output.Material.Occlusion = Instance.Occlusion;
 	output.Material.Emissive  = Instance.Emissive;
+	output.Material.Flag      = Instance.Flag;
 
 
 	output.Color    = Input.Color;
@@ -44,7 +45,7 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 	float4 localPos = output.Pos;
 	float3 normal;
 
-	if (MeshFlags & FLAG_MESH_ANIMATED || MeshFlags & FLAG_MESH_SKINNED)
+	if (Instance.Flag & FLAG_MESH_ANIMATED || Instance.Flag & FLAG_MESH_SKINNED)
 	{
 		for (int i = 0; i < 4; ++i)
 		{
@@ -96,36 +97,36 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	// 	return float4(Input.Color.rgb, 1);
 	// }
 
-	float3 diffuseColor = /*Diffuse.Color*/ Input.Material.BaseColor;
+	float3 diffuseColor = /*BaseColor.Color*/ Input.Material.BaseColor.rgb;
 
 	float3 normalColor = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
 
 	// 	R (Red): Ambient Occlusion (AO)
 	//  G (Green): Roughness
 	//  B (Blue): Metallic
-	float ambientColor = AmbientOcclusion.Value;
-	float roughness    = Roughness.Value;
-	float metallic     = Metallic.Value;
+	float ambientColor = Input.Material.Occlusion;
+	float roughness    = Input.Material.Roughness;
+	float metallic     = Input.Material.Metallic;
 
 	// Texture Map
-	if (TextureUsageFlag & TEXTURE_USE_DIFFUSE)
+	if (Input.Material.Flag & TEXTURE_USE_DIFFUSE)
 	{
 		diffuseColor = g_DiffuseTexture.Sample(g_DiffuseSampler, Input.UV);
 	}
-	if (TextureUsageFlag & TEXTURE_USE_NORMAL)
+	if (Input.Material.Flag & TEXTURE_USE_NORMAL)
 	{
 		normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
 		normalColor = normalize(normalColor * 2.0f - 1.0f);
 	}
-	if (TextureUsageFlag & TEXTURE_USE_AMBIENTOCCLUSION)
+	if (Input.Material.Flag & TEXTURE_USE_AMBIENTOCCLUSION)
 	{
 		ambientColor = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
 	}
-	if (TextureUsageFlag & TEXTURE_USE_ROUGHNESS)
+	if (Input.Material.Flag & TEXTURE_USE_ROUGHNESS)
 	{
 		roughness = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
 	}
-	if (TextureUsageFlag & TEXTURE_USE_METALLIC)
+	if (Input.Material.Flag & TEXTURE_USE_METALLIC)
 	{
 		metallic = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
 	}

@@ -15,7 +15,7 @@ protected:
 	void ShowMenuBar() override;
 
 protected:
-	class JCamera*       mCamera;	// 뷰포트 카메라
+	class JCamera_Debug* mCamera;	// 뷰포트 카메라
 	class FViewportData* mViewport;	// 뷰포트
 	float                mDeltaTime;
 

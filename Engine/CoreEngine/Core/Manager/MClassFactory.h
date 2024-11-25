@@ -12,7 +12,7 @@ public:
 		mRegisteredClass[InClassName] = std::move(InCreator);
 	}
 
-	UPtr<JObject> Create(const JText& InClassName) const
+	UPtr<class JObject> Create(const JText& InClassName) const
 	{
 		auto it = mRegisteredClass.find(InClassName);
 

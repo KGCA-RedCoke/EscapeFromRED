@@ -15,7 +15,7 @@ GUI_Editor_Base::GUI_Editor_Base(const JText& InTitle)
 	assert(mViewport);
 
 	// 2. 머티리얼 에디터 프리뷰에 사용될 카메라를 생성
-	mCamera = MCameraManager::Get().CreateOrLoad(InTitle);
+	mCamera = MCameraManager::Get().CreateOrLoad<JCamera_Debug>(InTitle);
 	assert(mCamera);
 }
 

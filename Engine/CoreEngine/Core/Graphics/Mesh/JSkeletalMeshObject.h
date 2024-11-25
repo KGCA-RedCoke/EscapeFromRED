@@ -25,6 +25,7 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
+	void AddInstance() override;
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
 	void DrawBone();

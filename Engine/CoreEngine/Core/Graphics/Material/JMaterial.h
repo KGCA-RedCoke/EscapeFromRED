@@ -154,7 +154,6 @@ protected:
 	JText    mMaterialName;
 	uint32_t mMaterialID;
 
-	FConstantBuffer        mMaterialBuffer;
 	JArray<FMaterialParam> mMaterialParams;
 	JShader*               mShader; // 머티리얼 내에서 셰이더를 가지는게 자연스럽다
 

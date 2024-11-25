@@ -96,12 +96,16 @@ void MGUIManager::UpdateMainMenuBar()
 			{
 				// Open Scene
 			}
+
+			ImGui::SetNextItemShortcut(ImGuiKey_LeftCtrl | ImGuiKey_S);
+			ImGui::Shortcut(ImGuiKey_LeftCtrl | ImGuiKey_S);
 			if (ImGui::MenuItem(u8("현재 레벨 저장")))
 			{
 				JLevel* activeLevel = MLevelManager::Get().GetActiveLevel();
-				Utils::Serialization::Serialize("Game/Levels/Level1.jasset" /*activeLevel->GetPath().c_str()*/, activeLevel);
+				Utils::Serialization::Serialize(activeLevel->GetPath().c_str(), activeLevel);
 				// Save Scene
 			}
+
 			if (ImGui::MenuItem(u8("FBX")))
 			{
 				bOpenFileBrowser = true;

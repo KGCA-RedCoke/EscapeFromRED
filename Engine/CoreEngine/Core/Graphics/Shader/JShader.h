@@ -3,9 +3,10 @@
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Graphics/ShaderStructs.h"
 
-constexpr const char* NAME_SHADER_BASIC  = "Shader/Basic.hlsl";
-constexpr const char* NAME_SHADER_GNOMON = "Shader/Gnomon.hlsl";
-constexpr const char* NAME_SHADER_ID     = "Shader/FBMP.hlsl";
+constexpr const char* NAME_SHADER_BASIC        = "Shader/Basic.hlsl";
+constexpr const char* NAME_SHADER_GNOMON       = "Shader/Gnomon.hlsl";
+constexpr const char* NAME_SHADER_ID           = "Shader/FBMP.hlsl";
+constexpr const char* NAME_SHADER_SIMPLE_COLOR = "Shader/SimpleColor.hlsl";
 
 const uint32_t HASH_SHADER_BASIC  = StringHash(NAME_SHADER_BASIC);
 const uint32_t HASH_SHADER_GNOMON = StringHash(NAME_SHADER_GNOMON);

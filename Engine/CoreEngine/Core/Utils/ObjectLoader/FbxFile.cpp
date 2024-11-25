@@ -870,7 +870,7 @@ namespace Utils::Fbx
 
 						// subMesh의 이름을 정하는게 좀 애매한데
 						// 우선 메시 이름 + 머티리얼 이름 으로 설정
-						subMesh->mName = node->GetMaterial(i)->GetName();
+						subMesh->mName = std::format("{}_{}", InMesh->GetName(), node->GetMaterial(i)->GetName());
 
 						// 서브메시에도 마찬가지로 VertexData를 생성해야 한다.
 						subMesh->mVertexData = MakePtr<JVertexData<Vertex::FVertexInfo_Base>>();

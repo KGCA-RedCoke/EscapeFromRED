@@ -8,7 +8,7 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 {
 	mName                         = InName;
 	mVertexSize                   = sizeof(Vertex::FVertexInfo_Base);
-	mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
+	// mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
 
 	if (InData.empty())
 	{
@@ -153,6 +153,35 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 void JSkeletalMeshObject::Tick(float DeltaTime)
 {
 	mSampleAnimation->TickAnim(DeltaTime);
+}
+
+void JSkeletalMeshObject::AddInstance()
+{
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+	for (int32_t j = 0; j < subMeshCount; ++j)
+	{
+		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+
+		FInstanceData_Mesh data;
+		data.WorldMatrix = mWorldMatrix;
+
+		FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
+		if (diffuse)
+		{
+			data.MaterialData.BaseColor = diffuse->Float4Value;
+		}
+		FMaterialParam* flag = mMaterialInstances[j]->GetInstanceParam("TextureUsageFlag");
+		if (flag)
+		{
+			data.MaterialData.Flag = flag->IntegerValue;
+		}
+
+
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
+	}
 }
 
 void JSkeletalMeshObject::Draw()

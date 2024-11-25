@@ -50,9 +50,6 @@ private:
 	UPtr<JFont> mFpsText = nullptr;
 
 public:
-	JArray<JActor*> Actors;
-
-public:
 	Application();
 	Application(LPCWSTR WindowTitle, const FBasicWindowData& WindowData);
 	~Application();

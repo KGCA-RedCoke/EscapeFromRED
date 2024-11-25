@@ -22,7 +22,7 @@ GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath)
 	mViewport = MViewportManager::Get().CreateOrLoad(mTitle, 1280, 720);
 	assert(mViewport);
 
-	mCamera = MCameraManager::Get().CreateOrLoad(mTitle);
+	mCamera = MCameraManager::Get().CreateOrLoad<JCamera_Debug>(mTitle);
 	assert(mCamera);
 }
 

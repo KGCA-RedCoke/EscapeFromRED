@@ -67,11 +67,10 @@ protected:
 
 	// -------------------------------- Buffers --------------------------------------
 	JArray<Buffer::FBufferGeometry> mGeometryBuffer;
-	CBuffer::MeshConstantBuffer     mMeshConstantBuffer;
 
 	// ----------------------------- Model Primitive Data -----------------------------
 	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
-	uint32_t               mVertexSize;
+	uint32_t               mVertexSize = sizeof(Vertex::FVertexInfo_Base);
 
 	// ----------------------------- Material Reference -----------------------------
 	JArray<JMaterialInstance*> mMaterialInstances;

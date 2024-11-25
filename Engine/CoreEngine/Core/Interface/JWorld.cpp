@@ -11,6 +11,7 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Utils/SpaceDivision/SpaceDivision.h"
 #include "Core/Window/Application.h"
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
@@ -60,6 +61,9 @@ void JWorld::Initialize()
 	GUIManager->Initialize(D3D11API->GetDevice(), D3D11API->GetImmediateDeviceContext());
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
+
+	Oc::JTree tree;
+	tree.Initialize({{0, 0, 0}, {1000, 1000, 1000}}, 5);
 
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));

@@ -108,9 +108,10 @@
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
     <ClInclude Include="Core\Entity\Camera\JCamera.h" />
-    <ClInclude Include="Core\Entity\Camera\JFrustum.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
+    <ClInclude Include="Core\Entity\Character\ACharacter.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
+    <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\JSceneComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\Shape\JShape.h" />
@@ -119,6 +120,7 @@
     <ClInclude Include="Core\Entity\Level\JLevel.h" />
     <ClInclude Include="Core\Entity\Level\MLevelManager.h" />
     <ClInclude Include="Core\Entity\Light\JLightComponent.h" />
+    <ClInclude Include="Core\Gameplay\IGameMode.h" />
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
     <ClInclude Include="Core\Graphics\Font\JFont.h" />
     <ClInclude Include="Core\Graphics\Font\XTKFont.h" />
@@ -173,6 +175,7 @@
     <ClInclude Include="Core\Utils\Math\Vector4.h" />
     <ClInclude Include="Core\Utils\ObjectLoader\FbxFile.h" />
     <ClInclude Include="Core\Utils\ObjectLoader\FbxUtils.h" />
+    <ClInclude Include="Core\Utils\SpaceDivision\SpaceDivision.h" />
     <ClInclude Include="Core\Utils\Timer.h" />
     <ClInclude Include="Core\Utils\Utils.h" />
     <ClInclude Include="Core\Window\Application.h" />
@@ -226,6 +229,9 @@
     <ClInclude Include="Vender\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="Vender\include\imgui\imstb_textedit.h" />
     <ClInclude Include="Vender\include\imgui\imstb_truetype.h" />
+    <None Include="Shader\SimpleColor.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shader\SkyBox.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -240,9 +246,10 @@
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
-    <ClCompile Include="Core\Entity\Camera\JFrustum.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
+    <ClCompile Include="Core\Entity\Character\ACharacter.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
+    <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\JSceneComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\Shape\JShape.cpp" />
@@ -251,6 +258,7 @@
     <ClCompile Include="Core\Entity\Level\JLevel.cpp" />
     <ClCompile Include="Core\Entity\Level\MLevelManager.cpp" />
     <ClCompile Include="Core\Entity\Light\JLightComponent.cpp" />
+    <ClCompile Include="Core\Gameplay\IGameMode.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
@@ -295,6 +303,7 @@
     <ClCompile Include="Core\Utils\Math\Vector2.cpp" />
     <ClCompile Include="Core\Utils\Math\Vector4.cpp" />
     <ClCompile Include="Core\Utils\ObjectLoader\FbxFile.cpp" />
+    <ClCompile Include="Core\Utils\SpaceDivision\SpaceDivision.cpp" />
     <ClCompile Include="Core\Window\Application.cpp" />
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
@@ -334,6 +343,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Core\Entity\UI\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

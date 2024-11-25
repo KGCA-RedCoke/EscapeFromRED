@@ -1,5 +1,6 @@
 ﻿#include "JStaticMeshComponent.h"
 
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Interface/JWorld.h"
@@ -69,6 +70,17 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 		mMeshObject->Tick(DeltaTime);
 		mMeshObject->UpdateBuffer(mWorldMat);
 	}
+
+	BoxShape.Box.Center = mWorldLocation;
+
+	BoxShape.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	BoxShape.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	BoxShape.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+
+	for (int32_t i = 0; i < 3; ++i)
+	{
+		BoxShape.Box.LocalAxis[i].Normalize();
+	}
 }
 
 void JStaticMeshComponent::Draw()
@@ -76,7 +88,11 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		mMeshObject->AddInstance();
+		BoxShape.DrawDebug();
+		if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(BoxShape))
+		{
+			mMeshObject->AddInstance();
+		}
 	}
 
 	// Child SceneComponent Draw 호출

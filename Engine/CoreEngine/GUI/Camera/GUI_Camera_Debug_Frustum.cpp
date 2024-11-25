@@ -2,6 +2,9 @@
 
 #include "Core/Entity/Actor/JActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
+#include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
@@ -27,7 +30,8 @@ void GUI_Camera_Debug_Frustum::Update_Implementation(float DeltaTime)
 
 	FVector downVector = {0, -1, 0};
 
-	mCamera->SetViewParams(topViewPos, downVector);
+	mCamera->SetViewParams(FVector(0, 1500.f, -1500.f), {0, 0, 1});
+	mCamera->Update(DeltaTime);
 
 	// mSampleTexture = EditorViewport->SRV;
 	// assert(mSampleTexture);
@@ -41,11 +45,13 @@ void GUI_Camera_Debug_Frustum::Render()
 
 	GetWorld.ShaderManager->UpdateCamera(mCamera);
 
-	auto actors = Application::s_AppInstance->Actors;
-	for (int32_t i = 0; i < actors.size(); ++i)
+	for (auto& actor : GetWorld.LevelManager->GetActiveLevel()->mActors)
 	{
-		actors[i]->Draw();
+		actor.get()->Draw();
 	}
+
+	GetWorld.MeshManager->FlushCommandList(GetWorld.D3D11API->GetImmediateDeviceContext());
+	// GetWorld.CameraManager->GetCurrentMainCam()->PreRender(GetWorld.D3D11API->GetImmediateDeviceContext());
 }
 
 void GUI_Camera_Debug_Frustum::Initialize()

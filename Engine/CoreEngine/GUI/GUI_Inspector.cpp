@@ -50,6 +50,11 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 			mSelectedSceneComponent = nullptr;
 			bRequestDelete          = false;
 		}
+
+		if (bRequestCopy)
+		{
+			
+		}
 	}
 
 	ImGui::EndChild();
@@ -119,6 +124,11 @@ void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 	if (mSelectedSceneComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
 	{
 		bRequestDelete = true;
+	}
+
+	if (mSelectedSceneComponent && ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_C))
+	{
+		bRequestCopy = true;
 	}
 
 	if (bIsOpen)

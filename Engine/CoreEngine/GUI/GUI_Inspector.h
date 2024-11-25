@@ -31,4 +31,5 @@ private:
 	JHash<JText, JActor*>  mSceneComponents;
 
 	bool bRequestDelete = false;
+	bool bRequestCopy   = false;
 };

@@ -14,9 +14,9 @@ namespace Utils::Fbx
 
 enum class EMeshType : uint8_t
 {
-	Static       = 0, // 정적 메시
-	Skeletal     = 1 << 0,   // 스켈레탈 메시
-	AnimatedMesh = 1 << 1, // 애니메이션 메시
+	Static       = 1 << 10, // 정적 메시
+	Skeletal     = 1 << 11,   // 스켈레탈 메시
+	AnimatedMesh = 1 << 12, // 애니메이션 메시
 };
 
 /**

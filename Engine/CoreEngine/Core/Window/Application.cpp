@@ -78,16 +78,6 @@ void Application::Initialize()
 	mFpsText->SetFontSize(36);
 	mFpsText->SetColor(FLinearColor::Gallary);
 	mFpsText->SetScreenPosition({5, 5});
-
-	Actors.reserve(10);
-
-	// Ptr<JActor> sampleActor = MakePtr<JStaticMeshActor>("Preview Actor",
-	// 													GetWorld.MeshManager->CreateOrClone(Path_Mesh_Sphere));
-	// sampleActor->Initialize();
-	// sampleActor->SetLocalScale({4500, 4500, 4500});
-	//
-	//
-	// Actors.push_back(sampleActor);
 }
 
 void Application::Run()
@@ -128,13 +118,6 @@ void Application::Render()
 	GetWorld.D3D11API->ClearColor(FLinearColor::TrueBlack);
 
 	GetWorld.Render(); // GUI Render
-
-
-	for (int32_t i = 0; i < Actors.size(); ++i)
-	{
-		Actors[i]->Tick(mDeltaTime);
-		Actors[i]->Draw();
-	}
 
 	mFpsText->Draw();
 

@@ -7,11 +7,9 @@ MCameraManager::MCameraManager()
 
 void MCameraManager::Initialize_Internal()
 {
-	mCurrentCamera = CreateOrLoad("EditorCamera");
+	mCurrentCamera = CreateOrLoad<JCamera_Debug>("EditorCamera");
 	assert(mCurrentCamera);
 }
 
 void MCameraManager::SetCurrentMainCam(JWTextView InName)
 {}
-
-

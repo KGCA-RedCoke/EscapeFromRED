@@ -9,7 +9,6 @@
 
 JMeshObject::JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData)
 	: mName(ParseFile(InAssetPath)),
-	  mMeshConstantBuffer(),
 	  mVertexSize(sizeof(Vertex::FVertexInfo_Base))
 {
 	mPath = InAssetPath;
@@ -24,7 +23,6 @@ JMeshObject::JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>
 JMeshObject::JMeshObject(const JMeshObject& Other)
 	: mName(Other.mName),
 	  mGeometryBuffer(Other.mGeometryBuffer),
-	  mMeshConstantBuffer(Other.mMeshConstantBuffer),
 	  mVertexSize(Other.mVertexSize)
 {
 	mPath = Other.mPath;
@@ -163,26 +161,6 @@ void JMeshObject::CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 {
 	mWorldMatrix = InWorldMatrix;
-
-	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
-	assert(deviceContext);
-
-	const int32_t lodCount = mPrimitiveMeshData.size();
-
-	for (int32_t i = 0; i < lodCount; ++i)
-	{
-		auto&         meshData     = mPrimitiveMeshData[i];
-		auto&         subMeshes    = meshData->GetSubMesh();
-		const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
-
-		for (int32_t j = 0; j < subMeshCount; ++j)
-		{
-			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-			mMaterialInstances[j]->UpdateConstantData(deviceContext,
-													  CBuffer::NAME_CONSTANT_BUFFER_MESH,
-													  &mMeshConstantBuffer);
-		}
-	}
 }
 
 void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
@@ -216,30 +194,36 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(const JText& InName) const
 
 void JMeshObject::AddInstance()
 {
-	const int32_t lodCount = mPrimitiveMeshData.size();
+	// const int32_t lodCount = mPrimitiveMeshData.size();
+	//
+	// for (int32_t i = 0; i < lodCount; ++i)
+	// {
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
-	for (int32_t i = 0; i < lodCount; ++i)
+	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto&         meshData     = mPrimitiveMeshData[i];
-		auto&         subMeshes    = meshData->GetSubMesh();
-		const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-		for (int32_t j = 0; j < subMeshCount; ++j)
+		FInstanceData_Mesh data;
+		data.WorldMatrix = mWorldMatrix;
+
+		FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
+		if (diffuse)
 		{
-			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-
-			FInstanceData_Mesh data;
-			data.WorldMatrix = mWorldMatrix;
-
-			FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
-			if (diffuse)
-			{
-				data.MaterialData.BaseColor = diffuse->Float4Value;
-			}
-
-			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
+			data.MaterialData.BaseColor = diffuse->Float4Value;
 		}
+		FMaterialParam* flag = mMaterialInstances[j]->GetInstanceParam("TextureUsageFlag");
+		if (flag)
+		{
+			data.MaterialData.Flag = flag->IntegerValue;
+		}
+
+
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
 	}
+	// }
 }
 
 void JMeshObject::Draw()

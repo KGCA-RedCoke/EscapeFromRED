@@ -1,5 +1,6 @@
 ﻿#include "GUI_Editor_LandScape.h"
 
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
@@ -26,11 +27,11 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 		const JArray<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 		for (auto& loadedTexture : loaded)
 		{
-			// JText texPath = WString2String(loadedTexture->GetPath());
-			// if (ImGui::Selectable(texPath.c_str()))
-			// {
-			// 	mAlbedoTexture = loadedTexture->GetPath();
-			// }
+			JText texPath = WString2String(loadedTexture->GetTextureName());
+			if (ImGui::Selectable(texPath.c_str()))
+			{
+				mAlbedoTexture = loadedTexture->GetTextureName();
+			}
 		}
 		ImGui::EndCombo();
 	}
@@ -40,11 +41,11 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 		const JArray<JTexture*> loaded = GetWorld.TextureManager->GetManagedList();
 		for (auto& loadedTexture : loaded)
 		{
-			// JText texPath = WString2String(loadedTexture->GetPath());
-			// if (ImGui::Selectable(texPath.c_str()))
-			// {
-			// 	mHeightTexture = loadedTexture->GetPath();
-			// }
+			JText texPath = WString2String(loadedTexture->GetTextureName());
+			if (ImGui::Selectable(texPath.c_str()))
+			{
+				mHeightTexture = loadedTexture->GetTextureName();
+			}
 		}
 		ImGui::EndCombo();
 	}
@@ -73,26 +74,26 @@ void GUI_Editor_LandScape::Update_Implementation(float DeltaTime)
 
 void GUI_Editor_LandScape::GenerateLandScape()
 {
-	// JLandScape* newLandScape      = MakePtr<JLandScape>("LandScape");
-	// newLandScape->mMapDescription = mLandScapeDesc;
-	//
-	// newLandScape->Initialize();
-	//
-	// if (!mAlbedoTexture.empty())
-	// {
-	// 	newLandScape->mAlbedoMap = GetWorld.TextureManager->CreateOrLoad(mAlbedoTexture);
-	// }
-	// if (!mHeightTexture.empty())
-	// {
-	// 	newLandScape->mHeightMap = GetWorld.TextureManager->CreateOrLoad(mHeightTexture);
-	// 	newLandScape->mHeightMap->SetEditable();
-	// }
-	// if (!mNormalTexture.empty())
-	// {
-	// 	newLandScape->mNormalMap = GetWorld.TextureManager->CreateOrLoad(mNormalTexture);
-	// }
-	//
-	// newLandScape->GenerateLandScape();
-	//
-	// Application::s_AppInstance->Actors.push_back(newLandScape);
+	auto newLandScape             = MakeUPtr<JLandScape>("LandScape");
+	newLandScape->mMapDescription = mLandScapeDesc;
+
+	newLandScape->Initialize();
+
+	if (!mAlbedoTexture.empty())
+	{
+		newLandScape->mAlbedoMap = GetWorld.TextureManager->CreateOrLoad(mAlbedoTexture);
+	}
+	if (!mHeightTexture.empty())
+	{
+		newLandScape->mHeightMap = GetWorld.TextureManager->CreateOrLoad(mHeightTexture);
+		newLandScape->mHeightMap->SetEditable();
+	}
+	if (!mNormalTexture.empty())
+	{
+		newLandScape->mNormalMap = GetWorld.TextureManager->CreateOrLoad(mNormalTexture);
+	}
+
+	newLandScape->GenerateLandScape();
+
+	GetWorld.LevelManager->GetActiveLevel()->mActors.push_back(std::move(newLandScape));
 }

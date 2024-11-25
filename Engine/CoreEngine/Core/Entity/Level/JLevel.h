@@ -37,6 +37,7 @@ public:
 private:
 	JText mName;	// 레벨 이름
 
+public:
 	JArray<UPtr<JActor>> mActors;	// 레벨에 속한 액터들
 
 	// TODO : 레벨과 관련된 변수들 추가
