@@ -1,5 +1,7 @@
 ﻿#include "SpaceDivision.h"
 
+#include "Core/Entity/Actor/JActor.h"
+
 void Oc::FNode::Subdivide()
 {
 	const FVector center = BoundArea.Center;
@@ -46,6 +48,33 @@ void Oc::JTree::Initialize(const FBox& InRootBoundArea, uint32_t InDepth)
 
 	Subdivide(mRootNode.get(), InDepth);
 }
+
+void Oc::JTree::Update()
+{
+	// 지워질 액터들을 찾아서 제거
+	FNode* node = mRootNode.get();
+	while (node)
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			if (FNode* childNode = node->Children[i].get())
+			{
+				childNode->Actors.erase(
+										std::ranges::remove_if(
+															   childNode->Actors,
+															   [](JActor* actor){
+																   return actor->IsPendingKill();
+															   }).begin(),
+										childNode->Actors.end());
+			}
+		}
+
+		node = node->Children[0].get();
+	}
+}
+
+void Oc::JTree::Insert(JActor* InActor)
+{}
 
 void Oc::JTree::Subdivide(FNode* InNode, uint32_t InDepth)
 {

@@ -80,6 +80,16 @@ public:
 		return mFrustum.Check(InBox);
 	}
 
+	[[nodiscard]] FORCEINLINE bool IsPointInFrustum(const FVector& InPoint)
+	{
+		return mFrustum.Check(InPoint);
+	}
+
+	[[nodiscard]] FORCEINLINE bool IsSphereInFrustum(const FVector& InCenter, float InRadius)
+	{
+		return mFrustum.Check(InCenter, InRadius);
+	}
+
 	//--------------------------------------------- Set State -------------------------------------------------------------
 	FORCEINLINE void SetInvertPitch(bool bInInvertPitch) { bInvertPitch = bInInvertPitch; }
 	FORCEINLINE void SetEnableYAxisMovement(bool bInEnableYAxisMovement) { bEnableYAxisMovement = bInEnableYAxisMovement; }

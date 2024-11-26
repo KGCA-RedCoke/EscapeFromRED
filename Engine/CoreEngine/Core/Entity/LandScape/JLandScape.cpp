@@ -79,7 +79,7 @@ void JLandScape::GenerateLandScape()
 	GenVertexNormal();
 	GenBuffer();
 
-	mMaterial = GetWorld.MaterialInstanceManager->CreateOrLoad("Game/Materials/Cube/DefaultMaterial.jasset");
+	mMaterial = GetWorld.MaterialInstanceManager->CreateOrLoad("Game/Materials/DefaultMaterial.jasset");
 
 	if (mAlbedoMap)
 	{
@@ -87,7 +87,7 @@ void JLandScape::GenerateLandScape()
 		albedoParams.Name         = CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE;
 		albedoParams.ParamValue   = EMaterialParamValue::Texture2D;
 		albedoParams.TextureValue = mAlbedoMap;
-		mMaterial->EditInstanceParam(CBuffer::NAME_CONSTANT_BUFFER_MATERIAL, albedoParams);
+		
 	}
 
 	// if (mNormalMap)

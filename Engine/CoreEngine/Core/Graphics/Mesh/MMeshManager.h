@@ -20,7 +20,6 @@ public:
 
 private:
 	JHash<uint32_t, Buffer::FBufferMesh> mBufferList;
-
 	JHash<uint32_t, JMaterialInstance*>         mMaterialInstance;
 	JHash<uint32_t, JArray<FInstanceData_Mesh>> mInstanceData;
 

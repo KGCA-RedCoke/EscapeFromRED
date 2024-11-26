@@ -88,8 +88,8 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		BoxShape.DrawDebug();
-		if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(BoxShape))
+		// BoxShape.DrawDebug();
+		if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mMeshObject->GetBoundingBox()))
 		{
 			mMeshObject->AddInstance();
 		}

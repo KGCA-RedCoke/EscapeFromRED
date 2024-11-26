@@ -35,7 +35,11 @@ public:
 	void Draw(const BoundingOrientedBox& InObb, FXMVECTOR InColor = Colors::White) const;
 	void Draw(const BoundingFrustum& InFrustum, FXMVECTOR InColor = Colors::White) const;
 	void DrawCube_Implement(CXMMATRIX matWorld, FXMVECTOR color) const;
-	void DrawGrid_Implement(FXMVECTOR InXAxis, FXMVECTOR InYAxis, FXMVECTOR InOrigin, size_t InXdivs, size_t InYdivs,
+	void DrawGrid_Implement(FXMVECTOR InXAxis,
+							FXMVECTOR InYAxis,
+							FXMVECTOR InOrigin,
+							size_t    InXdivs,
+							size_t    InYdivs,
 							GXMVECTOR InColor = Colors::White) const;
 	void DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis,
 							GXMVECTOR InColor = Colors::White) const;

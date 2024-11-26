@@ -49,7 +49,7 @@ void FPlane::Normalize()
 void FBoxShape::DrawDebug() const
 {
 	// 스케일 행렬
-	XMMATRIX scaleMatrix = XMMatrixScaling(Box.Extent.x * 2.0f, Box.Extent.y * 2.0f, Box.Extent.z * 2.0f);
+	XMMATRIX scaleMatrix = XMMatrixScaling(Box.Extent.x, Box.Extent.y, Box.Extent.z);
 
 	XMMATRIX rotationMatrix = XMMATRIX(
 									   Box.LocalAxis[0].x,
@@ -75,9 +75,7 @@ void FBoxShape::DrawDebug() const
 
 	// 월드 행렬 결합
 	XMMATRIX mat = scaleMatrix * rotationMatrix * translationMatrix;
-	G_DebugBatch.PreRender();
 	G_DebugBatch.DrawCube_Implement(mat, Colors::Green);
-	G_DebugBatch.PostRender();
 }
 
 void JShape::CreateOBBBox(const FVector& InCenter, const FVector& InExtent, const FVector InAxisX, const FVector InAxisY,

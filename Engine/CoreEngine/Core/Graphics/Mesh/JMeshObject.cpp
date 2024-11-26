@@ -23,7 +23,8 @@ JMeshObject::JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>
 JMeshObject::JMeshObject(const JMeshObject& Other)
 	: mName(Other.mName),
 	  mGeometryBuffer(Other.mGeometryBuffer),
-	  mVertexSize(Other.mVertexSize)
+	  mVertexSize(Other.mVertexSize),
+	  mBoundingBox(Other.mBoundingBox)
 {
 	mPath = Other.mPath;
 
@@ -74,6 +75,9 @@ bool JMeshObject::Serialize_Implement(std::ofstream& FileStream)
 		Utils::Serialization::Serialize_Text(materialPath, FileStream);
 	}
 
+	// Bounding Box
+	Utils::Serialization::Serialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), FileStream);
+
 	return true;
 }
 
@@ -107,60 +111,33 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mMaterialInstances.push_back(matInstance);
 	}
 
+	// Bounding Box
+	Utils::Serialization::DeSerialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), InFileStream);
+
 	return true;
 }
 
 /** 버퍼는 메모리에 올릴 때 한번만 생성되고 공유 */
 void JMeshObject::CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList)
-{
-	// if (mGeometryBuffer.size() > 0)
-	// {
-	// 	return;
-	// }
-	//
-	// ID3D11Device* device = GetWorld.D3D11API->GetDevice();
-	// assert(device);
-	//
-	// const int32_t meshDataSize = mPrimitiveMeshData.size();
-	//
-	// mGeometryBuffer.resize(meshDataSize);
-	//
-	// for (int32_t i = 0; i < meshDataSize; ++i)
-	// {
-	// 	auto& mesh           = mPrimitiveMeshData[i];
-	// 	auto& instanceBuffer = mGeometryBuffer[i];
-	// 	auto& subMeshes      = mesh->GetSubMesh();
-	//
-	// 	instanceBuffer.Resize(subMeshes.empty() ? 1 : subMeshes.size());
-	//
-	// 	for (int32_t j = 0; j < instanceBuffer.Buffer_Vertex.size(); ++j)
-	// 	{
-	// 		auto& data = subMeshes.empty()
-	// 						 ? mesh->GetVertexData()
-	// 						 : subMeshes[j]->GetVertexData();
-	//
-	// 		// Vertex 버퍼 생성
-	// 		Utils::DX::CreateBuffer(device,
-	// 								D3D11_BIND_VERTEX_BUFFER,
-	// 								reinterpret_cast<void**>(&data->VertexArray.at(0)),
-	// 								mVertexSize,
-	// 								data->VertexArray.size(),
-	// 								instanceBuffer.Buffer_Vertex[j].GetAddressOf());
-	//
-	// 		// Index 버퍼 생성
-	// 		Utils::DX::CreateBuffer(device,
-	// 								D3D11_BIND_INDEX_BUFFER,
-	// 								reinterpret_cast<void**>(&data->IndexArray.at(0)),
-	// 								SIZE_INDEX_BUFFER,
-	// 								data->IndexArray.size(),
-	// 								instanceBuffer.Buffer_Index[j].GetAddressOf());
-	// 	}
-	// }
-}
+{}
 
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 {
 	mWorldMatrix = InWorldMatrix;
+
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMatrix));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMatrix));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMatrix));
+
+	for (int32_t i = 0; i < 8; ++i)
+	{
+		mBoundingBox.Box.Position[i] = XMVector3Transform(mBoundingBox.Box.Position[i], mWorldMatrix);
+	}
+
+	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
+	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMatrix);
+	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
 }
 
 void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
@@ -219,7 +196,7 @@ void JMeshObject::AddInstance()
 		{
 			data.MaterialData.Flag = flag->IntegerValue;
 		}
-
+		mBoundingBox.DrawDebug();
 
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
 	}

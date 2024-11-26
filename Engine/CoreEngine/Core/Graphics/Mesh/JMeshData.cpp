@@ -79,6 +79,9 @@ bool JMeshData::Serialize_Implement(std::ofstream& FileStream)
 	// Initial Transform
 	Utils::Serialization::Serialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), FileStream);
 
+	// Bounding Box
+	Utils::Serialization::Serialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), FileStream);
+
 	return true;
 }
 
@@ -134,6 +137,30 @@ bool JMeshData::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	// Initial Transform
 	Utils::Serialization::DeSerialize_Primitive(&mInitialModelTransform, sizeof(mInitialModelTransform), InFileStream);
+
+
+	Utils::Serialization::DeSerialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), InFileStream);
+
+	// // Bounding Box 수동 생성 TODO: 삭제
+	// REMOVE: 삭제
+	// Bounding Box 수동 생성
+	FVector minBounds(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector maxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	
+	for (int32_t i = 0; i < mVertexData->VertexArray.size(); ++i)
+	{
+		minBounds.x = FMath::Min(minBounds.x, mVertexData->VertexArray[i].Position.x);
+		minBounds.y = FMath::Min(minBounds.y, mVertexData->VertexArray[i].Position.y);
+		minBounds.z = FMath::Min(minBounds.z, mVertexData->VertexArray[i].Position.z);
+	
+		maxBounds.x = FMath::Max(maxBounds.x, mVertexData->VertexArray[i].Position.x);
+		maxBounds.y = FMath::Max(maxBounds.y, mVertexData->VertexArray[i].Position.y);
+		maxBounds.z = FMath::Max(maxBounds.z, mVertexData->VertexArray[i].Position.z);
+	}
+	
+	mBoundingBox.Min        = minBounds;
+	mBoundingBox.Max        = maxBounds;
+
 
 	return true;
 }

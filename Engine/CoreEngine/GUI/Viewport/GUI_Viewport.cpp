@@ -107,6 +107,8 @@ void GUI_Viewport::CreateMousePickingBuffer(ID3D11Device* InDevice)
 	mMousePickingBuffer.ColorIDBuffer = nullptr;
 	mMousePickingBuffer.StagingBuffer = nullptr;
 	mMousePickingBuffer.RTV           = nullptr;
+	mMousePickingBuffer.DepthBuffer   = nullptr;
+	mMousePickingBuffer.DepthState    = nullptr;
 
 	D3D11_TEXTURE2D_DESC stagingBufferDesc;
 	ZeroMemory(&stagingBufferDesc, sizeof(stagingBufferDesc));

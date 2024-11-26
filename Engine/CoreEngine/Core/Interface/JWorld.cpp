@@ -11,7 +11,6 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
-#include "Core/Utils/SpaceDivision/SpaceDivision.h"
 #include "Core/Window/Application.h"
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
@@ -62,12 +61,9 @@ void JWorld::Initialize()
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
-	Oc::JTree tree;
-	tree.Initialize({{0, 0, 0}, {1000, 1000, 1000}}, 5);
-
-	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
+	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));
-	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc/GameResource/Horror_Farm)"));
+	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc)"));
 
 	const char* levelPath = g_settings["Editor.Level"]["DefaultLevel"].as<const char*>();
 	assert(levelPath[0] != '\0');
@@ -92,9 +88,10 @@ void JWorld::Render()
 	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::TrueBlack);
 	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 
+
 	LevelManager->Render();
 
-	G_DebugBatch.Draw();
+	
 }
 
 void JWorld::Release()

@@ -4,7 +4,9 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
 JLevel::JLevel(const JText& InPath)
 	: mName(ParseFile(InPath))
@@ -65,6 +67,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		UPtr<JActor> loadActor = UPtrCast<JActor>(MClassFactory::Get().Create(objType));
 		if (loadActor->DeSerialize_Implement(InFileStream))
 		{
+			// mOcTree->Insert(loadActor.get());
 			mActors.push_back(std::move(loadActor));
 		}
 	}
@@ -73,25 +76,38 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 }
 
 void JLevel::InitializeLevel()
-{}
+{
+	// mOcTree = MakeUPtr<Oc::JTree>();
+	// mOcTree->Initialize({{0, 0, 0}, {5000, 5000, 5000}}, 5);
+}
 
 void JLevel::UpdateLevel(float DeltaTime)
 {
-	for (int32_t i = 0; i < mActors.size(); ++i)
-	{
-		mActors[i]->Tick(DeltaTime);
-	}
-	mActors.erase(std::ranges::remove_if(mActors,
-										 [](const UPtr<JActor>& actor){ return actor->IsPendingKill(); }).begin(),
-				  mActors.end());
+	std::erase_if(
+				  mActors,
+				  [&](const UPtr<JActor>& actor){
+					  actor->Tick(DeltaTime);
+					  return actor->IsPendingKill();
+				  });
+
+
+	// OcTree Update
+	// mOcTree->Update();
 }
 
 void JLevel::RenderLevel()
 {
+	G_DebugBatch.PreRender();
+
+	
 	for (int32_t i = 0; i < mActors.size(); ++i)
 	{
 		mActors[i]->Draw();
 	}
+
+	G_DebugBatch.Draw();
+
+	G_DebugBatch.PostRender();
 
 	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 

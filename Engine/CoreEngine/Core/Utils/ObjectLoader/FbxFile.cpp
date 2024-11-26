@@ -194,6 +194,51 @@ namespace Utils::Fbx
 			{
 				object->mMaterialInstances.resize(mMaterialList[0].size());
 
+				FVector minBounds(FLT_MAX, FLT_MAX, FLT_MAX);
+				FVector maxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+				for (int32_t i = 0; i < mMeshList.size(); ++i)
+				{
+					const auto& box = mMeshList[i]->GetBoundingBox();
+
+					minBounds.x = FMath::Min(minBounds.x, box.Min.x);
+					minBounds.y = FMath::Min(minBounds.y, box.Min.y);
+					minBounds.z = FMath::Min(minBounds.z, box.Min.z);
+
+					maxBounds.x = FMath::Max(maxBounds.x, box.Max.x);
+					maxBounds.y = FMath::Max(maxBounds.y, box.Max.y);
+					maxBounds.z = FMath::Max(maxBounds.z, box.Max.z);
+				}
+
+				object->mBoundingBox.Min        = minBounds;
+				object->mBoundingBox.Max        = maxBounds;
+				object->mBoundingBox.Box.Extent = (maxBounds - minBounds) * 0.5f;
+
+				object->mBoundingBox.Box.Position[0] = FVector(object->mBoundingBox.Min.x,
+															   object->mBoundingBox.Min.y,
+															   object->mBoundingBox.Min.z);
+				object->mBoundingBox.Box.Position[1] = FVector(object->mBoundingBox.Max.x,
+															   object->mBoundingBox.Min.y,
+															   object->mBoundingBox.Min.z);
+				object->mBoundingBox.Box.Position[2] = FVector(object->mBoundingBox.Max.x,
+															   object->mBoundingBox.Max.y,
+															   object->mBoundingBox.Min.z);
+				object->mBoundingBox.Box.Position[3] = FVector(object->mBoundingBox.Min.x,
+															   object->mBoundingBox.Max.y,
+															   object->mBoundingBox.Min.z);
+				object->mBoundingBox.Box.Position[4] = FVector(object->mBoundingBox.Min.x,
+															   object->mBoundingBox.Min.y,
+															   object->mBoundingBox.Max.z);
+				object->mBoundingBox.Box.Position[5] = FVector(object->mBoundingBox.Max.x,
+															   object->mBoundingBox.Min.y,
+															   object->mBoundingBox.Max.z);
+				object->mBoundingBox.Box.Position[6] = FVector(object->mBoundingBox.Max.x,
+															   object->mBoundingBox.Max.y,
+															   object->mBoundingBox.Max.z);
+				object->mBoundingBox.Box.Position[7] = FVector(object->mBoundingBox.Min.x,
+															   object->mBoundingBox.Max.y,
+															   object->mBoundingBox.Max.z);
+
 				for (int32_t i = 0; i < mMaterialList[0].size(); ++i)
 				{
 					object->mMaterialInstances[i] = mMaterialList[0][i];
@@ -386,6 +431,10 @@ namespace Utils::Fbx
 		int32_t polygonFaceCount; // triangle -> 1| square -> 2 (triangle * 2)
 		int32_t curPolyIndex = 0;
 
+		// Bounding Box 초기화
+		FVector minBounds(FLT_MAX, FLT_MAX, FLT_MAX);
+		FVector maxBounds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
 		/// 삼각형 폴리곤(또는 사각형이겠지만... 거의 삼각형임)을 순회하면서 정점을 파싱
 		/// 삼각형으로 강제하고싶으면 FbxConverter에서 삼각형으로 변환하도록 설정하자.
 		// NOTE: FbxConverter::Triangulate(scene, true) -> 삼각형을 새로 만들기 때문에 추가적인 처리가 필요하다는데 찾아봐야한다.
@@ -521,6 +570,15 @@ namespace Utils::Fbx
 						FVector scale = Mat2ScaleVector(InMeshData->mInitialModelTransform);
 						vertex.Position *= scale;
 
+						// Bounding Box 갱신
+						minBounds.x = min(minBounds.x, vertex.Position.x);
+						minBounds.y = min(minBounds.y, vertex.Position.y);
+						minBounds.z = min(minBounds.z, vertex.Position.z);
+
+						maxBounds.x = max(maxBounds.x, vertex.Position.x);
+						maxBounds.y = max(maxBounds.y, vertex.Position.y);
+						maxBounds.z = max(maxBounds.z, vertex.Position.z);
+
 						vertex.Normal.x = static_cast<float>(finalNormal.mData[0]);
 						vertex.Normal.y = static_cast<float>(finalNormal.mData[2]);
 						vertex.Normal.z = static_cast<float>(finalNormal.mData[1]);
@@ -562,21 +620,42 @@ namespace Utils::Fbx
 					triangle.Vertex[vertexIndex] = vertex;
 				}
 
+				// 중심(center)과 반지름(radius) 계산
+				FVector   center = (minBounds + maxBounds) * 0.5f; // 중심 계산
+				float     radius = FVector(maxBounds - center).Length(); // 반지름 계산
+				FBoxShape box;
+				box.Box.Center = center;
+				box.Box.Extent = radius;
+				box.Min        = minBounds;
+				box.Max        = maxBounds;
+
 				auto& subMeshes = InMeshData->mSubMesh;
 				// 서브메시가 존재하면 (메시안에 머티리얼이 여러개면)
 				if (!subMeshes.empty())
 				{
 					subMeshes[materialIndex]->mVertexData->TriangleList.push_back(triangle);
 					subMeshes[materialIndex]->mVertexData->FaceCount++;
+					subMeshes[materialIndex]->mBoundingBox = box;
+
+					InMeshData->mBoundingBox.Min.x = FMath::Min(InMeshData->mBoundingBox.Min.x, box.Min.x);
+					InMeshData->mBoundingBox.Min.y = FMath::Min(InMeshData->mBoundingBox.Min.y, box.Min.y);
+					InMeshData->mBoundingBox.Min.z = FMath::Min(InMeshData->mBoundingBox.Min.z, box.Min.z);
+
+					InMeshData->mBoundingBox.Max.x = FMath::Max(InMeshData->mBoundingBox.Max.x, box.Max.x);
+					InMeshData->mBoundingBox.Max.y = FMath::Max(InMeshData->mBoundingBox.Max.y, box.Max.y);
+					InMeshData->mBoundingBox.Max.z = FMath::Max(InMeshData->mBoundingBox.Max.z, box.Max.z);
 				}
 				else
 				{
 					InMeshData->mVertexData->TriangleList.push_back(triangle);
 					InMeshData->mVertexData->FaceCount++;
+					InMeshData->mBoundingBox = box;
 				}
 			}
 			curPolyIndex += polygonSize;
 		}
+
+
 	}
 
 	void FbxFile::ParseMeshSkin(const FbxMesh* InMesh, JSkinData* InSkinData)

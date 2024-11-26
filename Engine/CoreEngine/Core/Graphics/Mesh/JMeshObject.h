@@ -59,6 +59,7 @@ public:
 
 	JMaterialInstance* GetMaterialInstance(uint32_t InIndex = 0) const;
 	JMaterialInstance* GetMaterialInstance(const JText& InName) const;
+	FBoxShape          GetBoundingBox() const { return mBoundingBox; }
 
 protected:
 	// ----------------------------- Model Data -----------------------------
@@ -71,6 +72,7 @@ protected:
 	// ----------------------------- Model Primitive Data -----------------------------
 	JArray<Ptr<JMeshData>> mPrimitiveMeshData;
 	uint32_t               mVertexSize = sizeof(Vertex::FVertexInfo_Base);
+	FBoxShape              mBoundingBox;
 
 	// ----------------------------- Material Reference -----------------------------
 	JArray<JMaterialInstance*> mMaterialInstances;

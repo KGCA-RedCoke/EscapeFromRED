@@ -34,11 +34,11 @@ void MLevelManager::Destroy()
 JLevel* MLevelManager::CreateLevel(const JText& InSavePath)
 {
 	JLevel*           newLevel  = CreateOrLoad(InSavePath);
-	JStaticMeshActor* skySphere = newLevel->CreateActor<JStaticMeshActor>("SkySphere", nullptr, Path_Mesh_Sphere);
-
-	skySphere->SetMaterialInstance(MMaterialInstanceManager::Get().CreateOrLoad("Game/Materials/SkySphere.jasset"));
-
-	skySphere->SetWorldScale({500.f, 500.f, 500.f});
+	// JStaticMeshActor* skySphere = newLevel->CreateActor<JStaticMeshActor>("SkySphere", nullptr, Path_Mesh_Sphere);
+	//
+	// skySphere->SetMaterialInstance(MMaterialInstanceManager::Get().CreateOrLoad("Game/Materials/SkySphere.jasset"));
+	//
+	// skySphere->SetWorldScale({500.f, 500.f, 500.f});
 
 	return newLevel;
 }

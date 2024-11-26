@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core/Entity/Component/Scene/Shape/JShape.h"
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/Vector4.h"
@@ -423,6 +424,37 @@ struct VectorHash
 		return h1 ^ (h2 << 1) ^ (h3 << 2);
 	}
 };
+
+inline FBoxShape FindBoxShape(const JArray<Vertex::FVertexInfo_Base>& Positions)
+{
+	auto minBounds = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	auto maxBounds = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	FBoxShape box;
+
+	for (const auto& pos : Positions)
+	{
+		const FVector position = pos.Position;
+		
+		minBounds.x = FMath::Max(box.Max.x, position.x);
+		minBounds.y = FMath::Max(box.Max.y, position.y);
+		minBounds.z = FMath::Max(box.Max.z, position.z);
+
+		maxBounds.x = FMath::Min(box.Min.x, position.x);
+		maxBounds.y = FMath::Min(box.Min.y, position.y);
+		maxBounds.z = FMath::Min(box.Min.z, position.z);
+	}
+
+	// 중심(center)과 반지름(radius) 계산
+	const FVector center = (minBounds + maxBounds) * 0.5f; // 중심 계산
+
+	box.Box.Center = center;
+	box.Box.Extent = FVector(maxBounds - center) * 0.5f;
+	box.Min        = minBounds;
+	box.Max        = maxBounds;
+
+	return box;
+}
 
 /**
  * 

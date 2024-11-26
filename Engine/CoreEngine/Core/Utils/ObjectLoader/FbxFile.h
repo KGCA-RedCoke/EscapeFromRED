@@ -135,12 +135,12 @@ namespace Utils::Fbx
 		FbxScene*    mFbxScene;
 
 		bool          bHasSkeleton = false;
+		
 		FSkeletonData mSkeletonData;
 		// Mesh를 배열로 저장하는 이유는 노드에 여러 메시가 붙어있을 수 있기 때문
 		JArray<Ptr<JMeshData>> mMeshList;
 		// Layer0만(거의 0에 다 들어있음) 사용할 것이므로 사실상 1개(mMaterialList[0])만 사용
 		JArray<JArray<JMaterialInstance*>> mMaterialList;
-
 
 		JArray<FAnimationNode>      mScanList;
 		JArray<Ptr<JAnimationClip>> mAnimations;

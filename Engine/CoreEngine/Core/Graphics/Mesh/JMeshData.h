@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "common_include.h"
+#include "Core/Entity/Component/Scene/Shape/JShape.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/IManagedInterface.h"
 #include "Core/Utils/FileIO/JSerialization.h"
@@ -53,6 +54,7 @@ public:
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetSubMesh() const { return mSubMesh; }
 	[[nodiscard]] const JArray<Ptr<JMeshData>>& GetChildMesh() const { return mChildMesh; }
 	[[nodiscard]] const Ptr<JVertexData<Vertex::FVertexInfo_Base>>& GetVertexData() const { return mVertexData; }
+	[[nodiscard]] const FBoxShape& GetBoundingBox() const { return mBoundingBox; }
 	[[nodiscard]] FMatrix GetInitialModelTransform() const { return mInitialModelTransform; }
 	[[nodiscard]] FORCEINLINE int32_t GetSubMaterialNum() const { return mMaterialRefNum; }
 
@@ -76,6 +78,8 @@ protected:
 	// -------------------------- Vertex Data --------------------------
 	Ptr<JVertexData<Vertex::FVertexInfo_Base>> mVertexData;
 
+	// -------------------------- Bounding Box --------------------------
+	FBoxShape mBoundingBox;
 
 	// DEPRECATED: 2024-11-17 이후로 JEngine에서 머티리얼과 메시는 완전히 분리 (하지만 머티리얼 갯수는 여전히 필요)
 	// -------------------------- Material Reference --------------------------

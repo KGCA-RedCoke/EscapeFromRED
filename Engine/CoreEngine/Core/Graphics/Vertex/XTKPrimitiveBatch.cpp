@@ -69,7 +69,6 @@ void XTKPrimitiveBatch::PostRender()
 
 void XTKPrimitiveBatch::Draw()
 {
-	PreRender();
 
 	constexpr FVector4 origin = {0, 0, 0, 0};
 
@@ -98,8 +97,6 @@ void XTKPrimitiveBatch::Draw()
 								   false,
 								   {0.f, 1.f, 0.f, 1.f}
 								  );
-
-	PostRender();
 }
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const

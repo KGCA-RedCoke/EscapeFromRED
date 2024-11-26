@@ -1,6 +1,10 @@
 ﻿#pragma once
 #include "Core/Entity/JObject.h"
 
+namespace Oc
+{
+	class JTree;
+}
 class JActor;
 
 /**
@@ -38,6 +42,8 @@ private:
 	JText mName;	// 레벨 이름
 
 public:
+	UPtr<Oc::JTree> mOcTree;
+
 	JArray<UPtr<JActor>> mActors;	// 레벨에 속한 액터들
 
 	// TODO : 레벨과 관련된 변수들 추가
