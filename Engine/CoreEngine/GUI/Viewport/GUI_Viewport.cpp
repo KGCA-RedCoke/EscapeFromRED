@@ -1,6 +1,6 @@
 ﻿#include "GUI_Viewport.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCamera.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"

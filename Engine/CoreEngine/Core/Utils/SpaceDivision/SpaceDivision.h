@@ -12,7 +12,7 @@ namespace Oc
 
 		FBox BoundArea;
 
-		JArray<class JActor*> Actors;
+		JArray<class AActor*> Actors;
 
 		FNode*      Parent      = nullptr;
 		UPtr<FNode> Children[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
@@ -30,7 +30,7 @@ namespace Oc
 	public:
 		void Initialize(const FBox& InRootBoundArea, uint32_t InDepth);
 		void Update();
-		void Insert(JActor* InActor);
+		void Insert(AActor* InActor);
 
 	private:
 		void Subdivide(FNode* InNode, uint32_t InDepth);

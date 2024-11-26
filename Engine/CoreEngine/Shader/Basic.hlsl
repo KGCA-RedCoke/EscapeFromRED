@@ -44,9 +44,9 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
 	float4 localPos = output.Pos;
 	float3 normal;
-
-	if (Instance.Flag & FLAG_MESH_ANIMATED || Instance.Flag & FLAG_MESH_SKINNED)
-	{
+	//
+	// if (Instance.Flag & FLAG_MESH_ANIMATED || Instance.Flag & FLAG_MESH_SKINNED)
+	// {
 		for (int i = 0; i < 4; ++i)
 		{
 			const uint  boneIndex = (uint)Input.BoneIndices[i];	// 본 인덱스
@@ -61,11 +61,11 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 		}
 
 		output.Color = Input.BoneWeights;
-	}
-	else
-	{
-		normal = Input.Normal;
-	}
+	// }
+	// else
+	// {
+	// 	normal = Input.Normal;
+	// }
 
 	output.Pos     = mul(output.Pos, Instance.InstancePos);
 	float3 viewDir = WorldCameraPos.xyz - output.Pos.xyz;

@@ -13,6 +13,14 @@ JActorComponent::JActorComponent(JTextView InName)
 	mObjectType = NAME_OBJECT_ACTOR_COMPONENT;
 }
 
+JActorComponent::JActorComponent(const JActorComponent& Copy)
+	: JObject(Copy),
+	  mComponentTags(Copy.mComponentTags),
+	  bIsActivated(Copy.bIsActivated)
+{
+	mOwnerActor = nullptr;
+}
+
 JActorComponent::~JActorComponent()
 {}
 

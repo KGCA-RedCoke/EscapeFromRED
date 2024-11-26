@@ -49,7 +49,7 @@ public:
 #pragma endregion
 
 protected:
-	virtual void CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList);
+	virtual void CreateBuffers(ID3D11Device* InDevice);
 
 public:
 	void UpdateBuffer(const FMatrix& InWorldMatrix = FMatrix::Identity);

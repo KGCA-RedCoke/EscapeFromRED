@@ -1,6 +1,6 @@
 ﻿#include "JLevel.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -64,7 +64,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		JText objType;
 		Utils::Serialization::DeSerialize_Text(objType, InFileStream);
 
-		UPtr<JActor> loadActor = UPtrCast<JActor>(MClassFactory::Get().Create(objType));
+		UPtr<AActor> loadActor = UPtrCast<AActor>(MClassFactory::Get().Create(objType));
 		if (loadActor->DeSerialize_Implement(InFileStream))
 		{
 			// mOcTree->Insert(loadActor.get());
@@ -85,7 +85,7 @@ void JLevel::UpdateLevel(float DeltaTime)
 {
 	std::erase_if(
 				  mActors,
-				  [&](const UPtr<JActor>& actor){
+				  [&](const UPtr<AActor>& actor){
 					  actor->Tick(DeltaTime);
 					  return actor->IsPendingKill();
 				  });
@@ -114,15 +114,15 @@ void JLevel::RenderLevel()
 	// GetWorld.CameraManager->GetCurrentMainCam()->PreRender(G_Device.GetImmediateDeviceContext());
 }
 
-// void JLevel::AddActor(const Ptr<JActor>& InActor)
+// void JLevel::AddActor(const Ptr<AActor>& InActor)
 // {
 // 	mActors.push_back(InActor);
 // }
 
-JActor* JLevel::LoadActorFromPath(const JText& InPath)
+AActor* JLevel::LoadActorFromPath(const JText& InPath)
 {
 	// // 파일에서 Load 시도 
-	// Ptr<JActor> tryLoadActor = MakePtr<JActor>();
+	// Ptr<AActor> tryLoadActor = MakePtr<AActor>();
 	//
 	// if (Utils::Serialization::DeSerialize(InPath.c_str(), tryLoadActor.get()))
 	// {

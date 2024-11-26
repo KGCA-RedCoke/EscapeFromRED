@@ -47,7 +47,7 @@ UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 	return MakeUPtr<JSkeletalMeshObject>(*this);
 }
 
-void JSkeletalMeshObject::CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList)
+void JSkeletalMeshObject::CreateBuffers(ID3D11Device* InDevice)
 {
 	ID3D11Device* device = GetWorld.D3D11API->GetDevice();
 	assert(device);

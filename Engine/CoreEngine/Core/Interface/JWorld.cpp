@@ -1,6 +1,6 @@
 ﻿#include "JWorld.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Actor/MActorManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
@@ -115,13 +115,13 @@ float JWorld::GetGameTime() const
 	return Application->GetCurrentTime();
 }
 
-JActor* JWorld::SpawnActor(const JText&   InName,
+AActor* JWorld::SpawnActor(const JText&   InName,
 						   const FVector& InLocation,
 						   const FVector& InRotation,
-						   JActor*        InOwner,
+						   AActor*        InOwner,
 						   JLevel*        InLevel)
 {
-	JActor* newActor = LevelManager->GetActiveLevel()->CreateActor<JActor>(InName);
+	AActor* newActor = LevelManager->GetActiveLevel()->CreateActor<AActor>(InName);
 	newActor->SetWorldLocation(InLocation);
 	newActor->SetWorldRotation(InRotation);
 	newActor->SetOwnerActor(InOwner);

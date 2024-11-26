@@ -102,11 +102,12 @@
     <ClInclude Include="AppDefines.h" />
     <ClInclude Include="common_include.h" />
     <ClInclude Include="common_pch.h" />
-    <ClInclude Include="Core\Entity\Actor\JActor.h" />
+    <ClInclude Include="Core\Entity\Actor\AActor.h" />
     <ClInclude Include="Core\Entity\Actor\JStaticMeshActor.h" />
     <ClInclude Include="Core\Entity\Actor\MActorManager.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
+    <ClInclude Include="Core\Entity\Audio\JAudioComponent.h" />
     <ClInclude Include="Core\Entity\Camera\JCamera.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
     <ClInclude Include="Core\Entity\Character\ACharacter.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="GUI\Utils\GUI_Utils.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
+    <ClInclude Include="Vender\include\imgui\imgui_stdlib.h" />
     <ClInclude Include="Vender\include\inifile_cpp\inicpp.h" />
     <None Include="Shader\Basic_2D.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -241,11 +243,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Entity\Actor\JActor.cpp" />
+    <ClCompile Include="Core\Entity\Actor\AActor.cpp" />
     <ClCompile Include="Core\Entity\Actor\JStaticMeshActor.cpp" />
     <ClCompile Include="Core\Entity\Actor\MActorManager.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
+    <ClCompile Include="Core\Entity\Audio\JAudioComponent.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
     <ClCompile Include="Core\Entity\Character\ACharacter.cpp" />
@@ -340,6 +343,7 @@
     <ClCompile Include="Vender\include\imgui\imgui_draw.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="Vender\include\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_tables.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_widgets.cpp" />
   </ItemGroup>

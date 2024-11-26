@@ -42,8 +42,6 @@ void GUI_Editor_Mesh::Update_Implementation(float DeltaTime)
 
 void GUI_Editor_Mesh::DrawViewport() const
 {
-
-
 	if (ImGui::BeginChild("ActorView", ImVec2(mWindowSize.x * 0.66f, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{
 		ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());

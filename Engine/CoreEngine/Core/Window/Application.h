@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 
-class JActor;
+class AActor;
 class XVertexMesh;
 class JFont;
 class Timer;

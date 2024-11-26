@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "JActor.h"
+#include "AActor.h"
 
 class JStaticMeshComponent;
 class JMeshObject;
 
-class JStaticMeshActor : public JActor
+class JStaticMeshActor : public AActor
 {
 public:
 	JStaticMeshActor();
@@ -15,7 +15,9 @@ public:
 	 * @param SavedMeshPath 저장된 메시 경로(jasset) 
 	 */
 	JStaticMeshActor(JTextView InName, JTextView SavedMeshPath);
+	JStaticMeshActor(const JStaticMeshActor& Copy);
 
+	UPtr<IManagedInterface> Clone() const override;
 public:
 	void Initialize() override;
 

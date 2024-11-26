@@ -11,7 +11,7 @@ JStaticMeshActor::JStaticMeshActor()
 }
 
 JStaticMeshActor::JStaticMeshActor(JTextView InName, JTextView SavedMeshPath)
-	: JActor(InName)
+	: AActor(InName)
 {
 	mObjectType = NAME_OBJECT_STATIC_MESH_ACTOR;
 
@@ -19,15 +19,27 @@ JStaticMeshActor::JStaticMeshActor(JTextView InName, JTextView SavedMeshPath)
 
 }
 
+JStaticMeshActor::JStaticMeshActor(const JStaticMeshActor& Copy)
+	: AActor(Copy)
+{
+	CreateMeshComponent(Copy.mStaticMeshComponent->GetName());
+}
+
+UPtr<IManagedInterface> JStaticMeshActor::Clone() const
+{
+	return MakeUPtr<JStaticMeshActor>(*this);
+}
+
+
 void JStaticMeshActor::Initialize()
 {
-	JActor::Initialize();
+	AActor::Initialize();
 
 }
 
 bool JStaticMeshActor::Serialize_Implement(std::ofstream& FileStream)
 {
-	if (!JActor::Serialize_Implement(FileStream))
+	if (!AActor::Serialize_Implement(FileStream))
 	{
 		return false;
 	}
@@ -38,7 +50,7 @@ bool JStaticMeshActor::Serialize_Implement(std::ofstream& FileStream)
 
 bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 {
-	if (!JActor::DeSerialize_Implement(InFileStream))
+	if (!AActor::DeSerialize_Implement(InFileStream))
 	{
 		return false;
 	}

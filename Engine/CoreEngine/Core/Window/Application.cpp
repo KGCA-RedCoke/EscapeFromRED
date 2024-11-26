@@ -1,5 +1,5 @@
 ﻿#include "Application.h"
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCamera.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"

@@ -5,7 +5,7 @@ namespace Oc
 {
 	class JTree;
 }
-class JActor;
+class AActor;
 
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
@@ -31,9 +31,9 @@ public:
 	void RenderLevel();
 
 public:
-	// void AddActor(const Ptr<JActor>& InActor);
+	// void AddActor(const Ptr<AActor>& InActor);
 
-	JActor* LoadActorFromPath(const JText& InPath);
+	AActor* LoadActorFromPath(const JText& InPath);
 
 	template <typename T, typename... Args>
 	T* CreateActor(const JText& InName, const JText& Template = nullptr, Args&&... InArgs);
@@ -44,7 +44,7 @@ private:
 public:
 	UPtr<Oc::JTree> mOcTree;
 
-	JArray<UPtr<JActor>> mActors;	// 레벨에 속한 액터들
+	JArray<UPtr<AActor>> mActors;	// 레벨에 속한 액터들
 
 	// TODO : 레벨과 관련된 변수들 추가
 	// Time, Mission, States ... etc
@@ -54,10 +54,10 @@ public:
 	friend class GUI_Viewport;
 };
 
-template <typename T = JActor, typename... Args>
+template <typename T = AActor, typename... Args>
 T* JLevel::CreateActor(const JText& InName, const JText& Template, Args&&... InArgs)
 {
-	static_assert(std::is_base_of<JActor, T>::value, "T must be derived from JActor");
+	static_assert(std::is_base_of<AActor, T>::value, "T must be derived from AActor");
 
 	UPtr<T> newActor = MakeUPtr<T>(InName, std::forward<Args>(InArgs)...);
 

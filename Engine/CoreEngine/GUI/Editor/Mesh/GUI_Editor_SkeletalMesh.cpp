@@ -1,6 +1,7 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
 #include "Core/Entity/Camera/JCamera.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -120,7 +121,7 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 		const int32_t meshDataSize = mMeshObject->mPrimitiveMeshData.size();
 		for (int32_t i = 0; i < meshDataSize; ++i)
 		{
-			auto& subMeshes    = mMeshObject->mPrimitiveMeshData[i]->GetSubMesh();
+			auto& subMeshes = mMeshObject->mPrimitiveMeshData[i]->GetSubMesh();
 			// auto  materialSlot = mMeshObject->mPrimitiveMeshData[i]->GetMaterialInstance();
 
 			const int32_t subMeshSize = subMeshes.size();

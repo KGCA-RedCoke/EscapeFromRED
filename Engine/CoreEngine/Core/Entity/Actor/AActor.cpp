@@ -1,42 +1,48 @@
-﻿#include "JActor.h"
+﻿#include "AActor.h"
 
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Interface/JWorld.h"
 #include "GUI/MGUIManager.h"
 
 
-JActor::JActor()
+AActor::AActor()
 {
 	mObjectType = NAME_OBJECT_ACTOR;
 }
 
-JActor::JActor(JTextView InName)
+AActor::AActor(JTextView InName)
 	: JSceneComponent(InName)
 {
 	mObjectType = NAME_OBJECT_ACTOR;
 }
 
-void JActor::Initialize()
+AActor::AActor(const AActor& Copy)
+	: JSceneComponent(Copy)
+{
+	
+}
+
+void AActor::Initialize()
 {
 	JSceneComponent::Initialize();
 }
 
-void JActor::BeginPlay()
+void AActor::BeginPlay()
 {
 	JSceneComponent::BeginPlay();
 }
 
-void JActor::Tick(float DeltaTime)
+void AActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 }
 
-void JActor::Destroy()
+void AActor::Destroy()
 {
 	JSceneComponent::Destroy();
 }
 
-void JActor::Draw()
+void AActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
@@ -47,12 +53,12 @@ void JActor::Draw()
 	}
 }
 
-uint32_t JActor::GetType() const
+uint32_t AActor::GetType() const
 {
 	return JSceneComponent::GetType();
 }
 
-bool JActor::Serialize_Implement(std::ofstream& FileStream)
+bool AActor::Serialize_Implement(std::ofstream& FileStream)
 {
 	if (!JSceneComponent::Serialize_Implement(FileStream))
 	{
@@ -63,7 +69,7 @@ bool JActor::Serialize_Implement(std::ofstream& FileStream)
 	return true;
 }
 
-bool JActor::DeSerialize_Implement(std::ifstream& InFileStream)
+bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 {
 	if (!JSceneComponent::DeSerialize_Implement(InFileStream))
 	{

@@ -5,7 +5,7 @@
 
 #define GetWorld JWorld::Get()
 
-class JActor;
+class AActor;
 class JLevel;
 
 class JWorld : public TSingleton<JWorld>
@@ -20,10 +20,10 @@ public:
 	[[nodiscard]] float GetDeltaSeconds() const;
 	[[nodiscard]] float GetGameTime() const;
 
-	JActor* SpawnActor(const JText&   InName,
+	AActor* SpawnActor(const JText&   InName,
 					   const FVector& InLocation = FVector::ZeroVector,
 					   const FVector& InRotation = FVector::ZeroVector,
-					   JActor*        InOwner    = nullptr,
+					   AActor*        InOwner    = nullptr,
 					   JLevel*        InLevel    = nullptr);
 
 private:

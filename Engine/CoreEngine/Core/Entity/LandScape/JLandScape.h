@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Graphics/ShaderStructs.h"
 
 class JTexture;
@@ -12,7 +12,7 @@ struct FMapDesc
 	float   ScaleHeight;
 };
 
-class JLandScape : public JActor
+class JLandScape : public AActor
 {
 public:
 	JLandScape();

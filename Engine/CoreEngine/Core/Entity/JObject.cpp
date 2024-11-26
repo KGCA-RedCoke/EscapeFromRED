@@ -12,6 +12,12 @@ JObject::JObject(JTextView InName)
 	: mName(ParseFile(InName.data()))
 {}
 
+JObject::JObject(const JObject& Copy)
+	: mName(std::format("{}_{}", Copy.mName, g_DefaultObjectNum++)),
+	  mObjectType(Copy.mObjectType),
+	  mObjectFlags(Copy.mObjectFlags)
+{}
+
 JObject::~JObject() {}
 
 uint32_t JObject::GetHash() const

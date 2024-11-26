@@ -11,11 +11,17 @@ JStaticMeshComponent::JStaticMeshComponent()
 }
 
 JStaticMeshComponent::JStaticMeshComponent(JTextView        InName,
-										   JActor*          InOwnerActor,
+										   AActor*          InOwnerActor,
 										   JSceneComponent* InParentSceneComponent)
 	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent)
 {
 	mObjectType = NAME_OBJECT_STATIC_MESH_COMPONENT;
+}
+
+JStaticMeshComponent::JStaticMeshComponent(const JStaticMeshComponent& Copy)
+	: JSceneComponent(Copy)
+{
+	mMeshObject = UPtrCast<JMeshObject>(Copy.mMeshObject->Clone());
 }
 
 JStaticMeshComponent::~JStaticMeshComponent() {}

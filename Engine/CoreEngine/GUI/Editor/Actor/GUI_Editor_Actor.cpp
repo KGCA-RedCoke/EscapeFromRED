@@ -1,6 +1,6 @@
 ﻿#include "GUI_Editor_Actor.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Actor/MActorManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Shader/MShaderManager.h"

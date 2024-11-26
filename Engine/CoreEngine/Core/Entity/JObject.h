@@ -20,6 +20,7 @@ class JObject : public JAsset,
 public:
 	JObject();
 	explicit JObject(JTextView InName);
+	JObject(const JObject& Copy);
 	~JObject() override;
 
 public:

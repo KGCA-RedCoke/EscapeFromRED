@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 
 class XKeyboardMouse;
 
-class ACharacter : public JActor
+class ACharacter : public AActor
 {
 public:
 	// Constructor

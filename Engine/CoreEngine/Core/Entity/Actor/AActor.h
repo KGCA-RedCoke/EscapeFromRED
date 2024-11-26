@@ -6,12 +6,13 @@
 class JActorComponent;
 class JTransformComponent;
 
-class JActor : public JSceneComponent
+class AActor : public JSceneComponent
 {
 public:
-	JActor();
-	JActor(JTextView InName);
-	~JActor() override = default;
+	AActor();
+	AActor(JTextView InName);
+	AActor(const AActor& Copy);
+	~AActor() override = default;
 
 	void Initialize() override;
 	void BeginPlay() override;
@@ -65,12 +66,12 @@ public:
 	}
 
 protected:
-	JActor*         mParentActor;
-	JArray<JActor*> mChildActors;
+	AActor*         mParentActor;
+	JArray<AActor*> mChildActors;
 
 	JHash<JText, int32_t>         mChildActorIndices;
 	JArray<UPtr<JActorComponent>> mActorComponents;
 
 };
 
-REGISTER_CLASS_TYPE(JActor);
+REGISTER_CLASS_TYPE(AActor);

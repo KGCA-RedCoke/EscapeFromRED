@@ -6,7 +6,7 @@ void MActorManager::PostInitialize(const JText& OriginalNameOrPath, const JText&
 	// 액터 파일 경로가 존재하고 jasset 파일이라면 데이터를 로드한다.
 	if (Utils::Serialization::IsJAssetFileAndExist(OriginalNameOrPath.c_str()))
 	{
-		JActor* actor = static_cast<JActor*>(Entity);
+		AActor* actor = static_cast<AActor*>(Entity);
 
 		if (!Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(), actor))
 		{
@@ -15,7 +15,7 @@ void MActorManager::PostInitialize(const JText& OriginalNameOrPath, const JText&
 	}
 }
 
-UPtr<JActor> MActorManager::CreateActor(const JText& InName)
+UPtr<AActor> MActorManager::CreateActor(const JText& InName)
 {
 	uint32_t hash = StringHash(InName.c_str());
 
@@ -25,7 +25,7 @@ UPtr<JActor> MActorManager::CreateActor(const JText& InName)
 	{
 		UPtr<IManagedInterface> clone = it->second->Clone();
 
-		return UPtrCast<JActor>(std::move(clone));
+		return UPtrCast<AActor>(std::move(clone));
 	}
 
 	return nullptr;

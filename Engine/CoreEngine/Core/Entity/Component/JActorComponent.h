@@ -1,13 +1,14 @@
 ﻿#pragma once
 #include "Core/Entity/JObject.h"
 
-class JActor;
+class AActor;
 
 class JActorComponent : public JObject
 {
 public:
 	JActorComponent();
 	JActorComponent(JTextView InName);
+	JActorComponent(const JActorComponent& Copy);
 	~JActorComponent() override;
 
 public:
@@ -25,14 +26,14 @@ public:
 	FORCEINLINE bool IsActivated() const { return bIsActivated; }
 	FORCEINLINE void SetActivated(bool bInActivated) { bIsActivated = bInActivated; }
 
-	FORCEINLINE void    SetOwnerActor(JActor* InActor) { mOwnerActor = InActor; }
-	FORCEINLINE JActor* GetOwnerActor() const { return mOwnerActor; }
+	FORCEINLINE void    SetOwnerActor(AActor* InActor) { mOwnerActor = InActor; }
+	FORCEINLINE AActor* GetOwnerActor() const { return mOwnerActor; }
 
 	FORCEINLINE JArray<uint32_t>&       GetComponentTags() { return mComponentTags; }
 	FORCEINLINE const JArray<uint32_t>& GetComponentTags() const { return mComponentTags; }
 
 protected:
-	JActor* mOwnerActor;
+	AActor* mOwnerActor;
 
 	JArray<uint32_t> mComponentTags;
 	bool             bIsActivated = true;

@@ -10,7 +10,7 @@ class JSceneComponent_2D : public JActorComponent, public IRenderable
 {
 public:
 	JSceneComponent_2D();
-	JSceneComponent_2D(JTextView InName, JActor* InOwnerActor = nullptr);
+	JSceneComponent_2D(JTextView InName, AActor* InOwnerActor = nullptr);
 	~JSceneComponent_2D() override;
 
 public:
@@ -68,8 +68,9 @@ class JSceneComponent : public JActorComponent, public IRenderable
 public:
 	JSceneComponent();
 	JSceneComponent(JTextView        InName,
-					JActor*          InOwnerActor           = nullptr,
+					AActor*          InOwnerActor           = nullptr,
 					JSceneComponent* InParentSceneComponent = nullptr);
+	JSceneComponent(const JSceneComponent& Copy);
 	~JSceneComponent() override;
 
 public:
@@ -124,8 +125,8 @@ public:
 	 */
 	void AttachToComponent(const Ptr<JSceneComponent>& InParentComponent);
 
-	void AttachToActor(JActor* InParentActor, const JText& InComponentAttachTo = "RootComponent");
-	void AttachToActor(JActor* InParentActor, JSceneComponent* InComponentAttachTo);
+	void AttachToActor(AActor* InParentActor, const JText& InComponentAttachTo = "RootComponent");
+	void AttachToActor(AActor* InParentActor, JSceneComponent* InComponentAttachTo);
 
 	void DetachFromComponent();
 

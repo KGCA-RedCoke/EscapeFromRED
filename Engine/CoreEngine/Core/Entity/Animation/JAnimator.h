@@ -8,7 +8,7 @@ public:
 	~JAnimator() override = default;
 
 public:
-	uint32_t    GetType() const override;
+	uint32_t GetType() const override;
 
 public:
 	bool Serialize_Implement(std::ofstream& FileStream) override;
@@ -22,6 +22,6 @@ public:
 
 protected:
 	// State Machine
-	JHash<uint32_t, Ptr<class JAnimationClip>> mStateMachine;
-	
+	JHash<JText, Ptr<class JAnimationClip>> mStateMachine;
+
 };

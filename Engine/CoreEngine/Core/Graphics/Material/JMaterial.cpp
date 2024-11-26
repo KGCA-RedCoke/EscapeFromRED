@@ -279,7 +279,7 @@ FMaterialParam Utils::Material::CreateTextureParam(const char* ParamName, const 
 	materialParams.ParamValue     = EMaterialParamValue::Texture2D;
 	materialParams.StringValue    = FileName;
 	materialParams.bInstanceParam = true;
-	materialParams.TextureValue   = GetWorld.TextureManager->CreateOrLoad(FileName);
+	// materialParams.TextureValue   = GetWorld.TextureManager->CreateOrLoad(FileName);
 
 	return materialParams;
 }

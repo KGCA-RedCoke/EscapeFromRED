@@ -1,6 +1,6 @@
 ﻿#include "GUI_Camera_Debug_Frustum.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"

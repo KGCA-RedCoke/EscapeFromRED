@@ -1,6 +1,6 @@
 ﻿#include "JSceneComponent.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 
 JSceneComponent::JSceneComponent()
 	: mParentSceneComponent(nullptr)
@@ -8,7 +8,7 @@ JSceneComponent::JSceneComponent()
 	mObjectType = NAME_OBJECT_SCENE_COMPONENT;
 }
 
-JSceneComponent::JSceneComponent(JTextView        InName, JActor* InOwnerActor,
+JSceneComponent::JSceneComponent(JTextView        InName, AActor* InOwnerActor,
 								 JSceneComponent* InParentSceneComponent)
 	: JActorComponent(InName)
 {
@@ -17,6 +17,26 @@ JSceneComponent::JSceneComponent(JTextView        InName, JActor* InOwnerActor,
 	mOwnerActor           = InOwnerActor;
 	mParentSceneComponent = InParentSceneComponent;
 }
+
+JSceneComponent::JSceneComponent(const JSceneComponent& Copy)
+	: JActorComponent(Copy),
+	  mParentSceneComponent(nullptr),
+	  mWorldLocation(Copy.mWorldLocation),
+	  mWorldRotation(Copy.mWorldRotation),
+	  mWorldScale(Copy.mWorldScale),
+	  mLocalLocation(Copy.mLocalLocation),
+	  mLocalRotation(Copy.mLocalRotation),
+	  mLocalScale(Copy.mLocalScale)
+{
+	for (int32_t i = 0; i < Copy.mChildSceneComponents.size(); ++i)
+	{
+		UPtr<JSceneComponent> newObj                   = MakeUPtr<JSceneComponent>(*Copy.mChildSceneComponents[i].get());
+		newObj->mParentSceneComponent                  = this;
+		mChildSceneComponentIndices[newObj->GetName()] = i;
+		mChildSceneComponents.push_back(std::move(newObj));
+	}
+}
+
 
 JSceneComponent::~JSceneComponent() {}
 
@@ -233,10 +253,10 @@ void JSceneComponent::AttachComponent(JSceneComponent* InChildComponent)
 void JSceneComponent::AttachToComponent(const Ptr<JSceneComponent>& InParentComponent)
 {}
 
-void JSceneComponent::AttachToActor(JActor* InParentActor, const JText& InComponentAttachTo)
+void JSceneComponent::AttachToActor(AActor* InParentActor, const JText& InComponentAttachTo)
 {}
 
-void JSceneComponent::AttachToActor(JActor* InParentActor, JSceneComponent* InComponentAttachTo)
+void JSceneComponent::AttachToActor(AActor* InParentActor, JSceneComponent* InComponentAttachTo)
 {
 	assert(InParentActor);
 

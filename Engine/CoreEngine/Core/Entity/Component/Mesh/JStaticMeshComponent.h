@@ -11,8 +11,9 @@ class JStaticMeshComponent : public JSceneComponent
 public:
 	JStaticMeshComponent();
 	JStaticMeshComponent(JTextView        InName,
-						 JActor*          InOwnerActor           = nullptr,
+						 AActor*          InOwnerActor           = nullptr,
 						 JSceneComponent* InParentSceneComponent = nullptr);
+	JStaticMeshComponent(const JStaticMeshComponent& Copy);
 	~JStaticMeshComponent() override;
 
 public:

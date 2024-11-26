@@ -1,6 +1,6 @@
 ﻿#include "SpaceDivision.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
 
 void Oc::FNode::Subdivide()
 {
@@ -62,7 +62,7 @@ void Oc::JTree::Update()
 				childNode->Actors.erase(
 										std::ranges::remove_if(
 															   childNode->Actors,
-															   [](JActor* actor){
+															   [](AActor* actor){
 																   return actor->IsPendingKill();
 															   }).begin(),
 										childNode->Actors.end());
@@ -73,7 +73,7 @@ void Oc::JTree::Update()
 	}
 }
 
-void Oc::JTree::Insert(JActor* InActor)
+void Oc::JTree::Insert(AActor* InActor)
 {}
 
 void Oc::JTree::Subdivide(FNode* InNode, uint32_t InDepth)

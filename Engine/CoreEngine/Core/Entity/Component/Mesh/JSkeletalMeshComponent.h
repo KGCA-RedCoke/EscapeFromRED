@@ -8,7 +8,7 @@ class JSkeletalMeshComponent : public JSceneComponent
 public:
 	JSkeletalMeshComponent();
 	JSkeletalMeshComponent(JTextView        InName,
-						   JActor*          InOwnerActor      = nullptr,
+						   AActor*          InOwnerActor      = nullptr,
 						   JSceneComponent* InParentComponent = nullptr);
 	~JSkeletalMeshComponent() override = default;
 

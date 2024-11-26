@@ -13,7 +13,7 @@ public:
 	UPtr<IManagedInterface> Clone() const override;
 
 protected:
-	void CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList) override;
+	void CreateBuffers(ID3D11Device* InDevice) override;
 	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:

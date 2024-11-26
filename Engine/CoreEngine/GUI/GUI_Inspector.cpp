@@ -1,16 +1,18 @@
 ﻿#include "GUI_Inspector.h"
 
-#include "Core/Entity/Actor/JActor.h"
+#include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Interface/JWorld.h"
+#include "imgui/imgui_stdlib.h"
 
 extern CBuffer::Light g_LightData;
 
 GUI_Inspector::GUI_Inspector(const std::string& InTitle)
 	: GUI_Base(InTitle) {}
 
-void GUI_Inspector::AddSceneComponent(const JText& InName, JActor* InSceneComponent)
+void GUI_Inspector::AddSceneComponent(const JText& InName, AActor* InSceneComponent)
 {
 	mSceneComponents.try_emplace(InName, InSceneComponent);
 }
@@ -44,16 +46,16 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 		}
 		ImGui::EndTable();
 
-		if (bRequestDelete)
+		if (mSelectedSceneComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
 		{
 			mSelectedSceneComponent->Destroy();
 			mSelectedSceneComponent = nullptr;
-			bRequestDelete          = false;
 		}
 
-		if (bRequestCopy)
+		if (mSelectedSceneComponent && ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_C))
 		{
-			
+
+			mLevel->mActors.push_back(UPtrCast<JStaticMeshActor>(mSelectedSceneComponent->Clone()));
 		}
 	}
 
@@ -121,15 +123,6 @@ void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 		mSelectedSceneComponent = InSceneComponent;
 	}
 
-	if (mSelectedSceneComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
-	{
-		bRequestDelete = true;
-	}
-
-	if (mSelectedSceneComponent && ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_C))
-	{
-		bRequestCopy = true;
-	}
 
 	if (bIsOpen)
 	{
@@ -156,27 +149,48 @@ void GUI_Inspector::DrawDetails()
 		}
 
 
-		if (ImGui::CollapsingHeader(mSelectedSceneComponent->GetName().c_str()))
+		if (ImGui::CollapsingHeader(mSelectedSceneComponent->GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			FVector location = mSelectedSceneComponent->GetLocalLocation();
-			FVector rotation = mSelectedSceneComponent->GetLocalRotation();
-			FVector scale    = mSelectedSceneComponent->GetLocalScale();
-
-			if (ImGui::DragFloat3("Position", &location.x, 1.f))
-			{
-				mSelectedSceneComponent->SetLocalLocation(location);
-			}
-
-			if (ImGui::DragFloat3("Rotation", &rotation.x, 0.1f, -360.0f, 360.0f))
-			{
-				mSelectedSceneComponent->SetLocalRotation(rotation);
-			}
-			if (ImGui::DragFloat3("Scale", &scale.x, 0.01f, 0.f, 10.0f))
-			{
-				mSelectedSceneComponent->SetLocalScale(scale);
-			}
+			DrawName();
+			DrawTransform();
 		}
 	}
 	ImGui::EndChild();
 
+}
+
+void GUI_Inspector::DrawName()
+{
+
+	ImGui::InputText(u8("이름"),
+					 &mSelectedSceneComponent->mName,
+					 ImGuiInputTextFlags_CharsNoBlank);
+
+	// mSelectedSceneComponent->mName = buffer;
+}
+
+void GUI_Inspector::DrawTransform() const
+{
+	ImGui::Separator();
+
+	if (ImGui::CollapsingHeader(u8("변환 정보")))
+	{
+		FVector location = mSelectedSceneComponent->GetLocalLocation();
+		FVector rotation = mSelectedSceneComponent->GetLocalRotation();
+		FVector scale    = mSelectedSceneComponent->GetLocalScale();
+
+		if (ImGui::DragFloat3(u8("위치"), &location.x, 1.f))
+		{
+			mSelectedSceneComponent->SetLocalLocation(location);
+		}
+
+		if (ImGui::DragFloat3(u8("회전"), &rotation.x, 0.1f, -360.0f, 360.0f))
+		{
+			mSelectedSceneComponent->SetLocalRotation(rotation);
+		}
+		if (ImGui::DragFloat3(u8("크기"), &scale.x, 0.01f, 0.f, 10.0f))
+		{
+			mSelectedSceneComponent->SetLocalScale(scale);
+		}
+	}
 }

@@ -34,6 +34,6 @@ private:
 	void DrawDetails();
 
 private:
-	class JActor*    mActorToEdit;			// 편집할 액터
+	class AActor*    mActorToEdit;			// 편집할 액터
 	JSceneComponent* mSelectedSceneComponent;
 };

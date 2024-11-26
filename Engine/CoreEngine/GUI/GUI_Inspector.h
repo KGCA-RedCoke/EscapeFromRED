@@ -12,9 +12,9 @@ public:
 	GUI_Inspector(const std::string& InTitle);
 	~GUI_Inspector() override = default;
 
-	void AddSceneComponent(const JText& InName, class JActor* InSceneComponent);
+	void AddSceneComponent(const JText& InName, class AActor* InSceneComponent);
 
-	JHash<JText, JActor*> GetSelectedSceneComponent() const { return mSceneComponents; }
+	JHash<JText, AActor*> GetSelectedSceneComponent() const { return mSceneComponents; }
 	void                  SetSelectedActor(class JSceneComponent* Ptr) { mSelectedSceneComponent = Ptr; }
 
 private:
@@ -22,13 +22,16 @@ private:
 
 	void DrawSearchBar();
 	void DrawTreeNode(JSceneComponent* InSceneComponent);
+	
 	void DrawDetails();
+	void DrawName();
+	void DrawTransform() const;
 
 private:
 	Utils::GUI::FSearchBar mSearchBar;
 	JSceneComponent*       mSelectedSceneComponent;
 	JLevel*                mLevel;
-	JHash<JText, JActor*>  mSceneComponents;
+	JHash<JText, AActor*>  mSceneComponents;
 
 	bool bRequestDelete = false;
 	bool bRequestCopy   = false;

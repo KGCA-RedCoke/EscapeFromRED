@@ -16,22 +16,22 @@ JLandScape::~JLandScape() {}
 
 void JLandScape::Initialize()
 {
-	JActor::Initialize();
+	AActor::Initialize();
 }
 
 void JLandScape::BeginPlay()
 {
-	JActor::BeginPlay();
+	AActor::BeginPlay();
 }
 
 void JLandScape::Tick(float DeltaTime)
 {
-	JActor::Tick(DeltaTime);
+	AActor::Tick(DeltaTime);
 }
 
 void JLandScape::Destroy()
 {
-	JActor::Destroy();
+	AActor::Destroy();
 }
 
 void JLandScape::Draw()
@@ -61,12 +61,12 @@ void JLandScape::Draw()
 
 bool JLandScape::Serialize_Implement(std::ofstream& FileStream)
 {
-	return JActor::Serialize_Implement(FileStream);
+	return AActor::Serialize_Implement(FileStream);
 }
 
 bool JLandScape::DeSerialize_Implement(std::ifstream& InFileStream)
 {
-	return JActor::DeSerialize_Implement(InFileStream);
+	return AActor::DeSerialize_Implement(InFileStream);
 }
 
 void JLandScape::GenerateLandScape()

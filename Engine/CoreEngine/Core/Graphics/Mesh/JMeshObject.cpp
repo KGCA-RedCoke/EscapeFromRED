@@ -118,7 +118,7 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 }
 
 /** 버퍼는 메모리에 올릴 때 한번만 생성되고 공유 */
-void JMeshObject::CreateBuffers(ID3D11Device* InDevice, JHash<uint32_t, Buffer::FBufferGeometry>& InBufferList)
+void JMeshObject::CreateBuffers(ID3D11Device* InDevice)
 {}
 
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
