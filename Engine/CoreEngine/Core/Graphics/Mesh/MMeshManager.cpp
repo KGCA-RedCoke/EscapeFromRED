@@ -4,6 +4,13 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
 
+MMeshManager::MMeshManager()
+{
+	CreateIdentityInstanceBuffer(G_Device.GetDevice());
+}
+
+MMeshManager::~MMeshManager() {}
+
 void MMeshManager::PostInitialize(const JText& OriginalNameOrPath, const JText& ParsedName, const uint32_t NameHash,
 								  void*        Entity)
 {
@@ -94,7 +101,7 @@ void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshOb
 			Utils::DX::CreateBuffer(InDevice,
 									D3D11_BIND_VERTEX_BUFFER,
 									nullptr,
-									sizeof(FInstanceData),
+									sizeof(FInstanceData_Mesh),
 									MAX_INSTANCE,
 									instanceBuffer.Buffer_Instance.GetAddressOf(),
 									D3D11_USAGE_DYNAMIC,
@@ -159,7 +166,6 @@ void MMeshManager::PushCommand(uint32_t NameHash, const FInstanceData_Mesh& InIn
 
 void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 {
-
 	for (auto& [nameHash, instanceData] : mInstanceData)
 	{
 		// 인스턴스 갯수 만큼 버퍼 업데이트
@@ -174,13 +180,9 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 										   instanceData.data(),
 										   sizeof(FInstanceData_Mesh) * instanceData.size());
 
-			ID3D11Buffer* buffers[] = {
-				buffer.Geometry.Buffer_Vertex.Get(),
-				instanceBuffer.Get()
-			};
-
-			uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
-			uint32_t offset[2] = {0, 0};
+			ID3D11Buffer*      buffers[] = {buffer.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
+			constexpr uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
+			constexpr uint32_t offset[2] = {0, 0};
 
 			InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);
 			InContext->IASetIndexBuffer(buffer.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -193,31 +195,15 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 
 }
 
-
-void MMeshManager::GenInstanceBuffer(ID3D11Device*  InDevice, uint32_t NameHash,
-									 JArray<void*>& InstanceData)
+void MMeshManager::CreateIdentityInstanceBuffer(ID3D11Device* InDevice)
 {
-	assert(mBufferList.contains(NameHash));
-
-	// mBufferList[NameHash].BufferInstance.Buffer_Instance.Reset();
-	//
-	// JArray<FMatrix> instanceDataMatrix;
-	// instanceDataMatrix.reserve(InstanceData.size());
-	// for (auto& data : InstanceData)
-	// {
-	// 	instanceDataMatrix.push_back(XMMatrixTranspose(*static_cast<FMatrix*>(data)));
-	// }
-	//
-	// Utils::DX::CreateBuffer(InDevice,
-	// 						D3D11_BIND_VERTEX_BUFFER,
-	// 						reinterpret_cast<void**>(instanceDataMatrix.data()),
-	// 						sizeof(FMatrix),
-	// 						InstanceData.size(),
-	// 						mBufferList[NameHash].BufferInstance.Buffer_Instance.GetAddressOf(),
-	// 						D3D11_USAGE_DYNAMIC,
-	// 						D3D11_CPU_ACCESS_WRITE);
+	// Instance 버퍼 생성
+	Utils::DX::CreateBuffer(InDevice,
+							D3D11_BIND_VERTEX_BUFFER,
+							reinterpret_cast<void**>(&IdentityInstanceData),
+							sizeof(FInstanceData_Mesh),
+							1,
+							IdentityBuffer.Buffer_Instance.GetAddressOf(),
+							D3D11_USAGE_DYNAMIC,
+							D3D11_CPU_ACCESS_WRITE);
 }
-
-MMeshManager::MMeshManager() {}
-
-MMeshManager::~MMeshManager() {}

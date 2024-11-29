@@ -1,7 +1,8 @@
 ﻿#include "XTKPrimitiveBatch.h"
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Interface/JWorld.h"
 
 XTKPrimitiveBatch::XTKPrimitiveBatch() = default;
@@ -36,7 +37,7 @@ void XTKPrimitiveBatch::Initialize()
 
 void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
-	JCamera* cam = GetWorld.CameraManager->GetCurrentMainCam();
+	JCameraComponent* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
 	mBatchEffect->SetWorld(FMatrix::Identity);
 	mBatchEffect->SetView(cam->GetViewMatrix());
@@ -52,6 +53,7 @@ void XTKPrimitiveBatch::Release()
 
 void XTKPrimitiveBatch::PreRender()
 {
+	MShaderManager::Get().UpdateShader(nullptr, nullptr);
 	mBatchEffect->Apply(GetWorld.D3D11API->GetImmediateDeviceContext());
 
 	GetWorld.D3D11API->GetImmediateDeviceContext()->IASetInputLayout(mBatchInputLayout.Get());

@@ -32,7 +32,7 @@ public:
 	FORCEINLINE POINT                  GetCurMouseDelta() const { return mCurrentMouseDelta; }
 
 public:
-	void AddInputBinding(const EKeyCode Key, const EKeyState KeyState, FOnKeyPressed Delegate);
+	void AddInputBinding(const EKeyCode Key, const EKeyState KeyState,const FOnKeyPressed::FunctionType& Delegate);
 
 private:
 	void CreateKeys();

@@ -4,6 +4,7 @@ cbuffer CameraConstantBuffer : register(b0)
 	float4 WorldCameraPos;
 	matrix View;
 	matrix Projection;
+	matrix Orthographic;
 };
 
 cbuffer ColorIDConstantBuffer : register(b1)

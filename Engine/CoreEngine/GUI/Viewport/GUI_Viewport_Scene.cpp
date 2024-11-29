@@ -1,6 +1,7 @@
 ﻿#include "GUI_Viewport_Scene.h"
 
 #include "Core/Entity/Actor/JStaticMeshActor.h"
+#include "Core/Entity/Actor/Character/ACharacter.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
@@ -43,14 +44,13 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			JLevel*     activeLevel = GetWorld.LevelManager->GetActiveLevel();
 			const char* assetPath   = static_cast<const char*>(payload->Data);
 
-			auto  metaData = Utils::Serialization::GetType(assetPath);
-			JText name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
+			auto      metaData = Utils::Serialization::GetType(assetPath);
+			JTextView name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
 
 			switch (metaData.AssetType)
 			{
 			case HASH_ASSET_TYPE_STATIC_MESH:
-				activeLevel->CreateActor<JStaticMeshActor>(name, "", assetPath);
-
+				activeLevel->CreateActor<JStaticMeshActor>(name, assetPath);
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:
 
@@ -105,5 +105,15 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
+		JTextView         d("Game/Mesh/Tree.jasset");
+		ASampleCharacter* character = GetWorld.SpawnActor<ASampleCharacter>("Girl",
+																			FVector::ZeroVector,
+																			FVector::ZeroVector,
+																			nullptr,
+																			"Game/Mesh/SK_MechanicGirl_01.jasset");
+
+		character->Initialize();
+
+		bIsGameMode = true;
 	}
 }

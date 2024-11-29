@@ -17,24 +17,10 @@ void JMaterial_Basic::BindMaterialPipeline(ID3D11DeviceContext*          InDevic
 {
 	JMaterial::BindMaterialPipeline(InDeviceContext, InInstanceParams);
 
-	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	int32_t slots[2] = {0, 1};
-	G_Device.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
-	G_Device.SetRasterState(GetWorld.GUIManager->IsRenderWireFrame()
-											   ? ERasterState::WireFrame
-											   : ERasterState::CCW);
-	G_Device.SetBlendState(EBlendState::AlphaBlend);
-	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);
-
 	// 텍스처맵 슬롯 바인딩
 	for (int32_t i = 0; i < InInstanceParams.size(); ++i)
 	{
 		const FMaterialParam& param = InInstanceParams[i];
-
-		// mShader->UpdateConstantData(InDeviceContext,
-		// 							CBuffer::NAME_CONSTANT_BUFFER_MATERIAL,
-		// 							param.Name,
-		// 							&param.Float4Value);
 
 		param.BindMaterialParam(InDeviceContext, i);
 	}

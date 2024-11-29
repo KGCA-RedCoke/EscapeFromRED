@@ -3,8 +3,13 @@
 #include "Core/Graphics/Shader/JShader.h"
 #include "Core/Manager/IManagedInterface.h"
 
+DECLARE_DYNAMIC_DELEGATE(FOnMaterialInstanceParamChanged);
+
 class JMaterialInstance : public IManagedInterface, public ISerializable
 {
+public:
+	FOnMaterialInstanceParamChanged OnMaterialInstanceParamChanged;
+
 public:
 	JMaterialInstance(JTextView InName);
 	JMaterialInstance(JWTextView InName);

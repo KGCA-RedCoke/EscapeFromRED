@@ -2,15 +2,15 @@
 
 #include <ranges>
 
-#include "Core/Graphics/Shader/JShader_Basic.h"
 #include "InputLayouts.h"
+#include "Core/Graphics/Shader/JShader_Basic.h"
 
 MShaderManager::MShaderManager()
 {
 	Initialize_Initialize();
 }
 
-void MShaderManager::UpdateCamera(JCamera* InCameraObj) const
+void MShaderManager::UpdateCamera(JCameraComponent* InCameraObj) const
 {
 	for (auto& shader : mManagedList | std::ranges::views::values)
 	{
@@ -20,15 +20,12 @@ void MShaderManager::UpdateCamera(JCamera* InCameraObj) const
 
 void MShaderManager::UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader* InShader)
 {
-	if (mCachedShader == InShader)
+	if (InShader && mCachedShader != InShader)
 	{
-		InShader->UpdateGlobalConstantBuffer(InDeviceContext);
-		return;
+		InShader->BindShaderPipeline(InDeviceContext);
 	}
 
 	mCachedShader = InShader;
-
-	InShader->BindShaderPipeline(InDeviceContext);
 }
 
 void MShaderManager::Initialize_Initialize()

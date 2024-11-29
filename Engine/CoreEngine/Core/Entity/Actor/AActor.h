@@ -27,6 +27,10 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
+	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
+	JActorComponent* GetChildComponentByType(JTextView InType) const;
+
 	template <class ObjectType, typename... Args>
 	ObjectType* CreateDefaultSubObject(Args... args)
 	{
@@ -49,16 +53,16 @@ public:
 			mChildSceneComponents.push_back(std::move(obj));
 		}
 
-		else
+		else if constexpr (std::is_base_of_v<JActorComponent, ObjectType>)
 		{
-			if (mChildActorIndices.contains(obj->GetName()))
-			{
-				const int32_t index = mChildActorIndices[obj->GetName()];
-				objPtr              = mChildActors.at(index);
-				return static_cast<ObjectType*>(objPtr);
-			}
+			// if (mChildActorIndices.contains(obj->GetName()))
+			// {
+			// 	const int32_t index = mChildActorIndices[obj->GetName()];
+			// 	objPtr              = mChildActors.at(index);
+			// 	return static_cast<ObjectType*>(objPtr);
+			// }
 
-			mChildActorIndices.insert({obj->GetName(), mChildActors.size()});
+			// mChildActorIndices.insert({obj->GetName(), mChildActors.size()});
 			mActorComponents.push_back(std::move(obj));
 		}
 

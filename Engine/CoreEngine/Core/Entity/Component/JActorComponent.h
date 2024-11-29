@@ -32,6 +32,8 @@ public:
 	FORCEINLINE JArray<uint32_t>&       GetComponentTags() { return mComponentTags; }
 	FORCEINLINE const JArray<uint32_t>& GetComponentTags() const { return mComponentTags; }
 
+	
+
 protected:
 	AActor* mOwnerActor;
 

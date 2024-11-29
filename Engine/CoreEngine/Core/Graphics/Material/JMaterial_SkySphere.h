@@ -12,4 +12,14 @@ public:
 
 private:
 	void InitializeParams() override;
+
+private:
+	struct
+	{
+		FVector4 SkyColor1;
+		FVector4 SkyColor2;
+		FVector4 CloudColor1;
+		FVector4 CloudColor2;
+		float    LightIntensity;
+	} mSkyColorParams;
 };

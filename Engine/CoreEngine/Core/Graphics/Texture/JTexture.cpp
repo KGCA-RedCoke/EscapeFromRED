@@ -28,7 +28,7 @@ JTexture::JTexture(JTextView InName, bool bEnableEdit)
 
 JTexture::~JTexture() {}
 
-void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, const int32_t InSlot,
+void JTexture::SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, uint32_t InSlot,
 								  JTexture*            InTexture)
 {
 	ID3D11ShaderResourceView* srv = nullptr;

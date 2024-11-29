@@ -1,11 +1,10 @@
 ﻿#pragma once
 #include <DirectXMath.h>
 
+#include "Core/Entity/Component/Scene/JSceneComponent.h"
 #include "Core/Entity/Component/Scene/Shape/JShape.h"
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Input/XKeyboardMouse.h"
-#include "Core/Interface/ICoreInterface.h"
-#include "Core/Manager/IManagedInterface.h"
 
 enum EPlane
 {
@@ -31,18 +30,21 @@ struct FFrustum
  * directx11 sdk example - DXUTcamera 참고
  * https://github.com/microsoft/DXUT/blob/main/Optional/DXUTcamera.h
  */
-class JCamera : public IManagedInterface, public ICoreInterface
+class JCameraComponent : public JSceneComponent
 {
 public:
-	JCamera() noexcept;
-	explicit JCamera(const JText& InName);
-	explicit JCamera(const JWText& InName);
+	JCameraComponent();
+	JCameraComponent(const JText& InName);
+	JCameraComponent(JTextView        InName, AActor* InOwnerActor = nullptr,
+					 JSceneComponent* InParentComponent            = nullptr);
+	JCameraComponent(const JWText& InName);
+	~JCameraComponent() override;
 
 public:
 #pragma region Core Interface
 	void Initialize() override;
-	void Update(float DeltaTime) override;
-	void Release() override;
+	void Tick(float DeltaTime) override;
+	void Destroy() override;
 #pragma endregion
 
 #pragma region Render Interface
@@ -135,14 +137,14 @@ public:
 
 
 	//--------------------------------------------- Get State -------------------------------------------------------------
-	[[nodiscard]]FORCEINLINE XMMATRIX GetWorldMatrix() const { return XMLoadFloat4x4(&mWorld); }
-	[[nodiscard]]FORCEINLINE XMMATRIX GetViewMatrix() const { return XMLoadFloat4x4(&mView); }
-	[[nodiscard]]FORCEINLINE XMMATRIX GetProjMatrix() const { return XMLoadFloat4x4(&mProj_Perspective); }
-	[[nodiscard]]FORCEINLINE XMVECTOR GetEyePosition() const { return XMLoadFloat3(&mEye); }
-	[[nodiscard]] FORCEINLINE FVector GetEyePositionFVector() const { return mEye; }
-	[[nodiscard]]FORCEINLINE XMVECTOR GetLookAtPosition() const { return XMLoadFloat3(&mLookAt); }
-	[[nodiscard]]FORCEINLINE float    GetNearClip() const { return mNearPlane; }
-	[[nodiscard]]FORCEINLINE float    GetFarClip() const { return mFarPlane; }
+	[[nodiscard]]FORCEINLINE XMMATRIX  GetWorldMatrix() const { return XMLoadFloat4x4(&mWorld); }
+	[[nodiscard]]FORCEINLINE XMMATRIX  GetViewMatrix() const { return XMLoadFloat4x4(&mView); }
+	[[nodiscard]]FORCEINLINE XMMATRIX  GetProjMatrix() const { return XMLoadFloat4x4(&mProj_Perspective); }
+	[[nodiscard]] FORCEINLINE XMMATRIX GetOrthoProjMatrix() const { return XMLoadFloat4x4(&mProj_Orthographic); }
+	[[nodiscard]] FORCEINLINE FVector  GetEyePositionFVector() const { return mWorldLocation; }
+	[[nodiscard]]FORCEINLINE XMVECTOR  GetLookAtPosition() const { return XMLoadFloat3(&mLookAt); }
+	[[nodiscard]]FORCEINLINE float     GetNearClip() const { return mNearPlane; }
+	[[nodiscard]]FORCEINLINE float     GetFarClip() const { return mFarPlane; }
 
 
 	//--------------------------------------------- Get State -------------------------------------------------------------
@@ -162,7 +164,6 @@ protected:
 
 	FVector mDefaultEye;	 // 초기 카메라 위치벡터
 	FVector mDefaultLookAt; // 초기 카메라 타겟벡터
-	FVector mEye;    		 // 현재 카메라 위치벡터
 	FVector mLookAt; 		 // 현재 카메라 타겟벡터
 
 	float mYaw;
@@ -204,7 +205,7 @@ protected:
 	static uint32_t s_CameraNum;
 };
 
-class JCamera_Debug final : public JCamera
+class JCamera_Debug final : public JCameraComponent
 {
 public:
 	JCamera_Debug() noexcept;
@@ -214,8 +215,8 @@ public:
 public:
 #pragma region Core Interface
 	void Initialize() override;
-	void Update(float DeltaTime) override;
-	void Release() override;
+	void Tick(float DeltaTime) override;
+	void Destroy() override;
 #pragma endregion
 
 private:

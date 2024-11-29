@@ -6,8 +6,8 @@
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 {
-	mName                         = InName;
-	mVertexSize                   = sizeof(Vertex::FVertexInfo_Base);
+	mName       = InName;
+	mVertexSize = sizeof(Vertex::FVertexInfo_Base);
 	// mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
 
 	if (InData.empty())
@@ -39,8 +39,19 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 JSkeletalMeshObject::JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
 	: JMeshObject(InName, InData) {}
 
-JSkeletalMeshObject::JSkeletalMeshObject(const JMeshObject& Other)
-	: JMeshObject(Other) {}
+JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
+	: JMeshObject(Other)
+{
+	mSkeletalMesh        = Other.mSkeletalMesh;
+	mSampleAnimation     = Other.mSampleAnimation;
+	mInstanceBuffer_Bone = Other.mInstanceBuffer_Bone;
+	mElapsedTime         = Other.mElapsedTime;
+
+	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
+	{
+		mInstanceData[i].MaterialData.Flag |= (1 << 11);
+	}
+}
 
 UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 {
@@ -48,35 +59,7 @@ UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 }
 
 void JSkeletalMeshObject::CreateBuffers(ID3D11Device* InDevice)
-{
-	ID3D11Device* device = GetWorld.D3D11API->GetDevice();
-	assert(device);
-
-	// JMeshObject::CreateBuffers(TODO, TODO);
-
-	// Bone 버퍼 생성
-	Utils::DX::CreateBuffer(device,
-							D3D11_BIND_SHADER_RESOURCE,
-							nullptr,
-							sizeof(FMatrix),
-							SIZE_MAX_BONE_NUM,
-							mInstanceBuffer_Bone.Buffer_Bone.GetAddressOf(),
-							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE);
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC boneSRVDesc;
-	ZeroMemory(&boneSRVDesc, sizeof(boneSRVDesc));
-	{
-		boneSRVDesc.Format               = DXGI_FORMAT_R32G32B32A32_FLOAT;	// 4x4 Matrix
-		boneSRVDesc.ViewDimension        = D3D11_SRV_DIMENSION_BUFFER;		// Buffer
-		boneSRVDesc.Buffer.ElementOffset = 0;
-		boneSRVDesc.Buffer.ElementWidth  = SIZE_MAX_BONE_NUM * 4;
-		CheckResult(device->CreateShaderResourceView(mInstanceBuffer_Bone.Buffer_Bone.Get(),
-													 &boneSRVDesc,
-													 mInstanceBuffer_Bone.Resource_Bone.GetAddressOf()));
-	}
-
-}
+{}
 
 void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 {
@@ -139,12 +122,16 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mPrimitiveMeshData.push_back(archivedData);
 	}
 
+	mMaterialInstances.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
+	mInstanceData.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
 	for (int32_t i = 0; i < mPrimitiveMeshData[0]->GetSubMaterialNum(); ++i)
 	{
 		JText materialPath;
 		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
 		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
-		mMaterialInstances.push_back(matInstance);
+
+		SetMaterialInstance(matInstance, i);
+		mInstanceData[i].MaterialData.Flag |= 1 << 11;
 	}
 
 	return true;
@@ -157,6 +144,8 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 
 void JSkeletalMeshObject::AddInstance()
 {
+	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
+
 	auto&         meshData     = mPrimitiveMeshData[0];
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
@@ -165,22 +154,7 @@ void JSkeletalMeshObject::AddInstance()
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-		FInstanceData_Mesh data;
-		data.WorldMatrix = mWorldMatrix;
-
-		FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
-		if (diffuse)
-		{
-			data.MaterialData.BaseColor = diffuse->Float4Value;
-		}
-		FMaterialParam* flag = mMaterialInstances[j]->GetInstanceParam("TextureUsageFlag");
-		if (flag)
-		{
-			data.MaterialData.Flag = flag->IntegerValue;
-		}
-
-
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
 	}
 }
 

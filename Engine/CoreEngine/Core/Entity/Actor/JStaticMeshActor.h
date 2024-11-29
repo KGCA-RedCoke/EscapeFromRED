@@ -18,6 +18,7 @@ public:
 	JStaticMeshActor(const JStaticMeshActor& Copy);
 
 	UPtr<IManagedInterface> Clone() const override;
+
 public:
 	void Initialize() override;
 
@@ -26,7 +27,8 @@ public:
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	void SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
+	int32_t GetMaterialCount() const;
+	void    SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 
 private:
 	void CreateMeshComponent(JTextView InMeshObject);

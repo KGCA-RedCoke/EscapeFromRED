@@ -35,6 +35,8 @@ public:
 	~FViewportData() = default;
 
 public:
+	void Resize(uint32_t InWidth, uint32_t InHeight, float InOriginX, float InOriginY);
+public:
 	void Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight);
 
 private:

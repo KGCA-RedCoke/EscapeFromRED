@@ -6,7 +6,7 @@ class JSkeletalMeshObject : public JMeshObject
 public:
 	JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
-	JSkeletalMeshObject(const JMeshObject& Other);
+	JSkeletalMeshObject(const JSkeletalMeshObject& Other);
 	~JSkeletalMeshObject() override = default;
 
 public:

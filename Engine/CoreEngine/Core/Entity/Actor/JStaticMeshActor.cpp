@@ -55,7 +55,20 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 		return false;
 	}
 
+	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("StaticMeshComponent"));
+
 	return true;
+}
+
+int32_t JStaticMeshActor::GetMaterialCount() const
+{
+	if (!mStaticMeshComponent)
+	{
+		LOG_CORE_ERROR("유효하지 않은 메시 오브젝트.");
+		return 0;
+	}
+
+	return mStaticMeshComponent->GetMaterialCount();
 }
 
 void JStaticMeshActor::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)

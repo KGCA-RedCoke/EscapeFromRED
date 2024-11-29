@@ -1,6 +1,6 @@
 ﻿#include "GUI_Editor_Mesh.h"
 
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -50,7 +50,7 @@ void GUI_Editor_Mesh::DrawViewport() const
 		{
 			if (mCamera)
 			{
-				mCamera->Update(mDeltaTime);
+				mCamera->Tick(mDeltaTime);
 			}
 		}
 	}
@@ -98,8 +98,8 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 		ImGui::Text("Material Slot");
 
 		const int32_t meshDataSize = mMeshObject->mPrimitiveMeshData.size();
-		for (int32_t i = 0; i < meshDataSize; ++i)
-		{
+		// for (int32_t i = 0; i < meshDataSize; ++i)
+		// {
 			int32_t materialSize = mMeshObject->mPrimitiveMeshData[0]->GetSubMaterialNum();
 
 			for (int32_t j = 0; j < materialSize; ++j)
@@ -124,7 +124,7 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 					}
 				}
 			}
-		}
+		// }
 
 		ImGui::EndGroup();
 	}

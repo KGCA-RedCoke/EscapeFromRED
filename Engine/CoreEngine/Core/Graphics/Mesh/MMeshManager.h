@@ -11,7 +11,6 @@ public:
 						void*        Entity) override;
 	void CreateBuffers(JMeshObject* MeshObject);
 
-	void GenInstanceBuffer(ID3D11Device* InDevice, uint32_t NameHash, JArray<void*>& InstanceData);
 	void GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 	void GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 
@@ -19,11 +18,17 @@ public:
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:
-	JHash<uint32_t, Buffer::FBufferMesh> mBufferList;
+	void CreateIdentityInstanceBuffer(ID3D11Device* InDevice);
+
+public:
+	Buffer::FBufferInstance IdentityBuffer;
+	FInstanceData_Mesh      IdentityInstanceData;
+
+private:
+	JHash<uint32_t, Buffer::FBufferMesh>        mBufferList;
 	JHash<uint32_t, JMaterialInstance*>         mMaterialInstance;
 	JHash<uint32_t, JArray<FInstanceData_Mesh>> mInstanceData;
 
-	Buffer::FBufferMesh mIdentityBuffer;
 
 #pragma region Singleton Boilerplate
 

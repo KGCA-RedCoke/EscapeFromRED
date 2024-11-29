@@ -103,17 +103,19 @@
     <ClInclude Include="common_include.h" />
     <ClInclude Include="common_pch.h" />
     <ClInclude Include="Core\Entity\Actor\AActor.h" />
+    <ClInclude Include="Core\Entity\Actor\APawn.h" />
+    <ClInclude Include="Core\Entity\Actor\Character\ACharacter.h" />
     <ClInclude Include="Core\Entity\Actor\JStaticMeshActor.h" />
     <ClInclude Include="Core\Entity\Actor\MActorManager.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
     <ClInclude Include="Core\Entity\Audio\JAudioComponent.h" />
-    <ClInclude Include="Core\Entity\Camera\JCamera.h" />
+    <ClInclude Include="Core\Entity\Camera\JCameraComponent.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
-    <ClInclude Include="Core\Entity\Character\ACharacter.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
+    <ClInclude Include="Core\Entity\Component\Movement\JPawnMovementComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\JSceneComponent.h" />
     <ClInclude Include="Core\Entity\Component\Scene\Shape\JShape.h" />
     <ClInclude Include="Core\Entity\JObject.h" />
@@ -244,17 +246,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Entity\Actor\AActor.cpp" />
+    <ClCompile Include="Core\Entity\Actor\APawn.cpp" />
+    <ClCompile Include="Core\Entity\Actor\Character\ACharacter.cpp" />
     <ClCompile Include="Core\Entity\Actor\JStaticMeshActor.cpp" />
     <ClCompile Include="Core\Entity\Actor\MActorManager.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
     <ClCompile Include="Core\Entity\Audio\JAudioComponent.cpp" />
-    <ClCompile Include="Core\Entity\Camera\JCamera.cpp" />
+    <ClCompile Include="Core\Entity\Camera\JCameraComponent.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
-    <ClCompile Include="Core\Entity\Character\ACharacter.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
+    <ClCompile Include="Core\Entity\Component\Movement\JPawnMovementComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\JSceneComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Scene\Shape\JShape.cpp" />
     <ClCompile Include="Core\Entity\JObject.cpp" />

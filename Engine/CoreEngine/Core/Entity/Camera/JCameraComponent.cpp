@@ -1,11 +1,11 @@
-﻿#include "JCamera.h"
+﻿#include "JCameraComponent.h"
 
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
 
-uint32_t JCamera::s_CameraNum = 0;
+uint32_t JCameraComponent::s_CameraNum = 0;
 
 bool FFrustum::Check(const FVector& InPoint) const
 {
@@ -73,11 +73,10 @@ bool FFrustum::Check(const FBoxShape& InBox) const
 /**
  * 이름 지정이 없는 생성자의 경우 카메라 이름을 JCam_0, JCam_1, JCam_2... 순으로 지정.
  */
-JCamera::JCamera() noexcept
+JCameraComponent::JCameraComponent()
 	: mName(std::format(L"JCam_{}", s_CameraNum++)),
 	  mDefaultEye(0, 500.f, -1500.f),
 	  mDefaultLookAt(0, 0, 0),
-	  mEye(mDefaultEye),
 	  mLookAt(0, 0, 0),
 	  mYaw(0.f),
 	  mPitch(0.f),
@@ -88,42 +87,40 @@ JCamera::JCamera() noexcept
 	  mRotationValue(0.01f),
 	  mTranslationValue(500.f)
 {
-	JCamera::SetViewParams(mDefaultEye, mDefaultLookAt);
+	mLocalLocation = mDefaultEye;
+
+	JCameraComponent::SetViewParams(mDefaultEye, mDefaultLookAt);
 
 	const float aspect =
 			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
 			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
 
-	JCamera::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+	JCameraComponent::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
 
-	JCamera::Initialize();
+	JCameraComponent::Initialize();
 }
 
-JCamera::JCamera(const JText& InName)
-	: JCamera()
+JCameraComponent::JCameraComponent(const JText& InName)
+	: JCameraComponent()
 {
 	mName = String2WString(InName);
 }
 
-JCamera::JCamera(const JWText& InName)
-	: JCamera()
+JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentComponent)
+	: JSceneComponent(InName, InOwnerActor, InParentComponent){}
+
+JCameraComponent::JCameraComponent(const JWText& InName)
+	: JCameraComponent()
 {
 	mName = InName;
 }
 
-void JCamera::Initialize()
-{
-	// Utils::DX::CreateBuffer(
-	// 						G_Device.GetDevice(),
-	// 						D3D11_BIND_VERTEX_BUFFER,
-	// 						nullptr,
-	// 						sizeof(Vertex::FVertexInfo_Base),
-	// 						24,
-	// 						mVertexBuffer.GetAddressOf()
-	// 					   );
-}
+JCameraComponent::~JCameraComponent() {}
 
-void JCamera::Update(float_t DeltaTime)
+void JCameraComponent::Initialize()
+{}
+
+void JCameraComponent::Tick(float_t DeltaTime)
 {
 	UpdateRotation(DeltaTime);
 	UpdateVelocity(DeltaTime);
@@ -148,9 +145,9 @@ void JCamera::Update(float_t DeltaTime)
 	XMVECTOR posDeltaWorld = XMVector3TransformCoord(posDelta, mCameraRot);
 
 
-	XMVECTOR vEye = XMLoadFloat3(&mEye);
+	XMVECTOR vEye = XMLoadFloat3(&mLocalLocation);
 	vEye += posDeltaWorld;
-	XMStoreFloat3(&mEye, vEye);
+	XMStoreFloat3(&mLocalLocation, vEye);
 
 	XMVECTOR vLookAt = vEye + worldAhead;
 	XMStoreFloat3(&mLookAt, vLookAt);
@@ -164,10 +161,10 @@ void JCamera::Update(float_t DeltaTime)
 	CreateFrustum();
 }
 
-void JCamera::Release()
+void JCameraComponent::Destroy()
 {}
 
-void JCamera::PreRender(ID3D11DeviceContext* InDeviceContext)
+void JCameraComponent::PreRender(ID3D11DeviceContext* InDeviceContext)
 {
 	// // Front Plane
 	// mVertexData[0].Position = mFrustumPosition[0];
@@ -262,17 +259,17 @@ void JCamera::PreRender(ID3D11DeviceContext* InDeviceContext)
 	// InDeviceContext->DrawIndexed(24, 0, 0);
 }
 
-uint32_t JCamera::GetHash() const
+uint32_t JCameraComponent::GetHash() const
 {
 	return StringHash(ParseFile(mName.data()).c_str());
 }
 
-UPtr<IManagedInterface> JCamera::Clone() const
+UPtr<IManagedInterface> JCameraComponent::Clone() const
 {
 	return nullptr;
 }
 
-void JCamera::Reset()
+void JCameraComponent::Reset()
 {
 	XMStoreFloat4x4(&mWorld, XMMatrixIdentity());
 
@@ -282,7 +279,7 @@ void JCamera::Reset()
 // 매개변수로 XMVECTOR가 아닌 FXMVECTOR를 사용하는 이유는
 // 매개변수로 받을 때는 FXMVECTOR를 사용하고, 내부에서는 XMVECTOR를 사용하는 것이 좋다고 한다..
 // 너무 많은 데이터를 레지스터에 넣을 수 있기때문(성능 저하) 
-void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR InUpVec)
+void JCameraComponent::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR InUpVec)
 {
 	/// 카메라가 사용하는 공간(뷰 공간)을 정의해보자.
 	/// View Space의 원점은 카메라 렌즈의 정 중앙이고 이를 기준으로 3개의 축을 만들 수 있다.
@@ -293,7 +290,7 @@ void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR
 	/// 외적(Cross Product)를 이용해 x축을 만들 수 있다.
 
 	XMStoreFloat3(&mDefaultEye, InEyeVec);
-	XMStoreFloat3(&mEye, InEyeVec);
+	XMStoreFloat3(&mLocalLocation, InEyeVec);
 
 	XMStoreFloat3(&mDefaultLookAt, InLookAtVec);
 	XMStoreFloat3(&mLookAt, InLookAtVec);
@@ -320,7 +317,7 @@ void JCamera::SetViewParams(FXMVECTOR InEyeVec, FXMVECTOR InLookAtVec, FXMVECTOR
 	mPitch = -asinf(zBasis.y / len);
 }
 
-void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, float InFarPlane)
+void JCameraComponent::SetProjParams(float InFOV, float InAspect, float InNearPlane, float InFarPlane)
 {
 	mFOV       = InFOV;
 	mAspect    = InAspect;
@@ -334,7 +331,7 @@ void JCamera::SetProjParams(float InFOV, float InAspect, float InNearPlane, floa
 	XMStoreFloat4x4(&mProj_Orthographic, projMat);
 }
 
-void JCamera::CreateFrustum()
+void JCameraComponent::CreateFrustum()
 {
 	mViewProj = XMMatrixMultiply(XMLoadFloat4x4(&mView), XMLoadFloat4x4(&mProj_Perspective));
 	mViewProj = mViewProj.Invert();
@@ -379,7 +376,7 @@ void JCamera::CreateFrustum()
 												  mFrustum.FrustumPosition[5]);	// Far Plane
 }
 
-void JCamera::ExtractFrustumPlanes()
+void JCameraComponent::ExtractFrustumPlanes()
 {
 	// // Left Plane
 	// mFrustumPlanes[0].A = mViewProj._14 + mViewProj._11;
@@ -418,7 +415,7 @@ void JCamera::ExtractFrustumPlanes()
 	// mFrustumPlanes[5].D = mViewProj._44 - mViewProj._43;
 }
 
-void JCamera::UpdateVelocity(float DeltaTime)
+void JCameraComponent::UpdateVelocity(float DeltaTime)
 {
 	XMVECTOR vMouseDelta  = XMLoadFloat2(&mMouseDelta);
 	XMVECTOR vRotVelocity = vMouseDelta * mRotationValue;
@@ -426,7 +423,7 @@ void JCamera::UpdateVelocity(float DeltaTime)
 	XMStoreFloat2(&mRotVelocity, vRotVelocity);
 }
 
-void JCamera::UpdateRotation(float DeltaTime)
+void JCameraComponent::UpdateRotation(float DeltaTime)
 {
 	mMouseDelta.x  = 0.f;
 	mMouseDelta.y  = 0.f;
@@ -436,21 +433,21 @@ void JCamera::UpdateRotation(float DeltaTime)
 }
 
 JCamera_Debug::JCamera_Debug() noexcept
-	: JCamera(),
+	: JCameraComponent(),
 	  mInputKeyboard()
 {
 	mInputKeyboard.Initialize();
 }
 
 JCamera_Debug::JCamera_Debug(const JText& InName)
-	: JCamera(InName),
+	: JCameraComponent(InName),
 	  mInputKeyboard()
 {
 	mInputKeyboard.Initialize();
 }
 
 JCamera_Debug::JCamera_Debug(const JWText& InName)
-	: JCamera(InName),
+	: JCameraComponent(InName),
 	  mInputKeyboard()
 {
 	mInputKeyboard.Initialize();
@@ -459,17 +456,16 @@ JCamera_Debug::JCamera_Debug(const JWText& InName)
 void JCamera_Debug::Initialize()
 {}
 
-void JCamera_Debug::Update(float DeltaTime)
+void JCamera_Debug::Tick(float DeltaTime)
 {
-
 	UpdateInput(DeltaTime);
 
-	JCamera::Update(DeltaTime);
+	JCameraComponent::Tick(DeltaTime);
 }
 
-void JCamera_Debug::Release()
+void JCamera_Debug::Destroy()
 {
-	JCamera::Release();
+	JCameraComponent::Destroy();
 }
 
 void JCamera_Debug::UpdateInput(float DeltaTime)
@@ -489,15 +485,15 @@ void JCamera_Debug::UpdateInput(float DeltaTime)
 
 	if (IsKeyPressed(EKeyCode::Home))
 	{
-		mYaw   = 0.f;
-		mPitch = 0.f;
-		mEye   = mDefaultEye;
+		mYaw           = 0.f;
+		mPitch         = 0.f;
+		mLocalLocation = mDefaultEye;
 	}
 }
 
 void JCamera_Debug::UpdateVelocity(float DeltaTime)
 {
-	JCamera::UpdateVelocity(DeltaTime);
+	JCameraComponent::UpdateVelocity(DeltaTime);
 
 	XMVECTOR keyboardDirection = XMLoadFloat3(&mInputDirection);
 	XMVECTOR acceleration      = keyboardDirection;
@@ -556,7 +552,7 @@ void JCamera_Debug::UpdateVelocity(float DeltaTime)
 
 void JCamera_Debug::UpdateRotation(float DeltaTime)
 {
-	JCamera::UpdateRotation(DeltaTime);
+	JCameraComponent::UpdateRotation(DeltaTime);
 
 	if (IsKeyPressed(EKeyCode::RButton))
 	{

@@ -4,6 +4,7 @@
 #include "Core/Graphics/ShaderStructs.h"
 
 constexpr const char* NAME_SHADER_BASIC        = "Shader/Basic.hlsl";
+constexpr const char* NAME_SHADER_BASIC_2D     = "Shader/Basic2D.hlsl";
 constexpr const char* NAME_SHADER_GNOMON       = "Shader/Gnomon.hlsl";
 constexpr const char* NAME_SHADER_ID           = "Shader/FBMP.hlsl";
 constexpr const char* NAME_SHADER_SIMPLE_COLOR = "Shader/SimpleColor.hlsl";
@@ -64,7 +65,7 @@ public:
 	/**
 	 * 셰이더 설정 및 상수 버퍼 설정
 	 */
-	void BindShaderPipeline(ID3D11DeviceContext* InDeviceContext);
+	virtual void BindShaderPipeline(ID3D11DeviceContext* InDeviceContext);
 
 public:
 	/**
@@ -114,14 +115,14 @@ private:
 public:
 	[[nodiscard]] FORCEINLINE const JWText& GetShaderFile() const { return mShaderFile; }
 	[[nodiscard]] FORCEINLINE uint32_t      GetInputLayoutSize() const { return mDefaultShaderData.VertexInputLayoutSize; }
-	void                                    SetTargetCamera(class JCamera* InCamera) { mTargetCamera = InCamera; }
+	void                                    SetTargetCamera(class JCameraComponent* InCamera) { mTargetCamera = InCamera; }
 
 protected:
 	JWText                    mShaderFile;
 	FShaderData               mDefaultShaderData;
 	JHash<JText, FShaderData> mSubShaderData;
 
-	JCamera* mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
+	JCameraComponent* mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
 
 	CBuffer::Space  mCachedSpaceData;
 	CBuffer::Camera mCachedCameraData;

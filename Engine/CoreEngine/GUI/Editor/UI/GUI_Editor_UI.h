@@ -8,5 +8,6 @@ public:
 	~GUI_Editor_UI() override = default;
 
 public:
+	void Update_Implementation(float DeltaTime) override;
 	void Render() override;
 };

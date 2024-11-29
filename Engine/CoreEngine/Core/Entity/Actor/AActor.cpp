@@ -18,9 +18,7 @@ AActor::AActor(JTextView InName)
 
 AActor::AActor(const AActor& Copy)
 	: JSceneComponent(Copy)
-{
-	
-}
+{}
 
 void AActor::Initialize()
 {
@@ -77,4 +75,46 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	}
 
 	return true;
+}
+
+JSceneComponent* AActor::GetChildSceneComponentByName(JTextView InName) const
+{
+	for (auto& sceneComponent : mChildSceneComponents)
+	{
+		if (sceneComponent->GetName() == InName)
+		{
+			return sceneComponent.get();
+		}
+	}
+
+	return nullptr;
+}
+
+JSceneComponent* AActor::GetChildSceneComponentByType(JTextView InType) const
+{
+	const uint32_t type = StringHash(InType.data());
+
+	for (auto& sceneComponent : mChildSceneComponents)
+	{
+		if (sceneComponent->GetType() == type)
+		{
+			return sceneComponent.get();
+		}
+	}
+	return nullptr;
+}
+
+JActorComponent* AActor::GetChildComponentByType(JTextView InType) const
+{
+	const uint32_t type = StringHash(InType.data());
+
+	for (auto& component : mActorComponents)
+	{
+		if (component->GetType() == type)
+		{
+			return component.get();
+		}
+	}
+
+	return nullptr;
 }

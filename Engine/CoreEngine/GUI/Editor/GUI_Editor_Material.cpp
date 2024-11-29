@@ -1,6 +1,6 @@
 ﻿#include "GUI_Editor_Material.h"
 
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/Material/Instance/JMaterialInstance.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -22,7 +22,7 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 
 	SetMeshObject(Path_Mesh_Sphere);
 
-	
+
 }
 
 void GUI_Editor_Material::Render()
@@ -48,8 +48,7 @@ void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 		mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
 		assert(mMaterialToEdit);
 	}
-
-	mPreviewMeshObject->mMaterialInstances[0] = mMaterialToEdit;
+	mPreviewMeshObject->SetMaterialInstance(mMaterialToEdit);
 }
 
 void GUI_Editor_Material::HandleIntegerType(FMaterialParam& MaterialParam)
@@ -64,6 +63,11 @@ void GUI_Editor_Material::HandleIntegerType(FMaterialParam& MaterialParam)
 	// 		ImGui::Selectable(CBuffer::TextureUsageString[i], &bSelected);
 	// 	}
 	// }
+}
+
+void GUI_Editor_Material::HandleFloatType(FMaterialParam& Param)
+{
+	ImGui::DragFloat(Param.Name.c_str(), &Param.FloatValue, 0.01f, 0.f, 100.f);
 }
 
 void GUI_Editor_Material::HandleFloat2Type(FMaterialParam& Param)
@@ -121,7 +125,7 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
 	{
-		mCamera->Update(mDeltaTime);
+		mCamera->Tick(mDeltaTime);
 	}
 
 	ImGui::EndChild();
@@ -186,6 +190,9 @@ void GUI_Editor_Material::ShowMaterialEditor()
 			{
 			case EMaterialParamValue::Integer:
 				HandleIntegerType(param);
+				break;
+			case EMaterialParamValue::Float:
+				HandleFloatType(param);
 				break;
 			case EMaterialParamValue::Float2:
 				HandleFloat2Type(param);
@@ -252,14 +259,14 @@ void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index)
 
 		for (const auto& tex : loaded)
 		{
-			// JText texName = WString2String(tex->GetPath());
-			// if (ImGui::Selectable(texName.c_str()))
-			// {
-			// 	Param.StringValue  = texName;
-			// 	Param.TextureValue = tex;
-			//
-			// 	break;
-			// }
+			JText texName = WString2String(tex->GetTextureName());
+			if (ImGui::Selectable(texName.c_str()))
+			{
+				Param.StringValue  = texName;
+				Param.TextureValue = tex;
+
+				break;
+			}
 		}
 
 		ImGui::EndCombo();

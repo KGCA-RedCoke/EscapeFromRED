@@ -62,7 +62,7 @@ void JWorld::Initialize()
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
-	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/TT)"));
+	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
 	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc)"));
 
 	const char* levelPath = g_settings["Editor.Level"]["DefaultLevel"].as<const char*>();
@@ -113,20 +113,6 @@ float JWorld::GetDeltaSeconds() const
 float JWorld::GetGameTime() const
 {
 	return Application->GetCurrentTime();
-}
-
-AActor* JWorld::SpawnActor(const JText&   InName,
-						   const FVector& InLocation,
-						   const FVector& InRotation,
-						   AActor*        InOwner,
-						   JLevel*        InLevel)
-{
-	AActor* newActor = LevelManager->GetActiveLevel()->CreateActor<AActor>(InName);
-	newActor->SetWorldLocation(InLocation);
-	newActor->SetWorldRotation(InRotation);
-	newActor->SetOwnerActor(InOwner);
-
-	return nullptr;
 }
 
 

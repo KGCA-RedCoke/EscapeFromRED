@@ -19,6 +19,7 @@ namespace CBuffer
 	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA                = "CameraConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_LIGHT                 = "LightConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_TIME                  = "TimeConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_SKY                   = "ColorConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_MATERIAL              = "BasicMaterialConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_COLOR_ID              = "ColorIDConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_MESH                  = "MeshConstantBuffer";
@@ -72,6 +73,7 @@ namespace CBuffer
 		FVector4 CameraPos;
 		FMatrix  View;
 		FMatrix  Projection;
+		FMatrix  Orthographic;
 	};
 
 	enum ETextureUsage : uint32_t
@@ -301,7 +303,7 @@ struct FMaterialInstanceData
 
 struct FInstanceData_Mesh
 {
-	alignas(16) FMatrix   WorldMatrix;	// 각 인스턴스 별로 다른 월드 행렬
+	alignas(16) FMatrix   WorldMatrix = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 행렬
 	FMaterialInstanceData MaterialData;	// 머티리얼 데이터
 };
 
@@ -435,7 +437,7 @@ inline FBoxShape FindBoxShape(const JArray<Vertex::FVertexInfo_Base>& Positions)
 	for (const auto& pos : Positions)
 	{
 		const FVector position = pos.Position;
-		
+
 		minBounds.x = FMath::Max(box.Max.x, position.x);
 		minBounds.y = FMath::Max(box.Max.y, position.y);
 		minBounds.z = FMath::Max(box.Max.z, position.z);

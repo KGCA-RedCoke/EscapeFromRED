@@ -1,6 +1,6 @@
 ﻿#include "JMaterialInstance.h"
 
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/Material/JMaterial_Basic.h"
 #include "Core/Graphics/Material/MMaterialInstanceManager.h"
 #include "Core/Graphics/Material/MMaterialManager.h"
@@ -187,6 +187,7 @@ void JMaterialInstance::EditInstanceParam(const JText& InParamName, const FMater
 		if (param.Key == hash)
 		{
 			param = InParamValue;
+			OnMaterialInstanceParamChanged.Execute();
 			return;
 		}
 	}

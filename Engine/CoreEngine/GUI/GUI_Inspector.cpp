@@ -153,6 +153,8 @@ void GUI_Inspector::DrawDetails()
 		{
 			DrawName();
 			DrawTransform();
+
+			DrawMaterialSlot();
 		}
 	}
 	ImGui::EndChild();
@@ -193,4 +195,18 @@ void GUI_Inspector::DrawTransform() const
 			mSelectedSceneComponent->SetLocalScale(scale);
 		}
 	}
+}
+
+void GUI_Inspector::DrawMaterialSlot()
+{
+	// if (JStaticMeshActor* staticMeshActor = dynamic_cast<JStaticMeshActor*>(mSelectedSceneComponent))
+	// {
+	// 	if (ImGui::CollapsingHeader(u8("머티리얼")))
+	// 	{
+	// 		for (int32_t i = 0; i < staticMeshActor->GetMaterialCount(); ++i)
+	// 		{
+	// 			staticMeshActor->SetMaterialInstance();
+	// 		}
+	// 	}
+	// }
 }

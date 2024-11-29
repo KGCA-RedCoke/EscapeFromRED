@@ -33,16 +33,38 @@ UPtr<Target> UPtrCast(UPtr<Source>&& source)
 #define STRINGIFY(x) #x // 문자열화
 #define CHECK_PREFIX(name, prefix) static_assert(std::string_view(STRINGIFY(name)).substr(0, 1) == #prefix, "DelegateName must start with '#prefix'");
 
-#define DECLARE_DYNAMIC_DELEGATE(delegateName, ...)\
-CHECK_PREFIX(delegateName, F);\
-class delegateName {\
-public:\
-using FunctionType = std::function<void(__VA_ARGS__)>;\
-void Bind(FunctionType func) { functions.push_back(func); }\
-template<typename... Args>\
-void Execute(Args&&... args) { for (auto& func : functions) { func(std::forward<Args>(args)...); } }\
-public:\
-JArray<FunctionType> functions;\
+#define DECLARE_DYNAMIC_DELEGATE(delegateName, ...)                            \
+CHECK_PREFIX(delegateName, F);                                                \
+class delegateName {                                                          \
+public:                                                                       \
+    using FunctionType = std::function<void(__VA_ARGS__)>;                    \
+    using FunctionID = size_t;                                                \
+                                                                              \
+    FunctionID Bind(FunctionType func) {                                      \
+        functions.push_back({++currentID, func});                             \
+        return currentID;                                                     \
+    }                                                                         \
+                                                                              \
+    void UnBind(FunctionID id) {                                              \
+        auto it = std::remove_if(functions.begin(), functions.end(),          \
+            [id](const auto& pair) { return pair.first == id; });             \
+        functions.erase(it, functions.end());                                 \
+    }                                                                         \
+                                                                              \
+    void UnBindAll() {                                                        \
+    	functions.clear();                                                    \
+    }                                                                         \
+                                                                              \
+    template<typename... Args>                                                \
+    void Execute(Args&&... args) {                                            \
+        for (auto& [id, func] : functions) {                                  \
+            func(std::forward<Args>(args)...);                                \
+        }                                                                     \
+    }                                                                         \
+                                                                              \
+private:                                                                      \
+    JArray<std::pair<FunctionID, FunctionType>> functions;                    \
+    FunctionID currentID = 0;                                                 \
 };
 
 inline JWText String2WString(const JText& InString)

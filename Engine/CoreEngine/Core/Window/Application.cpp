@@ -1,6 +1,6 @@
 ﻿#include "Application.h"
 #include "Core/Entity/Actor/AActor.h"
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"

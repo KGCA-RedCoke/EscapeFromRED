@@ -4,7 +4,7 @@
 #include "Core/Graphics/Viewport/MViewportManager.h"
 
 // Forward Declaration
-class JCamera;
+class JCameraComponent;
 class JMeshObject;
 class JMaterial;
 class JShader;
@@ -28,6 +28,7 @@ private:
 	void SetMeshObject(JTextView InMeshPath);
 
 	void HandleIntegerType(FMaterialParam& MaterialParam);
+	void HandleFloatType(FMaterialParam& Param);
 	void HandleFloat2Type(FMaterialParam& Param);
 	void HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const;
 

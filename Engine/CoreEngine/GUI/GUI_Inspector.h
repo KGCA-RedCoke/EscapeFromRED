@@ -22,10 +22,11 @@ private:
 
 	void DrawSearchBar();
 	void DrawTreeNode(JSceneComponent* InSceneComponent);
-	
+
 	void DrawDetails();
 	void DrawName();
 	void DrawTransform() const;
+	void DrawMaterialSlot();
 
 private:
 	Utils::GUI::FSearchBar mSearchBar;

@@ -32,7 +32,7 @@ namespace JMath
 		TVector operator+(const TVector& V) const;
 		TVector operator-(const TVector& V) const;
 		TVector operator*(const TVector& V) const;
-		TVector operator/(const TVector& V) const;
+		// TVector operator/(const TVector& V) const;
 		TVector operator|(const TVector& V) const;
 		TVector operator^(const TVector& V) const;
 

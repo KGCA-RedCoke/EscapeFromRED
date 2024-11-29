@@ -1,21 +1,21 @@
 ﻿#pragma once
-#include "JCamera.h"
+#include "JCameraComponent.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/Manager_Base.h"
 
-class MCameraManager : public Manager_Base<JCamera, MCameraManager>
+class MCameraManager : public Manager_Base<JCameraComponent, MCameraManager>
 {
 private:
 	void Initialize_Internal();
 
 public:
-	FORCEINLINE JCamera* GetCurrentMainCam() const { return mCurrentCamera; }
+	FORCEINLINE JCameraComponent* GetCurrentMainCam() const { return mCurrentCamera; }
 
 public:
-	void SetCurrentMainCam(JWTextView InName);
+	void SetCurrentMainCam(JCameraComponent* InName);
 
 private:
-	JCamera* mCurrentCamera;
+	JCameraComponent* mCurrentCamera;
 
 #pragma region Singleton Boilerplate
 

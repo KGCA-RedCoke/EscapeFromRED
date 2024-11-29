@@ -2,7 +2,7 @@
 #include "JShader.h"
 
 class JSceneComponent;
-class JCamera;
+class JCameraComponent;
 
 class JShader_Basic : public JShader
 {
@@ -10,11 +10,12 @@ public:
 	JShader_Basic(const JText& InName);
 	~JShader_Basic() override = default;
 
+public:
+	void BindShaderPipeline(ID3D11DeviceContext* InDeviceContext) override;
 	void UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext) override;
 
 private:
-
 	// ------------------------------ 캐싱 데이터 ------------------------------
-	CBuffer::Light  mCachedLightData;
+	CBuffer::Light mCachedLightData;
 
 };

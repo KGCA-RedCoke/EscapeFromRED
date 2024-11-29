@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Core/Entity/Component/JActorComponent.h"
 
+class JSkeletalMesh;
+
 class JAnimator : public JActorComponent
 {
 public:
@@ -21,7 +23,13 @@ public:
 	void Destroy() override;
 
 protected:
+	// Target Skeleton
+	JSkeletalMesh* mSkeletalMesh;
+
+	// Interpolation Bone Info
+	JArray<FMatrix> mBoneTransforms;
+
 	// State Machine
-	JHash<JText, Ptr<class JAnimationClip>> mStateMachine;
+	JHash<JText, UPtr<class JAnimationClip>> mStateMachine;
 
 };

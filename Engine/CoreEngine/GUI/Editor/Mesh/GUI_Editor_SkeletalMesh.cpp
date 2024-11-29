@@ -1,6 +1,6 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -67,7 +67,7 @@ void GUI_Editor_SkeletalMesh::DrawViewport() const
 		{
 			if (mCamera)
 			{
-				mCamera->Update(mDeltaTime);
+				mCamera->Tick(mDeltaTime);
 			}
 		}
 	}

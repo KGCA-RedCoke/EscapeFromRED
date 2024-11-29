@@ -29,12 +29,10 @@ public:
 
 public:
 	void SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InSlot = 0);
-
-public:
 	void SetMeshObject(JTextView InMeshObject);
 
-public:
-	FBoxShape BoxShape;
+	int32_t GetMaterialCount() const;
+
 
 private:
 	UPtr<JMeshObject> mMeshObject = nullptr;

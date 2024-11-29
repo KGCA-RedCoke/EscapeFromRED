@@ -1,7 +1,7 @@
 ﻿#include "GUI_Viewport.h"
 
 #include "Core/Entity/Actor/AActor.h"
-#include "Core/Entity/Camera/JCamera.h"
+#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -60,10 +60,10 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 
 	ImGui::Image(mViewportData->SRV.Get(), ImGui::GetContentRegionAvail());
 
-	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
+	if ((ImGui::IsItemHovered() || ImGui::IsItemFocused()) && !bIsGameMode)
 	{
 		if (mEditorCameraRef)
-			mEditorCameraRef->Update(DeltaTime);
+			mEditorCameraRef->Tick(DeltaTime);
 
 		if (ImGui::IsItemClicked(0))
 		{

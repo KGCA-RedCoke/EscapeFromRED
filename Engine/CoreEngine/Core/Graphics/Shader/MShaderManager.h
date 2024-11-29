@@ -7,7 +7,7 @@ class JShader_Basic;
 class MShaderManager : public Manager_Base<JShader, MShaderManager>
 {
 public:
-	void UpdateCamera(class JCamera* InCameraObj) const;
+	void UpdateCamera(class JCameraComponent* InCameraObj) const;
 
 	void UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader* InShader);
 

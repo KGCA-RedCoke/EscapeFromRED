@@ -147,7 +147,7 @@ void GUI_Editor_Actor::DrawViewport() const
 
 		if (ImGui::IsItemHovered() && ImGui::IsItemFocused())
 		{
-			mCamera->Update(mDeltaTime);
+			mCamera->Tick(mDeltaTime);
 		}
 	}
 	ImGui::EndChild();

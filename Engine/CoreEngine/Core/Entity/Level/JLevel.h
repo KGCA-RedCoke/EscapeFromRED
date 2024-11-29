@@ -36,7 +36,7 @@ public:
 	AActor* LoadActorFromPath(const JText& InPath);
 
 	template <typename T, typename... Args>
-	T* CreateActor(const JText& InName, const JText& Template = nullptr, Args&&... InArgs);
+	T* CreateActor(JTextView InName, Args&&... InArgs);
 
 private:
 	JText mName;	// 레벨 이름
@@ -55,7 +55,7 @@ public:
 };
 
 template <typename T = AActor, typename... Args>
-T* JLevel::CreateActor(const JText& InName, const JText& Template, Args&&... InArgs)
+T* JLevel::CreateActor(JTextView InName, Args&&... InArgs)
 {
 	static_assert(std::is_base_of<AActor, T>::value, "T must be derived from AActor");
 

@@ -11,5 +11,7 @@ void MCameraManager::Initialize_Internal()
 	assert(mCurrentCamera);
 }
 
-void MCameraManager::SetCurrentMainCam(JWTextView InName)
-{}
+void MCameraManager::SetCurrentMainCam(JCameraComponent* InCamera)
+{
+	mCurrentCamera = InCamera;
+}

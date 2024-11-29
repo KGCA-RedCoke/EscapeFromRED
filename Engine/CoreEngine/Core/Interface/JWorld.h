@@ -1,4 +1,6 @@
 #pragma once
+#include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Manager/Manager_Base.h"
 #include "Core/Thread/ThreadPool.h"
 #include "Core/Utils/Math/Vector.h"
@@ -20,11 +22,20 @@ public:
 	[[nodiscard]] float GetDeltaSeconds() const;
 	[[nodiscard]] float GetGameTime() const;
 
-	AActor* SpawnActor(const JText&   InName,
-					   const FVector& InLocation = FVector::ZeroVector,
-					   const FVector& InRotation = FVector::ZeroVector,
-					   AActor*        InOwner    = nullptr,
-					   JLevel*        InLevel    = nullptr);
+	template <class T, typename... Args>
+	T* SpawnActor(const JText&   InName,
+				  const FVector& InLocation = FVector::ZeroVector,
+				  const FVector& InRotation = FVector::ZeroVector,
+				  AActor*        InOwner    = nullptr,
+				  Args&&...      InArgs)
+	{
+		T* newActor = LevelManager->GetActiveLevel()->CreateActor<T>(InName, std::forward<Args>(InArgs)...);
+		newActor->SetWorldLocation(InLocation);
+		newActor->SetWorldRotation(InRotation);
+		newActor->SetOwnerActor(InOwner);
+
+		return newActor;
+	}
 
 private:
 	static void SearchFiles_Recursive(const std::filesystem::path& InPath);

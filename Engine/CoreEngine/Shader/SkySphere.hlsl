@@ -14,15 +14,19 @@
 // 텍스처 4장이 필요하다.
 static const int g_TextureCount = 3;
 
-// Sky Color (블렌딩을 위한 색상)
-static const float4 g_SkyColor_01 = float4(0.15f, 0.15f, 0.15f, 1.f);
-static const float4 g_SkyColor_02 = float4(0.02, 0.02, 0.02, 1.f);
+cbuffer ColorConstantBuffer : register(b1)
+{
+	// Sky Color (블렌딩을 위한 색상)
+	const float4 g_SkyColor_01 = float4(0.15f, 0.15f, 0.15f, 1.f);
+	const float4 g_SkyColor_02 = float4(0.02, 0.02, 0.02, 1.f);
 
-// Cloud Color (블렌딩을 위한 색상)
-static const float4 g_CloudColor_01 = float4(0.200000, 0.200000, 0.200000, 1.f);
-static const float4 g_CloudColor_02 = float4(0.130136, 0.130136, 0.130136, 1.f);
+	// Cloud Color (블렌딩을 위한 색상)
+	const float4 g_CloudColor_01 = float4(0.200000, 0.200000, 0.200000, 1.f);
+	const float4 g_CloudColor_02 = float4(0.130136, 0.130136, 0.130136, 1.f);
 
-static const float g_LightingStrength = 4.070328f;
+	const float g_LightingStrength = 4.070328f;
+};
+
 
 Texture2D g_BaseTextureArray[g_TextureCount] : register(t0);
 

@@ -31,7 +31,7 @@ void GUI_Camera_Debug_Frustum::Update_Implementation(float DeltaTime)
 	FVector downVector = {0, -1, 0};
 
 	mCamera->SetViewParams(FVector(0, 1500.f, -1500.f), {0, 0, 1});
-	mCamera->Update(DeltaTime);
+	mCamera->Tick(DeltaTime);
 
 	// mSampleTexture = EditorViewport->SRV;
 	// assert(mSampleTexture);

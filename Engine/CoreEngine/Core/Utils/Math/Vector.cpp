@@ -41,15 +41,15 @@ namespace JMath
 		return R;
 	}
 
-	TVector TVector::operator/(const TVector& V) const
-	{
-		XMVECTOR v1 = XMLoadFloat3(this);
-		XMVECTOR v2 = XMLoadFloat3(&V);
-		XMVECTOR X  = XMVectorDivide(v1, v2);
-		TVector  R;
-		XMStoreFloat3(&R, X);
-		return R;
-	}
+	// TVector TVector::operator/(const TVector& V) const
+	// {
+	// 	XMVECTOR v1 = XMLoadFloat3(this);
+	// 	XMVECTOR v2 = XMLoadFloat3(&V);
+	// 	XMVECTOR X  = XMVectorDivide(v1, v2);
+	// 	TVector  R;
+	// 	XMStoreFloat3(&R, X);
+	// 	return R;
+	// }
 
 	TVector TVector::operator|(const TVector& V) const
 	{

@@ -3,7 +3,7 @@
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 
-class JCamera;
+class JCameraComponent;
 
 constexpr const char* Path_Mesh_Sphere   = "Game/Mesh/Sphere.jasset";
 constexpr const char* Path_Mesh_Cube     = "Game/Mesh/Cube.jasset";
@@ -54,8 +54,8 @@ protected:
 public:
 	void UpdateBuffer(const FMatrix& InWorldMatrix = FMatrix::Identity);
 
-	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
-	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, const JText& InName);
+	void    SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
+	int32_t GetMaterialCount() const;
 
 	JMaterialInstance* GetMaterialInstance(uint32_t InIndex = 0) const;
 	JMaterialInstance* GetMaterialInstance(const JText& InName) const;
@@ -63,8 +63,7 @@ public:
 
 protected:
 	// ----------------------------- Model Data -----------------------------
-	JText   mName;
-	FMatrix mWorldMatrix = FMatrix::Identity;
+	JText mName;
 
 	// -------------------------------- Buffers --------------------------------------
 	JArray<Buffer::FBufferGeometry> mGeometryBuffer;
@@ -76,6 +75,8 @@ protected:
 
 	// ----------------------------- Material Reference -----------------------------
 	JArray<JMaterialInstance*> mMaterialInstances;
+	JArray<FInstanceData_Mesh> mInstanceData;
+	JHash<uint32_t, size_t>    mDelegateIDs;
 
 private:
 	friend class Utils::Fbx::FbxFile;

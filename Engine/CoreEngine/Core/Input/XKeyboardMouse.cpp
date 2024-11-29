@@ -18,7 +18,8 @@ void XKeyboardMouse::Update(float DeltaTime)
 	UpdateBindings(DeltaTime);
 }
 
-void XKeyboardMouse::AddInputBinding(const EKeyCode Key, const EKeyState KeyState, FOnKeyPressed Delegate)
+void XKeyboardMouse::AddInputBinding(const EKeyCode                     Key, const EKeyState KeyState,
+									 const FOnKeyPressed::FunctionType& Delegate)
 {
 	switch (KeyState)
 	{
@@ -26,13 +27,13 @@ void XKeyboardMouse::AddInputBinding(const EKeyCode Key, const EKeyState KeyStat
 		LOG_CORE_WARN("Key State is None. Please Check Key State.");
 		return;
 	case EKeyState::Up:
-		OnKeyReleased.emplace(Key, Delegate);
+		OnKeyReleased[Key].Bind(Delegate);
 		break;
 	case EKeyState::Down:
-		OnKeyPressed.emplace(Key, Delegate);
+		OnKeyPressed[Key].Bind(Delegate);
 		break;
 	case EKeyState::Pressed:
-		OnKeyHold.emplace(Key, Delegate);
+		OnKeyHold[Key].Bind(Delegate);
 		break;
 	}
 }

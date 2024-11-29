@@ -38,6 +38,8 @@ bool JStaticMeshComponent::Serialize_Implement(std::ofstream& FileStream)
 	if (bHasMeshObject)
 	{
 		mMeshObject->Serialize_Implement(FileStream);
+		// auto filePath = std::format("Game/Mesh/{}.jasset", mMeshObject->GetName());
+		// Utils::Serialization::Serialize_Text(filePath, FileStream);
 	}
 
 	return true;
@@ -55,6 +57,10 @@ bool JStaticMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	if (bHasMeshObject)
 	{
+		JText filePath;
+		Utils::Serialization::DeSerialize_Text(filePath, InFileStream);
+
+		// mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(filePath.data())->Clone());
 		mMeshObject = MakeUPtr<JMeshObject>();
 		mMeshObject->DeSerialize_Implement(InFileStream);
 		GetWorld.MeshManager->CreateBuffers(mMeshObject.get());
@@ -75,17 +81,6 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	{
 		mMeshObject->Tick(DeltaTime);
 		mMeshObject->UpdateBuffer(mWorldMat);
-	}
-
-	BoxShape.Box.Center = mWorldLocation;
-
-	BoxShape.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
-	BoxShape.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
-	BoxShape.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
-
-	for (int32_t i = 0; i < 3; ++i)
-	{
-		BoxShape.Box.LocalAxis[i].Normalize();
 	}
 }
 
@@ -129,4 +124,9 @@ void JStaticMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInst
 void JStaticMeshComponent::SetMeshObject(JTextView InMeshObject)
 {
 	mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshObject.data())->Clone());
+}
+
+int32_t JStaticMeshComponent::GetMaterialCount() const
+{
+	return mMeshObject ? mMeshObject->GetMaterialCount() : 0;
 }

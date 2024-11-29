@@ -16,10 +16,6 @@ JMaterial_SkySphere::JMaterial_SkySphere(JTextView InName)
 void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
 											   const JArray<FMaterialParam>& InInstanceParams)
 {
-	float gameTime = GetWorld.GetGameTime();
-	// Time버퍼를(상수) 넘겨줘야한다.
-	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
-
 	// 상수버퍼, 셰이더 세팅
 	JMaterial::BindMaterialPipeline(InDeviceContext, InInstanceParams);
 
@@ -48,6 +44,17 @@ void JMaterial_SkySphere::BindMaterialPipeline(ID3D11DeviceContext*          InD
 	}
 
 	InDeviceContext->PSSetShaderResources(0, 3, textureArray);
+
+	float gameTime = GetWorld.GetGameTime();
+	// Time버퍼를(상수) 넘겨줘야한다.
+	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
+	mSkyColorParams.SkyColor1      = InInstanceParams[3].Float4Value;
+	mSkyColorParams.SkyColor2      = InInstanceParams[4].Float4Value;
+	mSkyColorParams.CloudColor1    = InInstanceParams[5].Float4Value;
+	mSkyColorParams.CloudColor2    = InInstanceParams[6].Float4Value;
+	mSkyColorParams.LightIntensity = InInstanceParams[7].FloatValue;
+
+	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_SKY, &mSkyColorParams);
 }
 
 void JMaterial_SkySphere::InitializeParams()
@@ -62,10 +69,33 @@ void JMaterial_SkySphere::InitializeParams()
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
-
 		mMaterialParams.push_back(FMaterialParam("Cloud_03",
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
+
 	}
+
+	mMaterialParams.push_back(FMaterialParam("SkyColor_01",
+											 EMaterialParamValue::Float4,
+											 &FVector4::ZeroVector,
+											 true));
+	mMaterialParams.push_back(FMaterialParam("SkyColor_02",
+											 EMaterialParamValue::Float4,
+											 &FVector4::ZeroVector,
+											 true));
+
+	mMaterialParams.push_back(FMaterialParam("CloudColor_01",
+											 EMaterialParamValue::Float4,
+											 &FVector4::ZeroVector,
+											 true));
+	mMaterialParams.push_back(FMaterialParam("CloudColor_02",
+											 EMaterialParamValue::Float4,
+											 &FVector4::ZeroVector,
+											 true));
+
+	mMaterialParams.push_back(FMaterialParam("LighteningStrength",
+											 EMaterialParamValue::Float,
+											 &FVector::ZeroVector,
+											 true));
 }

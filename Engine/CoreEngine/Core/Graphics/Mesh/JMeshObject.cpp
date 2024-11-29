@@ -30,9 +30,11 @@ JMeshObject::JMeshObject(const JMeshObject& Other)
 
 	mPrimitiveMeshData = Other.mPrimitiveMeshData;
 
+	mMaterialInstances.resize(Other.mMaterialInstances.size());
+	mInstanceData.resize(Other.mInstanceData.size());
 	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
 	{
-		mMaterialInstances.push_back(Other.mMaterialInstances[i]);
+		SetMaterialInstance(Other.mMaterialInstances[i], i);
 	}
 }
 
@@ -103,12 +105,15 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		mPrimitiveMeshData.push_back(archivedData);
 	}
 
+	mMaterialInstances.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
+	mInstanceData.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
 	for (int32_t i = 0; i < mPrimitiveMeshData[0]->GetSubMaterialNum(); ++i)
-	{
+	{	
 		JText materialPath;
 		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
 		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
-		mMaterialInstances.push_back(matInstance);
+
+		SetMaterialInstance(matInstance, i);
 	}
 
 	// Bounding Box
@@ -123,35 +128,73 @@ void JMeshObject::CreateBuffers(ID3D11Device* InDevice)
 
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 {
-	mWorldMatrix = InWorldMatrix;
-
-	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMatrix));
-	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMatrix));
-	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMatrix));
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&InWorldMatrix));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&InWorldMatrix));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&InWorldMatrix));
 
 	for (int32_t i = 0; i < 8; ++i)
 	{
-		mBoundingBox.Box.Position[i] = XMVector3Transform(mBoundingBox.Box.Position[i], mWorldMatrix);
+		mBoundingBox.Box.Position[i] = XMVector3Transform(mBoundingBox.Box.Position[i], InWorldMatrix);
 	}
 
 	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
-	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMatrix);
+	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, InWorldMatrix);
 	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
 
+	for (int32_t i = 0; i < mInstanceData.size(); ++i)
+	{
+		mInstanceData[i].WorldMatrix = InWorldMatrix;
+	}
 }
 
 void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
 {
-	if (InIndex >= mPrimitiveMeshData[0]->GetSubMaterialNum())
+	if (InIndex > mMaterialInstances.size())
 	{
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return;
 	}
 
+	// 이전에 바인딩된 Delegate 해제
+	if (mDelegateIDs.count(InIndex))
+	{
+		InMaterialInstance->OnMaterialInstanceParamChanged.UnBind(mDelegateIDs[InIndex]);
+		mDelegateIDs.erase(InIndex);
+	}
+
+	const size_t delegateID = InMaterialInstance->OnMaterialInstanceParamChanged.Bind([InMaterialInstance, InIndex, this]{
+		if (InMaterialInstance)
+		{
+			if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("Diffuse"))
+			{
+				mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
+			}
+			if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("TextureUsageFlag"))
+			{
+				mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
+			}
+		}
+	});
+
+	// ID 저장
+	mDelegateIDs[InIndex] = delegateID;
+
 	mMaterialInstances[InIndex] = InMaterialInstance;
+
+	if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("Diffuse"))
+	{
+		mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
+	}
+	if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("TextureUsageFlag"))
+	{
+		mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
+	}
 }
 
-void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, const JText& InName) {}
+int32_t JMeshObject::GetMaterialCount() const
+{
+	return mMaterialInstances.size();
+}
 
 JMaterialInstance* JMeshObject::GetMaterialInstance(uint32_t InIndex) const
 {
@@ -183,22 +226,9 @@ void JMeshObject::AddInstance()
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-		FInstanceData_Mesh data;
-		data.WorldMatrix = mWorldMatrix;
-
-		FMaterialParam* diffuse = mMaterialInstances[j]->GetInstanceParam("Diffuse");
-		if (diffuse)
-		{
-			data.MaterialData.BaseColor = diffuse->Float4Value;
-		}
-		FMaterialParam* flag = mMaterialInstances[j]->GetInstanceParam("TextureUsageFlag");
-		if (flag)
-		{
-			data.MaterialData.Flag = flag->IntegerValue;
-		}
 		mBoundingBox.DrawDebug();
 
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), data);
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
 	}
 	// }
 }
@@ -208,38 +238,38 @@ void JMeshObject::Draw()
 	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	const int32_t lodCount = mPrimitiveMeshData.size();
+	const auto&   meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
-	for (int32_t i = 0; i < lodCount; ++i)
+	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto&         meshData     = mPrimitiveMeshData[i];
-		auto&         subMeshes    = meshData->GetSubMesh();
-		const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-		for (int32_t j = 0; j < subMeshCount; ++j)
-		{
-			auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+		mMaterialInstances[j]->BindMaterial(deviceContext);
 
-			uint32_t offset = 0;
+		Utils::DX::UpdateDynamicBuffer(
+									   deviceContext,
+									   GetWorld.MeshManager->IdentityBuffer.Buffer_Instance.Get(),
+									   &mInstanceData[j],
+									   sizeof(FInstanceData_Mesh));
 
-			mVertexSize = currMesh->GetVertexData()->GetVertexSize();
+		ID3D11Buffer* buffers[] = {
+			mGeometryBuffer[j].Buffer_Vertex.Get(), GetWorld.MeshManager->IdentityBuffer.Buffer_Instance.Get()
+		};
+		constexpr uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
+		constexpr uint32_t offset[2] = {0, 0};
 
-			// Topology 설정
+		// 버퍼 설정
+		deviceContext->IASetVertexBuffers(0,
+										  2,
+										  buffers,
+										  stride,
+										  offset);
+		deviceContext->IASetIndexBuffer(mGeometryBuffer[j].Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-			mMaterialInstances[j]->BindMaterial(deviceContext);
-
-			int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
-
-			// 버퍼 설정
-			deviceContext->IASetVertexBuffers(0,
-											  1,
-											  mGeometryBuffer[j].Buffer_Vertex.GetAddressOf(),
-											  &mVertexSize,
-											  &offset);
-			deviceContext->IASetIndexBuffer(mGeometryBuffer[j].Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-			deviceContext->DrawIndexed(indexNum, 0, 0);
-		}
+		const int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
+		deviceContext->DrawIndexed(indexNum, 0, 0);
 	}
 }
 
@@ -248,61 +278,58 @@ void JMeshObject::DrawID(uint32_t ID)
 	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	const int32_t lodCount = mPrimitiveMeshData.size();
 
-	for (int32_t i = 0; i < lodCount; ++i)
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto&         instanceBuffer = mGeometryBuffer[i];
-		auto&         meshData       = mPrimitiveMeshData[i];
-		auto&         subMeshes      = meshData->GetSubMesh();
-		const int32_t subMeshCount   = subMeshes.empty() ? 1 : subMeshes.size();
+		uint32_t offset = 0;
+		int32_t  indexNum;
+		auto&    instanceBuffer = mGeometryBuffer[j];
 
-		for (int32_t j = 0; j < subMeshCount; ++j)
+		// Topology 설정
+		GetWorld.D3D11API->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// 버퍼 설정
+		deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex.GetAddressOf(), &mVertexSize, &offset);
+		deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		auto idShader = GetWorld.ShaderManager->IDShader;
+
+		auto cam = GetWorld.CameraManager->GetCurrentMainCam();
+
+		CBuffer::Camera camera;
+		camera.CameraPos  = FVector4::ZeroVector;
+		camera.View       = XMMatrixTranspose(cam->GetViewMatrix());
+		camera.Projection = XMMatrixTranspose(cam->GetProjMatrix());
+
+		idShader->UpdateConstantData(deviceContext,
+									 CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
+									 &camera);
+
+		FMatrix worldMatrix = XMMatrixTranspose(mInstanceData[j].WorldMatrix);
+		idShader->UpdateConstantData(deviceContext,
+									 "WorldConstantBuffer",
+									 &worldMatrix);
+
+		FVector4 color = Hash2Color(ID);
+		idShader->UpdateConstantData(deviceContext, CBuffer::NAME_CONSTANT_BUFFER_COLOR_ID, &color);
+		idShader->BindShaderPipeline(deviceContext);
+
+		if (subMeshes.empty())
 		{
-			uint32_t offset = 0;
-			int32_t  indexNum;
-
-			// Topology 설정
-			GetWorld.D3D11API->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-			// 버퍼 설정
-			deviceContext->IASetVertexBuffers(0, 1, instanceBuffer.Buffer_Vertex.GetAddressOf(), &mVertexSize, &offset);
-			deviceContext->IASetIndexBuffer(instanceBuffer.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-			auto idShader = GetWorld.ShaderManager->IDShader;
-
-			auto cam = GetWorld.CameraManager->GetCurrentMainCam();
-
-			CBuffer::Camera camera;
-			camera.CameraPos  = FVector4::ZeroVector;
-			camera.View       = XMMatrixTranspose(cam->GetViewMatrix());
-			camera.Projection = XMMatrixTranspose(cam->GetProjMatrix());
-
-			idShader->UpdateConstantData(deviceContext,
-										 CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
-										 &camera);
-
-			FMatrix worldMatrix = XMMatrixTranspose(mWorldMatrix);
-			idShader->UpdateConstantData(deviceContext,
-										 "WorldConstantBuffer",
-										 &worldMatrix);
-
-			FVector4 color = Hash2Color(ID);
-			idShader->UpdateConstantData(deviceContext, CBuffer::NAME_CONSTANT_BUFFER_COLOR_ID, &color);
-			idShader->BindShaderPipeline(deviceContext);
-
-			if (subMeshes.empty())
-			{
-				indexNum = meshData->GetVertexData()->IndexArray.size();
-			}
-			else
-			{
-				indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
-			}
-
-			GetWorld.D3D11API->SetBlendState(EBlendState::Opaque);
-
-			deviceContext->DrawIndexed(indexNum, 0, 0);
+			indexNum = meshData->GetVertexData()->IndexArray.size();
 		}
+		else
+		{
+			indexNum = subMeshes[j]->GetVertexData()->IndexArray.size();
+		}
+
+		GetWorld.D3D11API->SetBlendState(EBlendState::Opaque);
+
+		deviceContext->DrawIndexed(indexNum, 0, 0);
 	}
+
 }

@@ -18,6 +18,12 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void Tick(float DeltaTime) override;
+
+	void Draw() override;
+	void DrawID(uint32_t ID) override;
+
+public:
 	void SetSkeletalMesh(JTextView InSkeletalMeshPath);
 
 private:

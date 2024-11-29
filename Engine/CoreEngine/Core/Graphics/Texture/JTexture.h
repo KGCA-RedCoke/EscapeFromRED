@@ -15,8 +15,8 @@ public:
 	~JTexture();
 
 public:
-	static void SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, int32_t InSlot = 0,
-								   JTexture*            InTexture                       = nullptr);
+	static void SetShaderTexture2D(ID3D11DeviceContext* InDeviceContext, uint32_t InSlot = 0,
+								   JTexture*            InTexture                        = nullptr);
 
 public:
 	[[nodiscard]] FORCEINLINE JWText                          GetTextureName() const { return mTextureName; }

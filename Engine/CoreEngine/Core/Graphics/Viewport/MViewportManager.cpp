@@ -56,6 +56,11 @@ MViewportManager::MViewportManager()
 	Initialize_Internal();
 }
 
+void FViewportData::Resize(uint32_t InWidth, uint32_t InHeight, float InOriginX, float InOriginY)
+{
+	
+}
+
 void FViewportData::Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight)
 {
 	// 1. 기존 뷰 해제

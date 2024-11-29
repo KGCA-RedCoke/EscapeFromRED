@@ -41,10 +41,10 @@ namespace Utils::Fbx
 
 	struct FAnimationNode
 	{
-		int32_t             ParentIndex;
-		FbxNode*            Node;
-		Ptr<JAnimBoneTrack> AnimationTrack;
-		FMatrix             Transform;
+		int32_t                    ParentIndex;
+		FbxNode*                   Node;
+		Ptr<struct JAnimBoneTrack> AnimationTrack;
+		FMatrix                    Transform;
 	};
 
 	/**
