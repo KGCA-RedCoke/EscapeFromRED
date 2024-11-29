@@ -37,8 +37,9 @@ ASampleCharacter::ASampleCharacter(JTextView InName, JTextView InMeshPath)
 	mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
 
-	mFPSCamera = CreateDefaultSubObject<JCameraComponent>("FPSCamera", this, this);
+	mFPSCamera = CreateDefaultSubObject<JCameraComponent>("FPSCamera", this, mSkeletalMeshComponent);
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
+
 }
 
 void ASampleCharacter::Initialize()

@@ -107,7 +107,25 @@ JCameraComponent::JCameraComponent(const JText& InName)
 }
 
 JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentComponent)
-	: JSceneComponent(InName, InOwnerActor, InParentComponent){}
+	: JSceneComponent(InName, InOwnerActor, InParentComponent),
+	  mDefaultEye(0, 500.f, -1500.f),
+	  mNearPlane(10.f),
+	  mFarPlane(100000.f),
+	  mRotationValue(0.01f),
+	  mTranslationValue(500.f)
+{
+	mLocalLocation = mDefaultEye;
+
+	JCameraComponent::SetViewParams(mDefaultEye, mDefaultLookAt);
+
+	const float aspect =
+			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
+			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
+
+	JCameraComponent::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+
+	JCameraComponent::Initialize();
+}
 
 JCameraComponent::JCameraComponent(const JWText& InName)
 	: JCameraComponent()
@@ -118,10 +136,14 @@ JCameraComponent::JCameraComponent(const JWText& InName)
 JCameraComponent::~JCameraComponent() {}
 
 void JCameraComponent::Initialize()
-{}
+{
+	JSceneComponent::Initialize();
+}
 
 void JCameraComponent::Tick(float_t DeltaTime)
 {
+	JSceneComponent::Tick(DeltaTime);
+
 	UpdateRotation(DeltaTime);
 	UpdateVelocity(DeltaTime);
 
@@ -145,9 +167,10 @@ void JCameraComponent::Tick(float_t DeltaTime)
 	XMVECTOR posDeltaWorld = XMVector3TransformCoord(posDelta, mCameraRot);
 
 
-	XMVECTOR vEye = XMLoadFloat3(&mLocalLocation);
+	XMVECTOR vEye = XMLoadFloat3(&mWorldLocation);
 	vEye += posDeltaWorld;
-	XMStoreFloat3(&mLocalLocation, vEye);
+	XMStoreFloat3(&mWorldLocation, vEye);
+	SetWorldLocation(mWorldLocation);
 
 	XMVECTOR vLookAt = vEye + worldAhead;
 	XMStoreFloat3(&mLookAt, vLookAt);

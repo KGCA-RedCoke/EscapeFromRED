@@ -201,6 +201,7 @@ void JAnimationClip::Play()
 {
 	mElapsedTime = mStartTime * mFramePerSecond * mTickPerFrame;
 	bPlaying     = true;
+	bLooping     = true;
 }
 
 void JAnimationClip::Resume()

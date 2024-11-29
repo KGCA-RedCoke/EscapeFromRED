@@ -45,7 +45,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			const char* assetPath   = static_cast<const char*>(payload->Data);
 
 			auto      metaData = Utils::Serialization::GetType(assetPath);
-			JTextView name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
+			JText name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
 
 			switch (metaData.AssetType)
 			{
@@ -110,7 +110,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			FVector::ZeroVector,
 																			FVector::ZeroVector,
 																			nullptr,
-																			"Game/Mesh/SK_MechanicGirl_01.jasset");
+																			"Game/Mesh/SK_Hands_07.jasset");
 
 		character->Initialize();
 

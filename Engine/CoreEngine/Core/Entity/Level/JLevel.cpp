@@ -99,7 +99,7 @@ void JLevel::RenderLevel()
 {
 	G_DebugBatch.PreRender();
 
-	
+
 	for (int32_t i = 0; i < mActors.size(); ++i)
 	{
 		mActors[i]->Draw();

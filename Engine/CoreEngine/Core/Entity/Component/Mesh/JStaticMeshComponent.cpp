@@ -37,9 +37,9 @@ bool JStaticMeshComponent::Serialize_Implement(std::ofstream& FileStream)
 	Utils::Serialization::Serialize_Primitive(&bHasMeshObject, sizeof(bool), FileStream);
 	if (bHasMeshObject)
 	{
-		mMeshObject->Serialize_Implement(FileStream);
-		// auto filePath = std::format("Game/Mesh/{}.jasset", mMeshObject->GetName());
-		// Utils::Serialization::Serialize_Text(filePath, FileStream);
+		// mMeshObject->Serialize_Implement(FileStream);
+		auto filePath = std::format("Game/Mesh/{}.jasset", mMeshObject->GetName());
+		Utils::Serialization::Serialize_Text(filePath, FileStream);
 	}
 
 	return true;
@@ -60,10 +60,10 @@ bool JStaticMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		JText filePath;
 		Utils::Serialization::DeSerialize_Text(filePath, InFileStream);
 
-		// mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(filePath.data())->Clone());
-		mMeshObject = MakeUPtr<JMeshObject>();
-		mMeshObject->DeSerialize_Implement(InFileStream);
-		GetWorld.MeshManager->CreateBuffers(mMeshObject.get());
+		mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(filePath.data())->Clone());
+		// mMeshObject = MakeUPtr<JMeshObject>();
+		// mMeshObject->DeSerialize_Implement(InFileStream);
+		// GetWorld.MeshManager->CreateBuffers(mMeshObject.get());
 	}
 
 

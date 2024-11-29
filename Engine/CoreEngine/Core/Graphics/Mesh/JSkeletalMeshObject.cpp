@@ -28,9 +28,9 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
 
 	mSampleAnimation = MakePtr<JAnimationClip>();
-	if (!Utils::Serialization::DeSerialize("Game/Animation/Lucy_Idle.jasset", mSampleAnimation.get()))
+	if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands_Empty_Walk.jasset", mSampleAnimation.get()))
 	{
-		LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}", "Game/Animation/Unreal Take.jasset");
+		LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}", "Game/Animation/Anim_Hands_Empty_Walk.jasset");
 	}
 	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
 	mSampleAnimation->Play();
