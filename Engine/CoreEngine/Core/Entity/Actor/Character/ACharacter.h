@@ -21,12 +21,16 @@ public:
 protected:
 	virtual void SetupInputComponent() {};
 
+public:
+	FVector2 GetMouseDelta() const;
+
 protected:
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
 	class JCameraComponent*       mFPSCamera;
+	UPtr<XKeyboardMouse>          mInput;
+	FVector2                      mMouseDelta;
+	FVector2                      mRotVelocity;
 
-protected:
-	UPtr<XKeyboardMouse> mInput;
 };
 
 class ASampleCharacter : public ACharacter
@@ -43,5 +47,6 @@ public:
 
 private:
 	void SetupInputComponent() override;
-	void OnMovementInputPressed(float DeltaTime, const FVector2& InDirection);
+	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
+
 };

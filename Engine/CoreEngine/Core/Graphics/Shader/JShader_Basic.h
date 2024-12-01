@@ -2,7 +2,7 @@
 #include "JShader.h"
 
 class JSceneComponent;
-class JCameraComponent;
+class JCamera;
 
 class JShader_Basic : public JShader
 {

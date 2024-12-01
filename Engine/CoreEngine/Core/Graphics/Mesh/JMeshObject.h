@@ -3,7 +3,7 @@
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 
-class JCameraComponent;
+class JCamera;
 
 constexpr const char* Path_Mesh_Sphere   = "Game/Mesh/Sphere.jasset";
 constexpr const char* Path_Mesh_Cube     = "Game/Mesh/Cube.jasset";

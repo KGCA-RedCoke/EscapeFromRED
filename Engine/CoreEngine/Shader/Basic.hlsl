@@ -1,5 +1,6 @@
 #include "CommonConstantBuffers.hlslinc"
 #include "InputLayout.hlslinc"
+#include "ShaderUtils.hlslinc"
 
 Texture2D g_DiffuseTexture : register(t0);
 Texture2D g_NormalTexture : register(t1);
@@ -9,24 +10,10 @@ Texture2D g_MetallicTexture : register(t4);
 
 StructuredBuffer<float4> g_BoneTransforms : register(t5);
 
-SamplerState g_DiffuseSampler : register(s0);
+SamplerState g_LinearSampler : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
 
-/**
- * 버퍼로부터 본의 변환 행렬을 가져온다.
- */
-float4x4 FetchBoneTransform(uint Bone)
-{
-	Bone *= 4;	// 4x4 행렬이므로 4를 곱해준다.
-	float4 row1 = g_BoneTransforms.Load(Bone + 0);	// 4x4 행렬의 첫번째 행
-	float4 row2 = g_BoneTransforms.Load(Bone + 1);	// 4x4 행렬의 두번째 행
-	float4 row3 = g_BoneTransforms.Load(Bone + 2);	// 4x4 행렬의 세번째 행
-	float4 row4 = g_BoneTransforms.Load(Bone + 3);	// 4x4 행렬의 네번째 행
-
-	float4x4 Matrix = float4x4(row1, row2, row3, row4);	// 4x4 행렬 생성
-	return Matrix;
-}
 
 PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
@@ -39,50 +26,37 @@ PixelInput_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.Material.Emissive  = Instance.Emissive;
 	output.Material.Flag      = Instance.Flag;
 
+	output.VertexColor = Input.VertexColor;
+	output.Pos         = float4(Input.Pos, 1.f);	// 로컬 좌표계
+	float4 localPos    = output.Pos;
+	float3 normal      = Input.Normal;
 
-	output.Color    = Input.Color;
-	output.Pos      = float4(Input.Pos, 1.f);	// 로컬 좌표계
-	float4 localPos = output.Pos;
-	float3 normal;
-	
 	if (Instance.Flag & FLAG_MESH_ANIMATED || Instance.Flag & FLAG_MESH_SKINNED)
 	{
 		for (int i = 0; i < 4; ++i)
 		{
 			const uint  boneIndex = (uint)Input.BoneIndices[i];	// 본 인덱스
-			const float weight    = Input.BoneWeights[i];	// 가중치
+			const float weight    = Input.BoneWeights[i] * 100.f;	// 가중치
 
-			float4x4 boneTransform = FetchBoneTransform(boneIndex);	// 본의 변환 행렬을 가져온다.
-			output.Pos += (100 * weight *
+			float4x4 boneTransform = FetchBoneTransform(boneIndex, g_BoneTransforms);	// 본의 변환 행렬을 가져온다.
+			output.Pos += (weight *
 				mul(localPos, boneTransform));	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
 
 			normal += mul(Input.Normal, (float3x3)boneTransform) *
 					weight;	// normal(원래 메시 노말) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
 		}
 
-		output.Color = Input.BoneWeights;
-	}
-	else
-	{
-		normal = Input.Normal;
+		output.VertexColor = Input.BoneWeights;	// 가중치를 컬러로 표현
 	}
 
-	output.Pos     = mul(output.Pos, Instance.InstancePos);
-	float3 viewDir = WorldCameraPos.xyz - output.Pos.xyz;
-
-	output.Pos = mul(output.Pos, View);
-	output.Pos = mul(output.Pos, Projection);
-
-	float3 worldNormal   = mul(normal, (float3x3)Instance.InstancePos);
-	float3 worldTangent  = mul(Input.Tangent, (float3x3)Instance.InstancePos);
-	float3 worldBinormal = mul(Input.Binormal, (float3x3)Instance.InstancePos);
-
-	output.UV      = Input.UV;
-	output.ViewDir = normalize(viewDir);
-
-	output.Normal   = normalize(worldNormal);
-	output.Tangent  = normalize(worldTangent);
-	output.Binormal = normalize(worldBinormal);
+	output.Pos      = mul(output.Pos, Instance.InstancePos);
+	output.ViewDir  = normalize(WorldCameraPos.xyz - output.Pos.xyz);
+	output.Pos      = mul(output.Pos, View);
+	output.Pos      = mul(output.Pos, Projection);
+	output.TexCoord = Input.TexCoord;
+	output.Normal   = mul(normal, (float3x3)Instance.InstancePos);
+	output.Tangent  = mul(Input.Tangent, (float3x3)Instance.InstancePos);
+	output.Binormal = mul(Input.Binormal, (float3x3)Instance.InstancePos);
 
 	return output;
 }
@@ -94,10 +68,10 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	// {
 	// 	// ! FOR DEBUG !
 	// 	// 가중치 표현 (가중치는 잘 적용이 됐는데 스케일 100을 곱해줘야하는 이유?)
-	// 	return float4(Input.Color.rgb, 1);
+	// 	return float4(Input.VertexColor.rgb, 1);
 	// }
 
-	float3 diffuseColor = /*BaseColor.Color*/ Input.Material.BaseColor.rgb;
+	float3 diffuseColor = /*BaseColor.VertexColor*/ Input.Material.BaseColor.rgb;
 
 	float3 normalColor = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
 
@@ -111,24 +85,24 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	// Texture Map
 	if (Input.Material.Flag & TEXTURE_USE_DIFFUSE)
 	{
-		diffuseColor = g_DiffuseTexture.Sample(g_DiffuseSampler, Input.UV);
+		diffuseColor = g_DiffuseTexture.Sample(g_LinearSampler, Input.TexCoord);
 	}
 	if (Input.Material.Flag & TEXTURE_USE_NORMAL)
 	{
-		normalColor = g_NormalTexture.Sample(g_DiffuseSampler, Input.UV).rgb;
+		normalColor = g_NormalTexture.Sample(g_LinearSampler, Input.TexCoord).rgb;
 		normalColor = normalize(normalColor * 2.0f - 1.0f);
 	}
 	if (Input.Material.Flag & TEXTURE_USE_AMBIENTOCCLUSION)
 	{
-		ambientColor = g_AmbientOcclusionTexture.Sample(g_DiffuseSampler, Input.UV).r;
+		ambientColor = g_AmbientOcclusionTexture.Sample(g_LinearSampler, Input.TexCoord).r;
 	}
 	if (Input.Material.Flag & TEXTURE_USE_ROUGHNESS)
 	{
-		roughness = g_RoughnessTexture.Sample(g_DiffuseSampler, Input.UV).g;
+		roughness = g_RoughnessTexture.Sample(g_LinearSampler, Input.TexCoord).g;
 	}
 	if (Input.Material.Flag & TEXTURE_USE_METALLIC)
 	{
-		metallic = g_MetallicTexture.Sample(g_DiffuseSampler, Input.UV).b;
+		metallic = g_MetallicTexture.Sample(g_LinearSampler, Input.TexCoord).b;
 	}
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
@@ -150,7 +124,7 @@ float4 PS(PixelInput_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = /*Ambient.Color;*/ 0.2 * diffuseColor;
+	float3 ambient = /*Ambient.VertexColor;*/ 0.2 * diffuseColor;
 	//
 	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
 	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);

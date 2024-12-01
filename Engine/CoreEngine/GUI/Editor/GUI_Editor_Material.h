@@ -4,7 +4,7 @@
 #include "Core/Graphics/Viewport/MViewportManager.h"
 
 // Forward Declaration
-class JCameraComponent;
+class JCamera;
 class JMeshObject;
 class JMaterial;
 class JShader;

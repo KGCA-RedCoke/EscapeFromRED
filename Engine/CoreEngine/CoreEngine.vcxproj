@@ -186,6 +186,7 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="Game\Src\Player\JPlayerCamera.h" />
     <ClInclude Include="GUI\Camera\GUI_Camera_Debug_Frustum.h" />
     <ClInclude Include="GUI\Editor\Actor\GUI_Editor_Actor.h" />
     <ClInclude Include="GUI\Editor\GUI_Editor_Base.h" />
@@ -221,6 +222,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shader\Params.hlslinc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\PointLight.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shader\ShaderUtils.hlslinc">
@@ -316,6 +320,7 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Game\Src\Player\JPlayerCamera.cpp" />
     <ClCompile Include="GUI\Camera\GUI_Camera_Debug_Frustum.cpp" />
     <ClCompile Include="GUI\Editor\Actor\GUI_Editor_Actor.cpp" />
     <ClCompile Include="GUI\Editor\GUI_Editor_Base.cpp" />

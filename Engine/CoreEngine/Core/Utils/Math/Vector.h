@@ -10,12 +10,12 @@ namespace JMath
 		static const TVector ZeroVector;
 		static const TVector OneVector;
 
-		static const TVector UpVector;
-		static const TVector DownVector;
 		static const TVector ForwardVector;
 		static const TVector BackwardVector;
 		static const TVector RightVector;
 		static const TVector LeftVector;
+		static const TVector UpVector;
+		static const TVector DownVector;
 
 		static const TVector XAxisVector;
 		static const TVector YAxisVector;

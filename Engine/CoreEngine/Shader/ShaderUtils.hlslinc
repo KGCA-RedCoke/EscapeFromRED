@@ -19,12 +19,27 @@ float4 Mask_A(float InColor)
 };
 
 /**
+ * 버퍼로부터 본의 변환 행렬을 가져온다.
+ */
+float4x4 FetchBoneTransform(uint Bone, StructuredBuffer<float4> BoneTransforms)
+{
+	Bone *= 4;	// 4x4 행렬이므로 4를 곱해준다.
+	float4 row1 = BoneTransforms.Load(Bone + 0);	// 4x4 행렬의 첫번째 행
+	float4 row2 = BoneTransforms.Load(Bone + 1);	// 4x4 행렬의 두번째 행
+	float4 row3 = BoneTransforms.Load(Bone + 2);	// 4x4 행렬의 세번째 행
+	float4 row4 = BoneTransforms.Load(Bone + 3);	// 4x4 행렬의 네번째 행
+
+	float4x4 Matrix = float4x4(row1, row2, row3, row4);	// 4x4 행렬 생성
+	return Matrix;
+}
+
+/**
  * @brief 텍스처를 일정 속도로 x, y축으로 이동시키는 함수 (애니메이션 효과)
  * @param InTime : 게임 시간 (Delta Time 누적)
  */
 float2 Panner(float2 InUV, float2 InSpeed, float InTime)
 {
-	// 시간 기반으로 Speed에 따라 UV 좌표를 이동시킨다.
+	// 시간 기반으로 Speed에 따라 TexCoord 좌표를 이동시킨다.
 	float2 uvOffset = InUV + InSpeed * InTime;
 
 	// frac을 이용하여 0~1 사이의 값으로 정규화한다.
@@ -47,7 +62,35 @@ float WorldAlignedBlend(float3 InPixelNormal, float InputBlendSharpness, float I
 	// BlendSharpness와 BlendBias를 사용해 값 조정
 	blendFactor = blendFactor + (InputBlendBias - (InputBlendSharpness * 0.5f));
 
-    
+
 	// 결과값을 0과 1 사이로 clamp
 	return clamp(blendFactor, 0.0f, 1.0f);
+}
+
+float4 ComputePointLight(float3 InPixelPos,
+						 float3 InPixelNormal,
+						 float3 InLightPos,
+						 float3 InLightColor,
+						 float  InLightRadius,
+						 float  InLightIntensity)
+{
+	// 빛의 방향을 계산
+	float3 lightDir = InLightPos - InPixelPos;
+
+	// 빛의 거리를 계산
+	float lightDistance = length(lightDir);
+
+	// 빛의 방향을 정규화
+	lightDir = normalize(lightDir);
+
+	// 빛의 강도를 계산
+	float lightIntensity = saturate(1.0f - lightDistance / InLightRadius) * InLightIntensity;
+
+	// 빛의 강도를 계산
+	float lightFactor = saturate(dot(InPixelNormal, lightDir));
+
+	// 빛의 강도를 계산
+	float3 lightColor = InLightColor * lightIntensity * lightFactor;
+
+	return float4(lightColor, 1.0f);
 }

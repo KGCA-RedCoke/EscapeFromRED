@@ -1,10 +1,10 @@
 ﻿#include "ACharacter.h"
 
-#include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Input/XKeyboardMouse.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Player/JPlayerCamera.h"
 
 ACharacter::ACharacter() {}
 
@@ -21,11 +21,18 @@ void ACharacter::Initialize()
 void ACharacter::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
+
+	mLocalRotation.y = XMConvertToDegrees(mFPSCamera->GetYaw());
 }
 
 void ACharacter::Destroy()
 {
 	AActor::Destroy();
+}
+
+FVector2 ACharacter::GetMouseDelta() const
+{
+	return mInput->GetCurMouseDelta();
 }
 
 ASampleCharacter::ASampleCharacter()
@@ -34,12 +41,13 @@ ASampleCharacter::ASampleCharacter()
 ASampleCharacter::ASampleCharacter(JTextView InName, JTextView InMeshPath)
 	: ACharacter(InName)
 {
-	mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
+	mSkeletalMeshComponent = CreateDefaultSubObject<
+		JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
+	mSkeletalMeshComponent->SetLocalRotation({0, 180.f, 0});
 
-	mFPSCamera = CreateDefaultSubObject<JCameraComponent>("FPSCamera", this, mSkeletalMeshComponent);
+	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this, mSkeletalMeshComponent);
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
-
 }
 
 void ASampleCharacter::Initialize()
@@ -72,29 +80,43 @@ void ASampleCharacter::SetupInputComponent()
 							std::bind(&ASampleCharacter::OnMovementInputPressed,
 									  this,
 									  std::placeholders::_1,
-									  FVector2(-1.0f, 0.0f)));
+									  -FVector::RightVector));
 	mInput->AddInputBinding(EKeyCode::D,
 							EKeyState::Pressed,
 							std::bind(&ASampleCharacter::OnMovementInputPressed,
 									  this,
 									  std::placeholders::_1,
-									  FVector2(1.0f, 0.0f)));
+									  FVector::RightVector));
 	mInput->AddInputBinding(EKeyCode::W,
 							EKeyState::Pressed,
 							std::bind(&ASampleCharacter::OnMovementInputPressed,
 									  this,
 									  std::placeholders::_1,
-									  FVector2(0.0f, 1.0f)));
+									  FVector::ForwardVector));
 	mInput->AddInputBinding(EKeyCode::S,
 							EKeyState::Pressed,
 							std::bind(&ASampleCharacter::OnMovementInputPressed,
 									  this,
 									  std::placeholders::_1,
-									  FVector2(0.0f, -1.0f)));
+									  -FVector::ForwardVector));
+
 }
 
-void ASampleCharacter::OnMovementInputPressed(float DeltaTime, const FVector2& InDirection)
+void ASampleCharacter::OnMovementInputPressed(float DeltaTime, const FVector& InDirection)
 {
-	mLocalLocation.z += InDirection.y * 100.0f * DeltaTime;
-	mLocalLocation.x += InDirection.x * 100.0f * DeltaTime;
+	FVector directionVec = FVector::ZeroVector;
+
+	if (InDirection.z != 0)
+	{
+		directionVec = InDirection.z > 0
+						   ?  - mFPSCamera->GetFlatForwardVector()
+						   :  + mFPSCamera->GetFlatForwardVector();
+	}
+	if (InDirection.x != 0)
+	{
+		directionVec = InDirection.x > 0
+						   ?  - mFPSCamera->GetFlatRightVector()
+						   :  + mFPSCamera->GetFlatRightVector();
+	}
+	mLocalLocation += directionVec * 500.0f * DeltaTime;
 }

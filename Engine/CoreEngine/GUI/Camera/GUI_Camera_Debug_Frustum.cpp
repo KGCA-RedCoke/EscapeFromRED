@@ -23,7 +23,7 @@ void GUI_Camera_Debug_Frustum::Update_Implementation(float DeltaTime)
 
 	auto mainCam = MCameraManager::Get().GetCurrentMainCam();
 
-	FVector topViewPos = mainCam->GetEyePositionFVector();
+	FVector topViewPos = mainCam->GetEyePositionVector();
 	topViewPos.y += 1000.f;
 
 	// FVector lookAt = FVector{topViewPos.x, 0, topViewPos.z};

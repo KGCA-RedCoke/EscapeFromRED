@@ -100,11 +100,6 @@ JCameraComponent::JCameraComponent()
 	JCameraComponent::Initialize();
 }
 
-JCameraComponent::JCameraComponent(const JText& InName)
-	: JCameraComponent()
-{
-	mName = String2WString(InName);
-}
 
 JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentComponent)
 	: JSceneComponent(InName, InOwnerActor, InParentComponent),
@@ -127,11 +122,6 @@ JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor,
 	JCameraComponent::Initialize();
 }
 
-JCameraComponent::JCameraComponent(const JWText& InName)
-	: JCameraComponent()
-{
-	mName = InName;
-}
 
 JCameraComponent::~JCameraComponent() {}
 
@@ -171,6 +161,7 @@ void JCameraComponent::Tick(float_t DeltaTime)
 	vEye += posDeltaWorld;
 	XMStoreFloat3(&mWorldLocation, vEye);
 	SetWorldLocation(mWorldLocation);
+
 
 	XMVECTOR vLookAt = vEye + worldAhead;
 	XMStoreFloat3(&mLookAt, vLookAt);
@@ -438,6 +429,24 @@ void JCameraComponent::ExtractFrustumPlanes()
 	// mFrustumPlanes[5].D = mViewProj._44 - mViewProj._43;
 }
 
+FVector JCameraComponent::GetFlatForwardVector() const
+{
+	// mCameraAhead에서 Y축 성분 제거
+	FVector flatForward = mCameraAhead;
+	flatForward.y       = 0.0f; // Y축 제거
+	flatForward.Normalize();
+	return flatForward;
+}
+
+FVector JCameraComponent::GetFlatRightVector() const
+{
+	FVector flatRight = mCameraRight;
+	flatRight.y       = 0.0f;
+	flatRight.Normalize();
+	return flatRight;
+}
+
+
 void JCameraComponent::UpdateVelocity(float DeltaTime)
 {
 	XMVECTOR vMouseDelta  = XMLoadFloat2(&mMouseDelta);
@@ -455,26 +464,20 @@ void JCameraComponent::UpdateRotation(float DeltaTime)
 
 }
 
-JCamera_Debug::JCamera_Debug() noexcept
+JCamera_Debug::JCamera_Debug()
 	: JCameraComponent(),
 	  mInputKeyboard()
 {
 	mInputKeyboard.Initialize();
 }
 
-JCamera_Debug::JCamera_Debug(const JText& InName)
+JCamera_Debug::JCamera_Debug(JTextView InName)
 	: JCameraComponent(InName),
 	  mInputKeyboard()
 {
 	mInputKeyboard.Initialize();
 }
 
-JCamera_Debug::JCamera_Debug(const JWText& InName)
-	: JCameraComponent(InName),
-	  mInputKeyboard()
-{
-	mInputKeyboard.Initialize();
-}
 
 void JCamera_Debug::Initialize()
 {}

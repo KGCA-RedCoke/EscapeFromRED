@@ -44,7 +44,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			JLevel*     activeLevel = GetWorld.LevelManager->GetActiveLevel();
 			const char* assetPath   = static_cast<const char*>(payload->Data);
 
-			auto      metaData = Utils::Serialization::GetType(assetPath);
+			auto  metaData = Utils::Serialization::GetType(assetPath);
 			JText name     = std::format("{}_{}", ParseFile(assetPath), activeLevel->GetActorCount());
 
 			switch (metaData.AssetType)

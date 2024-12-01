@@ -4,7 +4,7 @@
 struct VertexIn_Base
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
-	float2 UV : TEXCOORD0;	// UV 좌표
+	float2 UV : TEXCOORD0;	// TexCoord 좌표
 	float4 Color : COLOR;	// 정점 컬러(대부분은 사용 안함)
 
 	float3 Normal : NORMAL;	// 법선 벡터

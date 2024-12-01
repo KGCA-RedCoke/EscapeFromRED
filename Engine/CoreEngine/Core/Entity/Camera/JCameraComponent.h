@@ -34,10 +34,8 @@ class JCameraComponent : public JSceneComponent
 {
 public:
 	JCameraComponent();
-	JCameraComponent(const JText& InName);
 	JCameraComponent(JTextView        InName, AActor* InOwnerActor = nullptr,
 					 JSceneComponent* InParentComponent            = nullptr);
-	JCameraComponent(const JWText& InName);
 	~JCameraComponent() override;
 
 public:
@@ -141,10 +139,31 @@ public:
 	[[nodiscard]]FORCEINLINE XMMATRIX  GetViewMatrix() const { return XMLoadFloat4x4(&mView); }
 	[[nodiscard]]FORCEINLINE XMMATRIX  GetProjMatrix() const { return XMLoadFloat4x4(&mProj_Perspective); }
 	[[nodiscard]] FORCEINLINE XMMATRIX GetOrthoProjMatrix() const { return XMLoadFloat4x4(&mProj_Orthographic); }
-	[[nodiscard]] FORCEINLINE FVector  GetEyePositionFVector() const { return mWorldLocation; }
-	[[nodiscard]]FORCEINLINE XMVECTOR  GetLookAtPosition() const { return XMLoadFloat3(&mLookAt); }
+	[[nodiscard]] FORCEINLINE FVector  GetEyePositionVector() const { return mWorldLocation; }
+	[[nodiscard]]FORCEINLINE XMVECTOR  GetLookAtVector() const { return XMLoadFloat3(&mLookAt); }
 	[[nodiscard]]FORCEINLINE float     GetNearClip() const { return mNearPlane; }
 	[[nodiscard]]FORCEINLINE float     GetFarClip() const { return mFarPlane; }
+
+	[[nodiscard]] FORCEINLINE FVector GetForwardVector() const { return mCameraAhead; }
+	[[nodiscard]] FORCEINLINE FVector GetRightVector() const { return mCameraRight; }
+	[[nodiscard]] FORCEINLINE FVector GetUpVector() const { return mCameraUp; }
+	[[nodiscard]] FVector             GetFlatForwardVector() const;
+	[[nodiscard]] FVector             GetFlatRightVector() const;
+
+	[[nodiscard]] FORCEINLINE float GetFOV() const { return mFOV; }
+	[[nodiscard]] FORCEINLINE float GetAspect() const { return mAspect; }
+	[[nodiscard]] FORCEINLINE float GetYaw() const { return mYaw; }
+	[[nodiscard]] FORCEINLINE float GetPitch() const { return mPitch; }
+
+	[[nodiscard]] FORCEINLINE FVector GetMinBoundary() const { return mMinBoundary; }
+	[[nodiscard]] FORCEINLINE FVector GetMaxBoundary() const { return mMaxBoundary; }
+
+	[[nodiscard]] FORCEINLINE bool IsInvertPitch() const { return bInvertPitch; }
+	[[nodiscard]] FORCEINLINE bool IsEnableYAxisMovement() const { return bEnableYAxisMovement; }
+	[[nodiscard]] FORCEINLINE bool IsEnablePositionMovement() const { return bEnablePositionMovement; }
+	[[nodiscard]] FORCEINLINE bool IsClipToBoundary() const { return bClipToBoundary; }
+	[[nodiscard]] FORCEINLINE bool IsResetCursorAfterMove() const { return bResetCursorAfterMove; }
+	[[nodiscard]] FORCEINLINE bool IsMovementDrag() const { return bMovementDrag; }
 
 
 	//--------------------------------------------- Get State -------------------------------------------------------------
@@ -168,6 +187,10 @@ protected:
 
 	float mYaw;
 	float mPitch;
+
+	FVector mCameraUp;
+	FVector mCameraAhead;
+	FVector mCameraRight;
 
 	float mFOV;		  // 카메라 시야
 	float mAspect;    // 카메라 종횡비
@@ -208,9 +231,8 @@ protected:
 class JCamera_Debug final : public JCameraComponent
 {
 public:
-	JCamera_Debug() noexcept;
-	explicit JCamera_Debug(const JText& InName);
-	explicit JCamera_Debug(const JWText& InName);
+	JCamera_Debug();
+	JCamera_Debug(JTextView InName);
 
 public:
 #pragma region Core Interface

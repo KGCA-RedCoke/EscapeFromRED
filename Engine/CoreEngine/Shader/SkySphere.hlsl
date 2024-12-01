@@ -16,11 +16,11 @@ static const int g_TextureCount = 3;
 
 cbuffer ColorConstantBuffer : register(b1)
 {
-	// Sky Color (블렌딩을 위한 색상)
+	// Sky VertexColor (블렌딩을 위한 색상)
 	const float4 g_SkyColor_01 = float4(0.15f, 0.15f, 0.15f, 1.f);
 	const float4 g_SkyColor_02 = float4(0.02, 0.02, 0.02, 1.f);
 
-	// Cloud Color (블렌딩을 위한 색상)
+	// Cloud VertexColor (블렌딩을 위한 색상)
 	const float4 g_CloudColor_01 = float4(0.200000, 0.200000, 0.200000, 1.f);
 	const float4 g_CloudColor_02 = float4(0.130136, 0.130136, 0.130136, 1.f);
 

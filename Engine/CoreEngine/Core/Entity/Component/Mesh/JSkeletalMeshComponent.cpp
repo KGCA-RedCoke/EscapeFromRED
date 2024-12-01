@@ -44,10 +44,12 @@ void JSkeletalMeshComponent::Draw()
 	if (mSkeletalMeshObject)
 	{
 		// BoxShape.DrawDebug();
-		if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mSkeletalMeshObject->GetBoundingBox()))
-		{
-			mSkeletalMeshObject->AddInstance();
-		}
+		// if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mSkeletalMeshObject->GetBoundingBox()))
+		// {
+		// 	mSkeletalMeshObject->AddInstance();
+		// }
+		mSkeletalMeshObject->AddInstance();
+
 	}
 
 	JSceneComponent::Draw();

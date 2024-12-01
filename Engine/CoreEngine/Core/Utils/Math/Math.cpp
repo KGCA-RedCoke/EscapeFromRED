@@ -12,12 +12,12 @@
 
 const JMath::TVector JMath::TVector::ZeroVector(0, 0, 0);
 const JMath::TVector JMath::TVector::OneVector(1, 1, 1);
-const JMath::TVector JMath::TVector::UpVector(0, 0, 1);
-const JMath::TVector JMath::TVector::DownVector(0, 0, -1);
-const JMath::TVector JMath::TVector::ForwardVector(1, 0, 0);
-const JMath::TVector JMath::TVector::BackwardVector(-1, 0, 0);
-const JMath::TVector JMath::TVector::RightVector(0, 1, 0);
-const JMath::TVector JMath::TVector::LeftVector(0, -1, 0);
+const JMath::TVector JMath::TVector::ForwardVector(0, 0, 1);
+const JMath::TVector JMath::TVector::BackwardVector(0, 0, -1);
+const JMath::TVector JMath::TVector::RightVector(1, 0, 0);
+const JMath::TVector JMath::TVector::LeftVector(-1, 0, 0);
+const JMath::TVector JMath::TVector::UpVector(0, 1, 0);
+const JMath::TVector JMath::TVector::DownVector(0, -1, 0);
 const JMath::TVector JMath::TVector::XAxisVector(1, 0, 0);
 const JMath::TVector JMath::TVector::YAxisVector(0, 1, 0);
 const JMath::TVector JMath::TVector::ZAxisVector(0, 0, 1);

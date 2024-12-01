@@ -106,7 +106,7 @@ void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 		mTargetCamera = GetWorld.CameraManager->GetCurrentMainCam();
 	}
 
-	mCachedCameraData.CameraPos    = FVector4{mTargetCamera->GetWorldLocation(), 1.f};
+	mCachedCameraData.CameraPos    = FVector4{mTargetCamera->GetEyePositionVector(), 1.f};
 	mCachedCameraData.View         = XMMatrixTranspose(mTargetCamera->GetViewMatrix());
 	mCachedCameraData.Projection   = XMMatrixTranspose(mTargetCamera->GetProjMatrix());
 	mCachedCameraData.Orthographic = XMMatrixTranspose(mTargetCamera->GetOrthoProjMatrix());

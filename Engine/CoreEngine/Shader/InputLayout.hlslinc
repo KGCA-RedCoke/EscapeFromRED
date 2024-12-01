@@ -1,7 +1,7 @@
 struct VertexIn_2D
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
-	float2 UV : TEXCOORD0;	// UV 좌표
+	float2 UV : TEXCOORD0;	// TexCoord 좌표
 	float4 Color : COLOR;	// 정점 컬러(대부분은 사용 안함)
 };
 
@@ -15,7 +15,7 @@ struct PixelInput_2D
 struct VertexIn_3D
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
-	float2 UV : TEXCOORD0;	// UV 좌표
+	float2 UV : TEXCOORD0;	// TexCoord 좌표
 	float4 Color : COLOR;
 	float3 Normal : NORMAL;	// 법선 벡터
 };
@@ -38,8 +38,8 @@ struct PixelInput_3D
 struct VertexIn_Base
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
-	float2 UV : TEXCOORD0;	// UV 좌표
-	float4 Color : COLOR;	// 정점 컬러(대부분은 사용 안함)
+	float2 TexCoord : TEXCOORD0;	// TexCoord 좌표
+	float4 VertexColor : COLOR;	// 정점 컬러(대부분은 사용 안함)
 
 	float3 Normal : NORMAL;	// 법선 벡터
 	float3 Tangent : TANGENT;	// 접선 벡터
@@ -75,8 +75,8 @@ struct InstanceData
 struct PixelInput_Base
 {
 	float4 Pos : SV_POSITION;
-	float4 Color : COLOR0;
-	float2 UV : TEXCOORD0;
+	float4 VertexColor : COLOR0;
+	float2 TexCoord : TEXCOORD0;
 
 	float3 ViewDir : TEXCOORD1;
 

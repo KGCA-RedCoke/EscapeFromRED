@@ -3,6 +3,7 @@
 #include "Core/Graphics/graphics_common_include.h"
 #include "Core/Graphics/ShaderStructs.h"
 
+class JCameraComponent;
 constexpr const char* NAME_SHADER_BASIC        = "Shader/Basic.hlsl";
 constexpr const char* NAME_SHADER_BASIC_2D     = "Shader/Basic2D.hlsl";
 constexpr const char* NAME_SHADER_GNOMON       = "Shader/Gnomon.hlsl";
