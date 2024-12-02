@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include "../JSceneComponent.h"
+#include "Core/Utils/Math/Vector.h"
+
 
 class JMeshObject;
 
@@ -17,7 +18,7 @@ struct FPlane
 
 struct FBox
 {
-	FVector Center;			// 박스 중심좌표
+	FVector Center = FVector::ZeroVector;			// 박스 중심좌표
 	FVector Extent = FVector(50.f, 50.f, 50.f);			// 박스 반지름
 
 	FVector LocalAxis[3];	// 박스 로컬 축
@@ -43,35 +44,35 @@ struct FBoxShape
 	FBox Box;
 
 	// ------- OBB --------
-	FVector Min;
-	FVector Max;
+	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector Max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	void DrawDebug() const;
 };
 
 
-class JShape : public JSceneComponent
-{
-public:
-	void CreateOBBBox(const FVector& InCenter, const FVector& InExtent, const FVector InAxisX, const FVector InAxisY,
-					  const FVector  InAxisZ);
-	void CreateAABBBox(const FVector& InMin, const FVector& InMax);
-
-	virtual void GenCollisionData() = 0;
-};
-
-class JBoxComponent : public JShape
-{
-public:
-	void Initialize() override;
-	void Tick(float DeltaTime) override;
-
-public:
-	void SetExtent(const FVector& InExtent) { mBoxShape.Box.Extent = InExtent; }
-	void SetCenter(const FVector& InCenter) { mBoxShape.Box.Center = InCenter; }
-
-	[[nodiscard]] const FBoxShape& GetBoxShape() const { return mBoxShape; }
-
-private:
-	FBoxShape mBoxShape;
-};
+// class JShape : public JSceneComponent
+// {
+// public:
+// 	void CreateOBBBox(const FVector& InCenter, const FVector& InExtent, const FVector InAxisX, const FVector InAxisY,
+// 					  const FVector  InAxisZ);
+// 	void CreateAABBBox(const FVector& InMin, const FVector& InMax);
+//
+// 	virtual void GenCollisionData() = 0;
+// };
+//
+// class JBoxComponent : public JShape
+// {
+// public:
+// 	void Initialize() override;
+// 	void Tick(float DeltaTime) override;
+//
+// public:
+// 	void SetExtent(const FVector& InExtent) { mBoxShape.Box.Extent = InExtent; }
+// 	void SetCenter(const FVector& InCenter) { mBoxShape.Box.Center = InCenter; }
+//
+// 	[[nodiscard]] const FBoxShape& GetBoxShape() const { return mBoxShape; }
+//
+// private:
+// 	FBoxShape mBoxShape;
+// };

@@ -28,9 +28,10 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
 
 	mSampleAnimation = MakePtr<JAnimationClip>();
-	if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands_Empty_Walk.jasset", mSampleAnimation.get()))
+	if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset", mSampleAnimation.get()))
 	{
-		LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}", "Game/Animation/Anim_Hands_Empty_Walk.jasset");
+		LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+					   "Game/Animation/Anim_Hands_Empty_Walk.jasset");
 	}
 	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
 	mSampleAnimation->Play();
@@ -86,6 +87,35 @@ void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 								   boneCount * sizeof(FMatrix));
 
 	InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
+
+	// if (!mLightMesh)
+	// {
+	// 	mLightMesh         = GetWorld.MeshManager->CreateOrClone("Game/Mesh/SM_Flashlight_01.jasset");
+	// 	mSocketOffsetRot.x = XMConvertToRadians(mSocketOffsetRot.x);
+	// 	mSocketOffsetRot.y = XMConvertToRadians(mSocketOffsetRot.y);
+	// 	mSocketOffsetRot.z = XMConvertToRadians(mSocketOffsetRot.z);
+	// }
+	//
+	// // 1. 소켓 오프셋 행렬 생성 (로컬 변환)
+	// auto locMat = DirectX::XMMatrixTranslation(mSocketOffsetLoc.x, mSocketOffsetLoc.y, mSocketOffsetLoc.z);
+	//
+	// auto    rotMat             = XMMatrixRotationRollPitchYawFromVector(mSocketOffsetRot);
+	// FMatrix socketOffsetMatrix = FMatrix::Identity;
+	// socketOffsetMatrix         = socketOffsetMatrix * rotMat * locMat;
+	//
+	// // 2. 본의 월드 변환 계산 (월드 바인드 포즈 * 본 애니메이션 변환)
+	// FMatrix boneWorldMatrix = skinData->GetInfluenceWorldBindPose("hand_r") * socketOffsetMatrix * updateBoneMatrixBuffer[
+	// 	mHand_r_Index];
+	//
+	// // 3. 소켓 변환 적용
+	// mSocketTransform = boneWorldMatrix /** socketOffsetMatrix*/;
+	//
+	//
+	// // 3. 모델 월드 변환 적용
+	// mSocketTransform = socketOffsetMatrix *  skinData->GetInfluenceWorldBindPose("hand_r") *
+	// 		updateBoneMatrixBuffer[mHand_r_Index] * mInstanceData[0].WorldMatrix;
+
+
 }
 
 uint32_t JSkeletalMeshObject::GetType() const
@@ -144,7 +174,11 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 
 void JSkeletalMeshObject::AddInstance()
 {
+
 	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
+
+	// mLightMesh->UpdateBuffer(mSocketTransform);
+	// mLightMesh->AddInstance();
 
 	auto&         meshData     = mPrimitiveMeshData[0];
 	auto&         subMeshes    = meshData->GetSubMesh();
@@ -156,6 +190,7 @@ void JSkeletalMeshObject::AddInstance()
 
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
 	}
+
 }
 
 void JSkeletalMeshObject::Draw()

@@ -67,6 +67,9 @@ namespace JMath
 		void Normalize();
 		void Normalize(TVector& Result) const;
 
+		void ConvertToRadians();
+		void ConvertToRadians(FVector& OutVector) const;
+
 	public:
 		// ------------------------ 생성자 ----------------------------
 		TVector() noexcept;

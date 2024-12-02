@@ -61,6 +61,7 @@ namespace JMath
         TMatrix operator+() const { return *this; }
         TMatrix operator-() const;
         TMatrix operator*(const TMatrix& M);
+        TMatrix operator*(TMatrix& M);
         TMatrix operator*(float Scale);
 
         // Properties

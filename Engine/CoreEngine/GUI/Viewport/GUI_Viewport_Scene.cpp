@@ -106,13 +106,13 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
 		JTextView         d("Game/Mesh/Tree.jasset");
-		ASampleCharacter* character = GetWorld.SpawnActor<ASampleCharacter>("Girl",
-																			FVector::ZeroVector,
-																			FVector::ZeroVector,
-																			nullptr,
-																			"Game/Mesh/SK_Hands_07.jasset");
-
-		character->Initialize();
+		// ASampleCharacter* character = GetWorld.SpawnActor<ASampleCharacter>("Girl",
+		// 																	FVector::ZeroVector,
+		// 																	FVector::ZeroVector,
+		// 																	nullptr,
+		// 																	"Game/Mesh/SK_Hands_07.jasset");
+		//
+		// character->Initialize();
 
 		bIsGameMode = true;
 	}

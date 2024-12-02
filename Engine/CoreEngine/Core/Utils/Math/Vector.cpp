@@ -209,6 +209,20 @@ namespace JMath
 		XMStoreFloat3(&Result, X);
 	}
 
+	void TVector::ConvertToRadians()
+	{
+		x = XMConvertToRadians(x);
+		y = XMConvertToRadians(y);
+		z = XMConvertToRadians(z);
+	}
+
+	void TVector::ConvertToRadians(FVector& OutVector) const
+	{
+		OutVector.x = XMConvertToRadians(x);
+		OutVector.y = XMConvertToRadians(y);
+		OutVector.z = XMConvertToRadians(z);
+	}
+
 	TVector::TVector() noexcept
 		: XMFLOAT3(0.f, 0.f, 0.f) {}
 

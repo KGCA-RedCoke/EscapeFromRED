@@ -108,7 +108,7 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	mMaterialInstances.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
 	mInstanceData.resize(mPrimitiveMeshData[0]->GetSubMaterialNum());
 	for (int32_t i = 0; i < mPrimitiveMeshData[0]->GetSubMaterialNum(); ++i)
-	{	
+	{
 		JText materialPath;
 		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
 		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
@@ -128,19 +128,6 @@ void JMeshObject::CreateBuffers(ID3D11Device* InDevice)
 
 void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
 {
-	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&InWorldMatrix));
-	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&InWorldMatrix));
-	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&InWorldMatrix));
-
-	for (int32_t i = 0; i < 8; ++i)
-	{
-		mBoundingBox.Box.Position[i] = XMVector3Transform(mBoundingBox.Box.Position[i], InWorldMatrix);
-	}
-
-	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
-	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, InWorldMatrix);
-	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
-
 	for (int32_t i = 0; i < mInstanceData.size(); ++i)
 	{
 		mInstanceData[i].WorldMatrix = InWorldMatrix;
@@ -225,9 +212,6 @@ void JMeshObject::AddInstance()
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-
-		mBoundingBox.DrawDebug();
-
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
 	}
 	// }

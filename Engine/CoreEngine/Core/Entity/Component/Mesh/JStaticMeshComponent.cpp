@@ -21,7 +21,8 @@ JStaticMeshComponent::JStaticMeshComponent(JTextView        InName,
 JStaticMeshComponent::JStaticMeshComponent(const JStaticMeshComponent& Copy)
 	: JSceneComponent(Copy)
 {
-	mMeshObject = UPtrCast<JMeshObject>(Copy.mMeshObject->Clone());
+	mBoundingBox = Copy.mBoundingBox;
+	mMeshObject  = UPtrCast<JMeshObject>(Copy.mMeshObject->Clone());
 }
 
 JStaticMeshComponent::~JStaticMeshComponent() {}
@@ -60,10 +61,7 @@ bool JStaticMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		JText filePath;
 		Utils::Serialization::DeSerialize_Text(filePath, InFileStream);
 
-		mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(filePath.data())->Clone());
-		// mMeshObject = MakeUPtr<JMeshObject>();
-		// mMeshObject->DeSerialize_Implement(InFileStream);
-		// GetWorld.MeshManager->CreateBuffers(mMeshObject.get());
+		SetMeshObject(filePath);
 	}
 
 
@@ -87,13 +85,10 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 void JStaticMeshComponent::Draw()
 {
 	// MeshObject의 Draw 호출
-	if (mMeshObject)
+	if (bIsInFrustum && mMeshObject)
 	{
-		// BoxShape.DrawDebug();
-		if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mMeshObject->GetBoundingBox()))
-		{
-			mMeshObject->AddInstance();
-		}
+		mBoundingBox.DrawDebug();
+		mMeshObject->AddInstance();
 	}
 
 	// Child SceneComponent Draw 호출
@@ -102,7 +97,7 @@ void JStaticMeshComponent::Draw()
 
 void JStaticMeshComponent::DrawID(uint32_t ID)
 {
-	if (mMeshObject)
+	if (bIsInFrustum && mMeshObject)
 	{
 		mMeshObject->DrawID(ID);
 	}
@@ -123,7 +118,8 @@ void JStaticMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInst
 
 void JStaticMeshComponent::SetMeshObject(JTextView InMeshObject)
 {
-	mMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshObject.data())->Clone());
+	mMeshObject  = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshObject.data())->Clone());
+	mBoundingBox = mMeshObject->GetBoundingBox();
 }
 
 int32_t JStaticMeshComponent::GetMaterialCount() const

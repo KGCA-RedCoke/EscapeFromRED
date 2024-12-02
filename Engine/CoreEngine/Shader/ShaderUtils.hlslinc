@@ -67,30 +67,55 @@ float WorldAlignedBlend(float3 InPixelNormal, float InputBlendSharpness, float I
 	return clamp(blendFactor, 0.0f, 1.0f);
 }
 
-float4 ComputePointLight(float3 InPixelPos,
-						 float3 InPixelNormal,
-						 float3 InLightPos,
-						 float3 InLightColor,
-						 float  InLightRadius,
-						 float  InLightIntensity)
+float3 ComputePointLight(float3      InWorldPos,
+						 float3      InWorldNormal,
+						 FPointLight InPointLight)
 {
 	// 빛의 방향을 계산
-	float3 lightDir = InLightPos - InPixelPos;
+	float3 lightDir           = InPointLight.Position - InWorldPos;
+	float3 lightDirNormalized = normalize(InPointLight.Position - InWorldPos);
 
 	// 빛의 거리를 계산
 	float lightDistance = length(lightDir);
 
-	// 빛의 방향을 정규화
-	lightDir = normalize(lightDir);
+	if (lightDistance > InPointLight.Range)
+	{
+		return float3(0, 0, 0);
+	}
 
 	// 빛의 강도를 계산
-	float lightIntensity = saturate(1.0f - lightDistance / InLightRadius) * InLightIntensity;
+	float lightIntensity = saturate(1.0f - lightDistance / InPointLight.Range) * InPointLight.Intensity;
 
 	// 빛의 강도를 계산
-	float lightFactor = saturate(dot(InPixelNormal, lightDir));
+	float lightFactor = saturate(dot(InWorldNormal, lightDirNormalized));
+
 
 	// 빛의 강도를 계산
-	float3 lightColor = InLightColor * lightIntensity * lightFactor;
+	float3 lightColor = InPointLight.Color * lightIntensity * lightFactor;
 
-	return float4(lightColor, 1.0f);
+	return lightColor;
+}
+
+float3 ComputeSpotLight(float3     InWorldPos,
+						float3     InWorldNormal,
+						FSpotLight InSpotLight)
+{
+	float3 lightDir           = InSpotLight.Position - InWorldPos;
+	float3 lightDirNormalized = normalize(InSpotLight.Position - InWorldPos);
+	float  lightDistance      = length(lightDir);
+
+	if (lightDistance > InSpotLight.Range)
+	{
+		return float3(0, 0, 0);
+	}
+
+	float lightIntensity = saturate(1.0f - lightDistance / InSpotLight.Range) * InSpotLight.Intensity;
+	float lightFactor    = saturate(dot(InWorldNormal, lightDirNormalized));
+
+	float spotFactor  = dot(-lightDirNormalized, InSpotLight.Direction);
+	float spotFactor2 = smoothstep(InSpotLight.SpotAngle, InSpotLight.SpotAngle * 0.9f, spotFactor);
+
+	float3 lightColor = InSpotLight.Color * lightIntensity * lightFactor * spotFactor2;
+
+	return lightColor;
 }

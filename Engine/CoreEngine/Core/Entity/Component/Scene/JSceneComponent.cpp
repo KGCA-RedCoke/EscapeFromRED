@@ -1,6 +1,8 @@
 ﻿#include "JSceneComponent.h"
 
 #include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Camera/MCameraManager.h"
+#include "Core/Interface/JWorld.h"
 
 JSceneComponent::JSceneComponent()
 	: mParentSceneComponent(nullptr)
@@ -127,6 +129,10 @@ void JSceneComponent::Tick(float DeltaTime)
 
 void JSceneComponent::Draw()
 {
+	if (!bIsInFrustum)
+	{
+		return;
+	}
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->Draw();
@@ -135,6 +141,10 @@ void JSceneComponent::Draw()
 
 void JSceneComponent::DrawID(uint32_t ID)
 {
+	if (!bIsInFrustum)
+	{
+		return;
+	}
 
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
@@ -280,20 +290,20 @@ void JSceneComponent::UpdateTransform()
 {
 	// Step1. 로컬 좌표 변환
 	mLocalLocationMat = DirectX::XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z);
-	mLocalRotationMat = DirectX::XMMatrixRotationRollPitchYaw(
-															  DirectX::XMConvertToRadians(mLocalRotation.x),
-															  DirectX::XMConvertToRadians(mLocalRotation.y),
-															  DirectX::XMConvertToRadians(mLocalRotation.z)
-															 );
+
+	mLocalRotationMat = XMMatrixRotationRollPitchYaw(
+													 XMConvertToRadians(mLocalRotation.x),
+													 XMConvertToRadians(mLocalRotation.y),
+													 XMConvertToRadians(mLocalRotation.z));
+
 	mLocalScaleMat = DirectX::XMMatrixScaling(mLocalScale.x, mLocalScale.y, mLocalScale.z);
 
 	mLocalMat = mLocalScaleMat * mLocalRotationMat * mLocalLocationMat;
 
-
 	// Step2. 부모 씬 컴포넌트가 존재한다면, 로컬 행렬을 계산
 	if (mParentSceneComponent)
 	{
-		mWorldMat = mParentSceneComponent->mWorldMat * mLocalMat;
+		mWorldMat = mLocalMat * mParentSceneComponent->mWorldMat;
 	}
 	else // 부모가 없는 씬 컴포넌트는 그 자체 위치를 월드 위치로 사용
 	{
@@ -305,6 +315,17 @@ void JSceneComponent::UpdateTransform()
 	mWorldLocation = loc;
 	mWorldRotation = rot;
 	mWorldScale    = scale;
+
+	// Step1.1 프러스텀 박스(OBB) 업데이트
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+
+	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
+	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
+	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
+	bIsInFrustum = GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mBoundingBox);
 }
 
 void JSceneComponent::UpdateWorldTransform()

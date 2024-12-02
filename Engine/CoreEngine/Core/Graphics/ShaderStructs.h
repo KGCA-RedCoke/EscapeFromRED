@@ -234,6 +234,14 @@ namespace Vertex
  */
 namespace Buffer
 {
+	struct FBuffer_Light_Point
+	{
+		FVector Position;
+		float   Range;
+		FVector Color;
+		float   Intensity;
+	};
+
 	// Landscape 버퍼 인스턴스
 	struct FBufferInstance_LandScape
 	{

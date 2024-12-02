@@ -2,6 +2,7 @@
 #include "Core/Entity/Component/JActorComponent.h"
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/Math/TMatrix.h"
+#include "Shape/JShape.h"
 
 /**
  * 2D 스크린에 배치되는 컴포넌트
@@ -96,13 +97,15 @@ public:
 	FORCEINLINE [[nodiscard]] FVector GetWorldRotation() const { return mWorldRotation; }
 	FORCEINLINE [[nodiscard]] FVector GetWorldScale() const { return mWorldScale; }
 
-	void SetWorldLocation(const FVector& InTranslation);
-	void SetWorldRotation(const FVector& InRotation);
-	void SetWorldScale(const FVector& InScale);
-
 	FORCEINLINE [[nodiscard]] FVector GetLocalLocation() const { return mLocalLocation; }
 	FORCEINLINE [[nodiscard]] FVector GetLocalRotation() const { return mLocalRotation; }
 	FORCEINLINE [[nodiscard]] FVector GetLocalScale() const { return mLocalScale; }
+
+	// FORCEINLINE [[nodiscard]] FBoxShape GetBoundingVolume() const { return mBoundingBox; }
+
+	void SetWorldLocation(const FVector& InTranslation);
+	void SetWorldRotation(const FVector& InRotation);
+	void SetWorldScale(const FVector& InScale);
 
 	void SetLocalLocation(const FVector& InTranslation) { mLocalLocation = InTranslation; }
 	void SetLocalRotation(const FVector& InRotation) { mLocalRotation = InRotation; }
@@ -143,6 +146,10 @@ protected:
 	JSceneComponent*              mParentSceneComponent;
 	JHash<JText, int32_t>         mChildSceneComponentIndices;
 	JArray<UPtr<JSceneComponent>> mChildSceneComponents;
+
+	// ----------------------------- Bounding Box Data -----------------------------
+	FBoxShape mBoundingBox;
+	bool      bIsInFrustum = false;
 
 	// ----------------------------- LevelManager Transform Data -----------------------------
 	FVector mWorldLocation = FVector::ZeroVector;

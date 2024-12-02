@@ -61,20 +61,14 @@ struct FMaterialInstance
 
 struct InstanceData
 {
-	row_major matrix InstancePos : INST_TRANSFORM;
-
-	// ------------ Material ----------------
-	float4 BaseColor : INST_MAT_BASECOLOR;
-	float  Occlusion : INST_MAT_SPECULAR;
-	float  Roughness : INST_MAT_ROUGHNESS;
-	float  Metallic : INST_MAT_METALLIC;
-	float  Emissive : INST_MAT_EMISSIVE;
-	uint   Flag : INST_MAT_TEXTUREFLAG;
+	row_major matrix  InstancePos : INST_TRANSFORM;
+	FMaterialInstance Material : INST_MAT;
 };
 
-struct PixelInput_Base
+struct PixelIn_Base
 {
-	float4 Pos : SV_POSITION;
+	float4 ClipSpace : SV_POSITION;
+	float4 WorldSpace : POSITION;
 	float4 VertexColor : COLOR0;
 	float2 TexCoord : TEXCOORD0;
 

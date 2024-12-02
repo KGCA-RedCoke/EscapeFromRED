@@ -6,29 +6,77 @@ namespace JMath
 {
 
 	TMatrix::TMatrix() noexcept
-		: XMFLOAT4X4(1.f, 0, 0, 0,
-					 0, 1.f, 0, 0,
-					 0, 0, 1.f, 0,
-					 0, 0, 0, 1.f) {}
+		: XMFLOAT4X4(1.f,
+					 0,
+					 0,
+					 0,
+					 0,
+					 1.f,
+					 0,
+					 0,
+					 0,
+					 0,
+					 1.f,
+					 0,
+					 0,
+					 0,
+					 0,
+					 1.f) {}
 
 	TMatrix::TMatrix(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13,
-							   float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
-		: XMFLOAT4X4(m00, m01, m02, m03,
-					 m10, m11, m12, m13,
-					 m20, m21, m22, m23,
-					 m30, m31, m32, m33) {}
+					 float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
+		: XMFLOAT4X4(m00,
+					 m01,
+					 m02,
+					 m03,
+					 m10,
+					 m11,
+					 m12,
+					 m13,
+					 m20,
+					 m21,
+					 m22,
+					 m23,
+					 m30,
+					 m31,
+					 m32,
+					 m33) {}
 
 	TMatrix::TMatrix(const TVector& r0, const TVector& r1, const TVector& r2)
-		: XMFLOAT4X4(r0.x, r0.y, r0.z, 0,
-					 r1.x, r1.y, r1.z, 0,
-					 r2.x, r2.y, r2.z, 0,
-					 0, 0, 0, 1.f) {}
+		: XMFLOAT4X4(r0.x,
+					 r0.y,
+					 r0.z,
+					 0,
+					 r1.x,
+					 r1.y,
+					 r1.z,
+					 0,
+					 r2.x,
+					 r2.y,
+					 r2.z,
+					 0,
+					 0,
+					 0,
+					 0,
+					 1.f) {}
 
 	TMatrix::TMatrix(const TVector4 r0, const TVector4& r1, const TVector4& r2, const TVector4& r3)
-		: XMFLOAT4X4(r0.x, r0.y, r0.z, r0.w,
-					 r1.x, r1.y, r1.z, r1.w,
-					 r2.x, r2.y, r2.z, r2.w,
-					 r3.x, r3.y, r3.z, r3.w) {}
+		: XMFLOAT4X4(r0.x,
+					 r0.y,
+					 r0.z,
+					 r0.w,
+					 r1.x,
+					 r1.y,
+					 r1.z,
+					 r1.w,
+					 r2.x,
+					 r2.y,
+					 r2.z,
+					 r2.w,
+					 r3.x,
+					 r3.y,
+					 r3.z,
+					 r3.w) {}
 
 	TMatrix::TMatrix(const XMFLOAT4X4& M)
 	{
@@ -302,9 +350,20 @@ namespace JMath
 		XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(&R._41), v4);
 		return R;
 	}
-	
+
 
 	TMatrix TMatrix::operator*(const TMatrix& M)
+	{
+		XMMATRIX m1 = XMLoadFloat4x4(this);
+		XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)&M);
+		XMMATRIX X  = XMMatrixMultiply(m1, m2);
+
+		TMatrix R;
+		XMStoreFloat4x4(&R, X);
+		return R;
+	}
+
+	TMatrix TMatrix::operator*(TMatrix& M)
 	{
 		XMMATRIX m1 = XMLoadFloat4x4(this);
 		XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)&M);

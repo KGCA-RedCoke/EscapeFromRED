@@ -12,19 +12,6 @@ enum class ELightType
 	Capsule,
 };
 
-struct FLightData
-{
-	FVector4 Position          = FVector4::ZeroVector;
-	FVector4 Direction         = FVector4::ZeroVector;
-	FVector4 ColorWithStrength = FVector4::OneVector; // alpha값이 intensity
-};
-
-struct FLightData_Point : public FLightData
-{
-	FVector Range;
-
-};
-
 class JLightComponent : public JSceneComponent
 {
 public:

@@ -250,22 +250,6 @@ void JShader::LoadShaderReflectionData()
 			{
 				elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 			}
-
-			// "INSTANCE_MATERIAL"인지 확인
-			if (strncmp(paramDesc.SemanticName, "INST_MAT_", 9) == 0)
-			{
-				// INSTANCE_MATERIAL 처리 로직
-				if (paramDesc.Mask == 1)
-				{}
-				else if (paramDesc.Mask <= 3)
-				{}
-				else if (paramDesc.Mask <= 7)
-				{}
-				else if (paramDesc.Mask <= 15)
-				{}
-
-				// mShaderMaterialParams.push_back();
-			}
 		}
 
 		// Format은 Masking정보를 통해 설정

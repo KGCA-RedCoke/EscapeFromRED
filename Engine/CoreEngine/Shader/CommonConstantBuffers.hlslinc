@@ -30,16 +30,25 @@ cbuffer TimeConstantBuffer : register(b2)
 	float DeltaTime;
 }
 
+struct FPointLight
+{
+	float3 Position;
+	float  Range;
+	float3 Color;
+	float  Intensity;
+};
+
 struct FSpotLight
 {
-	float4 Position;
-	float4 Direction;
-	float4 Color;
-	float4 Attenuation;
-	float4 SpotAngle;
+	float3 Position;
+	float  Range;
+	float3 Direction;
+	float  SpotAngle;
+	float3 Color;
+	float  Intensity;
 };
 
 cbuffer SpotLightConstantBuffer : register(b3)
 {
-	FSpotLight SpotLight;
+	FPointLight PointLight[16];
 }

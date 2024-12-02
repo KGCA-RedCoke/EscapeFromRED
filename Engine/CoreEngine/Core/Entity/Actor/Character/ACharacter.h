@@ -32,21 +32,3 @@ protected:
 	FVector2                      mRotVelocity;
 
 };
-
-class ASampleCharacter : public ACharacter
-{
-public:
-	ASampleCharacter();
-	ASampleCharacter(JTextView InName, JTextView InMeshPath);
-	~ASampleCharacter() override = default;
-
-public:
-	void Initialize() override;
-	void Tick(float DeltaTime) override;
-	void Destroy() override;
-
-private:
-	void SetupInputComponent() override;
-	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
-
-};

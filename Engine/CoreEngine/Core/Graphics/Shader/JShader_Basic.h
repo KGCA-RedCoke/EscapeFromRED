@@ -18,4 +18,6 @@ private:
 	// ------------------------------ 캐싱 데이터 ------------------------------
 	CBuffer::Light mCachedLightData;
 
+	Buffer::FBuffer_Light_Point mCachedPointLightData;
+
 };
