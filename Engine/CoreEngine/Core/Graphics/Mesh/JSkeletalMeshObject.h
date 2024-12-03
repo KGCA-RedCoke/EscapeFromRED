@@ -25,7 +25,7 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
-	void AddInstance() override;
+	void AddInstance(float InCameraDistance) override;
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
 	void DrawBone();
@@ -49,8 +49,7 @@ protected:
 // 	FVector                   mSocketOffsetLoc = {-24.950527, -10.713480, -8.060391};
 // 	FVector                   mSocketOffsetRot = {-38.99271, 83.490776, -2.771158};
 // 	FMatrix                   mSocketTransform;
-
-
+	
 	friend class GUI_Editor_SkeletalMesh;
 	friend class MMeshManager;
 };

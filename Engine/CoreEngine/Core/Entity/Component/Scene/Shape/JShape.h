@@ -21,7 +21,7 @@ struct FBox
 	FVector Center = FVector::ZeroVector;			// 박스 중심좌표
 	FVector Extent = FVector(50.f, 50.f, 50.f);			// 박스 반지름
 
-	FVector LocalAxis[3];	// 박스 로컬 축
+	FVector LocalAxis[3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};	// 박스 로컬 축
 	FVector Position[8];	// 박스의 8개의 꼭지점
 
 	FBox() = default;
@@ -30,6 +30,8 @@ struct FBox
 		: Center(InCenter),
 		  Extent(InExtent)
 	{}
+
+	bool Intersect(const FBox& InBox) const;
 };
 
 struct FSphere
@@ -48,6 +50,19 @@ struct FBoxShape
 	FVector Max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	void DrawDebug() const;
+
+	bool Intersect(const FBoxShape& InBox) const;
+
+	FBoxShape() = default;
+
+	FBoxShape(const FVector& InCenter, const FVector& InExtent)
+	{
+		Box.Center = InCenter;
+		Box.Extent = InExtent;
+
+		Min = Box.Center - Box.Extent;
+		Max = Box.Center + Box.Extent;
+	}
 };
 
 

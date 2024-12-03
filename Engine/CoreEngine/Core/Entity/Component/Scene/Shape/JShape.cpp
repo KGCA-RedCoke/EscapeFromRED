@@ -77,6 +77,25 @@ void FBoxShape::DrawDebug() const
 	XMMATRIX mat = scaleMatrix * rotationMatrix * translationMatrix;
 	G_DebugBatch.DrawCube_Implement(mat, Colors::Green);
 }
+
+bool FBoxShape::Intersect(const FBoxShape& InBox) const
+{
+	const auto otherMin = InBox.Box.Center - InBox.Box.Extent;
+	const auto otherMax = InBox.Box.Center + InBox.Box.Extent;
+
+	const auto thisMin = Box.Center - Box.Extent;
+	const auto thisMax = Box.Center + Box.Extent;
+
+	return !(otherMin.x > thisMax.x || otherMax.x < thisMin.x ||
+		otherMin.y > thisMax.y || otherMax.y < thisMin.y ||
+		otherMin.z > thisMax.z || otherMax.z < thisMin.z);
+
+	// 바운딩 박스 간의 교차 여부 검사
+	return !(InBox.Min.x > Max.x || InBox.Max.x < Min.x ||
+		InBox.Min.y > Max.y || InBox.Max.y < Min.y ||
+		InBox.Min.z > Max.z || InBox.Max.z < Min.z);
+}
+
 //
 // void JShape::CreateOBBBox(const FVector& InCenter, const FVector& InExtent, const FVector InAxisX, const FVector InAxisY,
 // 						  const FVector  InAxisZ)

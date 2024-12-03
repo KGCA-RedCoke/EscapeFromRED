@@ -54,6 +54,7 @@ protected:
 	JMaterial*             mParentMaterial;	// 부모 머티리얼 레퍼런스
 	JShader*               mShader;			// 셰이더 레퍼런스
 	JArray<FMaterialParam> mInstanceParams;	// 인스턴스 파라미터 (편집 가능)
+	FMaterialInstanceData  mInstanceData;	// 인스턴스 데이터
 
 	friend class GUI_Editor_Material;
 };

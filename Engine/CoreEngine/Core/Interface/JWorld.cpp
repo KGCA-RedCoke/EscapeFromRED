@@ -1,6 +1,5 @@
 ﻿#include "JWorld.h"
 
-#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Actor/MActorManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
@@ -61,6 +60,10 @@ void JWorld::Initialize()
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
+	OnDebugModeChanged.Bind([](bool bDebugMode){
+		
+	});
+
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
 	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc)"));
@@ -91,7 +94,7 @@ void JWorld::Render()
 
 	LevelManager->Render();
 
-	
+
 }
 
 void JWorld::Release()

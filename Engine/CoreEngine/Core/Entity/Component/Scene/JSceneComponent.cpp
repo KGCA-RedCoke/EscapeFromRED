@@ -73,6 +73,9 @@ bool JSceneComponent::Serialize_Implement(std::ofstream& FileStream)
 	Utils::Serialization::Serialize_Primitive(&mLocalRotation, sizeof(FVector), FileStream);
 	Utils::Serialization::Serialize_Primitive(&mLocalScale, sizeof(FVector), FileStream);
 
+	// Bounding Box
+	Utils::Serialization::Serialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), FileStream);
+
 	return true;
 }
 
@@ -114,6 +117,9 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Primitive(&mLocalRotation, sizeof(FVector), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&mLocalScale, sizeof(FVector), InFileStream);
 
+	// Bounding Box
+	Utils::Serialization::DeSerialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), InFileStream);
+
 	return true;
 }
 
@@ -129,10 +135,7 @@ void JSceneComponent::Tick(float DeltaTime)
 
 void JSceneComponent::Draw()
 {
-	if (!bIsInFrustum)
-	{
-		return;
-	}
+
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->Draw();
@@ -141,11 +144,6 @@ void JSceneComponent::Draw()
 
 void JSceneComponent::DrawID(uint32_t ID)
 {
-	if (!bIsInFrustum)
-	{
-		return;
-	}
-
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->DrawID(ID);
@@ -324,8 +322,6 @@ void JSceneComponent::UpdateTransform()
 	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
 	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
 	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
-
-	bIsInFrustum = GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mBoundingBox);
 }
 
 void JSceneComponent::UpdateWorldTransform()

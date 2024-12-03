@@ -119,3 +119,57 @@ float3 ComputeSpotLight(float3     InWorldPos,
 
 	return lightColor;
 }
+
+float3 ComputePBR(float3     baseColor,    // Base Color
+				  float      metallic,      // Metallic
+				  float      roughness,     // Roughness
+				  float      specular,      // Specular
+				  float      ao,            // Ambient Occlusion
+				  float3     N,            // Normal (in world space)
+				  float3     V,            // View direction (normalized)
+				  float3     L,            // Light direction (normalized)
+				  float3     lightColor,   // Light color
+				  out float3 albedo    // Output diffuse term for debugging
+)
+{
+	const float PI = 3.14159265359;
+
+	// Roughness 처리
+	roughness = clamp(roughness, 0.04, 1.0);
+	float alpha = roughness * roughness;
+
+	// Halfway 벡터 계산
+	float3 H = normalize(V + L);
+
+	// Fresnel 계산
+	float3 F0 = lerp(float3(specular, specular, specular), baseColor, metallic);
+	float3 F = F0 + (1.0 - F0) * pow(1.0 - dot(H, V), 5.0);
+
+	// GGX Geometry Function
+	float NdotV = max(dot(N, V), 0.0);
+	float NdotL = max(dot(N, L), 0.0);
+	float NdotH = max(dot(N, H), 0.0);
+
+	float G1 = NdotV / (NdotV * (1.0 - alpha) + alpha);
+	float G2 = NdotL / (NdotL * (1.0 - alpha) + alpha);
+	float G = G1 * G2;
+
+	// GGX Normal Distribution Function
+	float D = alpha / (PI * pow(NdotH * NdotH * (alpha - 1.0) + 1.0, 2.0));
+
+	// Specular BRDF
+	float3 specularBRDF = (F * G * D) / (4.0 * NdotV * NdotL + 0.001);
+
+	// Diffuse BRDF
+	float3 diffuseBRDF = (1.0 - F) * baseColor * (1.0 - metallic) / PI;
+
+	// Ambient Occlusion 적용
+	diffuseBRDF *= ao;
+	specularBRDF *= ao;
+
+	// 최종 조합
+	albedo = diffuseBRDF * NdotL;
+	float3 lighting = (diffuseBRDF + specularBRDF) * NdotL * lightColor;
+
+	return lighting;
+}

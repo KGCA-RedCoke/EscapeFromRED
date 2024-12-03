@@ -45,7 +45,7 @@ void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
 	if (!mMaterialToEdit)
 	{
-		mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
+		// mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
 		assert(mMaterialToEdit);
 	}
 	mPreviewMeshObject->SetMaterialInstance(mMaterialToEdit);

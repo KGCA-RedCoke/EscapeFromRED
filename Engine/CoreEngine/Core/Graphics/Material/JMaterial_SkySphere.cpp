@@ -73,29 +73,29 @@ void JMaterial_SkySphere::InitializeParams()
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
+		mMaterialParams.push_back(FMaterialParam("SkyColor_01",
+													 EMaterialParamValue::Float4,
+													 &FVector4::ZeroVector,
+													 true));
+		mMaterialParams.push_back(FMaterialParam("SkyColor_02",
+												 EMaterialParamValue::Float4,
+												 &FVector4::ZeroVector,
+												 true));
 
+		mMaterialParams.push_back(FMaterialParam("CloudColor_01",
+												 EMaterialParamValue::Float4,
+												 &FVector4::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("CloudColor_02",
+												 EMaterialParamValue::Float4,
+												 &FVector4::ZeroVector,
+												 true));
+
+		mMaterialParams.push_back(FMaterialParam("LighteningStrength",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
 	}
 
-	mMaterialParams.push_back(FMaterialParam("SkyColor_01",
-											 EMaterialParamValue::Float4,
-											 &FVector4::ZeroVector,
-											 true));
-	mMaterialParams.push_back(FMaterialParam("SkyColor_02",
-											 EMaterialParamValue::Float4,
-											 &FVector4::ZeroVector,
-											 true));
-
-	mMaterialParams.push_back(FMaterialParam("CloudColor_01",
-											 EMaterialParamValue::Float4,
-											 &FVector4::ZeroVector,
-											 true));
-	mMaterialParams.push_back(FMaterialParam("CloudColor_02",
-											 EMaterialParamValue::Float4,
-											 &FVector4::ZeroVector,
-											 true));
-
-	mMaterialParams.push_back(FMaterialParam("LighteningStrength",
-											 EMaterialParamValue::Float,
-											 &FVector::ZeroVector,
-											 true));
+	
 }

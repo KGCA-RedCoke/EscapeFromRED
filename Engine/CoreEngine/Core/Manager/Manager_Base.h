@@ -62,9 +62,9 @@ public:
 	ReturnType* CreateOrLoad(const JText& InName, Args&&... InArgs);
 
 	template <class ReturnType = ManagedType, typename... Args>
-	ReturnType* CreateOrClone(const JWText& InName, Args&&... InArgs);
+	UPtr<ReturnType> CreateOrClone(const JWText& InName, Args&&... InArgs);
 	template <class ReturnType = ManagedType, typename... Args>
-	ReturnType* CreateOrClone(const JText& InName, Args&&... InArgs);
+	UPtr<ReturnType> CreateOrClone(const JText& InName, Args&&... InArgs);
 
 	template <class ReturnType = ManagedType>
 	ReturnType* FetchResource(const JWText& InName);
@@ -125,14 +125,14 @@ ReturnType* Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::string& 
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-ReturnType* Manager_Base<ManagedType, Manager>::CreateOrClone(const JWText& InName, Args&&... InArgs)
+UPtr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(const JWText& InName, Args&&... InArgs)
 {
 	return CreateOrClone<ReturnType>(WString2String(InName), std::forward<Args>(InArgs)...);
 }
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-ReturnType* Manager_Base<ManagedType, Manager>::CreateOrClone(const JText& InName, Args&&... InArgs)
+UPtr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(const JText& InName, Args&&... InArgs)
 {
 	JText    id   = ParseFile(InName);
 	uint32_t hash = StringHash(id.c_str());

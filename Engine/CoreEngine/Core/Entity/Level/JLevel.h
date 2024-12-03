@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Entity/JObject.h"
+#include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
 namespace Oc
 {
@@ -63,6 +64,7 @@ T* JLevel::CreateActor(JTextView InName, Args&&... InArgs)
 
 	T* ptr = newActor.get();
 
+	mOcTree->Insert(ptr);
 	mActors.push_back(std::move(newActor));
 
 	return ptr;

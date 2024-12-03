@@ -153,7 +153,7 @@ void GUI_Inspector::DrawDetails()
 		{
 			DrawName();
 			DrawTransform();
-
+			DrawFlags();
 			DrawMaterialSlot();
 		}
 	}
@@ -193,6 +193,20 @@ void GUI_Inspector::DrawTransform() const
 		if (ImGui::DragFloat3(u8("크기"), &scale.x, 0.01f, 0.f, 10.0f))
 		{
 			mSelectedSceneComponent->SetLocalScale(scale);
+		}
+	}
+}
+
+void GUI_Inspector::DrawFlags()
+{
+	ImGui::SeparatorText(u8("오브젝트 플래그"));
+	for (int32_t i = 0; i < 6; i++)
+	{
+		uint32_t value = (i == 0) ? 1 : 1 << i;
+		bool     bFlag = (mSelectedSceneComponent->mObjectFlags & value);
+		if (ImGui::Checkbox(NAME_OBJECT_FLAGS[i], &bFlag))
+		{
+			bFlag ? mSelectedSceneComponent->SetFlag(value) : mSelectedSceneComponent->RemoveFlag(value);
 		}
 	}
 }

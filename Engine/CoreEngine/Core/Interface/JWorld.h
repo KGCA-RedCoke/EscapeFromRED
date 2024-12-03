@@ -5,6 +5,8 @@
 #include "Core/Thread/ThreadPool.h"
 #include "Core/Utils/Math/Vector.h"
 
+DECLARE_DYNAMIC_DELEGATE(FOnDebugModeChanged, bool);
+
 #define GetWorld JWorld::Get()
 
 class AActor;
@@ -12,6 +14,9 @@ class JLevel;
 
 class JWorld : public TSingleton<JWorld>
 {
+public:
+	FOnDebugModeChanged OnDebugModeChanged;
+
 public:
 	void Initialize();
 	void Update(float DeltaTime);

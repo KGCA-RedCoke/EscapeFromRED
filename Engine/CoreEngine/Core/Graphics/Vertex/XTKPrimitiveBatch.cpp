@@ -61,7 +61,7 @@ void XTKPrimitiveBatch::PreRender()
 	mBatch->Begin();
 }
 
-void XTKPrimitiveBatch::AddInstance()
+void XTKPrimitiveBatch::AddInstance(float InCameraDistance)
 {}
 
 void XTKPrimitiveBatch::PostRender()

@@ -24,7 +24,7 @@ public:
 
 public:
 	void PreRender() override {}
-	void AddInstance() override {};
+	void AddInstance(float InCameraDistance) override {};
 	void PostRender() override {};
 	void Draw() override {};
 	void DrawID(uint32_t ID) override {};
@@ -86,7 +86,7 @@ public:
 
 public:
 	void PreRender() override {}
-	void AddInstance() override {};
+	void AddInstance(float InCameraDistance) override {};
 	void PostRender() override {};
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
@@ -101,7 +101,7 @@ public:
 	FORCEINLINE [[nodiscard]] FVector GetLocalRotation() const { return mLocalRotation; }
 	FORCEINLINE [[nodiscard]] FVector GetLocalScale() const { return mLocalScale; }
 
-	// FORCEINLINE [[nodiscard]] FBoxShape GetBoundingVolume() const { return mBoundingBox; }
+	FORCEINLINE [[nodiscard]] FBoxShape GetBoundingVolume() const { return mBoundingBox; }
 
 	void SetWorldLocation(const FVector& InTranslation);
 	void SetWorldRotation(const FVector& InRotation);
@@ -149,7 +149,6 @@ protected:
 
 	// ----------------------------- Bounding Box Data -----------------------------
 	FBoxShape mBoundingBox;
-	bool      bIsInFrustum = false;
 
 	// ----------------------------- LevelManager Transform Data -----------------------------
 	FVector mWorldLocation = FVector::ZeroVector;

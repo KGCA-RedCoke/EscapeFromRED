@@ -12,6 +12,17 @@ enum EObjectFlags : uint32_t
 	IsValid       = 1 << 2, // 업데이트 가능한 상태
 	IsPendingKill = 1 << 3, // 소멸 대기 상태
 	DontDestroy   = 1 << 4, // 소멸하지 않는 상태 (레벨 전환 시 소멸되지 않음)
+	IgnoreFrustum = 1 << 5, // 카메라 프러스텀 체크 무시
+};
+
+constexpr const char* NAME_OBJECT_FLAGS[] =
+{
+	"MarkAsDirty",
+	"IsVisible",
+	"IsValid",
+	"PendingKill",
+	"DontDestroy",
+	"IgnoreFrustum"
 };
 
 class JObject : public JAsset,
@@ -48,12 +59,24 @@ public:
 	[[nodiscard]] bool IsValid() const { return mObjectFlags & EObjectFlags::IsValid; }
 	[[nodiscard]] bool IsPendingKill() const { return mObjectFlags & EObjectFlags::IsPendingKill; }
 	[[nodiscard]] bool IsMarkedAsDirty() const { return mObjectFlags & EObjectFlags::MarkAsDirty; }
+	[[nodiscard]] bool IsDontDestroy() const { return mObjectFlags & EObjectFlags::DontDestroy; }
+	[[nodiscard]] bool IsIgnoreFrustum() const { return mObjectFlags & EObjectFlags::IgnoreFrustum; }
 
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
 
 	void SetVisible(bool bVisible)
 	{
 		bVisible ? mObjectFlags |= EObjectFlags::IsVisible : mObjectFlags &= ~EObjectFlags::IsVisible;
+	}
+
+	void SetFlag(uint32_t InFlag)
+	{
+		mObjectFlags |= InFlag;
+	}
+
+	void RemoveFlag(uint32_t InFlag)
+	{
+		mObjectFlags &= ~InFlag;
 	}
 
 	[[nodiscard]] FORCEINLINE JText GetName() const { return mName; }

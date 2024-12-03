@@ -130,6 +130,7 @@
     <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_SkySphere.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Window.h" />
     <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
@@ -225,7 +226,7 @@
     <None Include="Shader\Params.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Shader\PointLight.hlsl">
+    <None Include="Shader\Mirror.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shader\ShaderUtils.hlslinc">
@@ -277,6 +278,7 @@
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_SkySphere.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Window.cpp" />
     <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />

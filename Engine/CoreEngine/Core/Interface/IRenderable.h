@@ -19,7 +19,7 @@ public:
 	/** Draw 호출 전 사전 작업 */
 	virtual void PreRender() = 0;
 	/** Render 순서 정렬 등 최종 Draw전 작업 */
-	virtual void AddInstance() = 0;
+	virtual void AddInstance(float InCameraDistance) = 0;
 	/** Draw or DrawIndex 호출 */
 	virtual void PostRender() = 0;
 

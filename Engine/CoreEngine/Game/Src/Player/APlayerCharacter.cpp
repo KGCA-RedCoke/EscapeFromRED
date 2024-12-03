@@ -4,16 +4,13 @@
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Interface/JWorld.h"
 
-APlayerCharacter::APlayerCharacter()
-{}
-
 APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	: ACharacter(InName)
 {
 	mSkeletalMeshComponent = CreateDefaultSubObject<
 		JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
-	mSkeletalMeshComponent->SetLocalRotation({0, 180.f, 0});
+	mSkeletalMeshComponent->SetLocalRotation({0, 0, 0});
 
 	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this, mSkeletalMeshComponent);
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);

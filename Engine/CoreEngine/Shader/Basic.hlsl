@@ -21,7 +21,7 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 
 	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
-	output.WorldSpace   = float4(Input.Pos, 1.f);	// 로컬 좌표계
+	output.WorldSpace  = float4(Input.Pos, 1.f);	// 로컬 좌표계
 	float4 localPos    = output.WorldSpace;
 	float3 normal      = Input.Normal;
 
@@ -122,14 +122,24 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	for (int i = 0; i < 1; ++i)
 	{
 		float3 pointLight = ComputePointLight(Input.WorldSpace,
-											 Input.Normal,
-											 PointLight[i]);
+											  Input.Normal,
+											  PointLight[i]);
 		diffuse += pointLight;
 		specular += pointLight;
 	}
-
+	// float3 finalColor = 0;
+	// ComputePBR(diffuseColor * diffuse,
+	// 		   metallic,
+	// 		   roughness,
+	// 		   specular,
+	// 		   ambientColor,
+	// 		   normalColor,
+	// 		   Input.ViewDir,
+	// 		   lightDir,
+	// 		   DirectionalLightColor.rgb,
+	// 		   finalColor);
 	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
-	// finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
+	finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
 
 	// return float4(normalColor, 1.f);
 	return float4(finalColor, 1.f);

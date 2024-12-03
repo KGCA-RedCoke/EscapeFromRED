@@ -44,6 +44,7 @@ void AActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
+		
 		if (sceneComponent)
 		{
 			sceneComponent->Draw();

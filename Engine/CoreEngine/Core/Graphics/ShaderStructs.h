@@ -302,9 +302,9 @@ struct FInstanceData
 struct FMaterialInstanceData
 {
 	FVector4 BaseColor = FVector4(0.2f, 0.2f, 0.2f, 1.f);
-	float    Occlusion = 0.5f;
-	float    Roughness = 0.5f;
-	float    Metallic  = 0.5f;
+	float    Occlusion = 0.0f;
+	float    Roughness = 0.0f;
+	float    Metallic  = 0.0f;
 	float    Emissive  = 0.1f;
 	uint32_t Flag      = 0;
 };

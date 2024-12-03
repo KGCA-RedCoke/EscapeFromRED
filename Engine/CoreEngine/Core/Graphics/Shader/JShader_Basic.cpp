@@ -13,7 +13,6 @@ JShader_Basic::JShader_Basic(const JText& InName)
 	mCachedPointLightData.Color     = FVector(0.8f, 0.68f, 0.48f);
 	mCachedPointLightData.Intensity = 0.8f;
 	mCachedPointLightData.Range     = 200.0f;
-
 }
 
 void JShader_Basic::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
@@ -26,7 +25,7 @@ void JShader_Basic::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	G_Device.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
 	G_Device.SetRasterState(GetWorld.GUIManager->IsRenderWireFrame()
 								? ERasterState::WireFrame
-								: ERasterState::CCW);
+								: ERasterState::CullNone);
 	G_Device.SetBlendState(EBlendState::AlphaBlend);
 	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);
 
@@ -38,9 +37,9 @@ void JShader_Basic::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceCont
 	{
 		mCachedLightData = g_LightData;
 		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_LIGHT, &g_LightData);
+		UpdateConstantData(InDeviceContext, "SpotLightConstantBuffer", &mCachedPointLightData);
 	}
 
-	UpdateConstantData(InDeviceContext, "SpotLightConstantBuffer", &mCachedPointLightData);
 
 	// 상수버퍼 넘겨주기
 	JShader::UpdateGlobalConstantBuffer(InDeviceContext);

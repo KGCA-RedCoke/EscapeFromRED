@@ -6,12 +6,12 @@
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
-#include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
 JLevel::JLevel(const JText& InPath)
 	: mName(ParseFile(InPath))
 {
 	mPath = InPath;
+	JLevel::InitializeLevel();
 }
 
 JLevel::~JLevel() {}
@@ -67,7 +67,8 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		UPtr<AActor> loadActor = UPtrCast<AActor>(MClassFactory::Get().Create(objType));
 		if (loadActor->DeSerialize_Implement(InFileStream))
 		{
-			// mOcTree->Insert(loadActor.get());
+
+			mOcTree->Insert(loadActor.get());
 			mActors.push_back(std::move(loadActor));
 		}
 	}
@@ -77,8 +78,8 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JLevel::InitializeLevel()
 {
-	// mOcTree = MakeUPtr<Oc::JTree>();
-	// mOcTree->Initialize({{0, 0, 0}, {5000, 5000, 5000}}, 5);
+	mOcTree = MakeUPtr<Oc::JTree>();
+	mOcTree->Initialize({{0, 0, 0}, {10000, 10000, 10000}}, MAX_DEPTH);
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -99,19 +100,15 @@ void JLevel::RenderLevel()
 {
 	G_DebugBatch.PreRender();
 
-
-	for (int32_t i = 0; i < mActors.size(); ++i)
-	{
-		mActors[i]->Draw();
-	}
+	// 옥트리 내부의 포함되는 액터들만 렌더링
+	// OcTree의 노드가 카메라의 Frustum과 교차하는지 체크
+	mOcTree->Render(GetWorld.CameraManager->GetCurrentMainCam());
 
 	G_DebugBatch.Draw();
 
 	G_DebugBatch.PostRender();
 
 	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
-
-	// GetWorld.CameraManager->GetCurrentMainCam()->PreRender(G_Device.GetImmediateDeviceContext());
 }
 
 // void JLevel::AddActor(const Ptr<AActor>& InActor)

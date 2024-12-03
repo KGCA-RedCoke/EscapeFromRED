@@ -43,13 +43,10 @@ void JSkeletalMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mSkeletalMeshObject)
 	{
-		// BoxShape.DrawDebug();
-		// if (GetWorld.CameraManager->GetCurrentMainCam()->IsBoxInFrustum(mSkeletalMeshObject->GetBoundingBox()))
-		// {
-		// 	mSkeletalMeshObject->AddInstance();
-		// }
-		mSkeletalMeshObject->AddInstance();
+		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+		float   dist     = distance.Length();
 
+		mSkeletalMeshObject->AddInstance(dist);
 	}
 
 	JSceneComponent::Draw();

@@ -199,13 +199,13 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(const JText& InName) const
 	return nullptr;
 }
 
-void JMeshObject::AddInstance()
+void JMeshObject::AddInstance(float InCameraDistance)
 {
-	// const int32_t lodCount = mPrimitiveMeshData.size();
-	//
-	// for (int32_t i = 0; i < lodCount; ++i)
-	// {
-	auto&         meshData     = mPrimitiveMeshData[0];
+	const int32_t lodCount = mPrimitiveMeshData.size();
+	int32_t       lod      = static_cast<int32_t>(InCameraDistance / 3000.f);
+	lod                    = FMath::Clamp<int32_t>(lod, 0, lodCount - 1);
+
+	auto&         meshData     = mPrimitiveMeshData[lod];
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
@@ -214,7 +214,6 @@ void JMeshObject::AddInstance()
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
 	}
-	// }
 }
 
 void JMeshObject::Draw()

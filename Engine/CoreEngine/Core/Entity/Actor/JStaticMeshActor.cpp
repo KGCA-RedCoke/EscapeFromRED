@@ -56,6 +56,8 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	}
 
 	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("StaticMeshComponent"));
+	mBoundingBox         = mStaticMeshComponent->GetBoundingVolume();
+	UpdateTransform();
 
 	return true;
 }

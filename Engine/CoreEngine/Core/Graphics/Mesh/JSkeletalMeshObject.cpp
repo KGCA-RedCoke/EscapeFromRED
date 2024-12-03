@@ -172,7 +172,7 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 	mSampleAnimation->TickAnim(DeltaTime);
 }
 
-void JSkeletalMeshObject::AddInstance()
+void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 {
 
 	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());

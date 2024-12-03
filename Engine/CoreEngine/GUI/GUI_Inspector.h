@@ -26,6 +26,7 @@ private:
 	void DrawDetails();
 	void DrawName();
 	void DrawTransform() const;
+	void DrawFlags();
 	void DrawMaterialSlot();
 
 private:

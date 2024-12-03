@@ -29,7 +29,7 @@ void JFont::PreRender()
 	mRenderTarget->BeginDraw();
 }
 
-void JFont::AddInstance()
+void JFont::AddInstance(float InCameraDistance)
 {}
 
 void JFont::PostRender()

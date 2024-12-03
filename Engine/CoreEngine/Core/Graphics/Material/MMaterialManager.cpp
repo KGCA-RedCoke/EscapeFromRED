@@ -2,7 +2,8 @@
 
 #include "JMaterial_Basic.h"
 #include "JMaterial_SkySphere.h"
-#include "Core/Interface/JWorld.h"
+#include "JMaterial_Window.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 
 void MMaterialManager::SaveEngineMaterials()
 {
@@ -17,13 +18,18 @@ void MMaterialManager::SaveEngineMaterials()
 	// assert(skySphere != nullptr);
 	//
 	// Utils::Serialization::Serialize("Game/Materials/Engine/Material_SkySphere.jasset", skySphere.get());
+
+	// auto mirror = CreateOrLoad<JMaterial_Window>(NAME_MAT_WINDOW);
+	// mirror->SetShader(MShaderManager::Get().CreateOrLoad("Shader/Mirror.hlsl"));
+	// Utils::Serialization::Serialize(NAME_MAT_WINDOW, mirror);
 }
 
 void MMaterialManager::LoadEngineMaterials()
 {
 	CreateOrLoad<JMaterial_Basic>(NAME_MAT_BASIC);
 	CreateOrLoad<JMaterial_SkySphere>(NAME_MAT_SKYSPHERE);
-}
+	CreateOrLoad<JMaterial_Window>(NAME_MAT_WINDOW);
+}	
 
 MMaterialManager::MMaterialManager()
 {

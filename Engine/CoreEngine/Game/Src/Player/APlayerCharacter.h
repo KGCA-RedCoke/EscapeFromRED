@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
 
-class APlayerCharacter : public ACharacter
+#define GET_PLAYER APlayerCharacter::Get()
+
+class APlayerCharacter : public ACharacter, public TSingleton<APlayerCharacter>
 {
 public:
-	APlayerCharacter();
 	APlayerCharacter(JTextView InName, JTextView InMeshPath);
-	~APlayerCharacter() override = default;
 
 public:
 	void Initialize() override;
@@ -16,5 +16,20 @@ public:
 private:
 	void SetupInputComponent() override;
 	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
+
+
+#pragma region Singleton Boilerplate
+
+private:
+	friend class TSingleton<APlayerCharacter>;
+
+	APlayerCharacter()           = default;
+	~APlayerCharacter() override = default;
+
+public:
+	APlayerCharacter(const APlayerCharacter&)            = delete;
+	APlayerCharacter& operator=(const APlayerCharacter&) = delete;
+
+#pragma endregion
 
 };

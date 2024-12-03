@@ -85,10 +85,12 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 void JStaticMeshComponent::Draw()
 {
 	// MeshObject의 Draw 호출
-	if (bIsInFrustum && mMeshObject)
+	if ( mMeshObject)
 	{
-		mBoundingBox.DrawDebug();
-		mMeshObject->AddInstance();
+		// mBoundingBox.DrawDebug();
+		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+		float   dist     = distance.Length();
+		mMeshObject->AddInstance(dist);
 	}
 
 	// Child SceneComponent Draw 호출
@@ -97,7 +99,7 @@ void JStaticMeshComponent::Draw()
 
 void JStaticMeshComponent::DrawID(uint32_t ID)
 {
-	if (bIsInFrustum && mMeshObject)
+	if (mMeshObject)
 	{
 		mMeshObject->DrawID(ID);
 	}
