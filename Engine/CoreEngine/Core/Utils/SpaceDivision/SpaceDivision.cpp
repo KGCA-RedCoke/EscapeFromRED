@@ -8,7 +8,7 @@ void Oc::FNode::Render(JCameraComponent* InCamera)
 	{
 		JArray<AActor*> actorsToSort;
 
-		BoundArea.DrawDebug();
+		// BoundArea.DrawDebug();
 		std::erase_if(
 					  Actors,
 					  [&](AActor* actor){

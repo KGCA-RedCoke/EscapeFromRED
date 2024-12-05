@@ -353,6 +353,7 @@
     <None Include="Shader\LandScape.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shader\Decal_Color.hlsl" />
     <ClCompile Include="Vender\include\imgui\imgui.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="Vender\include\imgui\imgui_draw.cpp" />
