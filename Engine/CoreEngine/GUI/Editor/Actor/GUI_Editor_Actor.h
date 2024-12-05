@@ -1,6 +1,31 @@
 ﻿#pragma once
 #include "GUI/Editor/GUI_Editor_Base.h"
 
+constexpr const char* g_ComponentList[] = {
+	"Transform",
+	"Mesh",
+	"Camera",
+	"Point Light",
+	"Spot Light",
+	"Box Collider",
+	"Sphere Collider",
+	"Capsule Collider",
+	"RigidBody",
+	"Character Controller",
+	"NavMesh",
+	"Path",
+	"Waypoint",
+	"Trigger",
+	"Sound",
+	"Particle",
+	"Decal",
+	"Billboard",
+	"Text",
+	"Widget",
+	"Script",
+	"Custom"
+};
+
 
 class GUI_Editor_Actor : public GUI_Editor_Base
 {
@@ -36,4 +61,5 @@ private:
 private:
 	class AActor*    mActorToEdit;			// 편집할 액터
 	JSceneComponent* mSelectedSceneComponent;
+	bool             bAddComponentListBox = false;
 };

@@ -41,11 +41,13 @@ void GUI_AssetBrowser::Initialize()
 {
 	GUI_Base::Initialize();
 
-	g_IconList.FileIcon         = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Actor_64x.png");
-	g_IconList.FolderIcon       = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
-	g_IconList.StaticMeshIcon   = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/StaticMesh_64.png");
-	g_IconList.SkeletalMeshIcon = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/Skeleton_64x.png");
-	g_IconList.MaterialIcon     = MTextureManager::Get().CreateOrLoad(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
+	g_IconList.ActorIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/Actor_64.png");
+	g_IconList.FileIcon         = MTextureManager::Get().Load(L"rsc/Icons/Actor/Actor_64x.png");
+	g_IconList.FolderIcon       = MTextureManager::Get().Load(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
+	g_IconList.StaticMeshIcon   = MTextureManager::Get().Load(L"rsc/Icons/Actor/StaticMesh_64.png");
+	g_IconList.SkeletalMeshIcon = MTextureManager::Get().Load(L"rsc/Icons/Actor/Skeleton_64x.png");
+	g_IconList.MaterialIcon     = MTextureManager::Get().Load(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
+	g_IconList.LevelIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/World_64.png");
 
 	SetMultiFlagOptions();
 }
@@ -236,7 +238,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 					newFileName = GenerateUniqueFileName(newRelativePath, "NewActor", ".jasset");
 
 					// TODO: 액터 에디터 열기
-					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Actor>(newFileName))
+					if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Actor>(newFileName))
 					{
 						ptr->OpenIfNotOpened();
 						OnBrowserChange.Execute();
@@ -245,7 +247,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 				if (ImGui::MenuItem(u8("머티리얼 생성")))
 				{
 					newFileName = GenerateUniqueFileName(newRelativePath, "NewMaterial", ".jasset");
-					if (auto ptr = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(newFileName))
+					if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Material>(newFileName))
 					{
 						ptr->OpenIfNotOpened();
 						OnBrowserChange.Execute();
@@ -450,26 +452,26 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 
 		// 파일 종류에 따라 아이콘 텍스처 선택
 		JAssetMetaData metaData = Utils::Serialization::GetType(itemData->FilePath.string().c_str());
-		if (metaData.AssetType == HASH_ASSET_TYPE_Actor)
-		{
-			iconTexture = g_IconList.FileIcon->GetSRV();
-		}
-		else if (metaData.AssetType == HASH_ASSET_TYPE_STATIC_MESH)
-		{
-			iconTexture = g_IconList.StaticMeshIcon->GetSRV();
-		}
-		else if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
-		{
-			iconTexture = g_IconList.SkeletalMeshIcon->GetSRV();
-		}
-		else if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
-		{
-			iconTexture = g_IconList.MaterialIcon->GetSRV();
-		}
-		if (itemData->FileType == EFileType::Folder)
-		{
-			iconTexture = g_IconList.FolderIcon->GetSRV();
-		}
+
+		iconTexture = [&, metaData, itemData]{
+			if (itemData->FileType == EFileType::Folder)
+				return g_IconList.FolderIcon->GetSRV();
+			switch (metaData.AssetType)
+			{
+			case HASH_ASSET_TYPE_Actor:
+				return g_IconList.ActorIcon->GetSRV();
+			case HASH_ASSET_TYPE_STATIC_MESH:
+				return g_IconList.StaticMeshIcon->GetSRV();
+			case HASH_ASSET_TYPE_SKELETAL_MESH:
+				return g_IconList.SkeletalMeshIcon->GetSRV();
+			case HASH_ASSET_TYPE_MATERIAL_INSTANCE:
+				return g_IconList.MaterialIcon->GetSRV();
+			case HASH_ASSET_TYPE_LEVEL:
+				return g_IconList.LevelIcon->GetSRV();
+			default:
+				return g_IconList.FileIcon->GetSRV();
+			}
+		}();
 
 		drawList->AddImage(iconTexture,
 						   boxMin + ImVec2(2, 2),
@@ -619,28 +621,34 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 
 	switch (assetType)
 	{
+	case HASH_ASSET_TYPE_Actor:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+		break;
 	case HASH_ASSET_TYPE_STATIC_MESH:
-		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Mesh>(fullFileName))
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Mesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
 		break;
 	case HASH_ASSET_TYPE_SKELETAL_MESH:
-		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_SkeletalMesh>(fullFileName))
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_SkeletalMesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
 		break;
 	case HASH_ASSET_TYPE_MATERIAL:
 	case HASH_ASSET_TYPE_MATERIAL_INSTANCE:
-		if (const auto newWindow = MGUIManager::Get().CreateOrLoad<GUI_Editor_Material>(fullFileName))
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Material>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}
 		break;
 
 	case HASH_ASSET_TYPE_LEVEL:
-		MLevelManager::Get().SetActiveLevel(MLevelManager::Get().CreateOrLoad(fullFileName));
+		MLevelManager::Get().SetActiveLevel(MLevelManager::Get().Load(fullFileName));
 		break;
 	default:
 		LOG_CORE_WARN("Asset Browser : Unknown Asset Type");

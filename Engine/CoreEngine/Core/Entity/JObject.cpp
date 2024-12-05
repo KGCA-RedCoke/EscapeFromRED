@@ -57,6 +57,7 @@ bool JObject::Serialize_Implement(std::ofstream& FileStream)
 bool JObject::DeSerialize_Implement(std::ifstream& InFileStream)
 {
 	JAssetMetaData metaData;
+	// Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType());
 	if (!Utils::Serialization::DeserializeMetaData(InFileStream, metaData, GetType()))
 	{
 		return false;

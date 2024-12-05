@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/Manager_Base.h"
 #include "Core/Thread/ThreadPool.h"
 #include "Core/Utils/Math/Vector.h"
@@ -60,6 +61,13 @@ public:
 	class MLevelManager*            LevelManager;			// 레벨
 	class XD3DDevice*               D3D11API;				// 디바이스
 
+
+public:
+	struct
+	{
+		Buffer::FBuffer_Light_Point Data[128];
+		uint32_t                    Count = 0;
+	} WorldPointLightData;
 
 	Thread::ThreadPool ThreadPool;		// 스레드
 

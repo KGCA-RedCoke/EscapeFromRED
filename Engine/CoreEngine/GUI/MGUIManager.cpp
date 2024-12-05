@@ -66,9 +66,9 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 
 void MGUIManager::InitializeStaticGUI()
 {
-	mStaticGUI[0] = CreateOrLoad<GUI_AssetBrowser>(Name_AssetBrowser);
-	mStaticGUI[1] = CreateOrLoad<GUI_Viewport_Scene>(Name_Viewport);
-	mStaticGUI[2] = CreateOrLoad<GUI_Inspector>(Name_Inspector);
+	mStaticGUI[0] = Load<GUI_AssetBrowser>(Name_AssetBrowser);
+	mStaticGUI[1] = Load<GUI_Viewport_Scene>(Name_Viewport);
+	mStaticGUI[2] = Load<GUI_Inspector>(Name_Inspector);
 
 	mStaticGUI[0]->Initialize();
 	mStaticGUI[1]->Initialize();
@@ -115,7 +115,7 @@ void MGUIManager::UpdateMainMenuBar()
 			{
 				if (!mMaterialEditorRef)
 				{
-					if (GUI_Editor_Material* materialEditor = CreateOrLoad<GUI_Editor_Material>("Material Editor"))
+					if (GUI_Editor_Material* materialEditor = Load<GUI_Editor_Material>("Material Editor"))
 					{
 						mMaterialEditorRef = materialEditor;
 					}
@@ -129,7 +129,7 @@ void MGUIManager::UpdateMainMenuBar()
 				// LandScape Editor
 				if (!mLandScapeEditorRef)
 				{
-					if (GUI_Editor_LandScape* landScapeEditor = CreateOrLoad<GUI_Editor_LandScape>("LandScape Editor"))
+					if (GUI_Editor_LandScape* landScapeEditor = Load<GUI_Editor_LandScape>("LandScape Editor"))
 					{
 						mLandScapeEditorRef = landScapeEditor;
 					}
@@ -158,7 +158,7 @@ void MGUIManager::UpdateMainMenuBar()
 		{
 			if (ImGui::MenuItem("Frustum View"))
 			{
-				if (auto ptr = CreateOrLoad<GUI_Camera_Debug_Frustum>("Debug Frustum"))
+				if (auto ptr = Load<GUI_Camera_Debug_Frustum>("Debug Frustum"))
 				{
 					ptr->bIsWindowOpen = true;
 				}

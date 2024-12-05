@@ -71,7 +71,7 @@ void JWorld::Initialize()
 	const char* levelPath = g_settings["Editor.Level"]["DefaultLevel"].as<const char*>();
 	assert(levelPath[0] != '\0');
 
-	LevelManager->SetActiveLevel(LevelManager->CreateOrLoad(levelPath));
+	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
 }
 
 void JWorld::Update(float DeltaTime)
@@ -142,15 +142,15 @@ void JWorld::SearchFiles_Recursive(const std::filesystem::path& InPath)
 
 				if (hash == HASH_EXT_PNG || hash == HASH_EXT_JPG || hash == HASH_EXT_DDS || hash == HASH_EXT_BMP)
 				{
-					GetWorld.TextureManager->CreateOrLoad(entry.path().string());
+					GetWorld.TextureManager->Load(entry.path().string());
 				}
 				else if (hash == HASH_EXT_HLSL)
 				{
-					GetWorld.ShaderManager->CreateOrLoad(entry.path().string());
+					GetWorld.ShaderManager->Load(entry.path().string());
 				}
 				else if (hash == Hash_EXT_JASSET)
 				{
-					GetWorld.MeshManager->CreateOrLoad(entry.path().string());
+					GetWorld.MeshManager->Load(entry.path().string());
 				}
 			}
 		}

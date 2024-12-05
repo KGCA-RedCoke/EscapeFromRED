@@ -14,7 +14,7 @@ public:
 	void GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 	void GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 
-	void PushCommand(uint32_t NameHash, const FInstanceData_Mesh& InInstanceData);
+	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, const FInstanceData_Mesh& InInstanceData);
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:
@@ -25,9 +25,9 @@ public:
 	FInstanceData_Mesh      IdentityInstanceData;
 
 private:
-	JHash<uint32_t, Buffer::FBufferMesh>        mBufferList;
-	JHash<uint32_t, JMaterialInstance*>         mMaterialInstance;
-	JHash<uint32_t, JArray<FInstanceData_Mesh>> mInstanceData;
+	JHash<uint32_t, Buffer::FBufferMesh>                                   mBufferList;
+	JHash<uint32_t, JMaterialInstance*>                                    mMaterialInstance;
+	JHash<uint32_t, JHash<JMaterialInstance*, JArray<FInstanceData_Mesh>>> mInstanceData;
 
 
 #pragma region Singleton Boilerplate

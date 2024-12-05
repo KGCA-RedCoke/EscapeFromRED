@@ -7,7 +7,7 @@ MCameraManager::MCameraManager()
 
 void MCameraManager::Initialize_Internal()
 {
-	mCurrentCamera = CreateOrLoad<JCamera_Debug>("EditorCamera");
+	mCurrentCamera = Load<JCamera_Debug>("EditorCamera");
 	assert(mCurrentCamera);
 }
 

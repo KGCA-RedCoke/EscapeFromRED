@@ -625,7 +625,7 @@ namespace Utils::Fbx
 		JText fileName = std::format("Game/Materials/{0}/{1}.jasset", InMesh->GetName(), fbxMaterial->GetName());
 		/** 셰이딩 모델은 거의 PhongShading */
 
-		JMaterialInstance* matInstance = MMaterialInstanceManager::Get().CreateOrLoad(fileName);
+		JMaterialInstance* matInstance = MMaterialInstanceManager::Get().Load(fileName);
 		// 머티리얼이 이미 존재할 경우 아래 파싱 과정 생략
 		if (Serialization::IsJAssetFileAndExist(fileName.c_str()))
 		{

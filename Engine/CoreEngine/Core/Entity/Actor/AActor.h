@@ -53,16 +53,16 @@ public:
 			mChildSceneComponents.push_back(std::move(obj));
 		}
 
-		else if constexpr (std::is_base_of_v<JActorComponent, ObjectType>)
+		else
 		{
-			// if (mChildActorIndices.contains(obj->GetName()))
-			// {
-			// 	const int32_t index = mChildActorIndices[obj->GetName()];
-			// 	objPtr              = mChildActors.at(index);
-			// 	return static_cast<ObjectType*>(objPtr);
-			// }
+			if (mChildActorComponentIndices.contains(obj->GetName()))
+			{
+				const int32_t index = mChildActorComponentIndices[obj->GetName()];
+				objPtr              = static_cast<ObjectType*>(mActorComponents.at(index).get());
+				return objPtr;
+			}
 
-			// mChildActorIndices.insert({obj->GetName(), mChildActors.size()});
+			mChildActorComponentIndices.insert({obj->GetName(), mActorComponents.size()});
 			mActorComponents.push_back(std::move(obj));
 		}
 
@@ -73,7 +73,9 @@ protected:
 	AActor*         mParentActor;
 	JArray<AActor*> mChildActors;
 
-	JHash<JText, int32_t>         mChildActorIndices;
+	JHash<JText, int32_t> mChildActorIndices;
+
+	JHash<JText, int32_t>         mChildActorComponentIndices;
 	JArray<UPtr<JActorComponent>> mActorComponents;
 
 };

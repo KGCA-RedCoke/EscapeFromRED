@@ -50,5 +50,6 @@ struct FSpotLight
 
 cbuffer SpotLightConstantBuffer : register(b3)
 {
-	FPointLight PointLight[16];
+	FPointLight PointLight[128];
+	uint        NumSpotLights;
 }

@@ -30,10 +30,10 @@ void MShaderManager::UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader*
 
 void MShaderManager::Initialize_Initialize()
 {
-	BasicShader = CreateOrLoad<JShader_Basic>(NAME_SHADER_BASIC);
-	IDShader    = CreateOrLoad(NAME_SHADER_ID);
-	ColorShader = CreateOrLoad(NAME_SHADER_SIMPLE_COLOR);
+	BasicShader = Load<JShader_Basic>(NAME_SHADER_BASIC);
+	IDShader    = Load(NAME_SHADER_ID);
+	ColorShader = Load(NAME_SHADER_SIMPLE_COLOR);
 
-	CreateOrLoad(NAME_SHADER_GNOMON);
+	Load(NAME_SHADER_GNOMON);
 
 }

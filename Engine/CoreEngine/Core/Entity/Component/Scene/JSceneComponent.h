@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Entity/Component/JActorComponent.h"
+#include "Core/Interface/IGUIEditable.h"
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/Math/TMatrix.h"
 #include "Shape/JShape.h"
@@ -64,7 +65,7 @@ protected:
  * 씬 컴포넌트는 씬에 배치되는 모든 액터의 기본 컴포넌트
  * 위치 및 회전, 크기를 가지며, 이를 통해 컴포넌트의 위치 및 회전을 결정
  */
-class JSceneComponent : public JActorComponent, public IRenderable
+class JSceneComponent : public JActorComponent, public IRenderable, public IGUIEditable
 {
 public:
 	JSceneComponent();
@@ -90,6 +91,9 @@ public:
 	void PostRender() override {};
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
+
+public:
+	void ShowEditor() override;
 
 public:
 	FORCEINLINE [[nodiscard]] FMatrix GetWorldMatrix() const { return mWorldMat; }

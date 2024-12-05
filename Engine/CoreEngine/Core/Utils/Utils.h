@@ -94,13 +94,14 @@ inline JText GenerateUniqueFileName(const JText& InDirectory, const JText& InBas
 
 
 // ------------------------------------------- JHash Table ---------------------------------------------------------------
-constexpr const char* NAME_OBJECT_BASE                  = "JObject";
-constexpr const char* NAME_OBJECT_ACTOR_COMPONENT       = "JActorComponent";
-constexpr const char* NAME_OBJECT_SCENE_COMPONENT       = "JSceneComponent";
-constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT = "JStaticMeshComponent";
-constexpr const char* NAME_OBJECT_ACTOR                 = "JActor";
-constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR     = "JStaticMeshActor";
-constexpr const char* NAME_OBJECT_LEVEL                 = "JLevel";
+constexpr const char* NAME_OBJECT_BASE                    = "JObject";
+constexpr const char* NAME_OBJECT_ACTOR_COMPONENT         = "JActorComponent";
+constexpr const char* NAME_OBJECT_SCENE_COMPONENT         = "JSceneComponent";
+constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT   = "JStaticMeshComponent";
+constexpr const char* NAME_OBJECT_SKELETAL_MESH_COMPONENT = "JSkeletalMeshComponent";
+constexpr const char* NAME_OBJECT_ACTOR                   = "JActor";
+constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
+constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 
 constexpr uint32_t JAssetHash = StringHash_CompileTime("JASSET\0");

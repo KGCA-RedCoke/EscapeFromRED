@@ -119,7 +119,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
 	float3 ambient = 0.1 * diffuseColor;
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < NumSpotLights; ++i)
 	{
 		float3 pointLight = ComputePointLight(Input.WorldSpace,
 											  Input.Normal,

@@ -3,6 +3,7 @@
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
+#include "imgui/imgui_stdlib.h"
 
 JSceneComponent::JSceneComponent()
 	: mParentSceneComponent(nullptr)
@@ -147,6 +148,33 @@ void JSceneComponent::DrawID(uint32_t ID)
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->DrawID(ID);
+	}
+}
+
+void JSceneComponent::ShowEditor()
+{
+	ImGui::InputText(u8("이름"),
+					 &mName,
+					 ImGuiInputTextFlags_CharsNoBlank);
+
+	ImGui::Separator();
+
+	if (ImGui::CollapsingHeader(u8("변환 정보")))
+	{
+		ImGui::DragFloat3(u8("위치"), &mLocalLocation.x, 1.f);
+		ImGui::DragFloat3(u8("회전"), &mLocalRotation.x, 0.1f, -360.0f, 360.0f);
+		ImGui::DragFloat3(u8("크기"), &mLocalScale.x, 0.01f, 0.f, 10.0f);
+	}
+
+	ImGui::SeparatorText(u8("오브젝트 플래그"));
+	for (int32_t i = 0; i < 6; i++)
+	{
+		uint32_t value = (i == 0) ? 1 : 1 << i;
+		bool     bFlag = (mObjectFlags & value);
+		if (ImGui::Checkbox(NAME_OBJECT_FLAGS[i], &bFlag))
+		{
+			bFlag ? SetFlag(value) : RemoveFlag(value);
+		}
 	}
 }
 

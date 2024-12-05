@@ -6,6 +6,7 @@
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 {
+	
 	mName       = InName;
 	mVertexSize = sizeof(Vertex::FVertexInfo_Base);
 	// mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
@@ -46,7 +47,6 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	mSkeletalMesh        = Other.mSkeletalMesh;
 	mSampleAnimation     = Other.mSampleAnimation;
 	mInstanceBuffer_Bone = Other.mInstanceBuffer_Bone;
-	mElapsedTime         = Other.mElapsedTime;
 
 	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
 	{
@@ -59,34 +59,31 @@ UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 	return MakeUPtr<JSkeletalMeshObject>(*this);
 }
 
-void JSkeletalMeshObject::CreateBuffers(ID3D11Device* InDevice)
-{}
-
 void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 {
-	const auto& skinData  = mSkeletalMesh->GetSkinData();
-	const auto& animPoses = mSampleAnimation->GetAnimPoses();
-
-	const int32_t boneCount = skinData->GetInfluenceBoneCount();
-	FMatrix       updateBoneMatrixBuffer[255];
-
-	// 본 업데이트
-	for (int32_t i = 0; i < boneCount; ++i)
-	{
-		const JText jointName = skinData->GetInfluenceBoneName(i);
-		FMatrix     newPose   = skinData->GetInfluenceBoneInverseBindPose(jointName);
-
-		// 최종 본 변환 행렬 = 본 로컬 변환 행렬 * 본 역바인드 행렬(부모 본의 역바인드 행렬)
-		updateBoneMatrixBuffer[i] = newPose * animPoses[i]; /* * newAnimMatrix (여기에 애니메이션 프레임간의 보간된 본 로컬 변환 행렬을 곱해줌) */
-	}
-
-	Utils::DX::UpdateDynamicBuffer(
-								   InDeviceContext,
-								   mInstanceBuffer_Bone.Buffer_Bone.Get(),
-								   updateBoneMatrixBuffer,
-								   boneCount * sizeof(FMatrix));
-
-	InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
+	// const auto& skinData  = mSkeletalMesh->GetSkinData();
+	// const auto& animPoses = mSampleAnimation->GetAnimPoses();
+	//
+	// const int32_t boneCount = skinData->GetInfluenceBoneCount();
+	// FMatrix       updateBoneMatrixBuffer[255];
+	//
+	// // 본 업데이트
+	// for (int32_t i = 0; i < boneCount; ++i)
+	// {
+	// 	const JText jointName = skinData->GetInfluenceBoneName(i);
+	// 	FMatrix     newPose   = skinData->GetInfluenceBoneInverseBindPose(jointName);
+	//
+	// 	// 최종 본 변환 행렬 = 본 로컬 변환 행렬 * 본 역바인드 행렬(부모 본의 역바인드 행렬)
+	// 	updateBoneMatrixBuffer[i] = newPose * animPoses[i]; /* * newAnimMatrix (여기에 애니메이션 프레임간의 보간된 본 로컬 변환 행렬을 곱해줌) */
+	// }
+	//
+	// Utils::DX::UpdateDynamicBuffer(
+	// 							   InDeviceContext,
+	// 							   mInstanceBuffer_Bone.Buffer_Bone.Get(),
+	// 							   updateBoneMatrixBuffer,
+	// 							   boneCount * sizeof(FMatrix));
+	//
+	// InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
 
 	// if (!mLightMesh)
 	// {
@@ -158,7 +155,7 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		JText materialPath;
 		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
-		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
+		auto* matInstance = GetWorld.MaterialInstanceManager->Load(materialPath);
 
 		SetMaterialInstance(matInstance, i);
 		mInstanceData[i].MaterialData.Flag |= 1 << 11;
@@ -174,10 +171,9 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 
 void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 {
-
 	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
 
-	// mLightMesh->UpdateBuffer(mSocketTransform);
+	// mLightMesh->UpdateInstance_Transform(mSocketTransform);
 	// mLightMesh->AddInstance();
 
 	auto&         meshData     = mPrimitiveMeshData[0];
@@ -188,7 +184,7 @@ void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
 
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
 
 }
@@ -230,7 +226,7 @@ void JSkeletalMeshObject::DrawBone()
 	// 			auto parentInv = mSkeletalMesh->GetSkinData()->GetInfluenceBoneInverseBindPose(mat.first);
 	//
 	// 			FMatrix newMat = parentInv * boneWorld;
-	// 			sphere->UpdateBuffer(newMat);
+	// 			sphere->UpdateInstance_Transform(newMat);
 	// 			sphere->Draw();
 	// 		}
 	// 	}
@@ -239,7 +235,7 @@ void JSkeletalMeshObject::DrawBone()
 
 }
 
-void JSkeletalMeshObject::SetAnimation(const Ptr<JAnimationClip>& InAnimation)
+void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 {
 	if (mSampleAnimation)
 	{
@@ -247,7 +243,7 @@ void JSkeletalMeshObject::SetAnimation(const Ptr<JAnimationClip>& InAnimation)
 		mSampleAnimation = nullptr;
 	}
 
-	mSampleAnimation = InAnimation;
+	// mSampleAnimation = InAnimation;
 	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
 	mSampleAnimation->Play();
 }

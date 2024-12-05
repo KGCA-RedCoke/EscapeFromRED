@@ -18,20 +18,13 @@ void MMeshManager::PostInitialize(const JText& OriginalNameOrPath, const JText& 
 	{
 		if (Utils::Serialization::IsJAssetFileAndExist(OriginalNameOrPath.c_str()))
 		{
-			LOG_CORE_INFO("<Type: Mesh> Post Initialize: {0}", ParsedName);
+			const bool bIsSkeletalMesh = meshObject->GetType() == HASH_ASSET_TYPE_SKELETAL_MESH;
+			Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(),
+											  bIsSkeletalMesh
+												  ? dynamic_cast<JSkeletalMeshObject*>(meshObject)
+												  : meshObject);
 
-			JAssetMetaData metaData = Utils::Serialization::GetType(OriginalNameOrPath.c_str());
-
-			if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
-			{
-				Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(),
-												  dynamic_cast<JSkeletalMeshObject*>(meshObject));
-			}
-			else
-			{
-				Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(),
-												  meshObject);
-			}
+			LOG_CORE_INFO("<Type: {}> Post Initialize: {}", bIsSkeletalMesh ? "SkeletalMesh" : "Mesh", ParsedName);
 
 			CreateBuffers(meshObject);
 		}
@@ -45,22 +38,19 @@ void MMeshManager::PostInitialize(const JText& OriginalNameOrPath, const JText& 
 
 void MMeshManager::CreateBuffers(JMeshObject* MeshObject)
 {
-	if (MeshObject)
-	{
-		auto* device = G_Device.GetDevice();
+	auto* device = G_Device.GetDevice();
 
-		GenGeometryBuffer(device, MeshObject);
-		uint32_t assetTypeHash = MeshObject->GetType();
-		if (assetTypeHash == HASH_ASSET_TYPE_SKELETAL_MESH)
-		{
-			GenBoneBuffer(device, MeshObject);
-		}
+	GenGeometryBuffer(device, MeshObject);
+
+	if (const uint32_t assetTypeHash = MeshObject->GetType(); assetTypeHash == HASH_ASSET_TYPE_SKELETAL_MESH)
+	{
+		GenBoneBuffer(device, MeshObject);
 	}
 }
 
 void MMeshManager::GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject)
 {
-	// 메시가 여러개인 경우는 거의 LOD일 것임
+	// 메시가 여러개인 경우(파싱을 했는데 메시가 여러개로 나뉜)는 거의 LOD일 것임 (언리얼에서 가져올 경우)
 	const int32_t lodCount = MeshObject->mPrimitiveMeshData.size();
 
 	MeshObject->mGeometryBuffer.clear();
@@ -159,34 +149,43 @@ void MMeshManager::GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject
 	skel->mInstanceBuffer_Bone = bone;
 }
 
-void MMeshManager::PushCommand(uint32_t NameHash, const FInstanceData_Mesh& InInstanceData)
+void MMeshManager::PushCommand(uint32_t                  NameHash, JMaterialInstance* InMaterialRef,
+							   const FInstanceData_Mesh& InInstanceData)
 {
-	mInstanceData[NameHash].emplace_back(InInstanceData);
+	assert(mBufferList.contains(NameHash));
+
+	mInstanceData[NameHash][InMaterialRef].emplace_back(InInstanceData);
 }
 
 void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 {
-	for (auto& [nameHash, instanceData] : mInstanceData)
+	for (auto& [nameHash, instanceByMaterial] : mInstanceData)
 	{
+		auto it = mBufferList.find(nameHash);
 		// 인스턴스 갯수 만큼 버퍼 업데이트
-		if (mBufferList.contains(nameHash))
+		if (it == mBufferList.end())
 		{
-			mMaterialInstance[nameHash]->BindMaterial(InContext);
-			auto& buffer         = mBufferList[nameHash];
-			auto& instanceBuffer = mBufferList[nameHash].Instance.Buffer_Instance;
+			return;
+		}
 
+		Buffer::FBufferMesh bufferMesh     = it->second;
+		auto&               instanceBuffer = bufferMesh.Instance.Buffer_Instance;
+
+		for (auto& [material, instanceData] : instanceByMaterial)
+		{
+			material->BindMaterial(InContext);
 			Utils::DX::UpdateDynamicBuffer(InContext,
 										   instanceBuffer.Get(),
 										   instanceData.data(),
 										   sizeof(FInstanceData_Mesh) * instanceData.size());
 
-			ID3D11Buffer*      buffers[] = {buffer.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
+			ID3D11Buffer*      buffers[] = {bufferMesh.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
 			constexpr uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
 			constexpr uint32_t offset[2] = {0, 0};
 
 			InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);
-			InContext->IASetIndexBuffer(buffer.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
-			InContext->DrawIndexedInstanced(buffer.IndexCount, instanceData.size(), 0, 0, 0);
+			InContext->IASetIndexBuffer(bufferMesh.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+			InContext->DrawIndexedInstanced(bufferMesh.IndexCount, instanceData.size(), 0, 0, 0);
 		}
 	}
 

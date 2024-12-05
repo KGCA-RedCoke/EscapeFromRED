@@ -17,14 +17,14 @@ void GUI_Editor_Mesh::Render()
 
 	if (mMeshObject)
 	{
-		mMeshObject->UpdateBuffer();
+		mMeshObject->UpdateInstance_Transform();
 		mMeshObject->Draw();
 	}
 }
 
 void GUI_Editor_Mesh::Initialize()
 {
-	mMeshObject = MMeshManager::Get().CreateOrLoad(mTitle);
+	mMeshObject = MMeshManager::Get().Load(mTitle);
 }
 
 void GUI_Editor_Mesh::Update_Implementation(float DeltaTime)
@@ -117,7 +117,7 @@ void GUI_Editor_Mesh::DrawMaterialSlot() const
 
 					if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
 					{
-						if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
+						if (auto matInstancePtr = MMaterialInstanceManager::Get().Load(str))
 						{
 							mMeshObject->SetMaterialInstance(matInstancePtr, j);
 						}

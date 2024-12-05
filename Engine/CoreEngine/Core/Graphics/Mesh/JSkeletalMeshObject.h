@@ -4,6 +4,7 @@
 class JSkeletalMeshObject : public JMeshObject
 {
 public:
+	JSkeletalMeshObject() = default;
 	JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JSkeletalMeshObject& Other);
@@ -13,7 +14,6 @@ public:
 	UPtr<IManagedInterface> Clone() const override;
 
 protected:
-	void CreateBuffers(ID3D11Device* InDevice) override;
 	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
 
 public:
@@ -31,7 +31,7 @@ public:
 	void DrawBone();
 
 public:
-	void SetAnimation(const Ptr<JAnimationClip>& InAnimation);
+	void SetAnimation(JAnimationClip* InAnimation);
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
@@ -39,17 +39,15 @@ protected:
 	Buffer::FBufferBone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------
-	// Remove this
-	float               mElapsedTime = 0.0f;
 	Ptr<JAnimationClip> mSampleAnimation;
 
-// public:
-// 	JMeshObject*              mLightMesh       = nullptr;
-// 	constexpr static uint32_t mHand_r_Index    = 29;
-// 	FVector                   mSocketOffsetLoc = {-24.950527, -10.713480, -8.060391};
-// 	FVector                   mSocketOffsetRot = {-38.99271, 83.490776, -2.771158};
-// 	FMatrix                   mSocketTransform;
-	
+	// public:
+	// 	JMeshObject*              mLightMesh       = nullptr;
+	// 	constexpr static uint32_t mHand_r_Index    = 29;
+	// 	FVector                   mSocketOffsetLoc = {-24.950527, -10.713480, -8.060391};
+	// 	FVector                   mSocketOffsetRot = {-38.99271, 83.490776, -2.771158};
+	// 	FMatrix                   mSocketTransform;
+
 	friend class GUI_Editor_SkeletalMesh;
 	friend class MMeshManager;
 };

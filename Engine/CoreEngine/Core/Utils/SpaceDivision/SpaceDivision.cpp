@@ -6,7 +6,6 @@ void Oc::FNode::Render(JCameraComponent* InCamera) const
 {
 	if (!Parent || InCamera->IsBoxInFrustum(BoundArea))
 	{
-		BoundArea.DrawDebug();
 		for (const auto& actor : Actors)
 		{
 			actor->Draw();
@@ -153,7 +152,7 @@ void Oc::JTree::Render(JCameraComponent* InCamera)
 	{
 		actor->Draw();
 	}
-	
+
 	// 모든 노드 순회하면서 프러스텀내에 있는 액터들 렌더링
 	mRootNode->Render(InCamera);
 }

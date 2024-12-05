@@ -362,6 +362,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
+    <Content Include="Core\Interface\IGUIEditable.h" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Core\Entity\UI\" />

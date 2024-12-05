@@ -101,10 +101,12 @@ struct AssetSelectionWithDeletion : ImGuiSelectionBasicStorage
 struct AssetBrowserIconList
 {
 	class JTexture* FolderIcon;
+	JTexture*       ActorIcon;
 	JTexture*       FileIcon;
 	JTexture*       StaticMeshIcon;
 	JTexture*       SkeletalMeshIcon;
 	JTexture*       MaterialIcon;
+	JTexture*       LevelIcon;
 };
 
 struct FBasicFilePreview

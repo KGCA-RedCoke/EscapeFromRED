@@ -23,8 +23,8 @@ void GUI_Viewport_Scene::Initialize()
 	mEditorCameraRef = GetWorld.CameraManager->FetchResource<JCamera_Debug>(L"EditorCamera");
 	assert(mEditorCameraRef);
 
-	mPauseIcon = GetWorld.TextureManager->CreateOrLoad(L"rsc/Icons/PauseButton On@2x.png");
-	mPlayIcon  = GetWorld.TextureManager->CreateOrLoad(L"rsc/Icons/PlayButton On@2x.png");
+	mPauseIcon = GetWorld.TextureManager->Load(L"rsc/Icons/PauseButton On@2x.png");
+	mPlayIcon  = GetWorld.TextureManager->Load(L"rsc/Icons/PlayButton On@2x.png");
 
 }
 

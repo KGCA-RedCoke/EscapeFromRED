@@ -1,5 +1,15 @@
 ﻿#include "JAnimator.h"
 
+#include "JAnimationClip.h"
+
+JAnimator::JAnimator(AActor* InOwnerActor)
+	: JActorComponent(),
+	  mSkeletalMesh(nullptr),
+	  mCurrentAnimation(nullptr)
+{
+	mOwnerActor = InOwnerActor;
+}
+
 uint32_t JAnimator::GetType() const
 {
 	return JActorComponent::GetType();
@@ -27,7 +37,9 @@ void JAnimator::BeginPlay()
 
 void JAnimator::Tick(float DeltaTime)
 {
-	JActorComponent::Tick(DeltaTime);
+	if (mCurrentAnimation)
+		mCurrentAnimation->TickAnim(DeltaTime);
+
 }
 
 void JAnimator::Destroy()

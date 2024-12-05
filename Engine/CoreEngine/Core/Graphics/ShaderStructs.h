@@ -236,10 +236,10 @@ namespace Buffer
 {
 	struct FBuffer_Light_Point
 	{
-		FVector Position;
-		float   Range;
-		FVector Color;
-		float   Intensity;
+		FVector Position  = FVector::ZeroVector;
+		float   Range     = 200.f;
+		FVector Color     = FVector(0.8f, 0.68f, 0.48f);
+		float   Intensity = 1.f;
 	};
 
 	// Landscape 버퍼 인스턴스
@@ -302,7 +302,7 @@ struct FInstanceData
 struct FMaterialInstanceData
 {
 	FVector4 BaseColor = FVector4(0.2f, 0.2f, 0.2f, 1.f);
-	float    Occlusion = 0.0f;
+	float    AO        = 0.0f;
 	float    Roughness = 0.0f;
 	float    Metallic  = 0.0f;
 	float    Emissive  = 0.1f;

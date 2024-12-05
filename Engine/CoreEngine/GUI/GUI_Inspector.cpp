@@ -5,7 +5,6 @@
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Interface/JWorld.h"
-#include "imgui/imgui_stdlib.h"
 
 extern CBuffer::Light g_LightData;
 
@@ -90,7 +89,6 @@ void GUI_Inspector::DrawSearchBar()
 
 void GUI_Inspector::DrawTreeNode(JSceneComponent* InSceneComponent)
 {
-
 	// 테이블의 다음 행, 다음 열로 이동
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
@@ -148,13 +146,12 @@ void GUI_Inspector::DrawDetails()
 			return;
 		}
 
-
 		if (ImGui::CollapsingHeader(mSelectedSceneComponent->GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			DrawName();
-			DrawTransform();
-			DrawFlags();
-			DrawMaterialSlot();
+			if (mSelectedSceneComponent)
+			{
+				mSelectedSceneComponent->ShowEditor();
+			}
 		}
 	}
 	ImGui::EndChild();
@@ -162,54 +159,18 @@ void GUI_Inspector::DrawDetails()
 }
 
 void GUI_Inspector::DrawName()
-{
-
-	ImGui::InputText(u8("이름"),
-					 &mSelectedSceneComponent->mName,
-					 ImGuiInputTextFlags_CharsNoBlank);
-
-	// mSelectedSceneComponent->mName = buffer;
-}
+{}
 
 void GUI_Inspector::DrawTransform() const
 {
-	ImGui::Separator();
-
-	if (ImGui::CollapsingHeader(u8("변환 정보")))
+	if (mSelectedSceneComponent)
 	{
-		FVector location = mSelectedSceneComponent->GetLocalLocation();
-		FVector rotation = mSelectedSceneComponent->GetLocalRotation();
-		FVector scale    = mSelectedSceneComponent->GetLocalScale();
-
-		if (ImGui::DragFloat3(u8("위치"), &location.x, 1.f))
-		{
-			mSelectedSceneComponent->SetLocalLocation(location);
-		}
-
-		if (ImGui::DragFloat3(u8("회전"), &rotation.x, 0.1f, -360.0f, 360.0f))
-		{
-			mSelectedSceneComponent->SetLocalRotation(rotation);
-		}
-		if (ImGui::DragFloat3(u8("크기"), &scale.x, 0.01f, 0.f, 10.0f))
-		{
-			mSelectedSceneComponent->SetLocalScale(scale);
-		}
+		mSelectedSceneComponent->ShowEditor();
 	}
 }
 
 void GUI_Inspector::DrawFlags()
-{
-	ImGui::SeparatorText(u8("오브젝트 플래그"));
-	for (int32_t i = 0; i < 6; i++)
-	{
-		uint32_t value = (i == 0) ? 1 : 1 << i;
-		bool     bFlag = (mSelectedSceneComponent->mObjectFlags & value);
-		if (ImGui::Checkbox(NAME_OBJECT_FLAGS[i], &bFlag))
-		{
-			bFlag ? mSelectedSceneComponent->SetFlag(value) : mSelectedSceneComponent->RemoveFlag(value);
-		}
-	}
-}
+{}
 
 void GUI_Inspector::DrawMaterialSlot()
 {

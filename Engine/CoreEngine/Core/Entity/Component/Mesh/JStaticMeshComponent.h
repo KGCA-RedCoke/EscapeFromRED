@@ -33,6 +33,8 @@ public:
 
 	int32_t GetMaterialCount() const;
 
+public:
+	void ShowEditor() override;
 
 private:
 	UPtr<JMeshObject> mMeshObject = nullptr;

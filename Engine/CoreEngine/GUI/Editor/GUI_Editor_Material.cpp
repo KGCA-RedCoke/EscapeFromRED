@@ -15,14 +15,9 @@ GUI_Editor_Material::GUI_Editor_Material(const JText& InTitle)
 	  bOpenFileBrowser(false),
 	  bOpenFolder(false)
 {
-	if (std::filesystem::exists(InTitle) && std::filesystem::is_regular_file(InTitle))
-	{
-		mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrLoad(InTitle);
-	}
+	mMaterialToEdit = GetWorld.MaterialInstanceManager->Load(InTitle);
 
 	SetMeshObject(Path_Mesh_Sphere);
-
-
 }
 
 void GUI_Editor_Material::Render()
@@ -32,22 +27,14 @@ void GUI_Editor_Material::Render()
 	Super::Render();
 
 	// 변경사항 적용 Draw
-	mPreviewMeshObject->UpdateBuffer();
+	mPreviewMeshObject->UpdateInstance_Transform();
 	mPreviewMeshObject->Draw();
 }
 
 void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 {
 	// 3. 구체 메시를 생성 (굳이 구체가 아니어도 상관없음, 대부분의 엔진에서는 구체를 사용)
-	mPreviewMeshObject = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshPath.data())->Clone());
-	assert(mPreviewMeshObject);
-
-	// 3.1 구체의 머티리얼 데이터를 가져온다. (구체는 서브메시가 없으므로 첫번째 메시를 가져온다.)
-	if (!mMaterialToEdit)
-	{
-		// mMaterialToEdit = GetWorld.MaterialInstanceManager->CreateOrClone(NAME_MAT_INS_DEFAULT);
-		assert(mMaterialToEdit);
-	}
+	mPreviewMeshObject = GetWorld.MeshManager->Clone(InMeshPath.data());
 	mPreviewMeshObject->SetMaterialInstance(mMaterialToEdit);
 }
 

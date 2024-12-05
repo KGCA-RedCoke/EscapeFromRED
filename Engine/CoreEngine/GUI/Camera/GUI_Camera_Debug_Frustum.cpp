@@ -57,10 +57,10 @@ void GUI_Camera_Debug_Frustum::Render()
 void GUI_Camera_Debug_Frustum::Initialize()
 {
 	// 1. 뷰포트를 생성
-	mViewport = MViewportManager::Get().CreateOrLoad(mTitle, 1280, 720);
+	mViewport = MViewportManager::Get().Load(mTitle, 1280, 720);
 	assert(mViewport);
 
 	// 2. 머티리얼 에디터 프리뷰에 사용될 카메라를 생성
-	mCamera = GetWorld.CameraManager->CreateOrLoad("FrustumCamera");
+	mCamera = GetWorld.CameraManager->Load("FrustumCamera");
 	assert(mCamera);
 }

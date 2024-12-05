@@ -1,5 +1,6 @@
 ﻿#include "JStaticMeshComponent.h"
 
+#include "JSkeletalMeshComponent.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -43,6 +44,16 @@ bool JStaticMeshComponent::Serialize_Implement(std::ofstream& FileStream)
 		Utils::Serialization::Serialize_Text(filePath, FileStream);
 	}
 
+	// MaterialInstance
+	int32_t materialCount = mMeshObject->GetMaterialCount();
+	Utils::Serialization::Serialize_Primitive(&materialCount, sizeof(int32_t), FileStream);
+	for (int32_t i = 0; i < materialCount; ++i)
+	{
+		auto* materialInstance = mMeshObject->GetMaterialInstance(i);
+		auto  materialPath     = materialInstance->GetMaterialPath();
+		Utils::Serialization::Serialize_Text(materialPath, FileStream);
+	}
+
 	return true;
 }
 
@@ -64,6 +75,16 @@ bool JStaticMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		SetMeshObject(filePath);
 	}
 
+	int32_t materialCount;
+	Utils::Serialization::DeSerialize_Primitive(&materialCount, sizeof(int32_t), InFileStream);
+	for (int32_t i = 0; i < materialCount; ++i)
+	{
+		JText materialPath;
+		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
+
+		auto materialInstance = MMaterialInstanceManager::Get().Load(materialPath);
+		SetMaterialInstance(materialInstance, i);
+	}
 
 	return true;
 }
@@ -78,14 +99,14 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	if (mMeshObject)
 	{
 		mMeshObject->Tick(DeltaTime);
-		mMeshObject->UpdateBuffer(mWorldMat);
+		mMeshObject->UpdateInstance_Transform(mWorldMat);
 	}
 }
 
 void JStaticMeshComponent::Draw()
 {
 	// MeshObject의 Draw 호출
-	if ( mMeshObject)
+	if (mMeshObject)
 	{
 		// mBoundingBox.DrawDebug();
 		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
@@ -120,11 +141,51 @@ void JStaticMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInst
 
 void JStaticMeshComponent::SetMeshObject(JTextView InMeshObject)
 {
-	mMeshObject  = UPtrCast<JMeshObject>(GetWorld.MeshManager->CreateOrLoad(InMeshObject.data())->Clone());
+	mMeshObject  = GetWorld.MeshManager->Clone(InMeshObject.data());
 	mBoundingBox = mMeshObject->GetBoundingBox();
 }
 
 int32_t JStaticMeshComponent::GetMaterialCount() const
 {
 	return mMeshObject ? mMeshObject->GetMaterialCount() : 0;
+}
+
+void JStaticMeshComponent::ShowEditor()
+{
+	JSceneComponent::ShowEditor();
+
+	if (/*mParentSceneComponent->GetObjectType() == NAME_OBJECT_SKELETAL_MESH_COMPONENT*/
+		auto* parentSkeletalMesh = dynamic_cast<JSkeletalMeshComponent*>(mParentSceneComponent))
+	{
+		ImGui::SeparatorText(u8("소켓"));
+
+	}
+
+	ImGui::SeparatorText(u8("머티리얼 슬롯"));
+	for (int32_t i = 0; i < GetMaterialCount(); ++i)
+	{
+
+		ImGui::Text(mMeshObject->GetMaterialInstance()->GetMaterialName().c_str());
+		ImGui::Dummy(ImVec2(100, 100));
+		if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+			const char*         str     = static_cast<const char*>(payload->Data);
+
+			auto metaData = Utils::Serialization::GetType(str);
+
+			if (metaData.AssetType != HASH_ASSET_TYPE_MATERIAL_INSTANCE)
+			{
+				return;
+			}
+
+			if (auto matInstancePtr = MMaterialInstanceManager::Get().Load(str))
+			{
+				SetMaterialInstance(matInstancePtr, i);
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+	}
 }

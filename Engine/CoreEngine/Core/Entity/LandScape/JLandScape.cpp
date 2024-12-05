@@ -79,7 +79,7 @@ void JLandScape::GenerateLandScape()
 	GenVertexNormal();
 	GenBuffer();
 
-	mMaterial = GetWorld.MaterialInstanceManager->CreateOrLoad("Game/Materials/DefaultMaterial.jasset");
+	mMaterial = GetWorld.MaterialInstanceManager->Load("Game/Materials/DefaultMaterial.jasset");
 
 	if (mAlbedoMap)
 	{

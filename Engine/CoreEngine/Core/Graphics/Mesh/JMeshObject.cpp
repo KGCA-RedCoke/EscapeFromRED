@@ -26,12 +26,11 @@ JMeshObject::JMeshObject(const JMeshObject& Other)
 	  mVertexSize(Other.mVertexSize),
 	  mBoundingBox(Other.mBoundingBox)
 {
-	mPath = Other.mPath;
-
+	mPath              = Other.mPath;
 	mPrimitiveMeshData = Other.mPrimitiveMeshData;
+	mInstanceData      = Other.mInstanceData;
 
 	mMaterialInstances.resize(Other.mMaterialInstances.size());
-	mInstanceData.resize(Other.mInstanceData.size());
 	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
 	{
 		SetMaterialInstance(Other.mMaterialInstances[i], i);
@@ -111,7 +110,7 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		JText materialPath;
 		Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
-		auto* matInstance = GetWorld.MaterialInstanceManager->CreateOrLoad(materialPath);
+		auto* matInstance = GetWorld.MaterialInstanceManager->Load(materialPath);
 
 		SetMaterialInstance(matInstance, i);
 	}
@@ -122,11 +121,7 @@ bool JMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-/** 버퍼는 메모리에 올릴 때 한번만 생성되고 공유 */
-void JMeshObject::CreateBuffers(ID3D11Device* InDevice)
-{}
-
-void JMeshObject::UpdateBuffer(const FMatrix& InWorldMatrix)
+void JMeshObject::UpdateInstance_Transform(const FMatrix& InWorldMatrix)
 {
 	for (int32_t i = 0; i < mInstanceData.size(); ++i)
 	{
@@ -212,7 +207,7 @@ void JMeshObject::AddInstance(float InCameraDistance)
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mInstanceData[j]);
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
 }
 

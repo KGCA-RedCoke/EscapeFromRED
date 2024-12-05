@@ -1,14 +1,21 @@
 ﻿#include "JSkeletalMeshComponent.h"
 
+#include "Core/Entity/Animation/JAnimator.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Interface/JWorld.h"
-JSkeletalMeshComponent::JSkeletalMeshComponent() {}
+
+JSkeletalMeshComponent::JSkeletalMeshComponent()
+{
+	mObjectType = NAME_OBJECT_SKELETAL_MESH_COMPONENT;
+}
 
 JSkeletalMeshComponent::JSkeletalMeshComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentComponent)
 	: JSceneComponent(InName, InOwnerActor, InParentComponent)
-{}
+{
+	mObjectType = NAME_OBJECT_SKELETAL_MESH_COMPONENT;
+}
 
 uint32_t JSkeletalMeshComponent::GetType() const
 {
@@ -34,7 +41,7 @@ void JSkeletalMeshComponent::Tick(float DeltaTime)
 	if (mSkeletalMeshObject)
 	{
 		mSkeletalMeshObject->Tick(DeltaTime);
-		mSkeletalMeshObject->UpdateBuffer(mWorldMat);
+		mSkeletalMeshObject->UpdateInstance_Transform(mWorldMat);
 	}
 }
 
@@ -64,6 +71,13 @@ void JSkeletalMeshComponent::DrawID(uint32_t ID)
 
 void JSkeletalMeshComponent::SetSkeletalMesh(JTextView InSkeletalMeshPath)
 {
-	mSkeletalMeshObject = UPtrCast<
-		JSkeletalMeshObject>(GetWorld.MeshManager->CreateOrLoad<JSkeletalMeshObject>(InSkeletalMeshPath.data())->Clone());
+	mSkeletalMeshObject = GetWorld.MeshManager->Clone<JSkeletalMeshObject>(InSkeletalMeshPath.data());
+	// mAnimator           = MakeUPtr<JAnimator>(mSkeletalMeshObject->mSkeletalMesh->mSkeleton);
+}
+
+void JSkeletalMeshComponent::ShowEditor()
+{
+	JSceneComponent::ShowEditor();
+
+
 }

@@ -81,16 +81,16 @@ void GUI_Editor_LandScape::GenerateLandScape()
 
 	if (!mAlbedoTexture.empty())
 	{
-		newLandScape->mAlbedoMap = GetWorld.TextureManager->CreateOrLoad(mAlbedoTexture);
+		newLandScape->mAlbedoMap = GetWorld.TextureManager->Load(mAlbedoTexture);
 	}
 	if (!mHeightTexture.empty())
 	{
-		newLandScape->mHeightMap = GetWorld.TextureManager->CreateOrLoad(mHeightTexture);
+		newLandScape->mHeightMap = GetWorld.TextureManager->Load(mHeightTexture);
 		newLandScape->mHeightMap->SetEditable();
 	}
 	if (!mNormalTexture.empty())
 	{
-		newLandScape->mNormalMap = GetWorld.TextureManager->CreateOrLoad(mNormalTexture);
+		newLandScape->mNormalMap = GetWorld.TextureManager->Load(mNormalTexture);
 	}
 
 	newLandScape->GenerateLandScape();

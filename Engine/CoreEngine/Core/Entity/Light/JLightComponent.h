@@ -1,32 +1,37 @@
 ﻿#pragma once
 #include "Core/Entity/Component/Scene/JSceneComponent.h"
-
-enum class ELightType
-{
-	Directional,
-	Point,
-	Spot,
-	Rect,
-	Disc,
-	Sphere,
-	Capsule,
-};
+#include "Core/Graphics/ShaderStructs.h"
 
 class JLightComponent : public JSceneComponent
 {
 public:
 	JLightComponent();
+	JLightComponent(JTextView InName, AActor* InOwnerActor = nullptr, JSceneComponent* InParentComponent = nullptr);
 
 public:
-	void SetLightColor(const FVector4& InColor) { mLightColor = InColor; }
-	void SetIntensity(float InIntensity) { mIntensity = InIntensity; }
+	void Initialize() override;
+	void Tick(float DeltaTime) override;
 
-	[[nodiscard]] ELightType      GetLightType() const { return mLightType; }
-	[[nodiscard]] const FVector4& GetLightColor() const { return mLightColor; }
-	[[nodiscard]] float           GetIntensity() const { return mIntensity; }
+public:
+	uint32_t GetType() const override;
+
+public:
+	bool Serialize_Implement(std::ofstream& FileStream) override;
+	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void ShowEditor() override;
+
+public:
+	void SetLightColor(const FVector4& InColor) { mLightData.Color = InColor; }
+	void SetRange(float InRange) { mLightData.Range = InRange; }
+	void SetIntensity(float InIntensity) { mLightData.Intensity = InIntensity; }
+
+	[[nodiscard]] const FVector& GetLightColor() const { return mLightData.Color; }
+	[[nodiscard]] float          GetRange() const { return mLightData.Range; }
+	[[nodiscard]] float          GetIntensity() const { return mLightData.Intensity; }
 
 protected:
-	ELightType mLightType;
-	FVector4   mLightColor;
-	float      mIntensity;
+	Buffer::FBuffer_Light_Point mLightData;
+	uint32_t                    mWorldBufferIndex;
 };

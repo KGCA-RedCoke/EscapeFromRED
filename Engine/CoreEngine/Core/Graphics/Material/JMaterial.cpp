@@ -2,6 +2,7 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Shader/InputLayouts.h"
 #include "Core/Graphics/Shader/JShader.h"
+#include "Core/Graphics/Shader/JShader_Basic.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
@@ -104,7 +105,7 @@ bool FMaterialParam::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	if (ParamValue == EMaterialParamValue::Texture2D && !StringValue.empty())
 	{
-		TextureValue = GetWorld.TextureManager->CreateOrLoad(StringValue.c_str());
+		TextureValue = GetWorld.TextureManager->Load(StringValue.c_str());
 	}
 
 	Key = StringHash(Name.c_str());
@@ -206,7 +207,7 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
 	if (!shaderName.empty())
 	{
-		mShader = GetWorld.ShaderManager->CreateOrLoad<JShader>(shaderName);
+		mShader = GetWorld.ShaderManager->Load<JShader>(shaderName);
 	}
 	else
 	{

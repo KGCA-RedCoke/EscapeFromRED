@@ -44,7 +44,7 @@ void AActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
-		
+
 		if (sceneComponent)
 		{
 			sceneComponent->Draw();
@@ -54,7 +54,8 @@ void AActor::Draw()
 
 uint32_t AActor::GetType() const
 {
-	return JSceneComponent::GetType();
+	// return JSceneComponent::GetType();
+	return HASH_ASSET_TYPE_Actor;
 }
 
 bool AActor::Serialize_Implement(std::ofstream& FileStream)

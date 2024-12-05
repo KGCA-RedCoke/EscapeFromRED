@@ -51,7 +51,7 @@ public:
 	 * @param InArgs 템플릿 클래스 생성자 인자 
 	 */
 	template <class ReturnType = ManagedType, typename... Args>
-	ReturnType* CreateOrLoad(const JWText& InName, Args&&... InArgs);
+	ReturnType* Load(const JWText& InName, Args&&... InArgs);
 
 	/**
 	 * Args에 뭘 넣을지 잘 모르겠으면 생성자 확인
@@ -59,12 +59,12 @@ public:
 	 * @param InArgs 템플릿 클래스 생성자 인자 
 	 */
 	template <class ReturnType = ManagedType, typename... Args>
-	ReturnType* CreateOrLoad(const JText& InName, Args&&... InArgs);
+	ReturnType* Load(const JText& InName, Args&&... InArgs);
 
 	template <class ReturnType = ManagedType, typename... Args>
-	UPtr<ReturnType> CreateOrClone(const JWText& InName, Args&&... InArgs);
+	UPtr<ReturnType> Clone(const JWText& InName, Args&&... InArgs);
 	template <class ReturnType = ManagedType, typename... Args>
-	UPtr<ReturnType> CreateOrClone(const JText& InName, Args&&... InArgs);
+	UPtr<ReturnType> Clone(const JText& InName, Args&&... InArgs);
 
 	template <class ReturnType = ManagedType>
 	ReturnType* FetchResource(const JWText& InName);
@@ -91,14 +91,14 @@ private:
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-ReturnType* Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::wstring& InName, Args&&... InArgs)
+ReturnType* Manager_Base<ManagedType, Manager>::Load(const std::wstring& InName, Args&&... InArgs)
 {
-	return CreateOrLoad<ReturnType>(WString2String(InName), std::forward<Args>(InArgs)...);
+	return Load<ReturnType>(WString2String(InName), std::forward<Args>(InArgs)...);
 }
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-ReturnType* Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::string& InName, Args&&... InArgs)
+ReturnType* Manager_Base<ManagedType, Manager>::Load(const std::string& InName, Args&&... InArgs)
 {
 	std::string id   = ParseFile(InName);
 	uint32_t    hash = StringHash(id.c_str());
@@ -125,46 +125,45 @@ ReturnType* Manager_Base<ManagedType, Manager>::CreateOrLoad(const std::string& 
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-UPtr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(const JWText& InName, Args&&... InArgs)
+UPtr<ReturnType> Manager_Base<ManagedType, Manager>::Clone(const JWText& InName, Args&&... InArgs)
 {
 	return CreateOrClone<ReturnType>(WString2String(InName), std::forward<Args>(InArgs)...);
 }
 
 template <class ManagedType, class Manager>
 template <class ReturnType, typename... Args>
-UPtr<ReturnType> Manager_Base<ManagedType, Manager>::CreateOrClone(const JText& InName, Args&&... InArgs)
+UPtr<ReturnType> Manager_Base<ManagedType, Manager>::Clone(const JText& InName, Args&&... InArgs)
 {
 	JText    id   = ParseFile(InName);
 	uint32_t hash = StringHash(id.c_str());
 
 	EnterCriticalSection(&mCriticalSection);
 
-	ReturnType* ptr;
-
-	// 이미 로드된 리소스가 있다면 복사
-	if (ReturnType* resource = FetchResource<ReturnType>(id))
+	if (mManagedList.contains(hash))
 	{
-		UPtr<class IManagedInterface> copied = resource->Clone();
+		UPtr<class IManagedInterface> copied = mManagedList[hash]->Clone();
 
 		UPtr<ReturnType> clone = UPtrCast<ReturnType>(std::move(copied));
-		ptr                    = clone.get();
 
-		// mRegisteredClass.try_emplace(StringHash(ptr->GetName()).c_str(), std::move(clone));
 		LeaveCriticalSection(&mCriticalSection);
-
-		return ptr;
+		return clone;
 	}
 
-	// 없으면 팩토리에서 새로 생성
 	UPtr<ReturnType> obj = MakeUPtr<ReturnType>(InName, std::forward<Args>(InArgs)...);
-	ptr                  = obj.get();
-	mManagedList.try_emplace(hash, std::move(obj));
+	ReturnType*      ptr = obj.get();
+	auto [iter, success] = mManagedList.try_emplace(hash, std::move(obj));
+	if (!success)
+	{
+		LeaveCriticalSection(&mCriticalSection);
+		
+		return nullptr;
+	}
 
 	LeaveCriticalSection(&mCriticalSection);
 
 	PostInitialize(InName, id, hash, ptr);
 
-	return ptr;
+	return UPtrCast<ReturnType>(ptr->Clone());
 }
 
 template <class ManagedType, class Manager>

@@ -26,9 +26,9 @@ void MMaterialManager::SaveEngineMaterials()
 
 void MMaterialManager::LoadEngineMaterials()
 {
-	CreateOrLoad<JMaterial_Basic>(NAME_MAT_BASIC);
-	CreateOrLoad<JMaterial_SkySphere>(NAME_MAT_SKYSPHERE);
-	CreateOrLoad<JMaterial_Window>(NAME_MAT_WINDOW);
+	Load<JMaterial_Basic>(NAME_MAT_BASIC);
+	Load<JMaterial_SkySphere>(NAME_MAT_SKYSPHERE);
+	Load<JMaterial_Window>(NAME_MAT_WINDOW);
 }	
 
 MMaterialManager::MMaterialManager()

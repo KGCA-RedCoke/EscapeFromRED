@@ -18,14 +18,14 @@ void GUI_Editor_SkeletalMesh::Render()
 
 	if (const auto& ptr = mMeshObject)
 	{
-		ptr->UpdateBuffer();
+		ptr->UpdateInstance_Transform();
 		ptr->Draw();
 	}
 }
 
 void GUI_Editor_SkeletalMesh::Initialize()
 {
-	mMeshObject = MMeshManager::Get().CreateOrLoad<JSkeletalMeshObject>(mTitle);
+	mMeshObject = MMeshManager::Get().Load<JSkeletalMeshObject>(mTitle);
 }
 
 void GUI_Editor_SkeletalMesh::Update(float DeltaTime)
@@ -219,14 +219,14 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 
 		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
 		{
-			Ptr<JAnimationClip> clip = MakePtr<JAnimationClip>();
-			if (!Utils::Serialization::DeSerialize(str, clip.get()))
-			{
-				LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-							   "Game/Animation/Unreal Take.jasset");
-			}
-
-			mMeshObject->SetAnimation(clip);
+			// JAnimationClip* clip = MakePtr<JAnimationClip>();
+			// if (!Utils::Serialization::DeSerialize(str, clip.get()))
+			// {
+			// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+			// 				   "Game/Animation/Unreal Take.jasset");
+			// }
+			//
+			// mMeshObject->SetAnimation(clip);
 
 			ImGui::EndDragDropTarget();
 		}

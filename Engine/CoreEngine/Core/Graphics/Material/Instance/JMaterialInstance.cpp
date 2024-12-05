@@ -36,12 +36,12 @@ UPtr<IManagedInterface> JMaterialInstance::Clone() const
 
 void JMaterialInstance::SetAsDefaultMaterial()
 {
-	mParentMaterial = MMaterialManager::Get().CreateOrLoad(NAME_MAT_BASIC);
+	mParentMaterial = MMaterialManager::Get().Load(NAME_MAT_BASIC);
 	mShader         = mParentMaterial->GetShader();
 
 	GetInstanceParams();
 
-	JMaterialInstance* defaultInstance = MMaterialInstanceManager::Get().CreateOrLoad(NAME_MAT_INS_DEFAULT);
+	JMaterialInstance* defaultInstance = MMaterialInstanceManager::Get().Load(NAME_MAT_INS_DEFAULT);
 
 	for (int32_t i = 0; i < defaultInstance->mInstanceParams.size(); ++i)
 	{
@@ -69,7 +69,7 @@ bool JMaterialInstance::Serialize_Implement(std::ofstream& FileStream)
 	// Parent Material Path
 	if (!mParentMaterial)
 	{
-		mParentMaterial = MMaterialManager::Get().CreateOrLoad(NAME_MAT_BASIC);
+		mParentMaterial = MMaterialManager::Get().Load(NAME_MAT_BASIC);
 	}
 	else
 	{
@@ -100,7 +100,7 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	Utils::Serialization::DeSerialize_Text(parentMaterialPath, InFileStream);
 	if (!parentMaterialPath.empty())
 	{
-		mParentMaterial = MMaterialManager::Get().CreateOrLoad(parentMaterialPath);
+		mParentMaterial = MMaterialManager::Get().Load(parentMaterialPath);
 		mShader         = mParentMaterial->GetShader();
 	}
 

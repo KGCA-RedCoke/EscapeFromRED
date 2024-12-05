@@ -4,7 +4,6 @@
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Manager/IManagedInterface.h"
 #include "Core/Utils/FileIO/JSerialization.h"
-#include "Core/Utils/ObjectLoader/FbxUtils.h"
 
 class JMaterialInstance;
 class JMaterial;

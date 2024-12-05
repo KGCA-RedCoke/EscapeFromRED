@@ -6,7 +6,7 @@ class JSkeletalMesh;
 class JAnimator : public JActorComponent
 {
 public:
-	JAnimator()           = default;
+	JAnimator(AActor* InOwnerActor);
 	~JAnimator() override = default;
 
 public:
@@ -31,5 +31,8 @@ protected:
 
 	// State Machine
 	JHash<JText, UPtr<class JAnimationClip>> mStateMachine;
+
+	JText           mCurrentState;
+	JAnimationClip* mCurrentAnimation;
 
 };
