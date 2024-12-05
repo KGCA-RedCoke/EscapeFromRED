@@ -117,9 +117,9 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = 0.1 * diffuseColor;
+	float3 ambient = 0.01f * diffuseColor;
 
-	for (int i = 0; i < NumSpotLights; ++i)
+	for (int i = 0; i < NumPointLights; ++i)
 	{
 		float3 pointLight = ComputePointLight(Input.WorldSpace,
 											  Input.Normal,
@@ -127,6 +127,16 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 		diffuse += pointLight;
 		specular += pointLight;
 	}
+
+	for (int i = 0; i < NumSpotLights; ++i)
+	{
+		float3 spotLight = ComputeSpotLight(Input.WorldSpace,
+											Input.Normal,
+											SpotLight[i]);
+		diffuse += spotLight;
+		specular += spotLight;
+	}
+
 	// float3 finalColor = 0;
 	// ComputePBR(diffuseColor * diffuse,
 	// 		   metallic,

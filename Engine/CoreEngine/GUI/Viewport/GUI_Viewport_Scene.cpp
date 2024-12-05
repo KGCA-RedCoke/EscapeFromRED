@@ -1,7 +1,9 @@
 ﻿#include "GUI_Viewport_Scene.h"
 
+#include "Core/Entity/Actor/JSkeletalMeshActor.h"
 #include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Actor/Character/ACharacter.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
@@ -54,7 +56,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 				activeLevel->CreateActor<JStaticMeshActor>(name, assetPath);
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:
-
+				activeLevel->CreateActor<JSkeletalMeshActor>(name, assetPath);
 				break;
 
 			case HASH_ASSET_TYPE_Actor:
@@ -119,6 +121,8 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			"Game/Mesh/SK_Hands_07.jasset");
 
 		character->Initialize();
+
+		GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 
 		bIsGameMode = true;
 	}

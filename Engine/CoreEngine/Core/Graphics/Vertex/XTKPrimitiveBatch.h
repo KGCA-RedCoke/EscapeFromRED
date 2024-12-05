@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "Core/Graphics/graphics_common_include.h"
 #include <DirectXCollision.h>
 #include <DirectXColors.h>
 #include <directxtk/Effects.h>
 #include <directxtk/PrimitiveBatch.h>
 #include <directxtk/VertexTypes.h>
+#include "Core/Graphics/graphics_common_include.h"
 
 #include "Core/Interface/ICoreInterface.h"
 #include "Core/Interface/IRenderable.h"

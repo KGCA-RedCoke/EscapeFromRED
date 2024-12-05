@@ -1,15 +1,22 @@
 ﻿#pragma once
-#include "Core/Entity/JObject.h"
+#include <fmod.hpp>
+#include "Core/Entity/Component/JActorComponent.h"
 
-class JAudioComponent : public JObject
+class JAudioComponent : public JActorComponent
 {
 public:
 	JAudioComponent();
-	explicit JAudioComponent(JTextView InName);
+	JAudioComponent(JTextView InName);
 	~JAudioComponent() override = default;
 
 public:
-	void Play();
+	void Initialize() override;
+	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
+	void Destroy() override;
+
+public:
+	void Play(bool bLoop = false);
 	void Stop();
 	void Pause();
 
@@ -18,4 +25,8 @@ protected:
 
 	bool bLoop;
 	bool bIsPlaying;
+	bool  bPaused;
+
+	FMOD::Sound*   mFmodSound;
+	FMOD::Channel* mFmodChannel;
 };

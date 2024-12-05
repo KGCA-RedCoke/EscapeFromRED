@@ -6,6 +6,8 @@
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Light/JLightComponent.h"
+#include "Core/Entity/Light/JLight_Point.h"
+#include "Core/Entity/Light/JLight_Spot.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -97,10 +99,17 @@ void GUI_Editor_Actor::DrawHierarchy()
 
 					if (n == 3 && mSelectedSceneComponent)
 					{
-						auto* light = mActorToEdit->CreateDefaultSubObject<JLightComponent>(g_ComponentList[n],
+						auto* light = mActorToEdit->CreateDefaultSubObject<JLight_Point>(g_ComponentList[n],
 								 mActorToEdit,
-								 mSelectedSceneComponent);
+								 mActorToEdit);
 						light->SetupAttachment(mSelectedSceneComponent);
+					}
+					if (n == 4 && mSelectedSceneComponent)
+					{
+						auto* meshComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(g_ComponentList[n],
+								 mActorToEdit,
+								 mActorToEdit);
+						meshComp->SetupAttachment(mSelectedSceneComponent);
 					}
 				}
 

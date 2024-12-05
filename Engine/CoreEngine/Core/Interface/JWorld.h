@@ -59,15 +59,22 @@ public:
 	class MMeshManager*             MeshManager;			// 메시
 	class MActorManager*            ActorManager;			// 액터
 	class MLevelManager*            LevelManager;			// 레벨
+	class MSoundManager*            SoundManager;			// 사운드
 	class XD3DDevice*               D3D11API;				// 디바이스
 
 
 public:
 	struct
 	{
-		Buffer::FBuffer_Light_Point Data[128];
+		Buffer::FBuffer_Light_Point Data[127];
 		uint32_t                    Count = 0;
 	} WorldPointLightData;
+
+	struct
+	{
+		Buffer::FBuffer_Light_Spot Data[127];
+		uint32_t                   Count = 0;
+	} WorldSpotLightData;
 
 	Thread::ThreadPool ThreadPool;		// 스레드
 

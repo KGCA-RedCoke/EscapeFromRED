@@ -71,7 +71,7 @@ void GUI_Editor_SkeletalMesh::DrawViewport() const
 			}
 		}
 	}
-	ImGui::EndChild();
+	// ImGui::EndChild();
 }
 
 void GUI_Editor_SkeletalMesh::DrawProperty() const
@@ -114,89 +114,33 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 {
 	if (mMeshObject)
 	{
-		ImGui::BeginGroup();
 
 		ImGui::Text("Material Slot");
 
-		const int32_t meshDataSize = mMeshObject->mPrimitiveMeshData.size();
-		for (int32_t i = 0; i < meshDataSize; ++i)
+		int32_t materialSize = mMeshObject->mPrimitiveMeshData[0]->GetSubMaterialNum();
+
+		for (int32_t j = 0; j < materialSize; ++j)
 		{
-			auto& subMeshes = mMeshObject->mPrimitiveMeshData[i]->GetSubMesh();
-			// auto  materialSlot = mMeshObject->mPrimitiveMeshData[i]->GetMaterialInstance();
-
-			const int32_t subMeshSize = subMeshes.size();
-
-			if (subMeshSize == 0)
+			ImGui::Text(mMeshObject->mMaterialInstances[j]->GetMaterialName().c_str());
+			ImGui::ImageButton("MaterialSlot", nullptr, ImVec2(100, 100));
+			// ImGui::Separator();
+				
+			if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 			{
+				const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+				const char*         str     = static_cast<const char*>(payload->Data);
 
-				ImGui::ImageButton("MaterialSlot", nullptr, ImVec2(100, 100));
+				auto metaData = Utils::Serialization::GetType(str);
 
-				if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+				if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
 				{
-					const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-					const char*         str     = static_cast<const char*>(payload->Data);
-
-					auto metaData = Utils::Serialization::GetType(str);
-
-					if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
+					if (auto matInstancePtr = MMaterialInstanceManager::Get().Load(str))
 					{
-						// if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
-						// {
-						// 	mMeshObject->mPrimitiveMeshData[i]->SetMaterialInstance(matInstancePtr);
-						// }
-					}
-
-				}
-
-				ImGui::SameLine();
-				// if (materialSlot)
-				// {
-				// 	ImGui::Text(materialSlot->GetMaterialName().c_str());
-				// }
-				// else
-				// {
-				// 	ImGui::Text("None Selected");
-				// }
-
-
-			}
-			else
-			{
-				for (int32_t j = 0; j < subMeshSize; ++j)
-				{
-
-					ImGui::ImageButton(nullptr, ImVec2(100, 100));
-					ImGui::Text(subMeshes[j]->GetName().c_str());
-
-					if (ImGui::IsMouseReleased(0) && ImGui::IsItemHovered() && ImGui::BeginDragDropTarget())
-					{
-						const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-						const char*         str     = static_cast<const char*>(payload->Data);
-
-						auto metaData = Utils::Serialization::GetType(str);
-
-						// if (metaData.AssetType == HASH_ASSET_TYPE_MATERIAL_INSTANCE)
-						// {
-						// 	if (auto matInstancePtr = MMaterialInstanceManager::Get().CreateOrLoad(str))
-						// 	{
-						// 		subMeshes[j]->SetMaterialInstance(matInstancePtr);
-						// 		ImGui::EndDragDropTarget();
-						//
-						// 	}
-						// }
-						// if (auto subMat = subMeshes[j]->GetMaterialInstance())
-						// {
-						// 	ImGui::Text(subMat->GetMaterialName().c_str());
-						// }
-						// else
-						// {
-						// 	ImGui::Text("NONE");
-						// }
+						mMeshObject->SetMaterialInstance(matInstancePtr, j);
 					}
 				}
 			}
 		}
-		ImGui::EndGroup();
 	}
 
 	ImGui::EndChild();
@@ -204,33 +148,35 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 
 void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
 {
-	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
-
-
-		ImGui::ImageButton(nullptr, ImVec2(100, 100));
-	// ImGui::Text(subMeshes[j]->GetName().c_str());
-
-	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
-	{
-		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-		const char*         str     = static_cast<const char*>(payload->Data);
-
-		auto metaData = Utils::Serialization::GetType(str);
-
-		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
-		{
-			// JAnimationClip* clip = MakePtr<JAnimationClip>();
-			// if (!Utils::Serialization::DeSerialize(str, clip.get()))
-			// {
-			// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-			// 				   "Game/Animation/Unreal Take.jasset");
-			// }
-			//
-			// mMeshObject->SetAnimation(clip);
-
-			ImGui::EndDragDropTarget();
-		}
-	}
+	// if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+	// {
+	// 	
+	// }
+	//
+	// 	ImGui::Dummy(ImVec2(100, 100));
+	// // ImGui::Text(subMeshes[j]->GetName().c_str());
+	//
+	// if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+	// {
+	// 	const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+	// 	const char*         str     = static_cast<const char*>(payload->Data);
+	//
+	// 	auto metaData = Utils::Serialization::GetType(str);
+	//
+	// 	if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
+	// 	{
+	// 		// JAnimationClip* clip = MakePtr<JAnimationClip>();
+	// 		// if (!Utils::Serialization::DeSerialize(str, clip.get()))
+	// 		// {
+	// 		// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+	// 		// 				   "Game/Animation/Unreal Take.jasset");
+	// 		// }
+	// 		//
+	// 		// mMeshObject->SetAnimation(clip);
+	//
+	// 		ImGui::EndDragDropTarget();
+	// 	}
+	// }
 }
 
 void GUI_Editor_SkeletalMesh::DrawSaveButton() const

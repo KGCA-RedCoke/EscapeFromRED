@@ -34,7 +34,8 @@ void JShader_Basic::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceCont
 		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_LIGHT, &g_LightData);
 
 	}
-	UpdateConstantData(InDeviceContext, "SpotLightConstantBuffer", &GetWorld.WorldPointLightData);
+	UpdateConstantData(InDeviceContext, "PointLightConstantBuffer", &GetWorld.WorldPointLightData);
+	UpdateConstantData(InDeviceContext, "SpotLightConstantBuffer", &GetWorld.WorldSpotLightData);
 
 
 	// 상수버퍼 넘겨주기

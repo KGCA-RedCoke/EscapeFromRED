@@ -242,6 +242,16 @@ namespace Buffer
 		float   Intensity = 1.f;
 	};
 
+	struct FBuffer_Light_Spot
+	{
+		FVector Position  = FVector::ZeroVector;
+		float   Range     = 200.f;
+		FVector Direction = {0, 0, 1};
+		float   Angle     = 45.f;
+		FVector Color     = FVector(0.8f, 0.68f, 0.48f);
+		float   Intensity = 1.f;
+	};
+
 	// Landscape 버퍼 인스턴스
 	struct FBufferInstance_LandScape
 	{

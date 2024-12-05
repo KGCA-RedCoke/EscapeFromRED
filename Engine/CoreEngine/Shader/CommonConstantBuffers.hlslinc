@@ -48,8 +48,14 @@ struct FSpotLight
 	float  Intensity;
 };
 
-cbuffer SpotLightConstantBuffer : register(b3)
+cbuffer PointLightConstantBuffer : register(b3)
 {
-	FPointLight PointLight[128];
-	uint        NumSpotLights;
+	FPointLight PointLight[127];
+	uint        NumPointLights;
+}
+
+cbuffer SpotLightConstantBuffer : register(b4)
+{
+	FSpotLight SpotLight[127];
+	uint       NumSpotLights;
 }

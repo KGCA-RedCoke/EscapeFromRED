@@ -108,7 +108,7 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		mBoundingBox.DrawDebug();
+		// mBoundingBox.DrawDebug();
 		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
 		float   dist     = distance.Length();
 		mMeshObject->AddInstance(dist);

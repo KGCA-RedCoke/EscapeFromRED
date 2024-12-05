@@ -99,8 +99,12 @@ constexpr const char* NAME_OBJECT_ACTOR_COMPONENT         = "JActorComponent";
 constexpr const char* NAME_OBJECT_SCENE_COMPONENT         = "JSceneComponent";
 constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT   = "JStaticMeshComponent";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_COMPONENT = "JSkeletalMeshComponent";
-constexpr const char* NAME_OBJECT_ACTOR                   = "JActor";
+constexpr const char* NAME_OBJECT_ACTOR                   = "AActor";
 constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
+constexpr const char* NAME_OBJECT_SKELETAL_MESH_ACTOR     = "JSkeletalMeshActor";
+constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
+constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLightSpot";
+constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLightPoint";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 
@@ -122,6 +126,9 @@ constexpr uint32_t HASH_EXT_JPG = StringHash_CompileTime(".jpg");
 constexpr uint32_t HASH_EXT_TGA = StringHash_CompileTime(".tga");
 constexpr uint32_t HASH_EXT_BMP = StringHash_CompileTime(".bmp");
 constexpr uint32_t HASH_EXT_DDS = StringHash_CompileTime(".dds");
+
+constexpr uint32_t HASH_EXT_WAV = StringHash_CompileTime(".wav");
+constexpr uint32_t HASH_EXT_MP3 = StringHash_CompileTime(".mp3");
 
 constexpr uint32_t HASH_EXT_HLSL = StringHash_CompileTime(".hlsl");
 //---------------------------------------------- String Func --------------------------------------------------------------

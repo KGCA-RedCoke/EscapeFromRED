@@ -1,8 +1,8 @@
 ﻿#include "JWorld.h"
 
 #include "Core/Entity/Actor/MActorManager.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
-#include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -55,14 +55,14 @@ void JWorld::Initialize()
 
 	LevelManager = &MLevelManager::Get();
 
+	SoundManager = &MSoundManager::Get();
+
 	GUIManager = &MGUIManager::Get();
 	GUIManager->Initialize(D3D11API->GetDevice(), D3D11API->GetImmediateDeviceContext());
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
-	OnDebugModeChanged.Bind([](bool bDebugMode){
-		
-	});
+	OnDebugModeChanged.Bind([](bool bDebugMode){});
 
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
 	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
@@ -77,6 +77,8 @@ void JWorld::Initialize()
 void JWorld::Update(float DeltaTime)
 {
 	GUIManager->Update(DeltaTime);
+
+	SoundManager->Update(DeltaTime);
 
 	LevelManager->Update(DeltaTime);
 
@@ -100,6 +102,8 @@ void JWorld::Render()
 void JWorld::Release()
 {
 	G_DebugBatch.Release();
+
+	SoundManager->Release();
 
 	GUIManager->Release();
 
@@ -139,18 +143,20 @@ void JWorld::SearchFiles_Recursive(const std::filesystem::path& InPath)
 									   [](unsigned char c){ return std::tolower(c); });
 
 				const uint32_t hash = StringHash(ext.c_str());
+				const JText    name = entry.path().string();
 
-				if (hash == HASH_EXT_PNG || hash == HASH_EXT_JPG || hash == HASH_EXT_DDS || hash == HASH_EXT_BMP)
+				switch (hash)
 				{
-					GetWorld.TextureManager->Load(entry.path().string());
-				}
-				else if (hash == HASH_EXT_HLSL)
-				{
-					GetWorld.ShaderManager->Load(entry.path().string());
-				}
-				else if (hash == Hash_EXT_JASSET)
-				{
-					GetWorld.MeshManager->Load(entry.path().string());
+				case HASH_EXT_PNG:
+				case HASH_EXT_JPG:
+				case HASH_EXT_DDS:
+				case HASH_EXT_BMP:
+					GetWorld.TextureManager->Load(name);
+					break;
+				case HASH_EXT_WAV:
+				case HASH_EXT_MP3:
+					GetWorld.SoundManager->Load(name);
+					break;
 				}
 			}
 		}
