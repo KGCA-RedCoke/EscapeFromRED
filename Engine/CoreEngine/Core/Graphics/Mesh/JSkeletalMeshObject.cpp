@@ -6,7 +6,7 @@
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 {
-	
+
 	mName       = InName;
 	mVertexSize = sizeof(Vertex::FVertexInfo_Base);
 	// mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
@@ -21,21 +21,20 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 	else
 	{
 		mPrimitiveMeshData = InData;
-		// JSkeletalMeshObject::CreateBuffers(TODO, TODO);
 	}
 
 	assert(mPrimitiveMeshData.size() > 0);
 
 	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
 
-	mSampleAnimation = MakePtr<JAnimationClip>();
-	if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset", mSampleAnimation.get()))
-	{
-		LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-					   "Game/Animation/Anim_Hands_Empty_Walk.jasset");
-	}
-	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
-	mSampleAnimation->Play();
+	// mSampleAnimation = MakePtr<JAnimationClip>();
+	// if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset", mSampleAnimation.get()))
+	// {
+	// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+	// 				   "Game/Animation/Anim_Hands_Empty_Walk.jasset");
+	// }
+	// mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
+	// mSampleAnimation->Play();
 }
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
@@ -166,7 +165,10 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JSkeletalMeshObject::Tick(float DeltaTime)
 {
-	mSampleAnimation->TickAnim(DeltaTime);
+	if (mSampleAnimation)
+	{
+		mSampleAnimation->TickAnim(DeltaTime);
+	}
 }
 
 void JSkeletalMeshObject::AddInstance(float InCameraDistance)

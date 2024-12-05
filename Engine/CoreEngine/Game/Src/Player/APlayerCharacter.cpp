@@ -73,13 +73,13 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 
 	if (InDirection.z != 0)
 	{
-		directionVec = InDirection.z > 0
+		directionVec = InDirection.z < 0
 						   ? -mFPSCamera->GetFlatForwardVector()
 						   : +mFPSCamera->GetFlatForwardVector();
 	}
 	if (InDirection.x != 0)
 	{
-		directionVec = InDirection.x > 0
+		directionVec = InDirection.x < 0
 						   ? -mFPSCamera->GetFlatRightVector()
 						   : +mFPSCamera->GetFlatRightVector();
 	}

@@ -11,7 +11,8 @@ AActor::AActor()
 }
 
 AActor::AActor(JTextView InName)
-	: JSceneComponent(InName)
+	: JSceneComponent(InName),
+	  mParentActor(nullptr)
 {
 	mObjectType = NAME_OBJECT_ACTOR;
 }

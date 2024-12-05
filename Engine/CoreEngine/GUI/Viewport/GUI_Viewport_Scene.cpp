@@ -9,6 +9,7 @@
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Player/APlayerCharacter.h"
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -56,6 +57,12 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 				break;
 
+			case HASH_ASSET_TYPE_Actor:
+				{
+					AActor* newActor = activeLevel->CreateActor<AActor>(name);
+					Utils::Serialization::DeSerialize(assetPath, newActor);
+				}
+				break;
 			default:
 				LOG_CORE_WARN("지원하지 않는 메시 타입.");
 				break;
@@ -105,14 +112,13 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
-		JTextView         d("Game/Mesh/Tree.jasset");
-		// ASampleCharacter* character = GetWorld.SpawnActor<ASampleCharacter>("Girl",
-		// 																	FVector::ZeroVector,
-		// 																	FVector::ZeroVector,
-		// 																	nullptr,
-		// 																	"Game/Mesh/SK_Hands_07.jasset");
-		//
-		// character->Initialize();
+		APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
+																			FVector::ZeroVector,
+																			FVector::ZeroVector,
+																			nullptr,
+																			"Game/Mesh/SK_Hands_07.jasset");
+
+		character->Initialize();
 
 		bIsGameMode = true;
 	}

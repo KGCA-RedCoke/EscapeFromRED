@@ -136,6 +136,7 @@
     <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\MMeshManager.h" />
     <ClInclude Include="Core\Graphics\Shader\FConstantBuffer.h" />
+    <ClInclude Include="Core\Graphics\Shader\JShader_2D.h" />
     <ClInclude Include="Core\Graphics\Shader\JShader_Basic.h" />
     <ClInclude Include="Core\Graphics\XD3DDevice.h" />
     <ClInclude Include="Core\Graphics\graphics_common_include.h" />
@@ -284,6 +285,7 @@
     <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\MMeshManager.cpp" />
     <ClCompile Include="Core\Graphics\Shader\FConstantBuffer.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JShader_2D.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JShader_Basic.cpp" />
     <ClCompile Include="Core\Graphics\XD3DDevice.cpp" />
     <ClCompile Include="Core\Graphics\Layer\XLayerBase.cpp" />

@@ -17,6 +17,7 @@ we need to have them defined at here at compile time.
 */
 // SPECTRUM_USE_LIGHT_THEME (light 버전)
 #define SPECTRUM_USE_DARK_THEME
+// #define SPECTRUM_USE_LIGHT_THEME
 
 /// Pick one, or have one defined already.
 #if !defined(SPECTRUM_USE_LIGHT_THEME) && !defined(SPECTRUM_USE_DARK_THEME)

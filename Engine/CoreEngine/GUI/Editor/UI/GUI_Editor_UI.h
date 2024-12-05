@@ -8,6 +8,10 @@ public:
 	~GUI_Editor_UI() override = default;
 
 public:
+	void ShowMenuBar() override;
 	void Update_Implementation(float DeltaTime) override;
 	void Render() override;
+
+private:
+	void DrawMenuBar();
 };

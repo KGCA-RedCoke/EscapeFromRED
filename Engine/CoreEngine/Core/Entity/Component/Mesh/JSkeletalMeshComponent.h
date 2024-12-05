@@ -34,3 +34,5 @@ private:
 	UPtr<JSkeletalMeshObject> mSkeletalMeshObject = nullptr;
 	UPtr<JAnimator>           mAnimator           = nullptr;
 };
+
+REGISTER_CLASS_TYPE(JSkeletalMeshComponent);

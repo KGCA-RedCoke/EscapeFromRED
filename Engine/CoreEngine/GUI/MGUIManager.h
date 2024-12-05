@@ -4,6 +4,7 @@
 
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
+class GUI_Editor_UI;
 class GUI_Editor_LandScape;
 class GUI_Inspector;
 class GUI_Editor_Material;
@@ -53,6 +54,7 @@ private:
 
 private:
 	GUI_Editor_Material*  mMaterialEditorRef;
+	GUI_Editor_UI*        mUIEditorRef;
 	GUI_Editor_LandScape* mLandScapeEditorRef;
 	GUI_Base*             mStaticGUI[static_cast<int32_t>(EGUIType::Max)];
 	bool                  bOpenFileBrowser;

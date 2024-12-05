@@ -11,6 +11,7 @@
 #include "Core/Window/Window.h"
 #include "Editor/GUI_Editor_Material.h"
 #include "Editor/LandScape/GUI_Editor_LandScape.h"
+#include "Editor/UI/GUI_Editor_UI.h"
 #include "Popup/GUI_Popup_FileBrowser.h"
 #include "Viewport/GUI_Viewport_Scene.h"
 
@@ -113,15 +114,22 @@ void MGUIManager::UpdateMainMenuBar()
 		{
 			if (ImGui::MenuItem(u8("머티리얼 에디터")))
 			{
-				if (!mMaterialEditorRef)
+				if (GUI_Editor_Material* materialEditor = Load<GUI_Editor_Material>("Material Editor"))
 				{
-					if (GUI_Editor_Material* materialEditor = Load<GUI_Editor_Material>("Material Editor"))
-					{
-						mMaterialEditorRef = materialEditor;
-					}
+					mMaterialEditorRef = materialEditor;
 				}
+
 				mMaterialEditorRef->bIsWindowOpen = true;
 
+			}
+
+			if (ImGui::MenuItem(u8("UI 에디터")))
+			{
+				if (GUI_Editor_UI* uiEditor = Load<GUI_Editor_UI>("UI Editor"))
+				{
+					mUIEditorRef = uiEditor;
+				}
+				mUIEditorRef->bIsWindowOpen = true;
 			}
 
 			if (ImGui::MenuItem(u8("지형 에디터")))
