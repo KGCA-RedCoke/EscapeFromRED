@@ -39,6 +39,7 @@ public:
 	void SetFontSize(const float InFontSize);
 
 	void SetScreenPosition(const JMath::TVector2& InLocation);
+	void SetNDCPosition(const JMath::TVector2& InLocation);
 
 private:
 	void AdjustTextFormat();

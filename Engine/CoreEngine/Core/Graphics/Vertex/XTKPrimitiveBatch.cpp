@@ -37,7 +37,9 @@ void XTKPrimitiveBatch::Initialize()
 
 void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
-	JCameraComponent* cam = GetWorld.CameraManager->GetCurrentMainCam();
+	JCameraComponent* cam = MShaderManager::Get().mCachedCamera;
+	if (!cam)
+		return;
 
 	mBatchEffect->SetWorld(FMatrix::Identity);
 	mBatchEffect->SetView(cam->GetViewMatrix());

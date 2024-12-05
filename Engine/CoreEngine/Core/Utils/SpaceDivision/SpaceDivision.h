@@ -20,15 +20,18 @@ namespace Oc
 
 		JArray<AActor*> Actors;
 
+		FNode*      Root        = nullptr;
 		FNode*      Parent      = nullptr;
 		UPtr<FNode> Children[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
-		void Render(JCameraComponent* InCamera) const;
+		void Render(JCameraComponent* InCamera);
 
 		void SetBoundArea(const FBoxShape& InBoundArea) { BoundArea = InBoundArea; }
-		void Subdivide();
+		void Subdivide(FNode* InRoot);
 		void Insert(AActor* InActor);
 		void InsertIntoChildren(AActor* InActor);
+		bool Remove(AActor* InActor);
+		void Clear();
 	};
 
 	class JTree
@@ -41,9 +44,12 @@ namespace Oc
 		void Update();
 		void Insert(AActor* InActor);
 		void Render(JCameraComponent* InCamera);
+		void Remove(AActor* InActor);
+		void Sort(AActor* InActor);
+		void ReClassify(AActor* InActor);
 
 	private:
-		void Subdivide(FNode* InNode, uint32_t InDepth);
+		void Subdivide(FNode* InNode, uint32_t InDepth, FNode* InRoot);
 
 	public:
 		JArray<AActor*> IgnoreFrustumActors;

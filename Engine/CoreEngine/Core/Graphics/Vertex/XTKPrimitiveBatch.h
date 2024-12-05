@@ -12,6 +12,8 @@
 
 #define G_DebugBatch XTKPrimitiveBatch::Get()
 
+class JCameraComponent;
+
 class XTKPrimitiveBatch : public TSingleton<XTKPrimitiveBatch>, public ICoreInterface, public IRenderable
 {
 public:
@@ -49,6 +51,12 @@ public:
 								GXMVECTOR InColor = Colors::White) const;
 	void DrawQuad_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InPointD,
 							HXMVECTOR InColor = Colors::White) const;
+
+public:
+	FORCEINLINE void SetCamera(JCameraComponent* InCamera) { TargetCamera = InCamera; };
+
+public:
+	JCameraComponent* TargetCamera = nullptr;
 
 private:
 	Ptr<BasicEffect>                         mBatchEffect;

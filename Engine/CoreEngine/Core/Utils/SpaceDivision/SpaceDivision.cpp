@@ -2,14 +2,36 @@
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
 
-void Oc::FNode::Render(JCameraComponent* InCamera) const
+void Oc::FNode::Render(JCameraComponent* InCamera)
 {
 	if (!Parent || InCamera->IsBoxInFrustum(BoundArea))
 	{
-		for (const auto& actor : Actors)
+		JArray<AActor*> actorsToSort;
+
+		BoundArea.DrawDebug();
+		std::erase_if(
+					  Actors,
+					  [&](AActor* actor){
+						  const bool bRemove =
+								  actor->IsMarkedAsDirty() && // 이동이 있었을 경우
+								  !BoundArea.Intersect(actor->GetBoundingVolume()); // 바운딩 박스가 현재 노드와 교차하지 않는 경우
+						  if (bRemove)
+						  {
+							  actorsToSort.emplace_back(actor);
+						  }
+						  else
+						  {
+							  actor->Draw();
+						  }
+						  return bRemove;
+					  });
+
+		for (const auto& actor : actorsToSort)
 		{
-			actor->Draw();
+			Root->Insert(actor);
+			actor->RemoveFlag(EObjectFlags::MarkAsDirty);
 		}
+
 		for (int i = 0; i < 8; ++i)
 		{
 			if (Children[i])
@@ -21,8 +43,10 @@ void Oc::FNode::Render(JCameraComponent* InCamera) const
 
 }
 
-void Oc::FNode::Subdivide()
+void Oc::FNode::Subdivide(FNode* InRoot)
 {
+	Root = InRoot;
+
 	const FVector center = BoundArea.Box.Center;
 	const FVector extent = BoundArea.Box.Extent * 0.5f;	// 부모 노드의 크기의 절반
 	const FVector min    = center - extent;
@@ -99,6 +123,45 @@ void Oc::FNode::InsertIntoChildren(AActor* InActor)
 	Actors.emplace_back(InActor);
 }
 
+bool Oc::FNode::Remove(AActor* InActor)
+{
+	// 현재 노드에 액터가 있는 경우 제거
+	if (const auto it = std::ranges::find(Actors, InActor); it != Actors.end())
+	{
+		Actors.erase(it);
+		return true;
+	}
+
+	// 리프 노드라면 더 이상 탐색 불필요
+	if (bIsLeaf)
+	{
+		return false;
+	}
+
+	// 자식 노드에서 제거 시도
+	for (int i = 0; i < 8; ++i)
+	{
+		if (Children[i] && Children[i]->Remove(InActor))
+		{
+			return true;
+		}
+	}
+
+	return false; // 액터를 찾지 못함
+}
+
+void Oc::FNode::Clear()
+{
+	Actors.clear();
+	for (int i = 0; i < 8; ++i)
+	{
+		if (Children[i])
+		{
+			Children[i]->Clear();
+		}
+	}
+}
+
 void Oc::JTree::Initialize(const FBoxShape& InRootBoundArea, uint32_t InDepth)
 {
 	if (mRootNode)
@@ -109,32 +172,10 @@ void Oc::JTree::Initialize(const FBoxShape& InRootBoundArea, uint32_t InDepth)
 	mRootNode            = MakeUPtr<FNode>();
 	mRootNode->BoundArea = InRootBoundArea;
 
-	Subdivide(mRootNode.get(), InDepth);
+	Subdivide(mRootNode.get(), InDepth, mRootNode.get());
 }
 
-void Oc::JTree::Update()
-{
-	// 지워질 액터들을 찾아서 제거
-	FNode* node = mRootNode.get();
-	while (node)
-	{
-		for (int i = 0; i < 8; ++i)
-		{
-			if (FNode* childNode = node->Children[i].get())
-			{
-				childNode->Actors.erase(
-										std::ranges::remove_if(
-															   childNode->Actors,
-															   [](AActor* actor){
-																   return actor->IsPendingKill();
-															   }).begin(),
-										childNode->Actors.end());
-			}
-		}
-
-		node = node->Children[0].get();
-	}
-}
+void Oc::JTree::Update() {}
 
 void Oc::JTree::Insert(AActor* InActor)
 {
@@ -157,7 +198,26 @@ void Oc::JTree::Render(JCameraComponent* InCamera)
 	mRootNode->Render(InCamera);
 }
 
-void Oc::JTree::Subdivide(FNode* InNode, uint32_t InDepth)
+void Oc::JTree::Remove(AActor* InActor)
+{
+	mRootNode->Remove(InActor);
+}
+
+void Oc::JTree::Sort(AActor* InActor)
+{
+	if (!mRootNode || !InActor)
+	{
+		return;
+	}
+
+	// 기존 액터 제거
+	Remove(InActor);
+
+	// 새 위치에 맞게 재삽입
+	Insert(InActor);
+}
+
+void Oc::JTree::Subdivide(FNode* InNode, uint32_t InDepth, FNode* InRoot)
 {
 	if (!InNode)
 	{
@@ -165,17 +225,18 @@ void Oc::JTree::Subdivide(FNode* InNode, uint32_t InDepth)
 	}
 	if (InNode->Depth >= InDepth) // 최대 깊이에 도달하거나 잘못된 노드일 경우 종료
 	{
+		InNode->Root    = InRoot;
 		InNode->bIsLeaf = true;
 		return;
 	}
 
 	// 노드 분할
-	InNode->Subdivide();
+	InNode->Subdivide(InRoot);
 
 	// 각 자식 노드에 대해 재귀적으로 분할 수행
 	for (int i = 0; i < 8; ++i)
 	{
 		InNode->Children[i]->Depth = InNode->Depth + 1; // 자식 노드의 깊이 설정
-		Subdivide(InNode->Children[i].get(), InDepth);
+		Subdivide(InNode->Children[i].get(), InDepth, InRoot);
 	}
 }

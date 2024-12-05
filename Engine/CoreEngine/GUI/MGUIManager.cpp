@@ -174,6 +174,11 @@ void MGUIManager::UpdateMainMenuBar()
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu(u8("에디터 테마")))
+		{
+			
+		}
+
 		ImGui::EndMainMenuBar();  // Make sure to close the main menu bar
 	}
 }

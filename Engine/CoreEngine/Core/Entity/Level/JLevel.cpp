@@ -88,12 +88,13 @@ void JLevel::UpdateLevel(float DeltaTime)
 				  mActors,
 				  [&](const UPtr<AActor>& actor){
 					  actor->Tick(DeltaTime);
+					  // if (actor->IsMarkedAsDirty())
+					  // {
+						 //  mOcTree->Sort(actor.get());
+						 //  actor->RemoveFlag(EObjectFlags::MarkAsDirty);
+					  // }
 					  return actor->IsPendingKill();
 				  });
-
-
-	// OcTree Update
-	// mOcTree->Update();
 }
 
 void JLevel::RenderLevel()

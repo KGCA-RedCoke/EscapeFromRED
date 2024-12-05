@@ -129,6 +129,17 @@ void JFont::SetScreenPosition(const JMath::TVector2& InLocation)
 	mScreenPosition = InLocation;
 }
 
+void JFont::SetNDCPosition(const JMath::TVector2& InLocation)
+{
+	FVector2 normalizedScreenPosition = FVector2(2 * InLocation.x - 1, 1 - 2 * InLocation.y);
+
+	auto screenSize = mRenderTarget->GetSize();
+
+	// NDC -> Screen (0 ~ 1)
+	mScreenPosition.x = normalizedScreenPosition.x * screenSize.width;
+	mScreenPosition.y = normalizedScreenPosition.y * screenSize.height;
+}
+
 void JFont::AdjustTextFormat()
 {
 	mTextFormat = nullptr;

@@ -174,6 +174,8 @@ protected:
 	FMatrix mLocalScaleMat    = FMatrix::Identity;
 	FMatrix mLocalMat         = FMatrix::Identity;
 
+	FMatrix mCachedLocalMat = FMatrix::Identity;
+
 	friend class GUI_Editor_Actor;
 	friend class GUI_Inspector;
 };

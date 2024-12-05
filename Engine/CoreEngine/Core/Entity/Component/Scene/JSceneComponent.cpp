@@ -314,6 +314,8 @@ JSceneComponent* JSceneComponent::GetComponentByName(const JText& InName)
 
 void JSceneComponent::UpdateTransform()
 {
+	mCachedLocalMat = mLocalMat;
+
 	// Step1. 로컬 좌표 변환
 	mLocalLocationMat = DirectX::XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z);
 
@@ -350,6 +352,11 @@ void JSceneComponent::UpdateTransform()
 	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
 	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
 	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
+	if (mCachedLocalMat != mLocalMat)
+	{
+		MarkAsDirty();
+	}
 }
 
 void JSceneComponent::UpdateWorldTransform()

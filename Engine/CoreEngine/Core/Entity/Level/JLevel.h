@@ -45,7 +45,8 @@ private:
 public:
 	UPtr<Oc::JTree> mOcTree;
 
-	JArray<UPtr<AActor>> mActors;	// 레벨에 속한 액터들
+	JArray<UPtr<AActor>>    mActors;	// 레벨에 속한 액터들
+	JHash<int32_t, int32_t> mActorIndexMap;	// 액터 인덱스 맵 (Node ID, Node Actor Index)
 
 	// TODO : 레벨과 관련된 변수들 추가
 	// Time, Mission, States ... etc

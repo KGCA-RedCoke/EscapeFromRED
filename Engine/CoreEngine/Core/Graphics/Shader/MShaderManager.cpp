@@ -10,11 +10,16 @@ MShaderManager::MShaderManager()
 	Initialize_Initialize();
 }
 
-void MShaderManager::UpdateCamera(JCameraComponent* InCameraObj) const
+void MShaderManager::UpdateCamera(JCameraComponent* InCameraObj)
 {
-	for (auto& shader : mManagedList | std::ranges::views::values)
+	if (mCachedCamera != InCameraObj)
 	{
-		shader->SetTargetCamera(InCameraObj);
+		mCachedCamera = InCameraObj;
+
+		for (auto& shader : mManagedList | std::ranges::views::values)
+		{
+			shader->SetTargetCamera(InCameraObj);
+		}
 	}
 }
 
