@@ -101,7 +101,7 @@ float3 ComputeSpotLight(float3     InWorldPos,
 						FSpotLight InSpotLight)
 {
 	// 광원으로부터 표면까지의 벡터
-	float3 LightDir = normalize(InSpotLight.Position - InWorldPos);
+	float3 LightDir = -normalize(InSpotLight.Position - InWorldPos);
     
 	// 광원 방향과 표면 법선 간의 내적 계산 (Diffuse 조명)
 	float DiffuseFactor = max(dot(InWorldNormal, LightDir), 0.0);

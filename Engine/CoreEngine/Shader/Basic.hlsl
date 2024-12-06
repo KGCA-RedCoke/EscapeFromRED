@@ -117,7 +117,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	}
 
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = 0.01f * diffuseColor;
+	float3 ambient = ambientColor * diffuseColor * 0.1f; // ambientColor 반영
 
 	for (int i = 0; i < NumPointLights; ++i)
 	{

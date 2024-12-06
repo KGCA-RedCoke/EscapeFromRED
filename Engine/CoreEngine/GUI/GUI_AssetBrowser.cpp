@@ -4,6 +4,7 @@
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Math/MathUtility.h"
 #include "Editor/GUI_Editor_Material.h"
@@ -458,7 +459,7 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 			if (itemData->FileType == EFileType::Folder)
 				return g_IconList.FolderIcon->GetSRV();
 			else if (itemData->FileType == EFileType::Texture)
-				return g_IconList.TextureIcon->GetSRV();
+				return GetWorld.TextureManager->Load(itemData->FilePath)->GetSRV();
 			switch (metaData.AssetType)
 			{
 			case HASH_ASSET_TYPE_Actor:
