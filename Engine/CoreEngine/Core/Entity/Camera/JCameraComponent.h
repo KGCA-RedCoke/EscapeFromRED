@@ -50,6 +50,7 @@ public:
 #pragma endregion
 
 	uint32_t                GetHash() const override;
+	uint32_t GetType() const override;
 	UPtr<IManagedInterface> Clone() const override;
 
 	//---------------------------------------------- Camera ---------------------------------------------------------------

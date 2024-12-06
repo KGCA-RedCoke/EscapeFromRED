@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Component/Scene/JSceneComponent.h"
 
+class JAnimationClip;
 class JAnimator;
 class JSkeletalMeshObject;
 
@@ -26,6 +27,7 @@ public:
 
 public:
 	void SetSkeletalMesh(JTextView InSkeletalMeshPath);
+	void SetAnimation(JAnimationClip* InAnimationClip);
 
 public:
 	void ShowEditor() override;

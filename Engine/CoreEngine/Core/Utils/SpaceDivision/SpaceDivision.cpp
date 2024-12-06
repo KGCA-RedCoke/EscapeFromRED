@@ -10,10 +10,14 @@ void Oc::FNode::Update()
 				  Actors,
 				  [&](AActor* Actor){
 
-					  if (Actor->IsMarkedAsDirty() && !BoundArea.Intersect(Actor->GetBoundingVolume()))
+					  if (Actor->IsMarkedAsDirty())
 					  {
-						  actorsToSort.emplace_back(Actor);
-						  return true;
+						  if (!BoundArea.Intersect(Actor->GetBoundingVolume()))
+						  {
+							  actorsToSort.emplace_back(Actor);
+							  return true;
+						  }
+						  Actor->RemoveFlag(MarkAsDirty);
 					  }
 					  return false;
 				  });
@@ -37,7 +41,7 @@ void Oc::FNode::Render(JCameraComponent* InCamera)
 {
 	if (!Parent || InCamera->IsBoxInFrustum(BoundArea))
 	{
-		BoundArea.DrawDebug();
+		// BoundArea.DrawDebug();
 		for (const auto& actor : Actors)
 		{
 			if (actor)

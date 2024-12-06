@@ -192,6 +192,11 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 
 	UpdateClipperAndItemSpacing(msIO, start_pos, currentItemIndexToFocus);
 
+	if (bOpenActorPopup)
+	{
+		OpenInputPopup(mNewFileName);
+	}
+
 	// Context menu (오른쪽 클릭)
 	if (ImGui::BeginPopupContextWindow())
 	{
@@ -237,14 +242,14 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 				}
 				if (ImGui::MenuItem(u8("액터 생성")))
 				{
-					newFileName = GenerateUniqueFileName(newRelativePath, "NewActor", ".jasset");
-
+					mNewFileName    = GenerateUniqueFileName(newRelativePath, "NewActor", ".jasset");
+					bOpenActorPopup = true;
 					// TODO: 액터 에디터 열기
-					if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Actor>(newFileName))
-					{
-						ptr->OpenIfNotOpened();
-						OnBrowserChange.Execute();
-					}
+					// if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Actor>(newFileName))
+					// {
+					// 	ptr->OpenIfNotOpened();
+					// 	OnBrowserChange.Execute();
+					// }
 				}
 				if (ImGui::MenuItem(u8("머티리얼 생성")))
 				{
@@ -630,7 +635,19 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 	switch (assetType)
 	{
 	case HASH_ASSET_TYPE_Actor:
-		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName))
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName, NAME_OBJECT_ACTOR))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+		break;
+	case HASH_ASSET_TYPE_Character:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName, NAME_OBJECT_CHARACTER))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+		break;
+	case HASH_ASSET_TYPE_PLAYER_CHARACTER:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName, NAME_OBJECT_PLAYER_CHARACTER))
 		{
 			newWindow->OpenIfNotOpened();
 		}
@@ -661,5 +678,36 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 	default:
 		LOG_CORE_WARN("Asset Browser : Unknown Asset Type");
 		break;
+	}
+}
+
+void GUI_AssetBrowser::OpenInputPopup(const JText& InAssetPath)
+{
+	static char inputBuffer[128] = ""; // 입력값 저장용 버퍼
+
+	ImGui::OpenPopup("Actor");
+	if (ImGui::BeginPopupModal("Actor", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text(u8("클래스 이름 입력(ex: AActor, ACharacter)"));
+		ImGui::InputText("##WindowName", inputBuffer, IM_ARRAYSIZE(inputBuffer));
+
+		if (ImGui::Button("Create"))
+		{
+			ImGui::CloseCurrentPopup();         // 팝업 닫기
+			if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(InAssetPath, inputBuffer))
+			{
+				newWindow->OpenIfNotOpened();
+				OnBrowserChange.Execute();
+				bOpenActorPopup = false;
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();         // 팝업 닫기
+			bOpenActorPopup = false;
+		}
+
+		ImGui::EndPopup();
 	}
 }

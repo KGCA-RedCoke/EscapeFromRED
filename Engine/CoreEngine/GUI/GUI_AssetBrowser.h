@@ -8,8 +8,8 @@ namespace fs = std::filesystem;
 enum class EFileType : uint8_t
 {
 	Folder,
-	Asset ,
-	Texture	
+	Asset,
+	Texture
 };
 
 /**
@@ -146,6 +146,8 @@ private:
 	void HandleFile();
 	void HandleAssetClicked(FBasicFilePreview* ItemData);
 
+	void OpenInputPopup(const JText& InAssetPath);
+
 public:
 	FOnBrowserChange OnBrowserChange;
 
@@ -180,6 +182,9 @@ private:
 	JArray<FBasicFilePreview*> mFilteredItems;
 	JWText                     mCurrentDirectory; // 현재 폴더 경로
 	JWText                     mCachedDirectory;  // 이전 폴더 경로
+
+	bool  bOpenActorPopup = false;
+	JText mNewFileName;
 
 	// -------------- Progress --------------
 	bool  bLoadProgress    = false;

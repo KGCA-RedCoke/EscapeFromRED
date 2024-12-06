@@ -5,7 +5,6 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
-#include "Core/Entity/Light/JLightComponent.h"
 #include "Core/Entity/Light/JLight_Point.h"
 #include "Core/Entity/Light/JLight_Spot.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -15,15 +14,20 @@
 #include "Core/Interface/JWorld.h"
 
 
-GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath)
+GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath, const JText& InClassName)
 	: GUI_Editor_Base(InPath),
-	  mSelectedSceneComponent(nullptr)
+	  mClassName(InClassName)
 {
-	mActorToEdit = GetWorld.ActorManager->Load(InPath);
+	mActorToEdit = UPtrCast<AActor>(MClassFactory::Get().Create(mClassName));
+	assert(mActorToEdit);
 
 	if (!Utils::Serialization::IsJAssetFileAndExist(InPath.c_str()))
 	{
-		Utils::Serialization::Serialize(InPath.c_str(), mActorToEdit);
+		Utils::Serialization::Serialize(InPath.c_str(), mActorToEdit.get());
+	}
+	else
+	{
+		Utils::Serialization::DeSerialize(InPath.c_str(), mActorToEdit.get());
 	}
 
 	mViewport = MViewportManager::Get().Load(mTitle, 1280, 720);
@@ -44,8 +48,8 @@ void GUI_Editor_Actor::ShowMenuBar()
 			if (mSelectedSceneComponent)
 			{
 				JBoxComponent* box = mActorToEdit->CreateDefaultSubObject<JBoxComponent>("BoxComponent",
-						 mActorToEdit,
-						 mActorToEdit);
+						 mActorToEdit.get(),
+						 mActorToEdit.get());
 				box->SetupAttachment(mSelectedSceneComponent);
 			}
 		}
@@ -70,7 +74,7 @@ void GUI_Editor_Actor::Update_Implementation(float DeltaTime)
 
 	if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_S))
 	{
-		Utils::Serialization::Serialize(mTitle.c_str(), mActorToEdit);
+		Utils::Serialization::Serialize(mTitle.c_str(), mActorToEdit.get());
 	}
 
 	mActorToEdit->Tick(DeltaTime);
@@ -115,6 +119,8 @@ void GUI_Editor_Actor::DrawHierarchy()
 	static bool item_highlight       = false;
 	int         item_highlighted_idx = -1; // Here we store our highlighted data as an index.
 
+	ImGui::InputText("Class Factory Name", mClassName.data(), mClassName.size());
+
 	if (ImGui::Button("Add Component"))
 	{
 		bAddComponentListBox = true;
@@ -134,15 +140,15 @@ void GUI_Editor_Actor::DrawHierarchy()
 					if (n == 3 && mSelectedSceneComponent)
 					{
 						auto* light = mActorToEdit->CreateDefaultSubObject<JLight_Point>(g_ComponentList[n],
-								 mActorToEdit,
-								 mActorToEdit);
+								 mActorToEdit.get(),
+								 mActorToEdit.get());
 						light->SetupAttachment(mSelectedSceneComponent);
 					}
 					if (n == 4 && mSelectedSceneComponent)
 					{
 						auto* meshComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(g_ComponentList[n],
-								 mActorToEdit,
-								 mActorToEdit);
+								 mActorToEdit.get(),
+								 mActorToEdit.get());
 						meshComp->SetupAttachment(mSelectedSceneComponent);
 					}
 				}
@@ -165,7 +171,7 @@ void GUI_Editor_Actor::DrawHierarchy()
 
 		if (ImGui::BeginTable("Hierarchy", 1, ImGuiTableFlags_RowBg))
 		{
-			DrawTreeNode(mActorToEdit);
+			DrawTreeNode(mActorToEdit.get());
 
 			ImGui::EndTable();
 		}
@@ -221,8 +227,8 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 			case HASH_ASSET_TYPE_STATIC_MESH:
 				{
 					auto* meshComp = mActorToEdit->CreateDefaultSubObject<JStaticMeshComponent>(ParseFile(str),
-							 mActorToEdit,
-							 mActorToEdit);
+							 mActorToEdit.get(),
+							 mActorToEdit.get());
 					meshComp->SetMeshObject(str);
 
 					meshComp->SetupAttachment(InSceneComponent);
@@ -230,8 +236,8 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:
 				auto* meshComp = mActorToEdit->CreateDefaultSubObject<JSkeletalMeshComponent>(ParseFile(str),
-						 mActorToEdit,
-						 mActorToEdit);
+						 mActorToEdit.get(),
+						 mActorToEdit.get());
 				meshComp->SetSkeletalMesh(str);
 
 				meshComp->SetupAttachment(InSceneComponent);

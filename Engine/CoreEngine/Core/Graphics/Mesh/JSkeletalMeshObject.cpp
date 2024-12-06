@@ -186,7 +186,7 @@ void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-
+		mInstanceData[j].MaterialData.Flag |= (1 << 11);
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
 

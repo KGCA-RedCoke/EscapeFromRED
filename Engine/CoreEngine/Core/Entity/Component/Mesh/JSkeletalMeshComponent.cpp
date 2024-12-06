@@ -19,7 +19,7 @@ JSkeletalMeshComponent::JSkeletalMeshComponent(JTextView InName, AActor* InOwner
 
 uint32_t JSkeletalMeshComponent::GetType() const
 {
-	return JSceneComponent::GetType();
+	return StringHash("SkeletonMeshComponent");
 }
 
 bool JSkeletalMeshComponent::Serialize_Implement(std::ofstream& FileStream)
@@ -136,9 +136,33 @@ void JSkeletalMeshComponent::SetSkeletalMesh(JTextView InSkeletalMeshPath)
 	mBoundingBox = mSkeletalMeshObject->GetBoundingBox();
 }
 
+void JSkeletalMeshComponent::SetAnimation(JAnimationClip* InAnimationClip)
+{
+	if (mSkeletalMeshObject)
+	{
+		mSkeletalMeshObject->SetAnimation(InAnimationClip);
+	}
+}
+
 void JSkeletalMeshComponent::ShowEditor()
 {
 	JSceneComponent::ShowEditor();
 
+	ImGui::SeparatorText(u8("스켈레탈 메시"));
 
+	ImGui::Image(nullptr, ImVec2(100, 100));
+	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+		{
+			const char* assetPath = static_cast<const char*>(payload->Data);
+			auto        metaData  = Utils::Serialization::GetType(assetPath);
+
+			if (metaData.AssetType == HASH_ASSET_TYPE_SKELETAL_MESH)
+			{
+				SetSkeletalMesh(assetPath);
+			}
+
+		}
+	}
 }

@@ -18,6 +18,14 @@ public:
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
 
+public:
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void ShowEditor() override;
+
 protected:
 	virtual void SetupInputComponent() {};
 
@@ -28,7 +36,7 @@ protected:
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
 	class JCameraComponent*       mFPSCamera;
 	UPtr<XKeyboardMouse>          mInput;
-	FVector2                      mMouseDelta;
-	FVector2                      mRotVelocity;
 
 };
+
+REGISTER_CLASS_TYPE(ACharacter);

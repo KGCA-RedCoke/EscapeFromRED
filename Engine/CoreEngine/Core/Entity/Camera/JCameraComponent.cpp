@@ -278,6 +278,11 @@ uint32_t JCameraComponent::GetHash() const
 	return StringHash(ParseFile(mName.data()).c_str());
 }
 
+uint32_t JCameraComponent::GetType() const
+{
+	return StringHash("CameraComponent");;
+}
+
 UPtr<IManagedInterface> JCameraComponent::Clone() const
 {
 	return nullptr;

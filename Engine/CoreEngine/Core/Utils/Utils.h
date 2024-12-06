@@ -102,6 +102,8 @@ constexpr const char* NAME_OBJECT_SKELETAL_MESH_COMPONENT = "JSkeletalMeshCompon
 constexpr const char* NAME_OBJECT_ACTOR                   = "AActor";
 constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_ACTOR     = "JSkeletalMeshActor";
+constexpr const char* NAME_OBJECT_CHARACTER               = "ACharacter";
+constexpr const char* NAME_OBJECT_PLAYER_CHARACTER        = "APlayerCharacter";
 constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
 constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLight_Spot";
 constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLight_Point";
@@ -113,6 +115,8 @@ constexpr uint32_t JAssetHash = StringHash_CompileTime("JASSET\0");
 
 constexpr uint32_t HASH_ASSET_TYPE_LEVEL             = StringHash_CompileTime("JLevel");
 constexpr uint32_t HASH_ASSET_TYPE_Actor             = StringHash_CompileTime("JActor");
+constexpr uint32_t HASH_ASSET_TYPE_Character         = StringHash_CompileTime("ACharacter");
+constexpr uint32_t HASH_ASSET_TYPE_PLAYER_CHARACTER  = StringHash_CompileTime("APlayerCharacter");
 constexpr uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash_CompileTime("J3DObject");
 constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash_CompileTime("JSkeletalMesh");
 constexpr uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash_CompileTime("JMaterial");

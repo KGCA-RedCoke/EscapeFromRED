@@ -1,11 +1,13 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
 
-// #define GET_PLAYER APlayerCharacter::Get()
+
+class JAnimationClip;
 
 class APlayerCharacter : public ACharacter/*, public TSingleton<APlayerCharacter>*/
 {
 public:
+	APlayerCharacter();
 	APlayerCharacter(JTextView InName, JTextView InMeshPath);
 
 public:
@@ -13,23 +15,21 @@ public:
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
 
+public:
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void ShowEditor() override;
+
 private:
 	void SetupInputComponent() override;
 	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
 
-
-// #pragma region Singleton Boilerplate
-//
-// private:
-// 	friend class TSingleton<APlayerCharacter>;
-//
-// 	APlayerCharacter()           = default;
-// 	~APlayerCharacter() override = default;
-//
-// public:
-// 	APlayerCharacter(const APlayerCharacter&)            = delete;
-// 	APlayerCharacter& operator=(const APlayerCharacter&) = delete;
-//
-// #pragma endregion
+private:
+	UPtr<JAnimationClip> mWalkAnimation;
 
 };
+
+REGISTER_CLASS_TYPE(APlayerCharacter);

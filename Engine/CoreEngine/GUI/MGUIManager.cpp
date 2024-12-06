@@ -107,6 +107,12 @@ void MGUIManager::UpdateMainMenuBar()
 			{
 				bOpenFileBrowser = true;
 			}
+			if (ImGui::MenuItem(u8("에셋 브라우저")))
+			{
+				static int32_t count = 0;
+				Load<GUI_AssetBrowser>(std::format("{}_{}", Name_AssetBrowser, count++))->Initialize();
+
+			}
 			ImGui::EndMenu();
 		}
 
@@ -175,9 +181,7 @@ void MGUIManager::UpdateMainMenuBar()
 		}
 
 		if (ImGui::BeginMenu(u8("에디터 테마")))
-		{
-			
-		}
+		{}
 
 		ImGui::EndMainMenuBar();  // Make sure to close the main menu bar
 	}

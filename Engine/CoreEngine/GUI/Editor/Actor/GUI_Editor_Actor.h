@@ -31,7 +31,8 @@ class GUI_Editor_Actor : public GUI_Editor_Base
 {
 public:
 	/** 생성자 인자로 액터경로(이미 존재하는 에셋일 경우) 또는 액터 이름(새로 만들경우)를 넘겨준다. */
-	GUI_Editor_Actor(const JText& InPath);
+	GUI_Editor_Actor(const JText& InPath, const JText& InClassName = "AActor");
+
 	~GUI_Editor_Actor() override = default;
 
 public:
@@ -62,7 +63,8 @@ private:
 	void DrawDetails();
 
 private:
-	class AActor*    mActorToEdit;			// 편집할 액터
-	JSceneComponent* mSelectedSceneComponent;
-	bool             bAddComponentListBox = false;
+	UPtr<class AActor> mActorToEdit;			// 편집할 액터
+	JSceneComponent*   mSelectedSceneComponent;
+	bool               bAddComponentListBox = false;
+	JText              mClassName;
 };
