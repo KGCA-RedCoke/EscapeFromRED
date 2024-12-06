@@ -59,7 +59,7 @@ namespace ImGui
             colors[ImGuiCol_ScrollbarGrab] = ColorConvertU32ToFloat4(Spectrum::GRAY400);
             colors[ImGuiCol_ScrollbarGrabHovered] = ColorConvertU32ToFloat4(Spectrum::GRAY600);
             colors[ImGuiCol_ScrollbarGrabActive] = ColorConvertU32ToFloat4(Spectrum::GRAY700);
-            colors[ImGuiCol_CheckMark] = ColorConvertU32ToFloat4(Spectrum::BLUE500);
+            colors[ImGuiCol_CheckMark] = ColorConvertU32ToFloat4(Spectrum::ORANGE700);
             colors[ImGuiCol_SliderGrab] = ColorConvertU32ToFloat4(Spectrum::GRAY700);
             colors[ImGuiCol_SliderGrabActive] = ColorConvertU32ToFloat4(Spectrum::GRAY800);
             colors[ImGuiCol_Button] = ColorConvertU32ToFloat4(Spectrum::GRAY75); // match default button to Spectrum's 'Action Button'.
@@ -84,7 +84,7 @@ namespace ImGui
             colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
             colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
             colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
-            colors[ImGuiCol_CheckMark] = ColorConvertU32ToFloat4(Spectrum::GRAY50);
+            // colors[ImGuiCol_CheckMark] = ColorConvertU32ToFloat4(Spectrum::GRAY50);
             colors[ImGuiCol_Tab] = ColorConvertU32ToFloat4(Spectrum::GRAY300);
             colors[ImGuiCol_TabSelected] = ColorConvertU32ToFloat4(Spectrum::BLUE500);
             colors[ImGuiCol_TabHovered] = ColorConvertU32ToFloat4(Spectrum::BLUE700);

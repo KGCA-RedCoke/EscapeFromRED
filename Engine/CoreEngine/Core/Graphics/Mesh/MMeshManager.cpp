@@ -149,8 +149,8 @@ void MMeshManager::GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject
 	skel->mInstanceBuffer_Bone = bone;
 }
 
-void MMeshManager::PushCommand(uint32_t                  NameHash, JMaterialInstance* InMaterialRef,
-							   const FInstanceData_Mesh& InInstanceData)
+void MMeshManager::PushCommand(uint32_t            NameHash, JMaterialInstance* InMaterialRef,
+							   FInstanceData_Mesh& InInstanceData)
 {
 	assert(mBufferList.contains(NameHash));
 

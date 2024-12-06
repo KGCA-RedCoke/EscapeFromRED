@@ -8,6 +8,7 @@ JSkeletalMeshActor::JSkeletalMeshActor()
 }
 
 JSkeletalMeshActor::JSkeletalMeshActor(JTextView InName, JTextView SavedMeshPath)
+	: AActor(InName)
 {
 	mObjectType = NAME_OBJECT_SKELETAL_MESH_ACTOR;
 	CreateMeshComponent(SavedMeshPath);
@@ -66,4 +67,5 @@ void JSkeletalMeshActor::CreateMeshComponent(JTextView InMeshObject)
 	// 메시 할당
 	mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>(InMeshObject, this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshObject);
+	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 }

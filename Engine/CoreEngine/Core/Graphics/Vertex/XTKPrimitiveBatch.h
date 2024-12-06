@@ -14,7 +14,7 @@
 
 class JCameraComponent;
 
-class XTKPrimitiveBatch : public TSingleton<XTKPrimitiveBatch>, public ICoreInterface, public IRenderable
+class XTKPrimitiveBatch : public TSingleton<XTKPrimitiveBatch>, public ICoreInterface
 {
 public:
 #pragma region Core Interface
@@ -24,11 +24,9 @@ public:
 #pragma endregion
 
 #pragma region Render Interface
-	void PreRender() override;
-	void AddInstance(float InCameraDistance) override;
-	void PostRender() override;
-	void Draw() override;
-	void DrawID(uint32_t ID) override {};
+	void PreRender(const FMatrix& InView, const FMatrix& InProj) ;
+	void PostRender() ;
+	void Draw() ;
 #pragma endregion
 
 public:

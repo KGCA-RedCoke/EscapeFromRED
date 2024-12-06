@@ -35,6 +35,9 @@ public:
 	~GUI_Editor_Actor() override = default;
 
 public:
+	void ShowMenuBar() override;
+
+public:
 	void Initialize() override;
 	void Update_Implementation(float DeltaTime) override;
 	void Render() override;

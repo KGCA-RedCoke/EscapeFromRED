@@ -95,6 +95,15 @@ void JStaticMeshComponent::Tick(float DeltaTime)
 	// TransformComponent에서 위치 업데이트
 	JSceneComponent::Tick(DeltaTime);
 
+	// Step1.1 프러스텀 박스(OBB) 업데이트
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+
+	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
+	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
+	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
 	// MeshObject의 버퍼 업데이트
 	if (mMeshObject)
 	{
@@ -108,7 +117,7 @@ void JStaticMeshComponent::Draw()
 	// MeshObject의 Draw 호출
 	if (mMeshObject)
 	{
-		// mBoundingBox.DrawDebug();
+		mBoundingBox.DrawDebug();
 		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
 		float   dist     = distance.Length();
 		mMeshObject->AddInstance(dist);

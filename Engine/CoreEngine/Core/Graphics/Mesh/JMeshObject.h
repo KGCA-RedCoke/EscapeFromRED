@@ -49,8 +49,8 @@ public:
 public:
 	void UpdateInstance_Transform(const FMatrix& InWorldMatrix = FMatrix::Identity);
 
-	void    SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
-	int32_t GetMaterialCount() const;
+	virtual void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
+	int32_t      GetMaterialCount() const;
 
 	JMaterialInstance* GetMaterialInstance(uint32_t InIndex = 0) const;
 	JMaterialInstance* GetMaterialInstance(const JText& InName) const;

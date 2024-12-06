@@ -10,6 +10,7 @@
 #include "Core/Entity/Light/JLight_Spot.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
 
@@ -30,6 +31,27 @@ GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath)
 
 	mCamera = MCameraManager::Get().Load<JCamera_Debug>(mTitle);
 	assert(mCamera);
+}
+
+void GUI_Editor_Actor::ShowMenuBar()
+{
+	GUI_Editor_Base::ShowMenuBar();
+
+	if (ImGui::BeginMenu(u8("추가")))
+	{
+		if (ImGui::MenuItem(u8("박스")/*, nullptr, false, mActorToEdit != nullptr*/))
+		{
+			if (mSelectedSceneComponent)
+			{
+				JBoxComponent* box = mActorToEdit->CreateDefaultSubObject<JBoxComponent>("BoxComponent",
+						 mActorToEdit,
+						 mActorToEdit);
+				box->SetupAttachment(mSelectedSceneComponent);
+			}
+		}
+		ImGui::EndMenu();
+
+	}
 }
 
 void GUI_Editor_Actor::Initialize()
@@ -66,7 +88,12 @@ void GUI_Editor_Actor::Render()
 
 	Super::Render();
 
+	G_DebugBatch.PreRender(mCamera->GetViewMatrix(), mCamera->GetProjMatrix());
+
 	mActorToEdit->Draw();
+
+	G_DebugBatch.PostRender();
+
 	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 }
 

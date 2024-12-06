@@ -38,6 +38,7 @@ void MShaderManager::Initialize_Initialize()
 	BasicShader = Load<JShader_Basic>(NAME_SHADER_BASIC);
 	IDShader    = Load(NAME_SHADER_ID);
 	ColorShader = Load(NAME_SHADER_SIMPLE_COLOR);
+	UIShader    = Load(NAME_SHADER_UI);
 
 	Load(NAME_SHADER_GNOMON);
 

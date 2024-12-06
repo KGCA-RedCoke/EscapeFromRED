@@ -100,24 +100,27 @@ float3 ComputeSpotLight(float3     InWorldPos,
 						float3     InWorldNormal,
 						FSpotLight InSpotLight)
 {
-	float3 lightDir           = InSpotLight.Position - InWorldPos;
-	float3 lightDirNormalized = normalize(InSpotLight.Position - InWorldPos);
-	float  lightDistance      = length(lightDir);
+	// 광원으로부터 표면까지의 벡터
+	float3 LightDir = normalize(InSpotLight.Position - InWorldPos);
+    
+	// 광원 방향과 표면 법선 간의 내적 계산 (Diffuse 조명)
+	float DiffuseFactor = max(dot(InWorldNormal, LightDir), 0.0);
 
-	if (lightDistance > InSpotLight.Range)
-	{
-		return float3(0, 0, 0);
-	}
+	// 표면이 SpotLight 조사각 내에 있는지 확인
+	float SpotEffect = dot(LightDir, -normalize(InSpotLight.Direction)); // 광원 방향과 표면 방향 비교
+	SpotEffect = smoothstep(cos(radians(InSpotLight.SpotAngle)), 1.0, SpotEffect); // 부드러운 경계 처리
 
-	float lightIntensity = saturate(1.0f - lightDistance / InSpotLight.Range) * InSpotLight.Intensity;
-	float lightFactor    = saturate(dot(InWorldNormal, lightDirNormalized));
+	// 광원의 범위(Range) 기반 감쇠
+	float Distance = length(InSpotLight.Position - InWorldPos);
+	float RangeAttenuation = saturate(1.0 - (Distance / InSpotLight.Range)); // 선형 감쇠
 
-	float spotFactor  = dot(-lightDirNormalized, InSpotLight.Direction);
-	float spotFactor2 = smoothstep(InSpotLight.SpotAngle, InSpotLight.SpotAngle * 0.9f, spotFactor);
+	// 조명 색과 강도(Intensity) 적용
+	float3 LightColor = InSpotLight.Color * InSpotLight.Intensity;
 
-	float3 lightColor = InSpotLight.Color * lightIntensity * lightFactor * spotFactor2;
+	// 최종 조명 계산
+	float3 FinalLight = LightColor * DiffuseFactor * SpotEffect * RangeAttenuation;
 
-	return lightColor;
+	return FinalLight;
 }
 
 float3 ComputePBR(float3     baseColor,    // Base Color
@@ -135,7 +138,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 	const float PI = 3.14159265359;
 
 	// Roughness 처리
-	roughness = clamp(roughness, 0.04, 1.0);
+	roughness   = clamp(roughness, 0.04, 1.0);
 	float alpha = roughness * roughness;
 
 	// Halfway 벡터 계산
@@ -143,7 +146,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 
 	// Fresnel 계산
 	float3 F0 = lerp(float3(specular, specular, specular), baseColor, metallic);
-	float3 F = F0 + (1.0 - F0) * pow(1.0 - dot(H, V), 5.0);
+	float3 F  = F0 + (1.0 - F0) * pow(1.0 - dot(H, V), 5.0);
 
 	// GGX Geometry Function
 	float NdotV = max(dot(N, V), 0.0);
@@ -152,7 +155,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 
 	float G1 = NdotV / (NdotV * (1.0 - alpha) + alpha);
 	float G2 = NdotL / (NdotL * (1.0 - alpha) + alpha);
-	float G = G1 * G2;
+	float G  = G1 * G2;
 
 	// GGX Normal Distribution Function
 	float D = alpha / (PI * pow(NdotH * NdotH * (alpha - 1.0) + 1.0, 2.0));
@@ -168,7 +171,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 	specularBRDF *= ao;
 
 	// 최종 조합
-	albedo = diffuseBRDF * NdotL;
+	albedo          = diffuseBRDF * NdotL;
 	float3 lighting = (diffuseBRDF + specularBRDF) * NdotL * lightColor;
 
 	return lighting;

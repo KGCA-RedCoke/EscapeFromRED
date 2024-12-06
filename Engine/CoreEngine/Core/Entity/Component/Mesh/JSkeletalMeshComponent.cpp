@@ -88,6 +88,15 @@ void JSkeletalMeshComponent::Tick(float DeltaTime)
 	// TransformComponent에서 위치 업데이트
 	JSceneComponent::Tick(DeltaTime);
 
+	// Step1.1 프러스텀 박스(OBB) 업데이트
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+
+	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
+	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
+	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
 	// MeshObject의 버퍼 업데이트
 	if (mSkeletalMeshObject)
 	{
@@ -103,7 +112,7 @@ void JSkeletalMeshComponent::Draw()
 	{
 		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
 		float   dist     = distance.Length();
-
+		mBoundingBox.DrawDebug();
 		mSkeletalMeshObject->AddInstance(dist);
 	}
 
@@ -124,6 +133,7 @@ void JSkeletalMeshComponent::SetSkeletalMesh(JTextView InSkeletalMeshPath)
 {
 	mSkeletalMeshObject = GetWorld.MeshManager->Clone<JSkeletalMeshObject>(InSkeletalMeshPath.data());
 	// mAnimator           = MakeUPtr<JAnimator>(mSkeletalMeshObject->mSkeletalMesh->mSkeleton);
+	mBoundingBox = mSkeletalMeshObject->GetBoundingBox();
 }
 
 void JSkeletalMeshComponent::ShowEditor()

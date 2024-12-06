@@ -20,9 +20,10 @@ private:
 	void DrawViewport() const;
 	void DrawProperty() const;
 	void DrawMaterialSlot() const;
-	void DrawAnimationPreview() const;
+	void DrawAnimationPreview();
 	void DrawSaveButton() const;
 
 private:
 	class JSkeletalMeshObject* mMeshObject;
+	UPtr<class JAnimationClip> mPreviewAnimationClip;
 };

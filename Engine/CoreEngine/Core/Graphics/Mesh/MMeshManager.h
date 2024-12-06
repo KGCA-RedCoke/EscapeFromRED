@@ -14,7 +14,7 @@ public:
 	void GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 	void GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 
-	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, const FInstanceData_Mesh& InInstanceData);
+	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, FInstanceData_Mesh& InInstanceData);
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:

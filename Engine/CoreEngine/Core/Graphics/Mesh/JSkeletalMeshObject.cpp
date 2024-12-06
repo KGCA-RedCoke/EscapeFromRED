@@ -26,8 +26,6 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 	assert(mPrimitiveMeshData.size() > 0);
 
 	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
-
-	// mSampleAnimation = MakePtr<JAnimationClip>();
 	// if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset", mSampleAnimation.get()))
 	// {
 	// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
@@ -38,7 +36,8 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 }
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
-	: JMeshObject(InName, InData) {}
+	: JMeshObject(InName, InData)
+{}
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	: JMeshObject(Other)
@@ -46,11 +45,6 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	mSkeletalMesh        = Other.mSkeletalMesh;
 	mSampleAnimation     = Other.mSampleAnimation;
 	mInstanceBuffer_Bone = Other.mInstanceBuffer_Bone;
-
-	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
-	{
-		mInstanceData[i].MaterialData.Flag |= (1 << 11);
-	}
 }
 
 UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
@@ -60,29 +54,34 @@ UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 
 void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 {
-	// const auto& skinData  = mSkeletalMesh->GetSkinData();
-	// const auto& animPoses = mSampleAnimation->GetAnimPoses();
-	//
-	// const int32_t boneCount = skinData->GetInfluenceBoneCount();
-	// FMatrix       updateBoneMatrixBuffer[255];
-	//
-	// // 본 업데이트
-	// for (int32_t i = 0; i < boneCount; ++i)
-	// {
-	// 	const JText jointName = skinData->GetInfluenceBoneName(i);
-	// 	FMatrix     newPose   = skinData->GetInfluenceBoneInverseBindPose(jointName);
-	//
-	// 	// 최종 본 변환 행렬 = 본 로컬 변환 행렬 * 본 역바인드 행렬(부모 본의 역바인드 행렬)
-	// 	updateBoneMatrixBuffer[i] = newPose * animPoses[i]; /* * newAnimMatrix (여기에 애니메이션 프레임간의 보간된 본 로컬 변환 행렬을 곱해줌) */
-	// }
-	//
-	// Utils::DX::UpdateDynamicBuffer(
-	// 							   InDeviceContext,
-	// 							   mInstanceBuffer_Bone.Buffer_Bone.Get(),
-	// 							   updateBoneMatrixBuffer,
-	// 							   boneCount * sizeof(FMatrix));
-	//
-	// InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
+	if (mSampleAnimation == nullptr)
+	{
+		return;
+	}
+
+	const auto& skinData  = mSkeletalMesh->GetSkinData();
+	const auto& animPoses = mSampleAnimation->GetAnimPoses();
+
+	const int32_t boneCount = skinData->GetInfluenceBoneCount();
+	FMatrix       updateBoneMatrixBuffer[255];
+
+	// 본 업데이트
+	for (int32_t i = 0; i < boneCount; ++i)
+	{
+		const JText jointName = skinData->GetInfluenceBoneName(i);
+		FMatrix     newPose   = skinData->GetInfluenceBoneInverseBindPose(jointName);
+
+		// 최종 본 변환 행렬 = 본 로컬 변환 행렬 * 본 역바인드 행렬(부모 본의 역바인드 행렬)
+		updateBoneMatrixBuffer[i] = newPose * animPoses[i]; /* * newAnimMatrix (여기에 애니메이션 프레임간의 보간된 본 로컬 변환 행렬을 곱해줌) */
+	}
+
+	Utils::DX::UpdateDynamicBuffer(
+								   InDeviceContext,
+								   mInstanceBuffer_Bone.Buffer_Bone.Get(),
+								   updateBoneMatrixBuffer,
+								   boneCount * sizeof(FMatrix));
+
+	InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
 
 	// if (!mLightMesh)
 	// {
@@ -157,8 +156,10 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 		auto* matInstance = GetWorld.MaterialInstanceManager->Load(materialPath);
 
 		SetMaterialInstance(matInstance, i);
-		mInstanceData[i].MaterialData.Flag |= 1 << 11;
 	}
+
+	// Bounding Box
+	Utils::Serialization::DeSerialize_Primitive(&mBoundingBox, sizeof(mBoundingBox), InFileStream);
 
 	return true;
 }
@@ -198,7 +199,6 @@ void JSkeletalMeshObject::Draw()
 
 	// 최종 본 행렬 업데이트
 	UpdateBoneBuffer(deviceContext);
-
 	JMeshObject::Draw();
 }
 
@@ -245,7 +245,16 @@ void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 		mSampleAnimation = nullptr;
 	}
 
+	mSampleAnimation = InAnimation;
+
 	// mSampleAnimation = InAnimation;
 	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
 	mSampleAnimation->Play();
+}
+
+void JSkeletalMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
+{
+	JMeshObject::SetMaterialInstance(InMaterialInstance, InIndex);
+
+	mInstanceData[InIndex].MaterialData.Flag |= (1 << 11);
 }

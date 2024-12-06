@@ -19,6 +19,11 @@ void GUI_Editor_UI::ShowMenuBar()
 
 	if (ImGui::BeginMenuBar())
 	{
+		if (ImGui::BeginMenu("Button"))
+		{
+
+			ImGui::EndMenu();
+		}
 
 		ImGui::EndMenuBar();
 	}
@@ -31,13 +36,13 @@ void GUI_Editor_UI::Update_Implementation(float DeltaTime)
 
 	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
 
-	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
-	{
-		if (mCamera)
-		{
-			mCamera->Tick(mDeltaTime);
-		}
-	}
+	// if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
+	// {
+	// 	if (mCamera)
+	// 	{
+	// 		mCamera->Tick(mDeltaTime);
+	// 	}
+	// }
 
 }
 
@@ -47,15 +52,4 @@ void GUI_Editor_UI::Render()
 	MViewportManager::Get().SetRenderTarget(mTitle.c_str(), FLinearColor::Gallary);
 
 	MShaderManager::Get().UpdateCamera(mCamera);
-
-	G_DebugBatch.PreRender();
-	G_DebugBatch.DrawGrid_Implement(
-									{mWindowSize.x, 0},
-									{0, mWindowSize.y},
-									{0, 0},
-									16,
-									16,
-									Colors::Blue
-								   );
-	G_DebugBatch.PostRender();
 }

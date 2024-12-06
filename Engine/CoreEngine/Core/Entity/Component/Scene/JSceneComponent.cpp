@@ -2,8 +2,36 @@
 
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
+#include "Core/Graphics/Material/MMaterialInstanceManager.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
 #include "imgui/imgui_stdlib.h"
+
+JSceneComponent_2D::JSceneComponent_2D() {}
+
+JSceneComponent_2D::JSceneComponent_2D(JTextView InName, AActor* InOwnerActor) {}
+
+JSceneComponent_2D::~JSceneComponent_2D() {}
+
+bool JSceneComponent_2D::Serialize_Implement(std::ofstream& FileStream)
+{
+	return JActorComponent::Serialize_Implement(FileStream);
+}
+
+bool JSceneComponent_2D::DeSerialize_Implement(std::ifstream& InFileStream)
+{
+	return JActorComponent::DeSerialize_Implement(InFileStream);
+}
+
+void JSceneComponent_2D::Initialize()
+{
+	m2DMaterialInstance = GetWorld.MaterialInstanceManager->Load(NAME_MAT_2D);
+}
+
+void JSceneComponent_2D::Tick(float DeltaTime)
+{
+	JActorComponent::Tick(DeltaTime);
+}
 
 JSceneComponent::JSceneComponent()
 	: mParentSceneComponent(nullptr)
@@ -344,15 +372,6 @@ void JSceneComponent::UpdateTransform()
 	mWorldRotation = rot;
 	mWorldScale    = scale;
 
-	// Step1.1 프러스텀 박스(OBB) 업데이트
-	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
-	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
-	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
-
-	mBoundingBox.Box.Center = 0.5f * (mBoundingBox.Max + mBoundingBox.Min);
-	mBoundingBox.Box.Center = XMVector3Transform(mBoundingBox.Box.Center, mWorldMat);
-	mBoundingBox.Box.Extent = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
-
 	if (mCachedLocalMat != mLocalMat)
 	{
 		MarkAsDirty();
@@ -373,4 +392,35 @@ void JSceneComponent::UpdateWorldTransform()
 										 mWorldLocation.x,
 										 mWorldLocation.y,
 										 mWorldLocation.z);
+}
+
+JBoxComponent::JBoxComponent()
+	: JSceneComponent() {}
+
+JBoxComponent::JBoxComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
+	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent) {}
+
+void JBoxComponent::Initialize()
+{
+	JSceneComponent::Initialize();
+}
+
+void JBoxComponent::Tick(float DeltaTime)
+{
+	JSceneComponent::Tick(DeltaTime);
+}
+
+void JBoxComponent::Draw()
+{
+	mBoundingBox.DrawDebug();
+}
+
+void JBoxComponent::ShowEditor()
+{
+	JSceneComponent::ShowEditor();
+
+	ImGui::SeparatorText(u8("박스 컴포넌트"));
+
+	ImGui::DragFloat3(u8("중심"), &mBoundingBox.Box.Center.x, 0.1f);
+	ImGui::DragFloat3(u8("반지름"), &mBoundingBox.Box.Extent.x, 0.1f);
 }

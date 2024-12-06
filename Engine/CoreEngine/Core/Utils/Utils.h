@@ -103,8 +103,8 @@ constexpr const char* NAME_OBJECT_ACTOR                   = "AActor";
 constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_ACTOR     = "JSkeletalMeshActor";
 constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
-constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLightSpot";
-constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLightPoint";
+constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLight_Spot";
+constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLight_Point";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 

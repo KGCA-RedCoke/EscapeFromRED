@@ -24,6 +24,7 @@ namespace Oc
 		FNode*      Parent      = nullptr;
 		UPtr<FNode> Children[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
+		void Update();
 		void Render(JCameraComponent* InCamera);
 
 		void SetBoundArea(const FBoxShape& InBoundArea) { BoundArea = InBoundArea; }

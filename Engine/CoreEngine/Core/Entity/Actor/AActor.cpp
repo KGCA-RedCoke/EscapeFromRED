@@ -1,6 +1,7 @@
 ﻿#include "AActor.h"
 
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
 #include "GUI/MGUIManager.h"
 

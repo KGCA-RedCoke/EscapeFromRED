@@ -30,6 +30,7 @@ constexpr const char* NAME_MAT_INS_DEFAULT = "Game/Materials/DefaultMaterial.jas
 constexpr const char* NAME_MAT_BASIC       = "Game/Materials/Engine/Material_Basic.jasset";
 constexpr const char* NAME_MAT_SKYSPHERE   = "Game/Materials/Engine/Material_SkySphere.jasset";
 constexpr const char* NAME_MAT_WINDOW      = "Game/Materials/Engine/Material_Window.jasset";
+constexpr const char* NAME_MAT_2D          = "Game/Materials/Engine/Material_2D.jasset";
 constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
 
 /**

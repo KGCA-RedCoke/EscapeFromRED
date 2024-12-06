@@ -37,13 +37,13 @@ void XTKPrimitiveBatch::Initialize()
 
 void XTKPrimitiveBatch::Update(float_t DeltaTime)
 {
-	JCameraComponent* cam = MShaderManager::Get().mCachedCamera;
-	if (!cam)
-		return;
-
-	mBatchEffect->SetWorld(FMatrix::Identity);
-	mBatchEffect->SetView(cam->GetViewMatrix());
-	mBatchEffect->SetProjection(cam->GetProjMatrix());
+	// JCameraComponent* cam = MShaderManager::Get().mCachedCamera;
+	// if (!cam)
+	// 	return;
+	//
+	// mBatchEffect->SetWorld(FMatrix::Identity);
+	// mBatchEffect->SetView(cam->GetViewMatrix());
+	// mBatchEffect->SetProjection(cam->GetProjMatrix());
 }
 
 void XTKPrimitiveBatch::Release()
@@ -53,8 +53,12 @@ void XTKPrimitiveBatch::Release()
 	mBatchInputLayout = nullptr;
 }
 
-void XTKPrimitiveBatch::PreRender()
+void XTKPrimitiveBatch::PreRender(const FMatrix& InView, const FMatrix& InProj)
 {
+	mBatchEffect->SetWorld(FMatrix::Identity);
+	mBatchEffect->SetView(InView);
+	mBatchEffect->SetProjection(InProj);
+
 	MShaderManager::Get().UpdateShader(nullptr, nullptr);
 	mBatchEffect->Apply(GetWorld.D3D11API->GetImmediateDeviceContext());
 
@@ -62,9 +66,6 @@ void XTKPrimitiveBatch::PreRender()
 
 	mBatch->Begin();
 }
-
-void XTKPrimitiveBatch::AddInstance(float InCameraDistance)
-{}
 
 void XTKPrimitiveBatch::PostRender()
 {

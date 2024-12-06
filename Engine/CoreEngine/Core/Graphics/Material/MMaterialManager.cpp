@@ -1,5 +1,6 @@
 ﻿#include "MMaterialManager.h"
 
+#include "JMaterial_2D.h"
 #include "JMaterial_Basic.h"
 #include "JMaterial_SkySphere.h"
 #include "JMaterial_Window.h"
@@ -22,6 +23,10 @@ void MMaterialManager::SaveEngineMaterials()
 	// auto mirror = CreateOrLoad<JMaterial_Window>(NAME_MAT_WINDOW);
 	// mirror->SetShader(MShaderManager::Get().CreateOrLoad("Shader/Mirror.hlsl"));
 	// Utils::Serialization::Serialize(NAME_MAT_WINDOW, mirror);
+
+	// auto ui = Load<JMaterial_2D>(NAME_MAT_2D);
+	// ui->SetShader(MShaderManager::Get().UIShader);
+	// Utils::Serialization::Serialize(NAME_MAT_2D, ui);
 }
 
 void MMaterialManager::LoadEngineMaterials()
@@ -29,7 +34,8 @@ void MMaterialManager::LoadEngineMaterials()
 	Load<JMaterial_Basic>(NAME_MAT_BASIC);
 	Load<JMaterial_SkySphere>(NAME_MAT_SKYSPHERE);
 	Load<JMaterial_Window>(NAME_MAT_WINDOW);
-}	
+	Load<JMaterial_2D>(NAME_MAT_2D);
+}
 
 MMaterialManager::MMaterialManager()
 {

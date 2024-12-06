@@ -32,6 +32,7 @@ public:
 
 public:
 	void SetAnimation(JAnimationClip* InAnimation);
+	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex) override;
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
@@ -39,7 +40,7 @@ protected:
 	Buffer::FBufferBone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------
-	Ptr<JAnimationClip> mSampleAnimation;
+	JAnimationClip* mSampleAnimation;
 
 	// public:
 	// 	JMeshObject*              mLightMesh       = nullptr;

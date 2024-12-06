@@ -4,6 +4,7 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 
 GUI_Editor_SkeletalMesh::GUI_Editor_SkeletalMesh(const JText& InTitle)
@@ -71,7 +72,7 @@ void GUI_Editor_SkeletalMesh::DrawViewport() const
 			}
 		}
 	}
-	// ImGui::EndChild();
+	ImGui::EndChild();
 }
 
 void GUI_Editor_SkeletalMesh::DrawProperty() const
@@ -124,7 +125,7 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 			ImGui::Text(mMeshObject->mMaterialInstances[j]->GetMaterialName().c_str());
 			ImGui::ImageButton("MaterialSlot", nullptr, ImVec2(100, 100));
 			// ImGui::Separator();
-				
+
 			if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 			{
 				const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
@@ -146,37 +147,36 @@ void GUI_Editor_SkeletalMesh::DrawMaterialSlot() const
 	ImGui::EndChild();
 }
 
-void GUI_Editor_SkeletalMesh::DrawAnimationPreview() const
+void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 {
-	// if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
-	// {
-	// 	
-	// }
-	//
-	// 	ImGui::Dummy(ImVec2(100, 100));
-	// // ImGui::Text(subMeshes[j]->GetName().c_str());
-	//
-	// if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
-	// {
-	// 	const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
-	// 	const char*         str     = static_cast<const char*>(payload->Data);
-	//
-	// 	auto metaData = Utils::Serialization::GetType(str);
-	//
-	// 	if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
-	// 	{
-	// 		// JAnimationClip* clip = MakePtr<JAnimationClip>();
-	// 		// if (!Utils::Serialization::DeSerialize(str, clip.get()))
-	// 		// {
-	// 		// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-	// 		// 				   "Game/Animation/Unreal Take.jasset");
-	// 		// }
-	// 		//
-	// 		// mMeshObject->SetAnimation(clip);
-	//
-	// 		ImGui::EndDragDropTarget();
-	// 	}
-	// }
+	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
+	{}
+
+	ImGui::Dummy(ImVec2(100, 100));
+	// ImGui::Text(subMeshes[j]->GetName().c_str());
+
+	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+		const char*         str     = static_cast<const char*>(payload->Data);
+
+		auto metaData = Utils::Serialization::GetType(str);
+
+		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
+		{
+			mPreviewAnimationClip = MakeUPtr<JAnimationClip>();
+			if (!Utils::Serialization::DeSerialize(str, mPreviewAnimationClip.get()))
+			{
+				LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
+							   "Game/Animation/Unreal Take.jasset");
+				return;
+			}
+
+			mMeshObject->SetAnimation(mPreviewAnimationClip.get());
+
+			ImGui::EndDragDropTarget();
+		}
+	}
 }
 
 void GUI_Editor_SkeletalMesh::DrawSaveButton() const

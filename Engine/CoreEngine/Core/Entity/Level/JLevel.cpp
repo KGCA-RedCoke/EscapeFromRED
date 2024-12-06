@@ -86,19 +86,33 @@ void JLevel::UpdateLevel(float DeltaTime)
 {
 	std::erase_if(
 				  mActors,
-				  [&](const UPtr<AActor>& actor){
+				  [&](UPtr<AActor>& actor){
 					  actor->Tick(DeltaTime);
-					  return actor->IsPendingKill();
+					  if (actor->IsPendingKill())
+					  {
+						  mOcTree->Remove(actor.get());
+						  actor = nullptr;
+						  return true;
+					  }
+					  return false;
 				  });
+
+	mOcTree->Update();
 }
 
 void JLevel::RenderLevel()
 {
-	G_DebugBatch.PreRender();
+	auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+
+	G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
 
 	// 옥트리 내부의 포함되는 액터들만 렌더링
 	// OcTree의 노드가 카메라의 Frustum과 교차하는지 체크
 	mOcTree->Render(GetWorld.CameraManager->GetCurrentMainCam());
+	// for (const auto& actor : mActors)
+	// {
+	// 	actor->Draw();
+	// }
 
 	G_DebugBatch.Draw();
 

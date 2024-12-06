@@ -12,6 +12,8 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
 	mSkeletalMeshComponent->SetLocalRotation({0, 0, 0});
 
+	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
+
 	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this, mSkeletalMeshComponent);
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
 }

@@ -5,6 +5,7 @@
 #include "Core/Utils/Math/TMatrix.h"
 #include "Shape/JShape.h"
 
+class JMaterialInstance;
 /**
  * 2D 스크린에 배치되는 컴포넌트
  */
@@ -21,6 +22,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void Initialize() override;
 	void Tick(float DeltaTime) override;
 
 public:
@@ -58,6 +60,8 @@ protected:
 
 	FMatrix mWorldMat = FMatrix::Identity;
 	FMatrix mLocalMat = FMatrix::Identity;
+
+	JMaterialInstance* m2DMaterialInstance = nullptr;
 };
 
 
@@ -181,3 +185,32 @@ protected:
 };
 
 REGISTER_CLASS_TYPE(JSceneComponent);
+
+
+// class JShape : public JSceneComponent
+// {
+// public:
+// 	virtual void GenCollisionData() = 0;
+// };
+
+class JBoxComponent : public JSceneComponent, public IRenderable
+{
+public:
+	JBoxComponent();
+	JBoxComponent(JTextView InName, AActor* InOwnerActor = nullptr, JSceneComponent* InParentSceneComponent = nullptr);
+	~JBoxComponent() override = default;
+
+public:
+	void Initialize() override;
+	void Tick(float DeltaTime) override;
+
+public:
+	void PreRender() override {}
+	void AddInstance(float InCameraDistance) override {};
+	void PostRender() override {};
+	void Draw() override;
+	void DrawID(uint32_t ID) override {};
+
+public:
+	void ShowEditor() override;
+};

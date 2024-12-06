@@ -2,34 +2,48 @@
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
 
+void Oc::FNode::Update()
+{
+	JArray<AActor*> actorsToSort;
+
+	std::erase_if(
+				  Actors,
+				  [&](AActor* Actor){
+
+					  if (Actor->IsMarkedAsDirty() && !BoundArea.Intersect(Actor->GetBoundingVolume()))
+					  {
+						  actorsToSort.emplace_back(Actor);
+						  return true;
+					  }
+					  return false;
+				  });
+
+	for (const auto& actor : actorsToSort)
+	{
+		Root->Insert(actor);
+		actor->RemoveFlag(EObjectFlags::MarkAsDirty);
+	}
+
+	for (int i = 0; i < 8; ++i)
+	{
+		if (Children[i])
+		{
+			Children[i]->Update();
+		}
+	}
+}
+
 void Oc::FNode::Render(JCameraComponent* InCamera)
 {
 	if (!Parent || InCamera->IsBoxInFrustum(BoundArea))
 	{
-		JArray<AActor*> actorsToSort;
-
-		// BoundArea.DrawDebug();
-		std::erase_if(
-					  Actors,
-					  [&](AActor* actor){
-						  const bool bRemove =
-								  actor->IsMarkedAsDirty() && // 이동이 있었을 경우
-								  !BoundArea.Intersect(actor->GetBoundingVolume()); // 바운딩 박스가 현재 노드와 교차하지 않는 경우
-						  if (bRemove)
-						  {
-							  actorsToSort.emplace_back(actor);
-						  }
-						  else
-						  {
-							  actor->Draw();
-						  }
-						  return bRemove;
-					  });
-
-		for (const auto& actor : actorsToSort)
+		BoundArea.DrawDebug();
+		for (const auto& actor : Actors)
 		{
-			Root->Insert(actor);
-			actor->RemoveFlag(EObjectFlags::MarkAsDirty);
+			if (actor)
+			{
+				actor->Draw();
+			}
 		}
 
 		for (int i = 0; i < 8; ++i)
@@ -175,7 +189,10 @@ void Oc::JTree::Initialize(const FBoxShape& InRootBoundArea, uint32_t InDepth)
 	Subdivide(mRootNode.get(), InDepth, mRootNode.get());
 }
 
-void Oc::JTree::Update() {}
+void Oc::JTree::Update()
+{
+	mRootNode->Update();
+}
 
 void Oc::JTree::Insert(AActor* InActor)
 {

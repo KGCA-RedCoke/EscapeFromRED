@@ -89,6 +89,7 @@ void JStaticMeshActor::CreateMeshComponent(JTextView InMeshObject)
 	// 메시 할당
 	mStaticMeshComponent = CreateDefaultSubObject<JStaticMeshComponent>(InMeshObject, this, this);
 	mStaticMeshComponent->SetMeshObject(InMeshObject);
+	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
 
 	// 메시 컴포넌트 부착 (루트에 부착)
 	// mStaticMeshComponent->SetupAttachment(mRootComponent);
