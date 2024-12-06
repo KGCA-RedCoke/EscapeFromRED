@@ -33,7 +33,7 @@ JMeshObject::JMeshObject(const JMeshObject& Other)
 	mMaterialInstances.resize(Other.mMaterialInstances.size());
 	for (int32_t i = 0; i < Other.mMaterialInstances.size(); ++i)
 	{
-		SetMaterialInstance(Other.mMaterialInstances[i], i);
+		JMeshObject::SetMaterialInstance(Other.mMaterialInstances[i], i);
 	}
 }
 
@@ -147,11 +147,28 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	const size_t delegateID = InMaterialInstance->OnMaterialInstanceParamChanged.Bind([InMaterialInstance, InIndex, this]{
 		if (InMaterialInstance)
 		{
-			if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("Diffuse"))
+			if (FMaterialParam* param = InMaterialInstance->
+					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE))
 			{
 				mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
 			}
-			if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("TextureUsageFlag"))
+			if (FMaterialParam* param = InMaterialInstance->
+					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO))
+			{
+				mInstanceData[InIndex].MaterialData.AO = param->FloatValue;
+			}
+			if (FMaterialParam* param = InMaterialInstance->
+					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC))
+			{
+				mInstanceData[InIndex].MaterialData.Metallic = param->FloatValue;
+			}
+			if (FMaterialParam* param = InMaterialInstance->
+					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS))
+			{
+				mInstanceData[InIndex].MaterialData.Roughness = param->FloatValue;
+			}
+			if (FMaterialParam* param = InMaterialInstance->
+					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
 			{
 				mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
 			}
@@ -163,11 +180,28 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
-	if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("Diffuse"))
+	if (FMaterialParam* param = InMaterialInstance->
+						GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE))
 	{
 		mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
 	}
-	if (FMaterialParam* param = InMaterialInstance->GetInstanceParam("TextureUsageFlag"))
+	if (FMaterialParam* param = InMaterialInstance->
+			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO))
+	{
+		mInstanceData[InIndex].MaterialData.AO = param->FloatValue;
+	}
+	if (FMaterialParam* param = InMaterialInstance->
+			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC))
+	{
+		mInstanceData[InIndex].MaterialData.Metallic = param->FloatValue;
+	}
+	if (FMaterialParam* param = InMaterialInstance->
+			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS))
+	{
+		mInstanceData[InIndex].MaterialData.Roughness = param->FloatValue;
+	}
+	if (FMaterialParam* param = InMaterialInstance->
+			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
 	{
 		mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
 	}

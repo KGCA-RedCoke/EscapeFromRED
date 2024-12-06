@@ -28,17 +28,29 @@ void JMaterial_Basic::BindMaterialPipeline(ID3D11DeviceContext*          InDevic
 
 void JMaterial_Basic::InitializeParams()
 {
-	if (mMaterialParams.empty())
+	if (mMaterialParams.empty() || mMaterialParams.size() == 6)
 	{
+		mMaterialParams.clear();
 		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE,
-												 EMaterialParamValue::Float4,
+												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
 		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_NORMAL,
-												 EMaterialParamValue::Float4,
+												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
-
+		mMaterialParams.push_back(FMaterialParam("AOTex",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("RoughnessTex",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("MetallicTex",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
 		mMaterialParams.push_back(FMaterialParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO,
 												 EMaterialParamValue::Float2,
 												 &FVector::ZeroVector,

@@ -256,12 +256,21 @@ void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index)
 			}
 		}
 
+
 		ImGui::EndCombo();
 	}
 
-	if (Param.TextureValue)
+	ImGui::Text(u8("텍스처 드랍"));
+	ImGui::SameLine();
+	ImGui::Image(Param.TextureValue ? Param.TextureValue->GetSRV() : nullptr, {150, 150});
+
+	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 	{
-		ImGui::Image(Param.TextureValue->GetSRV(), ImVec2(64, 64));
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();
+
+		const char* assetPath = static_cast<const char*>(payload->Data);
+		Param.StringValue     = assetPath;
+		Param.TextureValue    = GetWorld.TextureManager->Load(assetPath);
 	}
 
 }

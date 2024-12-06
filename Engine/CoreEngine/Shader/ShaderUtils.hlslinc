@@ -127,7 +127,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 				  float      metallic,      // Metallic
 				  float      roughness,     // Roughness
 				  float      specular,      // Specular
-				  float      ao,            // Ambient Occlusion
+				  float      ao,            // Ambient AO
 				  float3     N,            // Normal (in world space)
 				  float3     V,            // View direction (normalized)
 				  float3     L,            // Light direction (normalized)
@@ -166,7 +166,7 @@ float3 ComputePBR(float3     baseColor,    // Base Color
 	// Diffuse BRDF
 	float3 diffuseBRDF = (1.0 - F) * baseColor * (1.0 - metallic) / PI;
 
-	// Ambient Occlusion 적용
+	// Ambient AO 적용
 	diffuseBRDF *= ao;
 	specularBRDF *= ao;
 

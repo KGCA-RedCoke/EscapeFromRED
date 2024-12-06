@@ -7,8 +7,9 @@ namespace fs = std::filesystem;
 
 enum class EFileType : uint8_t
 {
-	Folder = 0,
-	Asset  = 1 << 0
+	Folder,
+	Asset ,
+	Texture	
 };
 
 /**
@@ -101,6 +102,7 @@ struct AssetSelectionWithDeletion : ImGuiSelectionBasicStorage
 struct AssetBrowserIconList
 {
 	class JTexture* FolderIcon;
+	JTexture*       TextureIcon;
 	JTexture*       ActorIcon;
 	JTexture*       FileIcon;
 	JTexture*       StaticMeshIcon;

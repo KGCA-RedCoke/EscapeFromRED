@@ -94,7 +94,8 @@ void GUI_Editor_Actor::Render()
 									{0, 0, 200},
 									{0, 0, 0},
 									10,
-									10);
+									10,
+									Colors::DarkSlateGray);
 
 	mActorToEdit->Draw();
 

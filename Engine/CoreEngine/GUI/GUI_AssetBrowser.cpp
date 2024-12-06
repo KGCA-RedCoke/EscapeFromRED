@@ -41,6 +41,7 @@ void GUI_AssetBrowser::Initialize()
 {
 	GUI_Base::Initialize();
 
+	g_IconList.TextureIcon      = MTextureManager::Get().Load(L"rsc/Icons/Actor/Texture2D_64x.png");
 	g_IconList.ActorIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/Actor_64.png");
 	g_IconList.FileIcon         = MTextureManager::Get().Load(L"rsc/Icons/Actor/Actor_64x.png");
 	g_IconList.FolderIcon       = MTextureManager::Get().Load(L"rsc/Icons/Folders/Folder_BaseHi_256x.png");
@@ -456,6 +457,8 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 		iconTexture = [&, metaData, itemData]{
 			if (itemData->FileType == EFileType::Folder)
 				return g_IconList.FolderIcon->GetSRV();
+			else if (itemData->FileType == EFileType::Texture)
+				return g_IconList.TextureIcon->GetSRV();
 			switch (metaData.AssetType)
 			{
 			case HASH_ASSET_TYPE_Actor:
@@ -606,6 +609,10 @@ void GUI_AssetBrowser::HandleFile()
 			if (StringHash(path.extension().c_str()) == Hash_EXT_JASSET)
 			{
 				mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Asset);
+			}
+			else if (path.extension() == ".png" || path.extension() == ".PNG")
+			{
+				mFiles.emplace_back(StringHash(path.c_str()), path.stem(), path, EFileType::Texture);
 			}
 		}
 	}

@@ -52,7 +52,7 @@ struct VertexIn_Base
 struct FMaterialInstance
 {
 	float4 BaseColor : MAT_BASECOLOR;
-	float  Occlusion : MAT_SPECULAR;
+	float  AO : MAT_SPECULAR;
 	float  Roughness : MAT_ROUGHNESS;
 	float  Metallic : MAT_METALLIC;
 	float  Emissive : MAT_EMISSIVE;

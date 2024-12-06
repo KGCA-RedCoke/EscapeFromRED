@@ -68,10 +68,10 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	float3 diffuseColor = Input.Material.BaseColor.rgb;
 	float3 normalColor  = normalize(Input.Normal /** 2.0f - 1.0f*/); // -1 ~ 1 사이로 정규화
 
-	// 	R (Red): Ambient Occlusion (AO)
+	// 	R (Red): Ambient AO (AO)
 	//  G (Green): Roughness
 	//  B (Blue): Metallic
-	float ambientColor = Input.Material.Occlusion;
+	float ambientColor = Input.Material.AO;
 	float roughness    = Input.Material.Roughness;
 	float metallic     = Input.Material.Metallic;
 
