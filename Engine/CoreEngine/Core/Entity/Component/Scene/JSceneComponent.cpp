@@ -395,10 +395,16 @@ void JSceneComponent::UpdateWorldTransform()
 }
 
 JBoxComponent::JBoxComponent()
-	: JSceneComponent() {}
+	: JSceneComponent()
+{
+	mObjectType = NAME_OBJECT_BOX_COMPONENT;
+}
 
 JBoxComponent::JBoxComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
-	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent) {}
+	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent)
+{
+	mObjectType = NAME_OBJECT_BOX_COMPONENT;
+}
 
 void JBoxComponent::Initialize()
 {

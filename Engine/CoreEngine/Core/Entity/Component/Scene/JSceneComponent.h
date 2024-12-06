@@ -214,3 +214,6 @@ public:
 public:
 	void ShowEditor() override;
 };
+
+REGISTER_CLASS_TYPE(JBoxComponent);
+

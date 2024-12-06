@@ -90,6 +90,12 @@ void GUI_Editor_Actor::Render()
 
 	G_DebugBatch.PreRender(mCamera->GetViewMatrix(), mCamera->GetProjMatrix());
 
+	G_DebugBatch.DrawGrid_Implement({200, 0, 0},
+									{0, 0, 200},
+									{0, 0, 0},
+									10,
+									10);
+
 	mActorToEdit->Draw();
 
 	G_DebugBatch.PostRender();
