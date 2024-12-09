@@ -17,7 +17,7 @@ DECLARE_DYNAMIC_DELEGATE(FOnKeyPressed, float)
 class XKeyboardMouse
 {
 public:
-	XKeyboardMouse()  = default;
+	XKeyboardMouse();
 	~XKeyboardMouse() = default;
 
 public:

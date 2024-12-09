@@ -1,25 +1,19 @@
-﻿#include "JMaterial_Basic.h"
+﻿#include "JMaterial_POM.h"
 
-#include "Core/Graphics/ShaderStructs.h"
-#include "Core/Graphics/XD3DDevice.h"
-#include "Core/Graphics/Shader/JShader.h"
-#include "Core/Interface/JWorld.h"
-#include "GUI/MGUIManager.h"
-
-JMaterial_Basic::JMaterial_Basic(JTextView InName)
+JMaterial_POM::JMaterial_POM(JTextView InName)
 	: JMaterial(InName)
 {
-	JMaterial_Basic::InitializeParams();
+	JMaterial_POM::InitializeParams();
 }
 
-void JMaterial_Basic::BindShader(ID3D11DeviceContext* InDeviceContext)
+void JMaterial_POM::BindShader(ID3D11DeviceContext* InDeviceContext)
 {
 	JMaterial::BindShader(InDeviceContext);
 }
 
-void JMaterial_Basic::InitializeParams()
+void JMaterial_POM::InitializeParams()
 {
-	if (mMaterialParams.empty() || mMaterialParams.size() == 9 || mMaterialParams.size() == 6)
+	if (mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 
@@ -51,12 +45,28 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
+		mMaterialParams.push_back(FMaterialParam("HeightMap",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
 
 		mMaterialParams.push_back(FMaterialParam("BaseColor",
 												 EMaterialParamValue::Float3,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("AO",
+		mMaterialParams.push_back(FMaterialParam("NormalColor",
+												 EMaterialParamValue::Float3,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Height Ratio",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Min Steps",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Max Steps",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
@@ -64,11 +74,7 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("Metallic",
-												 EMaterialParamValue::Float,
-												 &FVector::ZeroVector,
-												 true));
-		mMaterialParams.push_back(FMaterialParam("Emissive",
+		mMaterialParams.push_back(FMaterialParam("GlobalRoughness",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
@@ -84,8 +90,7 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Integer,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialName = "Basic";
-		Utils::Serialization::Serialize(NAME_MAT_BASIC, this);
-	}
 
+		Utils::Serialization::Serialize(NAME_MAT_POM, this);
+	}
 }

@@ -7,7 +7,9 @@
 
 class MTextureManager : public Manager_Base<JTexture, MTextureManager>
 {
-
+public:
+	JTexture* WhiteTexture;
+	
 public:
 #pragma region Singleton Boilerplate
 
@@ -15,7 +17,7 @@ private:
 	friend class TSingleton<MTextureManager>;
 	friend class JWorld;
 
-	MTextureManager()  = default;
+	MTextureManager();
 	~MTextureManager() = default;
 
 public:

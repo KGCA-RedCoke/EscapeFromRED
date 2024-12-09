@@ -45,5 +45,6 @@ private:
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
 	D3D11_SHADER_RESOURCE_VIEW_DESC  mSRVDesc;
 	D3D11_TEXTURE2D_DESC             mTextureDesc; // 크기, 형식, 샘플링 등
+public:
 	JArray<float>                    mRGBAData;
 };

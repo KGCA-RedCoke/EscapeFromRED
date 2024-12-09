@@ -12,29 +12,6 @@ struct PixelInput_2D
 	float2 UV : TEXCOORD0;
 };
 
-struct VertexIn_3D
-{
-	float3 Pos : POSITION;	// NDC(local) 좌표
-	float2 UV : TEXCOORD0;	// TexCoord 좌표
-	float4 Color : COLOR;
-	float3 Normal : NORMAL;	// 법선 벡터
-};
-
-struct VertexOut_3D
-{
-	float4 Pos : SV_POSITION;
-	float2 UV : TEXCOORD0;
-	float3 Normal : NORMAL;
-};
-
-struct PixelInput_3D
-{
-	float4 Pos : SV_POSITION;
-	float2 UV : TEXCOORD0;
-	float3 Normal : NORMAL;
-	uint   ID : SV_PrimitiveID;
-};
-
 struct VertexIn_Base
 {
 	float3 Pos : POSITION;	// NDC(local) 좌표
@@ -51,17 +28,20 @@ struct VertexIn_Base
 
 struct FMaterialInstance
 {
-	float4 BaseColor : MAT_BASECOLOR;
+	float3 BaseColor : MAT_BASECOLOR;
 	float  AO : MAT_SPECULAR;
 	float  Roughness : MAT_ROUGHNESS;
 	float  Metallic : MAT_METALLIC;
 	float  Emissive : MAT_EMISSIVE;
+	float  Specular : MAT_SPECULAR;
+	float  Opacity : MAT_OPACITY;
 	uint   Flag : MAT_TEXTUREFLAG;
 };
 
 struct InstanceData
 {
-	row_major matrix  InstancePos : INST_TRANSFORM;
+	row_major matrix  Transform : INST_TRANSFORM;
+	row_major matrix  InvTransform : INST_TRNASFORM_INVTRANS;
 	FMaterialInstance Material : INST_MAT;
 };
 

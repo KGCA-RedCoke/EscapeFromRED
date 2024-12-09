@@ -126,6 +126,9 @@ protected:
 
 	JCameraComponent* mTargetCamera;		// 오브젝트가 참조하는 카메라 개체
 
+private:
+	// ------------------------------ 캐싱 데이터 ------------------------------
+	CBuffer::Light  mCachedLightData;
 	CBuffer::Space  mCachedSpaceData;
 	CBuffer::Camera mCachedCameraData;
 };

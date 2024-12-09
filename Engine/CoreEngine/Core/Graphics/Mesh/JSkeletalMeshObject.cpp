@@ -108,7 +108,7 @@ void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 	//
 	// // 3. 모델 월드 변환 적용
 	// mSocketTransform = socketOffsetMatrix *  skinData->GetInfluenceWorldBindPose("hand_r") *
-	// 		updateBoneMatrixBuffer[mHand_r_Index] * mInstanceData[0].WorldMatrix;
+	// 		updateBoneMatrixBuffer[mHand_r_Index] * mInstanceData[0].Transform;
 
 
 }
@@ -186,7 +186,7 @@ void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-		mInstanceData[j].MaterialData.Flag |= (1 << 11);
+		// mInstanceData[j].MaterialData.Flag |= (1 << 11);
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
 
@@ -256,5 +256,5 @@ void JSkeletalMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInsta
 {
 	JMeshObject::SetMaterialInstance(InMaterialInstance, InIndex);
 
-	mInstanceData[InIndex].MaterialData.Flag |= (1 << 11);
+	// mInstanceData[InIndex].MaterialData.Flag |= (1 << 11);
 }

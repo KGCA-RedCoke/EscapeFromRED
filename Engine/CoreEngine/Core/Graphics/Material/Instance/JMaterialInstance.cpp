@@ -1,16 +1,20 @@
 ﻿#include "JMaterialInstance.h"
 
+#include <ranges>
+
 #include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/Material/JMaterial_Basic.h"
-#include "Core/Graphics/Material/MMaterialInstanceManager.h"
 #include "Core/Graphics/Material/MMaterialManager.h"
 #include "Core/Graphics/Shader/InputLayouts.h"
 #include "Core/Graphics/Shader/JShader_Basic.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
 
 JMaterialInstance::JMaterialInstance(JTextView InName)
 	: mFileName(InName)
-{}
+{
+	mPath = InName;
+}
 
 JMaterialInstance::JMaterialInstance(JWTextView InName)
 	: JMaterialInstance(WString2String(InName.data())) {}
@@ -19,15 +23,7 @@ JMaterialInstance::JMaterialInstance(const JMaterialInstance& Other)
 	: mFileName(std::format("{0}_Copy.jasset", Other.mFileName)),
 	  mParentMaterial(Other.mParentMaterial),
 	  mShader(Other.mShader)
-{
-	mInstanceParams.clear();
-	mInstanceParams.reserve(Other.mInstanceParams.size());
-
-	for (const auto& param : Other.mInstanceParams)
-	{
-		mInstanceParams.push_back(param);
-	}
-}
+{}
 
 UPtr<IManagedInterface> JMaterialInstance::Clone() const
 {
@@ -36,17 +32,17 @@ UPtr<IManagedInterface> JMaterialInstance::Clone() const
 
 void JMaterialInstance::SetAsDefaultMaterial()
 {
-	mParentMaterial = MMaterialManager::Get().Load(NAME_MAT_BASIC);
-	mShader         = mParentMaterial->GetShader();
-
-	GetInstanceParams();
-
-	JMaterialInstance* defaultInstance = MMaterialInstanceManager::Get().Load(NAME_MAT_INS_DEFAULT);
-
-	for (int32_t i = 0; i < defaultInstance->mInstanceParams.size(); ++i)
-	{
-		mInstanceParams[i] = defaultInstance->mInstanceParams[i];
-	}
+	// mParentMaterial = MMaterialManager::Get().Load(NAME_MAT_BASIC);
+	// mShader         = mParentMaterial->GetShader();
+	//
+	// GetInstanceParams();
+	//
+	// JMaterialInstance* defaultInstance = MMaterialInstanceManager::Get().Load(NAME_MAT_INS_DEFAULT);
+	//
+	// for (int32_t i = 0; i < defaultInstance->mInstanceParams.size(); ++i)
+	// {
+	// 	mInstanceParams[i] = defaultInstance->mInstanceParams[i];
+	// }
 }
 
 uint32_t JMaterialInstance::GetHash() const
@@ -77,12 +73,31 @@ bool JMaterialInstance::Serialize_Implement(std::ofstream& FileStream)
 	}
 
 	// Instance Params
-	int32_t paramCount = mInstanceParams.size();
+	int32_t paramCount   = mMaterialParamToRawDataIndex.size();
+	int32_t rawDataCount = mMaterialRawData.size();
+	int32_t textureCount = mTextureMap.size();
+
 	Utils::Serialization::Serialize_Primitive(&paramCount, sizeof(paramCount), FileStream);
-	for (int32_t i = 0; i < paramCount; ++i)
+	Utils::Serialization::Serialize_Primitive(&rawDataCount, sizeof(rawDataCount), FileStream);
+	Utils::Serialization::Serialize_Primitive(&textureCount, sizeof(textureCount), FileStream);
+
+	for (auto hash : mMaterialParamToRawDataIndex)
 	{
-		mInstanceParams[i].Serialize_Implement(FileStream);
+		uint32_t key = hash.first;
+		Utils::Serialization::Serialize_Primitive(&key, sizeof(hash.first), FileStream);
+		Utils::Serialization::Serialize_Primitive(&hash.second, sizeof(hash.second), FileStream);
 	}
+
+	Utils::Serialization::Serialize_Primitive(mMaterialRawData.data(),
+											  rawDataCount * sizeof(float),
+											  FileStream);
+
+	for (auto& texture : mTextureMap | std::views::values)
+	{
+		JText textureName = texture ? WString2String(texture->GetTextureName()) : "None";
+		Utils::Serialization::Serialize_Text(textureName, FileStream);
+	}
+
 
 	return true;
 }
@@ -94,7 +109,7 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return false;
 	}
-
+	
 	// Parent Material Path
 	JText parentMaterialPath;
 	Utils::Serialization::DeSerialize_Text(parentMaterialPath, InFileStream);
@@ -103,104 +118,212 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 		mParentMaterial = MMaterialManager::Get().Load(parentMaterialPath);
 		mShader         = mParentMaterial->GetShader();
 	}
-
-	// Get Instance Params
+	
+	// Instance Params
 	int32_t paramCount;
+	int32_t rawDataCount;
+	int32_t textureCount;
 	Utils::Serialization::DeSerialize_Primitive(&paramCount, sizeof(paramCount), InFileStream);
-	mInstanceParams.clear();
-	mInstanceParams.reserve(paramCount);
+	Utils::Serialization::DeSerialize_Primitive(&rawDataCount, sizeof(rawDataCount), InFileStream);
+	Utils::Serialization::DeSerialize_Primitive(&textureCount, sizeof(textureCount), InFileStream);
 
+	if (paramCount < 0 || rawDataCount < 0 || textureCount < 0)
+	{
+		return true;
+	}
+	
 	for (int32_t i = 0; i < paramCount; ++i)
 	{
-		FMaterialParam param;
-		param.DeSerialize_Implement(InFileStream);
-		mInstanceParams.push_back(param);
+		uint32_t key;
+		uint32_t index;
+		Utils::Serialization::DeSerialize_Primitive(&key, sizeof(key), InFileStream);
+		Utils::Serialization::DeSerialize_Primitive(&index, sizeof(index), InFileStream);
+	
+		mMaterialParamToRawDataIndex[key] = index;
 	}
-
+	
+	mMaterialRawData.resize(rawDataCount);
+	Utils::Serialization::DeSerialize_Primitive(mMaterialRawData.data(),
+												rawDataCount * sizeof(float),
+												InFileStream);
+	
+	for (int32_t i = 0; i < textureCount; ++i)
+	{
+		JText textureName;
+		Utils::Serialization::DeSerialize_Text(textureName, InFileStream);
+		mTextureMap[i] = textureName == "None" ? nullptr : GetWorld.TextureManager->Load(textureName);
+	}
+	
+	
 	return true;
 }
 
 void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext) const
 {
-	mParentMaterial->BindMaterialPipeline(InDeviceContext, mInstanceParams);
+	mParentMaterial->BindShader(InDeviceContext);
+
+	for (auto& textureMap : mTextureMap)
+	{
+		JTexture::SetShaderTexture2D(InDeviceContext,
+									 textureMap.first,
+									 textureMap.second == nullptr
+										 ? GetWorld.TextureManager->WhiteTexture
+										 : textureMap.second);
+	}
 }
 
-void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
-										   const void*          InData, const uint32_t        InOffset) const
+void* JMaterialInstance::GetInstanceParam(const JText& InParamName, bool bTextureParam)
 {
-	if (!mShader)
-		return;
-
-	mShader->UpdateConstantData(InDeviceContext, InBufferName, InData, InOffset);
-}
-
-void JMaterialInstance::UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName,
-										   const JText&         InDataName, const void*       InData) const
-{
-	if (!mShader)
-		return;
-
-	mShader->UpdateConstantData(InDeviceContext, InBufferName, InDataName, InData);
-}
-
-FMaterialParam* JMaterialInstance::GetInstanceParam(const JText& InParamName)
-{
-	if (mInstanceParams.empty())
+	if (mMaterialRawData.empty())
 	{
 		return nullptr;
 	}
 
-	const uint32_t hash = StringHash(InParamName.c_str());
+	const uint32_t hash  = StringHash(InParamName.c_str());
+	auto           it    = mMaterialParamToRawDataIndex.find(hash);
+	const uint32_t index = it->second;
 
-	for (auto& param : mInstanceParams)
+	if (it != mMaterialParamToRawDataIndex.end())
 	{
-		if (param.Key == hash)
+		if (bTextureParam)
 		{
-			return &param;
+			return mTextureMap[index];
 		}
+
+		return &mMaterialRawData[index];
+	}
+
+	return nullptr;
+}
+
+void* JMaterialInstance::GetInstanceParam(uint32_t InParamKey, bool bTextureParam)
+{
+	if (mMaterialRawData.empty())
+	{
+		return nullptr;
+	}
+
+	auto it = mMaterialParamToRawDataIndex.find(InParamKey);
+
+	if (it != mMaterialParamToRawDataIndex.end())
+	{
+		const uint32_t index = it->second;
+		if (bTextureParam)
+		{
+			return mTextureMap[index];
+		}
+
+		return &mMaterialRawData[index];
 	}
 	return nullptr;
 }
 
-void JMaterialInstance::AddInstanceParam(const FMaterialParam& InParamValue)
-{
-	if (GetInstanceParam(InParamValue.Name))
-	{
-		LOG_CORE_ERROR("Material Instance Param already exists.");
-		return;
-	}
-
-	mInstanceParams.push_back(InParamValue);
-}
-
 void JMaterialInstance::EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue)
 {
-	if (mInstanceParams.empty())
+	if (mMaterialRawData.empty())
 	{
 		return;
 	}
 
 	const uint32_t hash = StringHash(InParamName.c_str());
 
-	for (auto& param : mInstanceParams)
+	for (auto& param : mParentMaterial->mMaterialParams)
 	{
 		if (param.Key == hash)
 		{
-			param = InParamValue;
+			const uint32_t index = mMaterialParamToRawDataIndex[hash];
+			switch (param.ParamValue)
+			{
+			case EMaterialParamValue::Boolean:
+				mMaterialRawData[index] = InParamValue.BooleanValue;
+				break;
+			case EMaterialParamValue::Integer:
+				mMaterialRawData[index] = InParamValue.IntegerValue;
+				break;
+			case EMaterialParamValue::Float:
+				mMaterialRawData[index] = InParamValue.FloatValue;
+				break;
+			case EMaterialParamValue::Float2:
+				mMaterialRawData[index] = InParamValue.Float2Value.x;
+				mMaterialRawData[index + 1] = InParamValue.Float2Value.y;
+				break;
+			case EMaterialParamValue::Float3:
+				mMaterialRawData[index] = InParamValue.Float3Value.x;
+				mMaterialRawData[index + 1] = InParamValue.Float3Value.y;
+				mMaterialRawData[index + 2] = InParamValue.Float3Value.z;
+				break;
+			case EMaterialParamValue::Float4:
+				mMaterialRawData[index] = InParamValue.Float4Value.x;
+				mMaterialRawData[index + 1] = InParamValue.Float4Value.y;
+				mMaterialRawData[index + 2] = InParamValue.Float4Value.z;
+				mMaterialRawData[index + 3] = InParamValue.Float4Value.w;
+				break;
+			case EMaterialParamValue::String:
+				break;
+			case EMaterialParamValue::Texture2D:
+			case EMaterialParamValue::TextureCube:
+			case EMaterialParamValue::TextureVolume:
+				mTextureMap[index] = InParamValue.TextureValue;
+				break;
+			case EMaterialParamValue::Max:
+				break;
+			}
 			OnMaterialInstanceParamChanged.Execute();
 			return;
 		}
 	}
+
+
 }
 
 void JMaterialInstance::GetInstanceParams()
 {
-	mInstanceParams.clear();
-	for (int32_t i = 0; i < mParentMaterial->mMaterialParams.size(); ++i)
+	mMaterialRawData.clear();
+	mMaterialParamToRawDataIndex.clear();
+	mTextureMap.clear();
+
+	int32_t texSlot = 0;
+
+	for (FMaterialParam& param : mParentMaterial->mMaterialParams)
 	{
-		if (mParentMaterial->mMaterialParams[i].bInstanceParam)
+		switch (param.ParamValue)
 		{
-			mInstanceParams.push_back(mParentMaterial->mMaterialParams[i]);
+		case EMaterialParamValue::Boolean:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.BooleanValue);
+			break;
+		case EMaterialParamValue::Integer:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.IntegerValue);
+			break;
+		case EMaterialParamValue::Float:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.FloatValue);
+			break;
+		case EMaterialParamValue::Float2:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.Float2Value.x);
+			mMaterialRawData.push_back(param.Float2Value.y);
+			break;
+		case EMaterialParamValue::Float3:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.Float3Value.x);
+			mMaterialRawData.push_back(param.Float3Value.y);
+			mMaterialRawData.push_back(param.Float3Value.z);
+			break;
+		case EMaterialParamValue::Float4:
+			mMaterialParamToRawDataIndex[param.Key] = mMaterialRawData.size();
+			mMaterialRawData.push_back(param.Float4Value.x);
+			mMaterialRawData.push_back(param.Float4Value.y);
+			mMaterialRawData.push_back(param.Float4Value.z);
+			mMaterialRawData.push_back(param.Float4Value.w);
+			break;
+		case EMaterialParamValue::Texture2D:
+			mMaterialParamToRawDataIndex[param.Key] = texSlot;
+			mTextureMap[texSlot++] = param.TextureValue;
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -208,9 +331,6 @@ void JMaterialInstance::GetInstanceParams()
 void JMaterialInstance::SetParentMaterial(JMaterial* InParentMaterial)
 {
 	assert(InParentMaterial);
-
-	mParentMaterial = nullptr;
-	mInstanceParams.clear();
 
 	mParentMaterial = InParentMaterial;
 	mShader         = mParentMaterial->GetShader();

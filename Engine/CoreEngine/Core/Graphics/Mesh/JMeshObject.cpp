@@ -125,7 +125,8 @@ void JMeshObject::UpdateInstance_Transform(const FMatrix& InWorldMatrix)
 {
 	for (int32_t i = 0; i < mInstanceData.size(); ++i)
 	{
-		mInstanceData[i].WorldMatrix = InWorldMatrix;
+		mInstanceData[i].Transform.WorldMatrix           = InWorldMatrix;
+		mInstanceData[i].Transform.WorldInverseTranspose = InWorldMatrix.Invert().Transpose();
 	}
 }
 
@@ -147,30 +148,15 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	const size_t delegateID = InMaterialInstance->OnMaterialInstanceParamChanged.Bind([InMaterialInstance, InIndex, this]{
 		if (InMaterialInstance)
 		{
-			if (FMaterialParam* param = InMaterialInstance->
-					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE))
+			const int32_t size = InMaterialInstance->GetMaterialSize();
+
+			if (size > 0)
 			{
-				mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
-			}
-			if (FMaterialParam* param = InMaterialInstance->
-					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO))
-			{
-				mInstanceData[InIndex].MaterialData.AO = param->FloatValue;
-			}
-			if (FMaterialParam* param = InMaterialInstance->
-					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC))
-			{
-				mInstanceData[InIndex].MaterialData.Metallic = param->FloatValue;
-			}
-			if (FMaterialParam* param = InMaterialInstance->
-					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS))
-			{
-				mInstanceData[InIndex].MaterialData.Roughness = param->FloatValue;
-			}
-			if (FMaterialParam* param = InMaterialInstance->
-					GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
-			{
-				mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
+				memcpy_s(&mInstanceData[InIndex].MaterialData,
+						 InMaterialInstance->GetMaterialSize(),
+						 InMaterialInstance->GetMaterialData(),
+						 size);
+				
 			}
 		}
 	});
@@ -180,30 +166,14 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
-	if (FMaterialParam* param = InMaterialInstance->
-						GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_DIFFUSE))
+	const int32_t size = InMaterialInstance->GetMaterialSize();
+
+	if (size > 0)
 	{
-		mInstanceData[InIndex].MaterialData.BaseColor = param->Float4Value;
-	}
-	if (FMaterialParam* param = InMaterialInstance->
-			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_AO))
-	{
-		mInstanceData[InIndex].MaterialData.AO = param->FloatValue;
-	}
-	if (FMaterialParam* param = InMaterialInstance->
-			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_METALLIC))
-	{
-		mInstanceData[InIndex].MaterialData.Metallic = param->FloatValue;
-	}
-	if (FMaterialParam* param = InMaterialInstance->
-			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_ROUGHNESS))
-	{
-		mInstanceData[InIndex].MaterialData.Roughness = param->FloatValue;
-	}
-	if (FMaterialParam* param = InMaterialInstance->
-			GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
-	{
-		mInstanceData[InIndex].MaterialData.Flag = param->IntegerValue;
+		memcpy_s(&mInstanceData[InIndex].MaterialData,
+				 InMaterialInstance->GetMaterialSize(),
+				 InMaterialInstance->GetMaterialData(),
+				 size);
 	}
 }
 
@@ -321,7 +291,7 @@ void JMeshObject::DrawID(uint32_t ID)
 									 CBuffer::NAME_CONSTANT_BUFFER_CAMERA,
 									 &camera);
 
-		FMatrix worldMatrix = XMMatrixTranspose(mInstanceData[j].WorldMatrix);
+		FMatrix worldMatrix = XMMatrixTranspose(mInstanceData[j].Transform.WorldMatrix);
 		idShader->UpdateConstantData(deviceContext,
 									 "WorldConstantBuffer",
 									 &worldMatrix);

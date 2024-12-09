@@ -30,6 +30,8 @@ constexpr const char* NAME_MAT_INS_DEFAULT = "Game/Materials/DefaultMaterial.jas
 constexpr const char* NAME_MAT_BASIC       = "Game/Materials/Engine/Material_Basic.jasset";
 constexpr const char* NAME_MAT_SKYSPHERE   = "Game/Materials/Engine/Material_SkySphere.jasset";
 constexpr const char* NAME_MAT_WINDOW      = "Game/Materials/Engine/Material_Window.jasset";
+constexpr const char* NAME_MAT_POM         = "Game/Materials/Engine/Material_POM.jasset";
+constexpr const char* NAME_MAT_DETAIL      = "Game/Materials/Engine/Material_Detail.jasset";
 constexpr const char* NAME_MAT_2D          = "Game/Materials/Engine/Material_2D.jasset";
 constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
 
@@ -61,8 +63,8 @@ constexpr const char* HASH_MATERIAL_PARAM_VALUE_TYPE[] = {
 	"Float4",
 	"String",
 	"Texture2D",
-	"TextureCube",
-	"TextureVolume"
+	/*"TextureCube",
+	"TextureVolume"*/
 };
 
 /**
@@ -133,8 +135,7 @@ public:
 	/**
 	 * 머티리얼을 GPU에 바인딩
 	 */
-	virtual void BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
-									  const JArray<FMaterialParam>& InInstanceParams);
+	virtual void BindShader(ID3D11DeviceContext* InDeviceContext);
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 

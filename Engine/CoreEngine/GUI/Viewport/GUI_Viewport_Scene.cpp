@@ -119,6 +119,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			FVector::ZeroVector,
 																			nullptr,
 																			"Game/Mesh/SK_Hands_07.jasset");
+		character->Initialize();
 		
 		GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 

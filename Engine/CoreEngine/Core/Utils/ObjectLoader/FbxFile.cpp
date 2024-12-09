@@ -812,6 +812,8 @@ namespace Utils::Fbx
 		float endTime   = static_cast<float>(animClip->mLocalTimeSpan.GetStop().GetSecondDouble());
 
 		const Ptr<JAnimationClip> anim = MakePtr<JAnimationClip>();
+		anim->mStartFrame              = animClip->mLocalTimeSpan.GetStart().GetFrameCount();
+		anim->mEndFrame                = animClip->mLocalTimeSpan.GetStop().GetFrameCount();
 		anim->mName                    = animStack->GetName();
 		anim->mStartTime               = startTime;
 		anim->mEndTime                 = endTime;
@@ -939,7 +941,8 @@ namespace Utils::Fbx
 				{
 					for (int32_t i = 0; i < layerMaterialNum; ++i)
 					{
-						materialInstance = ParseLayerMaterial(InMesh, i, bShouldSerialize);
+						materialInstance = MMaterialInstanceManager::Get().Load("DefaultMaterial");
+						/*ParseLayerMaterial(InMesh, i, bShouldSerialize);*/
 
 						materials.push_back(materialInstance);
 
@@ -982,7 +985,7 @@ namespace Utils::Fbx
 					// 머티리얼 정보만 가져와서 저장해놓자.
 					// Ptr<JMaterialInstance> materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
 					// materials.push_back(materialInstance);
-					materialInstance = ParseLayerMaterial(InMesh, 0, bShouldSerialize);
+					materialInstance = MMaterialInstanceManager::Get().Load("DefaultMaterial");
 					materials.push_back(materialInstance);
 
 					if (bShouldSerialize)

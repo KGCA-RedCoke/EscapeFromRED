@@ -37,6 +37,13 @@ void JStaticMeshActor::Initialize()
 
 }
 
+void JStaticMeshActor::Tick(float DeltaTime)
+{
+	AActor::Tick(DeltaTime);
+
+	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
+}
+
 bool JStaticMeshActor::Serialize_Implement(std::ofstream& FileStream)
 {
 	if (!AActor::Serialize_Implement(FileStream))
@@ -56,8 +63,6 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	}
 
 	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("StaticMeshComponent"));
-	mBoundingBox         = mStaticMeshComponent->GetBoundingVolume();
-	UpdateTransform();
 
 	return true;
 }

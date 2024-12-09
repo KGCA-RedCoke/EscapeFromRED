@@ -5,7 +5,7 @@
 
 DECLARE_DYNAMIC_DELEGATE(FOnMaterialInstanceParamChanged);
 
-class JMaterialInstance : public IManagedInterface, public ISerializable
+class JMaterialInstance : public IManagedInterface, public JAsset
 {
 public:
 	FOnMaterialInstanceParamChanged OnMaterialInstanceParamChanged;
@@ -27,21 +27,19 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	void BindMaterial(ID3D11DeviceContext* InDeviceContext) const;
-	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const void* InData,
-							const uint32_t       InOffset = 0) const;
-	void UpdateConstantData(ID3D11DeviceContext* InDeviceContext, const JText& InBufferName, const JText& InDataName,
-							const void*          InData) const;
+	void        BindMaterial(ID3D11DeviceContext* InDeviceContext) const;
+	const void* GetMaterialData() const { return mMaterialRawData.data(); }
+	const float GetMaterialSize() const { return mMaterialRawData.size() * sizeof(float); }
 
 public:
-	FMaterialParam* GetInstanceParam(const JText& InParamName);
-	void            AddInstanceParam(const FMaterialParam& InParamValue);
-	void            EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue);
+	void* GetInstanceParam(const JText& InParamName, bool bTextureParam = false);
+	void* GetInstanceParam(uint32_t InParamKey, bool bTextureParam = false);
+	void  EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue);
 
 public:
 	FORCEINLINE JText   GetMaterialName() const { return ParseFile(mFileName); }
 	FORCEINLINE JText   GetMaterialPath() const { return mFileName; }
-	FORCEINLINE int32_t GetParamCount() const { return mInstanceParams.size(); }
+	FORCEINLINE int32_t GetParamCount() const { return mMaterialRawData.size(); }
 
 public:
 	void SetParentMaterial(JMaterial* InParentMaterial);
@@ -50,11 +48,13 @@ private:
 	void GetInstanceParams();
 
 protected:
-	JText                  mFileName;		// 파일 이름
-	JMaterial*             mParentMaterial;	// 부모 머티리얼 레퍼런스
-	JShader*               mShader;			// 셰이더 레퍼런스
-	JArray<FMaterialParam> mInstanceParams;	// 인스턴스 파라미터 (편집 가능)
-	FMaterialInstanceData  mInstanceData;	// 인스턴스 데이터
+	JText      mFileName;		// 파일 이름
+	JMaterial* mParentMaterial;	// 부모 머티리얼 레퍼런스
+	JShader*   mShader;			// 셰이더 레퍼런스
+
+	JArray<float>              mMaterialRawData;
+	JHash<uint32_t, uint32_t>  mMaterialParamToRawDataIndex;
+	JHash<uint32_t, JTexture*> mTextureMap;
 
 	friend class GUI_Editor_Material;
 };

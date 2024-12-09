@@ -21,6 +21,7 @@ public:
 
 public:
 	void Initialize() override;
+	void Tick(float DeltaTime) override;
 
 public:
 	bool Serialize_Implement(std::ofstream& FileStream) override;

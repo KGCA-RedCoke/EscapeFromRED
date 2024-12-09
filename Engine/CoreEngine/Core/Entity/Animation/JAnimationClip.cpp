@@ -393,13 +393,6 @@ FMatrix JAnimationClip::FetchInterpolateBone(const int32_t  InBoneIndex,
 							   (InAnimElapsedTime - startTick) / (endTick - startTick));
 	}
 
-	// if (bInterpolate)
-	// {
-	// 	position = XMVectorLerp(cachedPosition, position, 0.5f);
-	// 	rotation = FQuaternion::Slerp(cachedRotation, rotation, 0.5f);
-	// 	scale    = XMVectorLerp(cachedScale, scale, 0.5f);
-	// }
-
 	positionMat = XMMatrixTranslation(position.x, position.y, position.z);
 	XMStoreFloat4x4(&rotationMat, XMMatrixRotationQuaternion(rotation));
 	scaleMat = XMMatrixScaling(scale.x, scale.y, scale.z);
@@ -418,5 +411,31 @@ void JAnimationClip::SetSkeletalMesh(const Ptr<JSkeletalMesh>& InSkeletalMesh)
 	for (int32_t i = 0; i < InSkeletalMesh->GetSkeletonData().Joints.size(); ++i)
 	{
 		mAnimationPose.push_back(FMatrix::Identity);
+	}
+}
+
+void JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureData)
+{
+	const int32_t boneCount  = mSkeletalMesh.lock()->GetSkeletonData().Joints.size();
+	const int32_t frameCount = mEndFrame - mStartFrame;
+	const int32_t animSize   = frameCount * boneCount * 3;
+
+	OutTextureData.resize(animSize);
+
+	for (int32_t boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+	{
+		for (int32_t frameIndex = 0; frameIndex < frameCount; ++frameIndex)
+		{
+			int32_t index = (boneIndex * frameCount + frameIndex) * 3;
+
+			// Keyframe
+			const auto& positionKey = mTracks[boneIndex]->TransformKeys.PositionKeys[frameIndex];
+			const auto& rotationKey = mTracks[boneIndex]->TransformKeys.RotationKeys[frameIndex];
+			const auto& scaleKey    = mTracks[boneIndex]->TransformKeys.ScaleKeys[frameIndex];
+
+			OutTextureData[index + 0] = FVector4(positionKey.Value, 0.f);
+			OutTextureData[index + 1] = rotationKey.Value;
+			OutTextureData[index + 2] = FVector4(scaleKey.Value, 0.f);
+		}
 	}
 }

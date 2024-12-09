@@ -7,8 +7,7 @@ public:
 	JMaterial_SkySphere(JTextView InName = "SkySphere");
 
 public:
-	void BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
-							  const JArray<FMaterialParam>& InInstanceParams) override;
+	void BindShader(ID3D11DeviceContext*          InDeviceContext) override;
 
 private:
 	void InitializeParams() override;

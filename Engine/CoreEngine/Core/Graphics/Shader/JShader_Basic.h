@@ -13,8 +13,4 @@ public:
 public:
 	void BindShaderPipeline(ID3D11DeviceContext* InDeviceContext) override;
 	void UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext) override;
-
-private:
-	// ------------------------------ 캐싱 데이터 ------------------------------
-	CBuffer::Light mCachedLightData;
 };

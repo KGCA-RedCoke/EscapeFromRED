@@ -35,7 +35,7 @@ void Oc::FNode::Update()
 			Children[i]->Update();
 		}
 	}
-}
+}	
 
 void Oc::FNode::Render(JCameraComponent* InCamera)
 {

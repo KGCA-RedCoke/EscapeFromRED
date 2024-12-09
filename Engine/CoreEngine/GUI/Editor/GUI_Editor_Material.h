@@ -26,15 +26,12 @@ private:
 
 private:
 	void SetMeshObject(JTextView InMeshPath);
-
-	void HandleIntegerType(FMaterialParam& MaterialParam);
-	void HandleFloatType(FMaterialParam& Param);
-	void HandleFloat2Type(FMaterialParam& Param);
-	void HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const;
-
 	void ShowMaterialEditor();
 
-	void ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const;
+	void HandleFloatType(const FMaterialParam& Param);
+	void HandleFloat2Type(const FMaterialParam& Param);
+	void HandleFloat4Type(const FMaterialParam& Param) const;
+	void HandleTextureType(const FMaterialParam& Param) const;
 
 	void Button_AddParam();
 

@@ -4,6 +4,7 @@
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
@@ -62,6 +63,8 @@ void JWorld::Initialize()
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
+	// NAV_MAP.Initialize();
+
 	OnDebugModeChanged.Bind([](bool bDebugMode){});
 
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
@@ -83,6 +86,7 @@ void JWorld::Update(float DeltaTime)
 	LevelManager->Update(DeltaTime);
 
 	G_DebugBatch.Update(DeltaTime);
+	// NAV_MAP.Update(DeltaTime);	
 }
 
 void JWorld::Render()
@@ -95,7 +99,7 @@ void JWorld::Render()
 
 
 	LevelManager->Render();
-
+	// NAV_MAP.Render();
 
 }
 

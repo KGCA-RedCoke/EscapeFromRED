@@ -1,25 +1,19 @@
-﻿#include "JMaterial_Basic.h"
+﻿#include "JMaterial_Detail.h"
 
-#include "Core/Graphics/ShaderStructs.h"
-#include "Core/Graphics/XD3DDevice.h"
-#include "Core/Graphics/Shader/JShader.h"
-#include "Core/Interface/JWorld.h"
-#include "GUI/MGUIManager.h"
-
-JMaterial_Basic::JMaterial_Basic(JTextView InName)
+JMaterial_Detail::JMaterial_Detail(JTextView InName)
 	: JMaterial(InName)
 {
-	JMaterial_Basic::InitializeParams();
+	JMaterial_Detail::InitializeParams();
 }
 
-void JMaterial_Basic::BindShader(ID3D11DeviceContext* InDeviceContext)
+void JMaterial_Detail::BindShader(ID3D11DeviceContext* InDeviceContext)
 {
 	JMaterial::BindShader(InDeviceContext);
 }
 
-void JMaterial_Basic::InitializeParams()
+void JMaterial_Detail::InitializeParams()
 {
-	if (mMaterialParams.empty() || mMaterialParams.size() == 9 || mMaterialParams.size() == 6)
+	if (mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 
@@ -47,20 +41,37 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
+		mMaterialParams.push_back(FMaterialParam("MaskMap",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
 		mMaterialParams.push_back(FMaterialParam("OpacityMap",
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
 
+
 		mMaterialParams.push_back(FMaterialParam("BaseColor",
 												 EMaterialParamValue::Float3,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("AO",
+		mMaterialParams.push_back(FMaterialParam("NormalColor",
+												 EMaterialParamValue::Float3,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("NormalIntensity",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("Roughness",
+		mMaterialParams.push_back(FMaterialParam("Emission",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("GlobalRoughness",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("MaskPower",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
@@ -68,11 +79,11 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("Emissive",
+		mMaterialParams.push_back(FMaterialParam("MetallicConstant",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("Specular",
+		mMaterialParams.push_back(FMaterialParam("NormalTiling",
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
@@ -80,12 +91,31 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
+		mMaterialParams.push_back(FMaterialParam("Roughness",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("RoughnessMask",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Specular",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("TextureSize",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Tiling",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
 		mMaterialParams.push_back(FMaterialParam("TextureUsage",
 												 EMaterialParamValue::Integer,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialName = "Basic";
-		Utils::Serialization::Serialize(NAME_MAT_BASIC, this);
-	}
 
+		Utils::Serialization::Serialize(NAME_MAT_DETAIL, this);
+	}
 }

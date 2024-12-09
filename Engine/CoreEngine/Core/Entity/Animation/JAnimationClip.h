@@ -114,6 +114,9 @@ public:
 
 	void SetSkeletalMesh(const Ptr<class JSkeletalMesh>& InSkeletalMesh);
 
+private:
+	void GenerateAnimationTexture(_Out_ JArray<FVector4>& OutTextureData);
+
 protected:
 	// ------------ Properties ------------
 	JText mName;						// 애니메이션 클립 이름

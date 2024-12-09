@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include "JMaterial.h"
 
-class JMaterial_2D : public JMaterial
+class JMaterial_Detail : public JMaterial
 {
 public:
-	JMaterial_2D(JTextView InName);
+	JMaterial_Detail(JTextView InName);
 
 public:
 	void BindShader(ID3D11DeviceContext*          InDeviceContext) override;

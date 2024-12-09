@@ -125,6 +125,7 @@ void FMaterialParam::BindMaterialParam(ID3D11DeviceContext* InDeviceContext, con
 JMaterial::JMaterial(JTextView InMaterialName)
 {
 	mMaterialPath = {InMaterialName.begin(), InMaterialName.end()};
+	mPath         = mMaterialPath;
 	mMaterialName = ParseFile(mMaterialPath);
 	SetShader(GetWorld.ShaderManager->BasicShader);
 
@@ -151,7 +152,7 @@ bool JMaterial::Serialize_Implement(std::ofstream& FileStream)
 	}
 
 	// Material Path
-	Utils::Serialization::Serialize_Text(mMaterialPath, FileStream);
+	Utils::Serialization::Serialize_Text(mPath, FileStream);
 
 	// Material Name
 	Utils::Serialization::Serialize_Text(mMaterialName, FileStream);
@@ -159,13 +160,13 @@ bool JMaterial::Serialize_Implement(std::ofstream& FileStream)
 	// Material Param Count
 	int32_t paramCount = mMaterialParams.size();
 	Utils::Serialization::Serialize_Primitive(&paramCount, sizeof(paramCount), FileStream);
-
+	
 	// Material Params
 	for (int32_t i = 0; i < paramCount; ++i)
 	{
 		mMaterialParams[i].Serialize_Implement(FileStream);
 	}
-
+	
 	// Shader File Name
 	if (!mShader)
 		mShader = GetWorld.ShaderManager->BasicShader;
@@ -182,17 +183,17 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return false;
 	}
-
+	
 	// Material Path
 	Utils::Serialization::DeSerialize_Text(mMaterialPath, InFileStream);
-
+	
 	// Material Name
 	Utils::Serialization::DeSerialize_Text(mMaterialName, InFileStream);
-
+	
 	// Material Param Count
 	int32_t paramCount;
 	Utils::Serialization::DeSerialize_Primitive(&paramCount, sizeof(paramCount), InFileStream);
-
+	
 	// Material Params
 	mMaterialParams.reserve(paramCount);
 	for (int32_t i = 0; i < paramCount; ++i)
@@ -201,7 +202,7 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 		param.DeSerialize_Implement(InFileStream);
 		mMaterialParams.push_back(param);
 	}
-
+	
 	// Shader File Name
 	JWText shaderName;
 	Utils::Serialization::DeSerialize_Text(shaderName, InFileStream);
@@ -217,7 +218,7 @@ bool JMaterial::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-void JMaterial::BindMaterialPipeline(ID3D11DeviceContext* InDeviceContext, const JArray<FMaterialParam>& InInstanceParams)
+void JMaterial::BindShader(ID3D11DeviceContext* InDeviceContext)
 {
 	assert(mShader);
 

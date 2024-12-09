@@ -8,6 +8,8 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Utils/Graphics/DXUtils.h"
+#include "GUI/MGUIManager.h"
+extern CBuffer::Light g_LightData;
 
 JShader::JShader(const JText& InName, LPCSTR VSEntryPoint, LPCSTR PSEntryPoint)
 	: JShader(String2WString(InName), VSEntryPoint, PSEntryPoint)
@@ -41,6 +43,18 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	InDeviceContext->DSSetShader(mDefaultShaderData.DomainShader.Get(), nullptr, 0);
 	InDeviceContext->GSSetShader(mDefaultShaderData.GeometryShader.Get(), nullptr, 0);
 	InDeviceContext->PSSetShader(mDefaultShaderData.PixelShader.Get(), nullptr, 0);
+
+	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	int32_t slots[2] = {0, 1};
+	G_Device.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
+
+	G_Device.SetBlendState(EBlendState::Opaque);
+	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);
+
+	G_Device.SetRasterState(GetWorld.GUIManager->IsRenderWireFrame()
+								? ERasterState::WireFrame
+								: ERasterState::CCW);
 
 	UpdateGlobalConstantBuffer(InDeviceContext);
 }
@@ -105,6 +119,15 @@ void JShader::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 	{
 		mTargetCamera = GetWorld.CameraManager->GetCurrentMainCam();
 	}
+
+	if (mCachedLightData.LightColor != g_LightData.LightColor || mCachedLightData.LightPos != g_LightData.LightPos)
+	{
+		mCachedLightData = g_LightData;
+		UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_LIGHT, &g_LightData);
+	}
+
+	UpdateConstantData(InDeviceContext, "PointLightConstantBuffer", &GetWorld.WorldPointLightData);
+	UpdateConstantData(InDeviceContext, "SpotLightConstantBuffer", &GetWorld.WorldSpotLightData);
 
 	mCachedCameraData.CameraPos    = FVector4{mTargetCamera->GetEyePositionVector(), 1.f};
 	mCachedCameraData.View         = XMMatrixTranspose(mTargetCamera->GetViewMatrix());

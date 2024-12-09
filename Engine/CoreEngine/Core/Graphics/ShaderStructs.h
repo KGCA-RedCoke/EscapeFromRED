@@ -304,25 +304,27 @@ namespace Buffer
 // 인스턴싱 버퍼 구조체
 struct FInstanceData
 {
-	alignas(16) FMatrix WorldMatrix;	// 각 인스턴스 별로 다른 월드 행렬
-
-	// Etc... 머티리얼
+	alignas(16) FMatrix WorldMatrix           = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 행렬
+	alignas(16) FMatrix WorldInverseTranspose = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 역행렬
 };
 
-struct FMaterialInstanceData
+struct FMaterialInstanceData_Basic
 {
-	FVector4 BaseColor = FVector4(0.2f, 0.2f, 0.2f, 1.f);
-	float    AO        = 0.0f;
+	FVector  BaseColor = FVector(0.2f, 0.2f, 0.2f);
+	float    AO        = 0.1f;
 	float    Roughness = 0.0f;
-	float    Metallic  = 0.0f;
+	float    Metallic  = 0.04f;
 	float    Emissive  = 0.1f;
+	float    Specular  = 0.5f;
+	float    Opacity   = 1.f;
 	uint32_t Flag      = 0;
 };
 
 struct FInstanceData_Mesh
 {
-	alignas(16) FMatrix   WorldMatrix = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 행렬
-	FMaterialInstanceData MaterialData;	// 머티리얼 데이터
+	FInstanceData Transform;	// 각 인스턴스 별로 다른 월드 행렬
+	float         MaterialData[256];
+	/*FMaterialInstanceData_Basic MaterialData;	// 머티리얼 데이터*/
 };
 
 struct FRenderCommand

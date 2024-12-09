@@ -1,6 +1,58 @@
 #include "CommonConstantBuffers.hlslinc"
 #include "InputLayout.hlslinc"
 #include "ShaderUtils.hlslinc"
+// ------------------------------------------------------------------
+// : HorrorMap Detail Shader
+// ------------------------------------------------------------------
+
+// ------------------------------------------------------------------
+// Settings
+// Blend Mode : Masked
+// Shading Model : lit
+// ------------------------------------------------------------------
+
+struct FMaterialInstance_Detail
+{
+	float3 BaseColor : MAT_BASECOLOR;
+	float3 NormalColor : MAT_NORMAL;
+	float  NormalIntensity : MAT_NORMALINTENSITY;
+	float  Emission : MAT_EMISSION;
+	float  GlobalRoughness : MAT_ROUGHNESS2;
+	float  MaskPower : MAT_MASKPOWER;
+	float  Metallic : MAT_METALLIC;
+	float  MetallicConstant : MAT_METALLICCONSTANT;
+	float  NormalTiling : MAT_NORMALTILING;
+	float  Opacity : MAT_OPACITY;
+	float  Roughness : MAT_ROUGHNESS1;
+	float  RoughnessMask : MAT_ROUGHNESSMASK;
+	float  Specular : MAT_SPECULAR;
+	float  TextureSize : MAT_TEXTURESIZE;
+	float  Tiling : MAT_TILING;
+	uint   Flag : MAT_TEXTUREFLAG;
+};
+
+struct InstanceData_Detail
+{
+	row_major matrix         Transform : INST_TRANSFORM;
+	row_major matrix         InvTransform : INST_TRNASFORM_INVTRANS;
+	FMaterialInstance_Detail Material : INST_MAT;
+};
+
+struct PixelIn_Detail
+{
+	float4 ClipSpace : SV_POSITION;
+	float4 WorldSpace : POSITION;
+	float4 VertexColor : COLOR0;
+	float2 TexCoord : TEXCOORD0;
+
+	float3 ViewDir : TEXCOORD1;
+
+	float3 Normal : TEXCOORD2;
+	float3 Tangent : TEXCOORD3;
+	float3 Binormal : TEXCOORD4;
+
+	FMaterialInstance_Detail Material : MATERIAL;
+};
 
 Texture2D baseColorMap : register(t0);
 Texture2D normalMap : register(t1);
@@ -8,9 +60,9 @@ Texture2D aoMap : register(t2);
 Texture2D roughnessMap : register(t3);
 Texture2D metallicMap : register(t4);
 Texture2D emissiveMap : register(t5);
-Texture2D opacityMap : register(t6);
-Texture2D heightMap : register(t7);
-Texture2D specularMap : register(t8);
+Texture2D maskMap : register(t6);
+Texture2D opacityMap : register(t7);
+
 
 StructuredBuffer<float4> g_BoneTransforms : register(t10);
 
@@ -19,9 +71,9 @@ SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
 
 
-PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
+PixelIn_Detail VS(VertexIn_Base Input, InstanceData_Detail Instance)
 {
-	PixelIn_Base output;
+	PixelIn_Detail output;
 
 	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
@@ -60,26 +112,34 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 }
 
 
-float4 PS(PixelIn_Base Input) : SV_TARGET
+float4 PS(PixelIn_Detail Input) : SV_TARGET
 {
 	float3 albedo       = Input.Material.BaseColor.rgb;
 	float3 normal       = normalize(Input.Normal);
-	float3 ambientColor = Input.Material.AO;
-	float  roughness    = 1.f;
-	float  metallic     = 0.04f;
+	float  ambientColor = 1.0f;
+	float  roughness    = 0.5f;
+	float  metallic     = Input.Material.Metallic;
 
 	float3x3 tbn = float3x3(Input.Tangent, Input.Binormal, Input.Normal);
 
 	const float roughnessFactor = Input.Material.Roughness;
-	const float metallicFactor  = Input.Material.Metallic;
-	const float emissiveFactor  = Input.Material.Emissive;
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
-	const float3 lightDir = normalize(DirectionalLightPos.xyz);
-	const float3 viewDir  = normalize(Input.ViewDir);
-	const float2 texCoord = Input.TexCoord;
+	const float3 lightDir       = normalize(DirectionalLightPos.xyz);
+	const float3 viewDir        = normalize(Input.ViewDir);
+	const float3 viewDirTangent = mul(viewDir, tbn);
+
+	const float2 texCoord = Input.TexCoord * Input.Material.Tiling;
+
+	float4 detailMask = WorldAlignedTexture(maskMap,
+											Sampler_Linear,
+											Input.WorldSpace.xyz,
+											Input.Normal,
+											Input.Material.TextureSize);
+
 
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
+	albedo *= pow(detailMask.rgb, Input.Material.MaskPower);
 
 	float4 normalColor = normalMap.Sample(Sampler_Linear, texCoord).rgba;
 	if (normalColor.r * normalColor.g * normalColor.b < 0.9f)
@@ -88,12 +148,22 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 		normal = normalize(mul(normal, tbn));
 	}
 
+	float3 detailNormal = WorldAlignedTexture(normalMap,
+											  Sampler_Linear,
+											  Input.WorldSpace.xyz,
+											  Input.Normal,
+											  Input.Material.NormalTiling).xyz;
+
+	normal = BlendAngleCorrectNormal(normal, lerp(float3(0, 0, 1), detailNormal, Input.Material.NormalIntensity));
+	normal *= Input.Material.NormalColor;
+
 	ambientColor = aoMap.Sample(Sampler_Linear, texCoord).r;
 	roughness    = roughnessMap.Sample(Sampler_Linear, texCoord).g * roughnessFactor;
-	metallic     = metallicMap.Sample(Sampler_Linear, texCoord).b * metallicFactor;
+	roughness    = roughness * (detailMask * Input.Material.RoughnessMask) + Input.Material.GlobalRoughness;
+	metallic     = metallicMap.Sample(Sampler_Linear, texCoord).b + metallic;
+	metallic     = metallic * Input.Material.MetallicConstant;
 
-	const float3 emissive = emissiveMap.Sample(Sampler_Linear, texCoord).rgb * emissiveFactor;
-	const float  opacity  = opacityMap.Sample(Sampler_Linear, texCoord).r * Input.Material.Opacity;
+	const float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Input.Material.Opacity;
 
 	float normDotLight = saturate(dot(normal, lightDir));
 
@@ -123,11 +193,8 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
 	float3 ambient = albedo * 0.1f * ambientColor; // ambientColor 반영
 
-
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + ambient + specular;
-
-	finalColor += emissive;
 
 	return float4(finalColor, opacity);
 

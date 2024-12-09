@@ -191,6 +191,7 @@ void JStaticMeshComponent::ShowEditor()
 			if (auto matInstancePtr = MMaterialInstanceManager::Get().Load(str))
 			{
 				SetMaterialInstance(matInstancePtr, i);
+				return;
 			}
 
 			ImGui::EndDragDropTarget();

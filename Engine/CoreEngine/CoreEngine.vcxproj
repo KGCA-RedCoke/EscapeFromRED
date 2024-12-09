@@ -95,7 +95,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Vender\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmt.lib;spdlog.lib;d3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d2d1.lib;dwrite.lib;DirectXTK.lib;libfbxsdk-md.lib;libxml2-md.lib;zlib-md.lib;fmt.lib;spdlog.lib;d3dcompiler.lib;fmod_vc.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -127,6 +127,9 @@
     <ClInclude Include="Core\Entity\Light\JLightComponent.h" />
     <ClInclude Include="Core\Entity\Light\JLight_Point.h" />
     <ClInclude Include="Core\Entity\Light\JLight_Spot.h" />
+    <ClInclude Include="Core\Entity\Navigation\AStar.h" />
+    <ClInclude Include="Core\Entity\Navigation\NavTest.h" />
+    <ClInclude Include="Core\Entity\Navigation\Node.h" />
     <ClInclude Include="Core\Gameplay\IGameMode.h" />
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
     <ClInclude Include="Core\Graphics\Font\JFont.h" />
@@ -134,8 +137,9 @@
     <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_2D.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Detail.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_POM.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_SkySphere.h" />
-    <ClInclude Include="Core\Graphics\Material\JMaterial_Window.h" />
     <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
@@ -225,6 +229,12 @@
     <None Include="Shader\FBMP.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shader\HorrorMap_Detail.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\HorrorMap_POM.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shader\InputLayout.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -281,14 +291,18 @@
     <ClCompile Include="Core\Entity\Light\JLightComponent.cpp" />
     <ClCompile Include="Core\Entity\Light\JLight_Point.cpp" />
     <ClCompile Include="Core\Entity\Light\JLight_Spot.cpp" />
+    <ClCompile Include="Core\Entity\Navigation\AStar.cpp" />
+    <ClCompile Include="Core\Entity\Navigation\NavTest.cpp" />
+    <ClCompile Include="Core\Entity\Navigation\Node.cpp" />
     <ClCompile Include="Core\Gameplay\IGameMode.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_2D.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Detail.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_POM.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_SkySphere.cpp" />
-    <ClCompile Include="Core\Graphics\Material\JMaterial_Window.cpp" />
     <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />

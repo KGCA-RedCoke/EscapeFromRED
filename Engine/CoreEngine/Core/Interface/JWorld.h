@@ -63,6 +63,7 @@ public:
 	class XD3DDevice*               D3D11API;				// 디바이스
 
 
+
 public:
 	struct
 	{

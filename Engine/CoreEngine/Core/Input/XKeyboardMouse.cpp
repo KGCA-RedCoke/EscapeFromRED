@@ -2,6 +2,9 @@
 
 #include "Core/Window/Window.h"
 
+XKeyboardMouse::XKeyboardMouse()
+{}
+
 void XKeyboardMouse::Initialize()
 {
 	CreateKeys();

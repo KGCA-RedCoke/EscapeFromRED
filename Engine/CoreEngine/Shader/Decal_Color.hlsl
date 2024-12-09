@@ -32,16 +32,16 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	float3 normal      = Input.Normal;
 
 	output.WorldSpace = float4(Input.Pos, 1.f);
-	output.WorldSpace = mul(output.WorldSpace, Instance.InstancePos);
+	output.WorldSpace = mul(output.WorldSpace, Instance.Transform);
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 
 	output.ViewDir = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
 
 	output.TexCoord = Input.TexCoord;
-	output.Normal   = mul(normal, (float3x3)Instance.InstancePos);
-	output.Tangent  = mul(Input.Tangent, (float3x3)Instance.InstancePos);
-	output.Binormal = mul(Input.Binormal, (float3x3)Instance.InstancePos);
+	output.Normal   = mul(normal, (float3x3)Instance.Transform);
+	output.Tangent  = mul(Input.Tangent, (float3x3)Instance.Transform);
+	output.Binormal = mul(Input.Binormal, (float3x3)Instance.Transform);
 
 	return output;
 }

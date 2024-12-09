@@ -38,72 +38,6 @@ void GUI_Editor_Material::SetMeshObject(JTextView InMeshPath)
 	mPreviewMeshObject->SetMaterialInstance(mMaterialToEdit);
 }
 
-void GUI_Editor_Material::HandleIntegerType(FMaterialParam& MaterialParam)
-{
-	// if (MaterialParam.Key == CBuffer::HASH_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG)
-	// {
-	// 	uint32_t flag = static_cast<uint32_t>(MaterialParam.IntegerValue);
-	// 	
-	// 	for (int32_t i = 1; i < ARRAYSIZE(CBuffer::TextureUsageString); ++i)
-	// 	{
-	// 		bool bSelected = flag & (1 << (i - 1));
-	// 		ImGui::Selectable(CBuffer::TextureUsageString[i], &bSelected);
-	// 	}
-	// }
-}
-
-void GUI_Editor_Material::HandleFloatType(FMaterialParam& Param)
-{
-	ImGui::DragFloat(Param.Name.c_str(), &Param.FloatValue, 0.01f, 0.f, 100.f);
-}
-
-void GUI_Editor_Material::HandleFloat2Type(FMaterialParam& Param)
-{
-	ImGui::DragFloat(Param.Name.c_str(), &Param.FloatValue, 0.01f, 0.f, 1.f);
-}
-
-void GUI_Editor_Material::HandleFloat4Type(FMaterialParam& Param, uint32_t Index) const
-{
-	const FVector4 cachedColor = Param.Float4Value;
-	float          color[4];
-
-	bool bUseTexture = Param.ParamValue == EMaterialParamValue::Texture2D;
-	ImGui::Text("Use Texture");
-	ImGui::SameLine();
-	ImGui::Checkbox(Param.Name.c_str(), &bUseTexture);
-
-	if (bUseTexture)
-	{
-		Param.ParamValue = EMaterialParamValue::Texture2D;
-		if (FMaterialParam* flagParam = mMaterialToEdit->
-				GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
-		{
-			uint32_t flag = static_cast<uint32_t>(flagParam->IntegerValue);
-			flag |= 1 << (Index);
-			flagParam->IntegerValue = flag;
-			mMaterialToEdit->EditInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG, *flagParam);
-		}
-	}
-
-	ImGui::DragFloat4(Param.Name.c_str(), &Param.Float4Value.x, 0.01f, 0.f, 1.f);
-	color[0] = Param.Float4Value.x;
-	color[1] = Param.Float4Value.y;
-	color[2] = Param.Float4Value.z;
-	color[3] = Param.Float4Value.w;
-	ImGui::SameLine();
-
-	ImGui::ColorEdit4(Param.Name.c_str(),
-					  reinterpret_cast<float*>(&color),
-					  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-	Param.Float4Value = FVector4{color[0], color[1], color[2], color[3]};
-
-
-	if (cachedColor != Param.Float4Value)
-	{
-		mMaterialToEdit->EditInstanceParam(Param.Name, Param);
-	}
-}
-
 void GUI_Editor_Material::ShowMaterialEditor()
 {
 	ImGui::BeginChild("MaterialView", ImVec2(400, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border);
@@ -168,16 +102,13 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 	if (ImGui::CollapsingHeader("Shader Params"))
 	{
-		auto& params = mMaterialToEdit->mInstanceParams;
+		const auto& params = mMaterialToEdit->mParentMaterial->mMaterialParams;
 		for (int32_t i = 0; i < params.size(); ++i)
 		{
-			FMaterialParam& param = params[i];
+			const FMaterialParam& param = params[i];
 
 			switch (param.ParamValue)
 			{
-			case EMaterialParamValue::Integer:
-				HandleIntegerType(param);
-				break;
 			case EMaterialParamValue::Float:
 				HandleFloatType(param);
 				break;
@@ -186,10 +117,10 @@ void GUI_Editor_Material::ShowMaterialEditor()
 				break;
 			case EMaterialParamValue::Float3:
 			case EMaterialParamValue::Float4:
-				HandleFloat4Type(param, i);
+				HandleFloat4Type(param);
 				break;
 			case EMaterialParamValue::Texture2D:
-				ShowTextureSlot(param, i);
+				HandleTextureType(param);
 				break;
 			}
 		}
@@ -214,30 +145,91 @@ void GUI_Editor_Material::ShowMaterialEditor()
 	ImGui::EndChild();
 }
 
-void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index) const
+void GUI_Editor_Material::HandleFloatType(const FMaterialParam& Param)
 {
-	ImGui::Text(Param.Name.c_str());
-	ImGui::SameLine();
-
-	bool bUseTexture = Param.ParamValue == EMaterialParamValue::Texture2D;
-	ImGui::Text("Use Texture");
-	ImGui::SameLine();
-	ImGui::Checkbox(Param.Name.c_str(), &bUseTexture);
-	if (!bUseTexture)
+	if (float* instanceValue = static_cast<float*>(mMaterialToEdit->GetInstanceParam(Param.Key)))
 	{
-		Param.ParamValue = EMaterialParamValue::Float4;
-		if (FMaterialParam* flagParam = mMaterialToEdit->
-				GetInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG))
+		float cachedValue = *instanceValue;
+
+		ImGui::DragFloat(Param.Name.c_str(), instanceValue, 0.01f, 0.f, 100.f);
+
+		if (cachedValue != *instanceValue)
 		{
-			uint32_t flag = static_cast<uint32_t>(flagParam->IntegerValue);
-			flag &= ~(1 << (Index));
-			flagParam->IntegerValue = flag;
-			mMaterialToEdit->EditInstanceParam(CBuffer::NAME_CONSTANT_VARIABLE_MATERIAL_USAGE_FLAG, *flagParam);
+			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
+			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
+		}
+	}
+}
+
+void GUI_Editor_Material::HandleFloat2Type(const FMaterialParam& Param)
+{
+	if (float* instanceValue = static_cast<float*>(mMaterialToEdit->GetInstanceParam(Param.Key)))
+	{
+		FVector2 cachedValue = FVector2{instanceValue[0], instanceValue[1]};
+
+		ImGui::DragFloat2(Param.Name.c_str(), instanceValue, 0.01f, 0.f, 1.f);
+
+		if (cachedValue.x != instanceValue[0] || cachedValue.y != instanceValue[1])
+		{
+			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
+			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
 		}
 	}
 
 
+}
+
+void GUI_Editor_Material::HandleFloat4Type(const FMaterialParam& Param) const
+{
+	if (float* instanceValue = static_cast<float*>(mMaterialToEdit->GetInstanceParam(Param.Key)))
+	{
+		FVector4 cachedValue = FVector4{instanceValue[0], instanceValue[1], instanceValue[2], instanceValue[3]};
+
+		ImGui::DragFloat4(Param.Name.c_str(), instanceValue, 0.01f, 0.f, 1.f);
+
+		if (cachedValue != FVector4{instanceValue[0], instanceValue[1], instanceValue[2], instanceValue[3]})
+		{
+			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
+			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
+		}
+	}
+
+	// const FVector4 cachedColor = Param.Float4Value;
+	// float          color[4];
+	//
+	// ImGui::DragFloat4(Param.Name.c_str(), &Param.Float4Value.x, 0.01f, 0.f, 1.f);
+	// color[0] = Param.Float4Value.x;
+	// color[1] = Param.Float4Value.y;
+	// color[2] = Param.Float4Value.z;
+	// color[3] = Param.Float4Value.w;
+	// ImGui::SameLine();
+	//
+	// ImGui::ColorEdit4(Param.Name.c_str(),
+	// 				  reinterpret_cast<float*>(&color),
+	// 				  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+	// Param.Float4Value = FVector4{color[0], color[1], color[2], color[3]};
+	//
+	//
+	// if (cachedColor != Param.Float4Value)
+	// {
+	// 	mMaterialToEdit->EditInstanceParam(Param.Name, Param);
+	// }
+}
+
+
+void GUI_Editor_Material::HandleTextureType(const FMaterialParam& Param) const
+{
+	ImGui::Text(Param.Name.c_str());
+	ImGui::SameLine();
+
 	JText label = std::format("##{}", Param.Name);
+
+	FMaterialParam textureParam;
+	textureParam.Name       = Param.Name;
+	textureParam.Key        = Param.Key;
+	textureParam.ParamValue = EMaterialParamValue::Texture2D;
+
+	JTexture* instanceValue = static_cast<JTexture*>(mMaterialToEdit->GetInstanceParam(Param.Key, true));
 
 	// Texture Path
 	if (ImGui::BeginCombo(label.c_str(), Param.StringValue.c_str()))
@@ -249,8 +241,10 @@ void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index)
 			JText texName = WString2String(tex->GetTextureName());
 			if (ImGui::Selectable(texName.c_str()))
 			{
-				Param.StringValue  = texName;
-				Param.TextureValue = tex;
+				textureParam.StringValue  = texName;
+				textureParam.TextureValue = tex;
+
+				mMaterialToEdit->EditInstanceParam(Param.Name, textureParam);
 
 				break;
 			}
@@ -260,20 +254,28 @@ void GUI_Editor_Material::ShowTextureSlot(FMaterialParam& Param, uint32_t Index)
 		ImGui::EndCombo();
 	}
 
-	ImGui::Text(u8("텍스처 드랍"));
+	ImGui::Text(u8("텍스처"));
 	ImGui::SameLine();
-	ImGui::Image(Param.TextureValue ? Param.TextureValue->GetSRV() : nullptr, {150, 150});
+	ImGui::Image(instanceValue ? instanceValue->GetSRV() : GetWorld.TextureManager->WhiteTexture->GetSRV(), {100, 100});
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 	{
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();
 
 		const char* assetPath = static_cast<const char*>(payload->Data);
-		Param.StringValue     = assetPath;
-		Param.TextureValue    = GetWorld.TextureManager->Load(assetPath);
+		if (instanceValue)
+		{
+			instanceValue = GetWorld.TextureManager->Load(assetPath);
+		}
+		else
+		{
+			textureParam.StringValue  = assetPath;
+			textureParam.TextureValue = GetWorld.TextureManager->Load(assetPath);
+			mMaterialToEdit->EditInstanceParam(Param.Name, textureParam);
+		}
 	}
-
 }
+
 
 void GUI_Editor_Material::Button_AddParam()
 {
@@ -283,7 +285,6 @@ void GUI_Editor_Material::Button_AddParam()
 		bOpenNewParamPopup = true;
 	}
 }
-
 
 void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 {
@@ -309,26 +310,29 @@ void GUI_Editor_Material::Update_Implementation(float DeltaTime)
 				{
 					if (ImGui::MenuItem(HASH_MATERIAL_PARAM_VALUE_TYPE[i], nullptr, selectedType == i))
 					{
+						int32_t customParamCount = 0;
+						for (auto& param : mMaterialToEdit->mParentMaterial->mMaterialParams)
+						{
+							if (param.Name.starts_with("Custom"))
+							{
+								customParamCount++;
+							}
+						}
+
 						selectedType = i; // 선택된 타입 업데이트
+						mMaterialToEdit->mParentMaterial->mMaterialParams.push_back(
+							 FMaterialParam(
+											std::format("CustomParam_{}", customParamCount),
+											static_cast<EMaterialParamValue>(selectedType),
+											&FVector4::ZeroVector,
+											true
+										   ));
+
+						bOpenNewParamPopup = false;
 					}
 				}
 				ImGui::EndMenu();
 			}
-
-			if (ImGui::Button("Add"))
-			{
-				FMaterialParam newParam;
-				newParam.Name           = paramName;
-				newParam.Key            = StringHash(paramName);
-				newParam.bInstanceParam = true;
-				newParam.ParamValue     = static_cast<EMaterialParamValue>(selectedType);
-				newParam.Float4Value    = FVector4::ZeroVector;
-
-				mMaterialToEdit->AddInstanceParam(newParam);
-				ImGui::CloseCurrentPopup();
-				bOpenNewParamPopup = false;
-			}
-
 			ImGui::EndPopup();
 
 		}

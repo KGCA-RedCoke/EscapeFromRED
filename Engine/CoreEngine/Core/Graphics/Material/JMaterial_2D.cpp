@@ -5,10 +5,9 @@
 JMaterial_2D::JMaterial_2D(JTextView InName)
 	: JMaterial(InName) {}
 
-void JMaterial_2D::BindMaterialPipeline(ID3D11DeviceContext*          InDeviceContext,
-										const JArray<FMaterialParam>& InInstanceParams)
+void JMaterial_2D::BindShader(ID3D11DeviceContext*          InDeviceContext)
 {
-	JMaterial::BindMaterialPipeline(InDeviceContext, InInstanceParams);
+	JMaterial::BindShader(InDeviceContext);
 
 	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -20,10 +19,10 @@ void JMaterial_2D::BindMaterialPipeline(ID3D11DeviceContext*          InDeviceCo
 
 	ID3D11ShaderResourceView* texture;
 
-	if (InInstanceParams[0].TextureValue != nullptr)
-	{
-		texture = InInstanceParams[0].TextureValue->GetSRV();
-	}
+	// if (InInstanceParams[0].TextureValue != nullptr)
+	// {
+	// 	texture = InInstanceParams[0].TextureValue->GetSRV();
+	// }
 
 	InDeviceContext->PSSetShaderResources(0, 1, &texture);
 }
