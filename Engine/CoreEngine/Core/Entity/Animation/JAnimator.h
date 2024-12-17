@@ -3,6 +3,12 @@
 
 class JSkeletalMesh;
 
+DECLARE_DYNAMIC_DELEGATE(FOnAnimStart);
+
+DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
+
+DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
+
 class JAnimator : public JActorComponent
 {
 public:
@@ -22,6 +28,8 @@ public:
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
 
+
+	
 protected:
 	// Target Skeleton
 	JSkeletalMesh* mSkeletalMesh;

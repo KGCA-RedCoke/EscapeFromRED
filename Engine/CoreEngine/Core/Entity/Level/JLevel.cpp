@@ -2,16 +2,19 @@
 
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
 
-JLevel::JLevel(const JText& InPath)
-	: mName(ParseFile(InPath))
+JLevel::JLevel(const JText& InPath, bool bUseTree)
+	: JObject(InPath)
 {
-	mPath = InPath;
-	JLevel::InitializeLevel();
+	if (bUseTree)
+	{
+		JLevel::InitializeLevel();
+	}
 }
 
 JLevel::~JLevel() {}

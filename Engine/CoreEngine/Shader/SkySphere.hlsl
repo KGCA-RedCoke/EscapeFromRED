@@ -31,8 +31,8 @@ struct InstanceData_SkySphere
 {
 	row_major matrix Transform : INST_TRANSFORM;
 	row_major matrix InvTransform : INST_TRNASFORM_INVTRANS;
-
-	SkyData SkyData : INST_SKY_DATA;
+	uint             Flags : INST_FLAG;
+	SkyData          SkyData : INST_SKY_DATA;
 };
 
 struct VertexIn_3D

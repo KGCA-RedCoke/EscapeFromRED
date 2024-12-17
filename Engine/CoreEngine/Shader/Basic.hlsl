@@ -29,7 +29,7 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	float4 localPos    = output.WorldSpace;
 	float3 normal      = Input.Normal;
 
-	if (Instance.Material.Flag & FLAG_MESH_ANIMATED || Instance.Material.Flag & FLAG_MESH_SKINNED)
+	if (Instance.Flags & FLAG_MESH_ANIMATED || Instance.Flags & FLAG_MESH_SKINNED)
 	{
 		for (int i = 0; i < 4; ++i)
 		{

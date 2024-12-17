@@ -11,8 +11,11 @@ void GUI_Base::Update(float DeltaTime)
 	if (!bIsWindowOpen)
 		return;
 
+
 	ImGui::Begin(mTitle.c_str(), &bIsWindowOpen, mWindowFlags);
 	{
+		bIsVisible = ImGui::IsItemVisible();
+
 		if (!ImGui::IsWindowCollapsed())
 		{
 			ChangeWindowStyleIfNotDocked();
@@ -21,7 +24,7 @@ void GUI_Base::Update(float DeltaTime)
 
 			Update_Implementation(DeltaTime);
 		}
-		
+
 
 		ImGui::End();
 	}

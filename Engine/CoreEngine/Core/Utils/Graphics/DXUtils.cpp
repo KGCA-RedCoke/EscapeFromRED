@@ -3,6 +3,7 @@
 #include <d3dcompiler.h>
 
 #include "Core/Graphics/Shader/InputLayouts.h"
+#include "Core/Graphics/Texture/JTexture.h"
 
 namespace Utils::DX
 {
@@ -346,6 +347,87 @@ namespace Utils::DX
 		}
 
 		return result;
+	}
+
+	ID3D11ShaderResourceView* CreateTextureArray(
+		ID3D11Device*            device,
+		ID3D11DeviceContext*     context,
+		const JArray<JTexture*>& textures)
+	{
+		if (textures.empty())
+			throw std::runtime_error("No textures provided to create the texture array.");
+
+		// Get the description of the first texture to determine array format
+		D3D11_TEXTURE2D_DESC textureDesc = textures[0]->GetTextureDesc();
+
+		// Validate that all textures have the same format, dimensions, and mip levels
+		for (size_t i = 1; i < textures.size(); ++i)
+		{
+			D3D11_TEXTURE2D_DESC otherDesc = textures[i]->GetTextureDesc();
+			if (textureDesc.Width != otherDesc.Width ||
+				textureDesc.Height != otherDesc.Height ||
+				textureDesc.MipLevels != otherDesc.MipLevels ||
+				textureDesc.Format != otherDesc.Format)
+			{
+				throw std::runtime_error("All textures must have the same dimensions, format, and mip levels.");
+			}
+		}
+
+		// Adjust for Texture2DArray
+		textureDesc.ArraySize      = static_cast<UINT>(textures.size());
+		textureDesc.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
+		textureDesc.Usage          = D3D11_USAGE_DEFAULT;
+		textureDesc.CPUAccessFlags = 0;
+		textureDesc.MiscFlags      = 0;
+
+		// Create the texture array
+		ComPtr<ID3D11Texture2D> textureArray;
+		HRESULT                 hr = device->CreateTexture2D(&textureDesc, nullptr, &textureArray);
+		if (FAILED(hr))
+			throw std::runtime_error("Failed to create Texture2D array.");
+
+		// Copy each individual texture into the array
+		for (UINT i = 0; i < textures.size(); ++i)
+		{
+			for (UINT mip = 0; mip < textureDesc.MipLevels; ++mip)
+			{
+				D3D11_BOX sourceRegion = {
+					0,
+					0,
+					0,
+					textureDesc.Width >> mip,
+					textureDesc.Height >> mip,
+					1
+				};
+
+				context->CopySubresourceRegion(
+											   textureArray.Get(),
+											   D3D11CalcSubresource(mip, i, textureDesc.MipLevels),
+											   0,
+											   0,
+											   0,
+											   textures[i]->GetTexture2D(),
+											   mip,
+											   &sourceRegion
+											  );
+			}
+		}
+
+		// Create Shader Resource View
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format                          = textureDesc.Format;
+		srvDesc.ViewDimension                   = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+		srvDesc.Texture2DArray.MostDetailedMip  = 0;
+		srvDesc.Texture2DArray.MipLevels        = textureDesc.MipLevels;
+		srvDesc.Texture2DArray.FirstArraySlice  = 0;
+		srvDesc.Texture2DArray.ArraySize        = textureDesc.ArraySize;
+
+		ComPtr<ID3D11ShaderResourceView> srv;
+		hr = device->CreateShaderResourceView(textureArray.Get(), &srvDesc, &srv);
+		if (FAILED(hr))
+			throw std::runtime_error("Failed to create ShaderResourceView for Texture2D array.");
+
+		return srv.Detach();
 	}
 
 	void CreateBuffer(ID3D11Device* InDevice, D3D11_BIND_FLAG InBindFlag, void**     InData, uint32_t InDataSize,

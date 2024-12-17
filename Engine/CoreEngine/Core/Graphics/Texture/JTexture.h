@@ -22,6 +22,7 @@ public:
 	[[nodiscard]] FORCEINLINE JWText                          GetTextureName() const { return mTextureName; }
 	[[nodiscard]] FORCEINLINE uint32_t                        GetSlot() const { return mSlot; }
 	[[nodiscard]] FORCEINLINE ID3D11ShaderResourceView*       GetSRV() const { return mShaderResourceView.Get(); }
+	[[nodiscard]] FORCEINLINE ID3D11Texture2D*                GetTexture2D() const { return mTexture2D.Get(); }
 	[[nodiscard]] FORCEINLINE D3D11_SHADER_RESOURCE_VIEW_DESC GetSrvDesc() const { return mSRVDesc; }
 	[[nodiscard]] FORCEINLINE D3D11_TEXTURE2D_DESC            GetTextureDesc() const { return mTextureDesc; }
 	[[nodiscard]] FORCEINLINE JArray<float>                   GetRGBAData() const { return mRGBAData; }
@@ -43,8 +44,9 @@ private:
 	JWText   mTextureName /** 실제 텍스처 경로 */;
 
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
+	ComPtr<ID3D11Texture2D>          mTexture2D;
 	D3D11_SHADER_RESOURCE_VIEW_DESC  mSRVDesc;
 	D3D11_TEXTURE2D_DESC             mTextureDesc; // 크기, 형식, 샘플링 등
 public:
-	JArray<float>                    mRGBAData;
+	JArray<float> mRGBAData;
 };

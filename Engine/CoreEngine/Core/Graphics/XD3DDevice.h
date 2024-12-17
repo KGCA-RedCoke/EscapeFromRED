@@ -33,7 +33,7 @@ enum class ERasterState : uint8_t
 enum class ESamplerState : uint8_t
 {
 	PointWrap,
-	PointClamp,
+	PointClamp,	
 	LinearWrap,
 	LinearClamp,
 	AnisotropicWrap,

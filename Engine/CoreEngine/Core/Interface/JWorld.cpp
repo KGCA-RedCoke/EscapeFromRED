@@ -1,10 +1,11 @@
 ﻿#include "JWorld.h"
 
-#include "Core/Entity/Actor/MActorManager.h"
+#include "Core/Entity/Animation/MAnimataionManager.h"
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Entity/Navigation/NavTest.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
@@ -52,14 +53,16 @@ void JWorld::Initialize()
 
 	MeshManager = &MMeshManager::Get();
 
-	ActorManager = &MActorManager::Get();
-
 	LevelManager = &MLevelManager::Get();
 
 	SoundManager = &MSoundManager::Get();
 
 	GUIManager = &MGUIManager::Get();
 	GUIManager->Initialize(D3D11API->GetDevice(), D3D11API->GetImmediateDeviceContext());
+
+	UIManager = &MUIManager::Get();
+
+	AnimationManager = &MAnimataionManager::Get();
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
@@ -94,7 +97,7 @@ void JWorld::Render()
 	GUIManager->Render();
 
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
-	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::TrueBlack);
+	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
 	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 
 

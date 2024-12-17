@@ -80,10 +80,6 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("TextureUsage",
-												 EMaterialParamValue::Integer,
-												 &FVector::ZeroVector,
-												 true));
 		mMaterialName = "Basic";
 		Utils::Serialization::Serialize(NAME_MAT_BASIC, this);
 	}

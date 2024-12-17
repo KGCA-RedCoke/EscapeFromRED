@@ -4,6 +4,14 @@
 #include "Core/Interface/JWorld.h"
 #include "Core/Utils/Math/Color.h"
 
+JFont::JFont()
+	: mRenderTarget(nullptr),
+	  mFontWeight(),
+	  mFontStyle(),
+	  mFontStretch(),
+	  mFontSize(0),
+	  mScreenPosition() {}
+
 JFont::JFont(ID2D1RenderTarget* InRenderTarget)
 	: mRenderTarget(InRenderTarget),
 	  mFontFamily(L"Gabriola"),
@@ -131,13 +139,12 @@ void JFont::SetScreenPosition(const JMath::TVector2& InLocation)
 
 void JFont::SetNDCPosition(const JMath::TVector2& InLocation)
 {
-	FVector2 normalizedScreenPosition = FVector2(2 * InLocation.x - 1, 1 - 2 * InLocation.y);
+	// InLocation (-1 ~ 1) -> (0 ~ 1)
+	auto screenX = (InLocation.x + 1.f) / 2.f;
+	auto screenY = (-InLocation.y + 1.f) / 2.f;
 
-	auto screenSize = mRenderTarget->GetSize();
-
-	// NDC -> Screen (0 ~ 1)
-	mScreenPosition.x = normalizedScreenPosition.x * screenSize.width;
-	mScreenPosition.y = normalizedScreenPosition.y * screenSize.height;
+	mScreenPosition.x = screenX * mRenderTarget->GetSize().width;
+	mScreenPosition.y = screenY * mRenderTarget->GetSize().height;
 }
 
 void JFont::AdjustTextFormat()

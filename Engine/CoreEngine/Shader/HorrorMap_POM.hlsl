@@ -22,13 +22,13 @@ struct FMaterialInstance_POM
 	float  GlobalRoughness : MAT_ROUGHNESS2;
 	float  Specular : MAT_SPECULAR;
 	float  Opacity : MAT_OPACITY;
-	uint   Flag : MAT_TEXTUREFLAG;
 };
 
 struct InstanceData_POM
 {
 	row_major matrix      Transform : INST_TRANSFORM;
 	row_major matrix      InvTransform : INST_TRNASFORM_INVTRANS;
+	uint                  Flags : INST_FLAG;
 	FMaterialInstance_POM Material : INST_MAT;
 };
 
@@ -71,36 +71,14 @@ PixelIn_POM VS(VertexIn_Base Input, InstanceData_POM Instance)
 
 	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
-	output.WorldSpace  = float4(Input.Pos, 1.f);	// 로컬 좌표계
-	float4 localPos    = output.WorldSpace;
-	float3 normal      = Input.Normal;
-
-	if (Instance.Material.Flag & FLAG_MESH_ANIMATED || Instance.Material.Flag & FLAG_MESH_SKINNED)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			const uint  boneIndex = (uint)Input.BoneIndices[i];	// 본 인덱스
-			const float weight    = Input.BoneWeights[i] * 100.f;	// 가중치
-
-			float4x4 boneTransform = FetchBoneTransform(boneIndex, g_BoneTransforms);	// 본의 변환 행렬을 가져온다.
-			output.WorldSpace += (weight *
-				mul(localPos, boneTransform));	// local(원래 메시 좌표) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
-
-			normal += mul(Input.Normal, (float3x3)boneTransform) *
-					weight;	// normal(원래 메시 노말) * boneTransform(애니메이션 변환 행렬) * weight(가중치)
-		}
-
-		output.VertexColor = Input.BoneWeights;	// 가중치를 컬러로 표현
-	}
-
-	output.WorldSpace = mul(output.WorldSpace, Instance.Transform);
-	output.ViewDir    = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
-	output.ClipSpace  = mul(output.WorldSpace, View);
-	output.ClipSpace  = mul(output.ClipSpace, Projection);
-	output.TexCoord   = Input.TexCoord;
-	output.Normal     = mul(normal, (float3x3)Instance.InvTransform);
-	output.Tangent    = mul(Input.Tangent, (float3x3)Instance.InvTransform);
-	output.Binormal   = cross(output.Normal, output.Tangent);
+	output.WorldSpace  = mul(Input.Pos, Instance.Transform);
+	output.ViewDir     = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
+	output.ClipSpace   = mul(output.WorldSpace, View);
+	output.ClipSpace   = mul(output.ClipSpace, Projection);
+	output.TexCoord    = Input.TexCoord;
+	output.Normal      = normalize(mul(Input.Normal, (float3x3)Instance.InvTransform));
+	output.Tangent     = normalize(mul(Input.Tangent, (float3x3)Instance.InvTransform));
+	output.Binormal    = normalize(cross(output.Normal, output.Tangent));
 
 	return output;
 }
@@ -120,22 +98,21 @@ float4 PS(PixelIn_POM Input) : SV_TARGET
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
 	const float3 lightDir       = normalize(DirectionalLightPos.xyz);
 	const float3 viewDir        = normalize(Input.ViewDir);
-	const float3 viewDirTangent = mul(viewDir, tbn);
+	const float3 viewDirTangent = normalize(mul(viewDir, tbn));
 
 	float4 height = heightMap.Sample(Sampler_Linear, Input.TexCoord);
 
-	const float2 texCoord = ParallaxOcclusionMapping(
-													 Input.TexCoord,
-													 viewDirTangent,
-													 height,
-													 Input.Material.HeightRatio,
-													 Input.Material.MinStep,
-													 Input.Material.MaxStep,
-													 0
-													);
+	const float2 texCoord = Input.TexCoord;/*ParallaxOcclusionMapping(
+																		Input.TexCoord,
+																		viewDir,
+																		height,
+																		Input.Material.HeightRatio,
+																		Input.Material.MinStep,
+																		Input.Material.MaxStep,
+																		0
+																	   );*/
 
 	// Texture Map
-
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
 
 	float4 normalColor = normalMap.Sample(Sampler_Linear, texCoord).rgba;

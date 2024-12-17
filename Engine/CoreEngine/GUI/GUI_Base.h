@@ -17,7 +17,7 @@ public:
 public:
 	[[nodiscard]] bool             IsWindowDocked() const;
 	FORCEINLINE [[nodiscard]] bool IsWindowOpen() const { return bIsWindowOpen; }
-	void OpenIfNotOpened();
+	void                           OpenIfNotOpened();
 
 protected:
 	/** 창 메뉴바 구성은 여기서 */
@@ -32,6 +32,7 @@ protected:
 protected:
 	std::string      mTitle;
 	bool             bIsWindowOpen;
+	bool             bIsVisible;
 	ImGuiWindowFlags mWindowFlags = 0;
 
 	friend class MGUIManager;

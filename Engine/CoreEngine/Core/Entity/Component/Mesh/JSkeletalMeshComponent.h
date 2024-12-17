@@ -27,6 +27,7 @@ public:
 
 public:
 	void SetSkeletalMesh(JTextView InSkeletalMeshPath);
+	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 	void SetAnimation(JAnimationClip* InAnimationClip);
 
 public:

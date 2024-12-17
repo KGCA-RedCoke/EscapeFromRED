@@ -46,6 +46,47 @@ bool JAnimBoneTrack::IsTrackEmpty() const
 	return false;
 }
 
+JAnimationClip::JAnimationClip(JTextView InName)
+	: mName(InName),
+	  mStartTime(0),
+	  mEndTime(0),
+	  mSourceSamplingInterval(0),
+	  mStartFrame(0),
+	  mEndFrame(0),
+	  bLooping(false),
+	  bPlaying(false),
+	  bRootMotion(false),
+	  mElapsedTime(0) {}
+
+JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
+	: mName(InOther.mName),
+	  mStartTime(InOther.mStartTime),
+	  mEndTime(InOther.mEndTime),
+	  mSourceSamplingInterval(InOther.mSourceSamplingInterval),
+	  mStartFrame(InOther.mStartFrame),
+	  mEndFrame(InOther.mEndFrame),
+	  bLooping(InOther.bLooping),
+	  bPlaying(InOther.bPlaying),
+	  bRootMotion(InOther.bRootMotion),
+	  mTracks(InOther.mTracks)
+{
+	if (InOther.mSkeletalMesh.expired())
+	{
+		return;
+	}
+	SetSkeletalMesh(InOther.mSkeletalMesh.lock());
+}
+
+UPtr<IManagedInterface> JAnimationClip::Clone() const
+{
+	return MakeUPtr<JAnimationClip>(*this);
+}
+
+uint32_t JAnimationClip::GetHash() const
+{
+	return 0;
+}
+
 bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 {
 	if (!Utils::Serialization::SerializeMetaData(FileStream, this))
@@ -59,6 +100,8 @@ bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 	// Settings
 	Utils::Serialization::Serialize_Primitive(&mStartTime, sizeof(mStartTime), FileStream);
 	Utils::Serialization::Serialize_Primitive(&mEndTime, sizeof(mEndTime), FileStream);
+	Utils::Serialization::Serialize_Primitive(&mStartFrame, sizeof(mStartFrame), FileStream);
+	Utils::Serialization::Serialize_Primitive(&mEndFrame, sizeof(mEndFrame), FileStream);
 	Utils::Serialization::Serialize_Primitive(&mSourceSamplingInterval, sizeof(mSourceSamplingInterval), FileStream);
 
 	// Editor Settings
@@ -133,6 +176,8 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 	// Settings
 	Utils::Serialization::DeSerialize_Primitive(&mStartTime, sizeof(mStartTime), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&mEndTime, sizeof(mEndTime), InFileStream);
+	Utils::Serialization::DeSerialize_Primitive(&mStartFrame, sizeof(mStartFrame), InFileStream);
+	Utils::Serialization::DeSerialize_Primitive(&mEndFrame, sizeof(mEndFrame), InFileStream);
 	Utils::Serialization::DeSerialize_Primitive(&mSourceSamplingInterval, sizeof(mSourceSamplingInterval), InFileStream);
 
 	// Editor Settings

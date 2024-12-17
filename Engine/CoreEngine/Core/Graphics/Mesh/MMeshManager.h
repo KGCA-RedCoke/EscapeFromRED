@@ -18,13 +18,6 @@ public:
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:
-	void CreateIdentityInstanceBuffer(ID3D11Device* InDevice);
-
-public:
-	Buffer::FBufferInstance IdentityBuffer;
-	FInstanceData_Mesh      IdentityInstanceData;
-
-private:
 	JHash<uint32_t, Buffer::FBufferMesh>                                   mBufferList;
 	JHash<uint32_t, JMaterialInstance*>                                    mMaterialInstance;
 	JHash<uint32_t, JHash<JMaterialInstance*, JArray<FInstanceData_Mesh>>> mInstanceData;

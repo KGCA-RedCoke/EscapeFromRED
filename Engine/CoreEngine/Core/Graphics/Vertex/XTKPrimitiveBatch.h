@@ -24,9 +24,9 @@ public:
 #pragma endregion
 
 #pragma region Render Interface
-	void PreRender(const FMatrix& InView, const FMatrix& InProj) ;
-	void PostRender() ;
-	void Draw() ;
+	void PreRender(const FMatrix& InView, const FMatrix& InProj);
+	void PostRender();
+	void Draw();
 #pragma endregion
 
 public:
@@ -49,6 +49,11 @@ public:
 								GXMVECTOR InColor = Colors::White) const;
 	void DrawQuad_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InPointD,
 							HXMVECTOR InColor = Colors::White) const;
+	void DrawCylinder_Implement(CXMMATRIX MatWorld, float Radius, float Height, FXMVECTOR Color) const;
+	void DrawHemisphere_Implement(CXMMATRIX MatWorld, float Radius, int LongitudeLines, int LatitudeLines,
+								  FXMVECTOR Color) const;
+	void DrawCapsule_Implement(CXMMATRIX MatWorld, float Radius, float Height, int LongitudeLines = 6, int LatitudeLines = 6,
+							   FXMVECTOR Color = Colors::ForestGreen) const;
 
 public:
 	FORCEINLINE void SetCamera(JCameraComponent* InCamera) { TargetCamera = InCamera; };

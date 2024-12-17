@@ -16,8 +16,6 @@ void JShader_Basic::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 void JShader_Basic::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
 {
-
-
 	// 상수버퍼 넘겨주기
 	JShader::UpdateGlobalConstantBuffer(InDeviceContext);
 

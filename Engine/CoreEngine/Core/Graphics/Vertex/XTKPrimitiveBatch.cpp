@@ -74,34 +74,34 @@ void XTKPrimitiveBatch::PostRender()
 
 void XTKPrimitiveBatch::Draw()
 {
-
 	constexpr FVector4 origin = {0, 0, 0, 0};
 
-	// TODO: Editor Mode 일때만 Draw (매크로 사용)
-
 	// Draw X Axis (Infinity Line)
-	G_DebugBatch.DrawRay_Implement(
-								   origin,
-								   {10000.f, 0.f, 0.f, 0.f},
-								   false,
-								   {1.f, 0.f, 0.f, 1.f}
-								  );
+	DrawRay_Implement(
+					  origin,
+					  {10000.f, 0.f, 0.f, 0.f},
+					  false,
+					  {1.f, 0.f, 0.f, 1.f}
+					 );
 
 	// Draw Z Axis
-	G_DebugBatch.DrawRay_Implement(
-								   origin,
-								   {0.f, 0.f, 10000.f, 0.f},
-								   false,
-								   {0.f, 0.f, 1.f, 1.f}
-								  );
+	DrawRay_Implement(
+					  origin,
+					  {0.f, 0.f, 10000.f, 0.f},
+					  false,
+					  {0.f, 0.f, 1.f, 1.f}
+					 );
 
 	// Draw Y Axis
-	G_DebugBatch.DrawRay_Implement(
-								   origin,
-								   {0.f, 10000.f, 0.f, 0.f},
-								   false,
-								   {0.f, 1.f, 0.f, 1.f}
-								  );
+	DrawRay_Implement(
+					  origin,
+					  {0.f, 10000.f, 0.f, 0.f},
+					  false,
+					  {0.f, 1.f, 0.f, 1.f}
+					 );
+
+	DrawCapsule_Implement(FMatrix::Identity, 40.f, 200.f);
+
 }
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
@@ -355,4 +355,179 @@ void XTKPrimitiveBatch::DrawQuad_Implement(FXMVECTOR InPointA, FXMVECTOR InPoint
 	XMStoreFloat4(&verts[4].color, InColor);
 
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, 5);
+}
+
+void XTKPrimitiveBatch::DrawCylinder_Implement(CXMMATRIX MatWorld, float Radius, float Height, FXMVECTOR Color) const
+{
+	const int   slices    = 16;
+	const float angleStep = XM_2PI / slices;
+
+	VertexPositionColor verts[2 * slices];
+	WORD                indices[4 * slices];
+
+	for (int i = 0; i < slices; ++i)
+	{
+		float angle = i * angleStep;
+		float x     = Radius * cosf(angle);
+		float z     = Radius * sinf(angle);
+
+		// 상단과 하단의 정점
+		XMVECTOR top    = XMVector3Transform(XMVectorSet(x, Height * 0.5f, z, 0.f), MatWorld);
+		XMVECTOR bottom = XMVector3Transform(XMVectorSet(x, -Height * 0.5f, z, 0.f), MatWorld);
+
+		XMStoreFloat3(&verts[i].position, top);
+		XMStoreFloat3(&verts[i + slices].position, bottom);
+
+		XMStoreFloat4(&verts[i].color, Color);
+		XMStoreFloat4(&verts[i + slices].color, Color);
+
+		// 인덱스 설정
+		indices[i * 4]     = i;
+		indices[i * 4 + 1] = (i + 1) % slices;
+		indices[i * 4 + 2] = i + slices;
+		indices[i * 4 + 3] = (i + 1) % slices + slices;
+	}
+
+	mBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_LINELIST, indices, 4 * slices, verts, 2 * slices);
+}
+
+void XTKPrimitiveBatch::DrawHemisphere_Implement(CXMMATRIX MatWorld, float Radius, int LongitudeLines, int LatitudeLines,
+												 FXMVECTOR Color) const
+{
+	// // 수평선(위도)과 수직선(경도) 개수를 제한적으로 설정
+	// for (int lat = 1; lat <= LatitudeLines; ++lat)
+	// {
+	// 	float phi = XM_PIDIV2 * (float(lat) / LatitudeLines); // 0 ~ π/2
+	// 	float r = Radius * sinf(phi);
+	// 	float y = Radius * cosf(phi);
+	//
+	// 	// 수평선 (원)
+	// 	XMVECTOR prev = XMVectorSet(r, y, 0.f, 1.f);
+	// 	for (int lon = 1; lon <= LongitudeLines; ++lon)
+	// 	{
+	// 		float theta = XM_2PI * (float(lon) / LongitudeLines);
+	// 		XMVECTOR curr = XMVectorSet(r * cosf(theta), y, r * sinf(theta), 1.f);
+	//
+	// 		prev = XMVector3Transform(prev, MatWorld);
+	// 		curr = XMVector3Transform(curr, MatWorld);
+	//
+	// 		mBatch->DrawLine(prev, curr, Color);
+	// 		prev = curr;
+	// 	}
+	// }
+	//
+	// // 수직선 (경도)
+	// for (int lon = 0; lon < LongitudeLines; ++lon)
+	// {
+	// 	float theta = XM_2PI * (float(lon) / LongitudeLines);
+	// 	float x = Radius * cosf(theta);
+	// 	float z = Radius * sinf(theta);
+	//
+	// 	XMVECTOR prev = XMVectorSet(0.f, Radius, 0.f, 1.f); // 반구의 꼭대기
+	// 	for (int lat = 1; lat <= LatitudeLines; ++lat)
+	// 	{
+	// 		float phi = XM_PIDIV2 * (float(lat) / LatitudeLines); // 0 ~ π/2
+	// 		float r = Radius * sinf(phi);
+	// 		float y = Radius * cosf(phi);
+	//
+	// 		XMVECTOR curr = XMVectorSet(r * x / Radius, y, r * z / Radius, 1.f);
+	//
+	// 		prev = XMVector3Transform(prev, MatWorld);
+	// 		curr = XMVector3Transform(curr, MatWorld);
+	//
+	// 		mBatch->DrawLine(prev, curr, Color);
+	// 		prev = curr;
+	// 	}
+	// }
+}
+
+
+void XTKPrimitiveBatch::DrawCapsule_Implement(CXMMATRIX MatWorld, float          Radius, float Height, int LongitudeLines,
+											  int       LatitudeLines, FXMVECTOR Color) const
+{
+	const float HalfHeight = Height * 0.5f;
+
+	// 원통을 그리기 위한 세로 라인
+	for (int lon = 0; lon < LongitudeLines; ++lon)
+	{
+		float theta = XM_2PI * (float(lon) / LongitudeLines);
+		float x     = Radius * cosf(theta);
+		float z     = Radius * sinf(theta);
+
+		VertexPositionColor top;
+		top.position = {x, HalfHeight, z};
+		XMStoreFloat4(&top.color, Color);
+
+		VertexPositionColor bottom;
+		bottom.position = {x, -HalfHeight, z};
+		XMStoreFloat4(&bottom.color, Color);
+
+		mBatch->DrawLine(top, bottom);
+	}
+
+
+	VertexPositionColor curr;
+	VertexPositionColor next;
+	XMStoreFloat4(&curr.color, Color);
+	XMStoreFloat4(&next.color, Color);
+
+	// 반구 위쪽 (위도)
+	for (int lat = 0; lat < LatitudeLines; ++lat)
+	{
+		float phi = XM_PIDIV2 * (float(lat) / LatitudeLines); // 0 ~ π/2
+		float r   = Radius * sinf(phi);
+		float y   = Radius * cosf(phi);
+
+
+		for (int lon = 0; lon < LongitudeLines; ++lon)
+		{
+			float theta = XM_2PI * (float(lon) / LongitudeLines);
+			float x     = r * cosf(theta);
+			float z     = r * sinf(theta);
+
+			curr.position = {x, y + HalfHeight, z};
+
+			next.position = {
+				r * cosf(theta + XM_2PI / LongitudeLines),
+				y + HalfHeight,
+				r * sinf(theta + XM_2PI / LongitudeLines)
+			};
+
+			XMStoreFloat3(&curr.position, XMVector3Transform(XMLoadFloat3(&curr.position), MatWorld));
+
+			XMStoreFloat3(&next.position, XMVector3Transform(XMLoadFloat3(&next.position), MatWorld));
+
+
+			mBatch->DrawLine(curr, next);
+		}
+	}
+
+	// 반구 아래쪽 (위도)
+	for (int lat = 0; lat < LatitudeLines; ++lat)
+	{
+		float phi = XM_PIDIV2 * (float(lat) / LatitudeLines); // 0 ~ π/2
+		float r   = Radius * sinf(phi);
+		float y   = Radius * cosf(phi);
+
+
+		for (int lon = 0; lon < LongitudeLines; ++lon)
+		{
+			float theta = XM_2PI * (float(lon) / LongitudeLines);
+			float x     = r * cosf(theta);
+			float z     = r * sinf(theta);
+
+			curr.position = {x, -y - HalfHeight, z};
+
+			next.position = {
+				r * cosf(theta + XM_2PI / LongitudeLines),
+				-y - HalfHeight,
+				r * sinf(theta + XM_2PI / LongitudeLines)
+			};
+
+			XMStoreFloat3(&curr.position, XMVector3Transform(XMLoadFloat3(&curr.position), MatWorld));
+			XMStoreFloat3(&next.position, XMVector3Transform(XMLoadFloat3(&next.position), MatWorld));
+
+			mBatch->DrawLine(curr, next);
+		}
+	}
 }

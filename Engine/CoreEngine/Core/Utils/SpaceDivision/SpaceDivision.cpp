@@ -35,11 +35,11 @@ void Oc::FNode::Update()
 			Children[i]->Update();
 		}
 	}
-}	
+}
 
 void Oc::FNode::Render(JCameraComponent* InCamera)
 {
-	if (!Parent || InCamera->IsBoxInFrustum(BoundArea))
+	if (InCamera->IsBoxInFrustum(BoundArea))
 	{
 		// BoundArea.DrawDebug();
 		for (const auto& actor : Actors)
@@ -129,6 +129,22 @@ void Oc::FNode::InsertIntoChildren(AActor* InActor)
 {
 	const FBoxShape& actorBounds = InActor->GetBoundingVolume();
 
+	int32_t duplicateCount = 0;
+
+	for (int i = 0; i < 8; ++i)
+	{
+		if (Children[i]->BoundArea.Contains(InActor->GetWorldLocation()))
+		{
+			duplicateCount++;
+			if (duplicateCount > 1)
+			{
+				Actors.emplace_back(InActor);
+				return;
+			}
+		}
+	
+	}
+
 	for (int i = 0; i < 8; ++i)
 	{
 		if (Children[i]->BoundArea.Intersect(actorBounds))
@@ -137,6 +153,7 @@ void Oc::FNode::InsertIntoChildren(AActor* InActor)
 			return;
 		}
 	}
+
 	// 액터가 어떤 자식 노드와도 교차하지 않으면, 현재 노드에 저장
 	Actors.emplace_back(InActor);
 }

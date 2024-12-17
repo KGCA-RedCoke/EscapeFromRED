@@ -40,7 +40,7 @@ protected:
 	Buffer::FBufferBone mInstanceBuffer_Bone;
 
 	// -------------------------- Animation Data --------------------------
-	JAnimationClip* mSampleAnimation;
+	UPtr<JAnimationClip> mSampleAnimation;
 
 	// public:
 	// 	JMeshObject*              mLightMesh       = nullptr;

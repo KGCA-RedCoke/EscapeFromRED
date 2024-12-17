@@ -173,8 +173,8 @@ void JStaticMeshComponent::ShowEditor()
 	ImGui::SeparatorText(u8("머티리얼 슬롯"));
 	for (int32_t i = 0; i < GetMaterialCount(); ++i)
 	{
-
-		ImGui::Text(mMeshObject->GetMaterialInstance()->GetMaterialName().c_str());
+		const JMaterialInstance* materialInstance = mMeshObject->GetMaterialInstance(i);
+		ImGui::Text(materialInstance->GetMaterialName().c_str());
 		ImGui::Dummy(ImVec2(100, 100));
 		if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 		{
@@ -196,6 +196,5 @@ void JStaticMeshComponent::ShowEditor()
 
 			ImGui::EndDragDropTarget();
 		}
-
 	}
 }

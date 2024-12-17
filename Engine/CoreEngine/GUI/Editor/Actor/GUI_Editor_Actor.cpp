@@ -1,7 +1,6 @@
 ﻿#include "GUI_Editor_Actor.h"
 
 #include "Core/Entity/Actor/AActor.h"
-#include "Core/Entity/Actor/MActorManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"

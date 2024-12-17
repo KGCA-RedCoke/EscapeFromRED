@@ -122,6 +122,7 @@ constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash_CompileTime("J
 constexpr uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash_CompileTime("JMaterial");
 constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash_CompileTime("JMaterialInstance");
 constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash_CompileTime("JAnimationClip");
+constexpr uint32_t HASH_ASSET_TYPE_WIDGET            = StringHash_CompileTime("JWidget");
 
 constexpr uint32_t Hash_EXT_FBX    = StringHash_CompileTime(".fbx");
 constexpr uint32_t Hash_EXT_JASSET = StringHash_CompileTime(".jasset");

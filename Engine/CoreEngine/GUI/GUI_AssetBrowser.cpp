@@ -2,6 +2,7 @@
 
 #include "MGUIManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
@@ -11,6 +12,7 @@
 #include "Editor/Actor/GUI_Editor_Actor.h"
 #include "Editor/Mesh/GUI_Editor_Mesh.h"
 #include "Editor/Mesh/GUI_Editor_SkeletalMesh.h"
+#include "Editor/UI/GUI_Editor_UI.h"
 
 
 GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
@@ -50,6 +52,9 @@ void GUI_AssetBrowser::Initialize()
 	g_IconList.SkeletalMeshIcon = MTextureManager::Get().Load(L"rsc/Icons/Actor/Skeleton_64x.png");
 	g_IconList.MaterialIcon     = MTextureManager::Get().Load(L"rsc/Icons/Actor/MaterialInstanceActor_64x.png");
 	g_IconList.LevelIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/World_64.png");
+	g_IconList.WidgetIcon       = MTextureManager::Get().Load(L"rsc/Icons/Actor/WidgetBlueprint_64x.png");
+	g_IconList.SoundIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/SoundCue_64x.png");
+	g_IconList.AnimationIcon    = MTextureManager::Get().Load(L"rsc/Icons/Actor/AnimSequence_64.png");
 
 	SetMultiFlagOptions();
 }
@@ -477,6 +482,10 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 				return g_IconList.MaterialIcon->GetSRV();
 			case HASH_ASSET_TYPE_LEVEL:
 				return g_IconList.LevelIcon->GetSRV();
+			case HASH_ASSET_TYPE_WIDGET:
+				return g_IconList.WidgetIcon->GetSRV();
+			case HASH_ASSET_TYPE_ANIMATION_CLIP:
+				return g_IconList.AnimationIcon->GetSRV();
 			default:
 				return g_IconList.FileIcon->GetSRV();
 			}
@@ -674,6 +683,12 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 
 	case HASH_ASSET_TYPE_LEVEL:
 		MLevelManager::Get().SetActiveLevel(MLevelManager::Get().Load(fullFileName));
+		break;
+	case HASH_ASSET_TYPE_WIDGET:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_UI>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
 		break;
 	default:
 		LOG_CORE_WARN("Asset Browser : Unknown Asset Type");

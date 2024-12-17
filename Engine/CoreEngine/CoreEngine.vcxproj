@@ -107,9 +107,9 @@
     <ClInclude Include="Core\Entity\Actor\Character\ACharacter.h" />
     <ClInclude Include="Core\Entity\Actor\JSkeletalMeshActor.h" />
     <ClInclude Include="Core\Entity\Actor\JStaticMeshActor.h" />
-    <ClInclude Include="Core\Entity\Actor\MActorManager.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimationClip.h" />
     <ClInclude Include="Core\Entity\Animation\JAnimator.h" />
+    <ClInclude Include="Core\Entity\Animation\MAnimataionManager.h" />
     <ClInclude Include="Core\Entity\Audio\JAudioComponent.h" />
     <ClInclude Include="Core\Entity\Audio\MSoundManager.h" />
     <ClInclude Include="Core\Entity\Camera\JCameraComponent.h" />
@@ -130,6 +130,7 @@
     <ClInclude Include="Core\Entity\Navigation\AStar.h" />
     <ClInclude Include="Core\Entity\Navigation\NavTest.h" />
     <ClInclude Include="Core\Entity\Navigation\Node.h" />
+    <ClInclude Include="Core\Entity\UI\MUIManager.h" />
     <ClInclude Include="Core\Gameplay\IGameMode.h" />
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
     <ClInclude Include="Core\Graphics\Font\JFont.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="Core\Graphics\Mesh\MMeshManager.h" />
     <ClInclude Include="Core\Graphics\Shader\FConstantBuffer.h" />
     <ClInclude Include="Core\Graphics\Shader\JShader_Basic.h" />
+    <ClInclude Include="Core\Graphics\Shader\JShader_UI.h" />
     <ClInclude Include="Core\Graphics\XD3DDevice.h" />
     <ClInclude Include="Core\Graphics\graphics_common_include.h" />
     <ClInclude Include="Core\Graphics\Layer\XLayerBase.h" />
@@ -196,6 +198,7 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
     <ClInclude Include="Game\Src\Player\JPlayerCamera.h" />
     <ClInclude Include="GUI\Camera\GUI_Camera_Debug_Frustum.h" />
@@ -227,6 +230,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shader\FBMP.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shader\FBMP_UI.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Shader\HorrorMap_Detail.hlsl">
@@ -271,9 +277,9 @@
     <ClCompile Include="Core\Entity\Actor\Character\ACharacter.cpp" />
     <ClCompile Include="Core\Entity\Actor\JSkeletalMeshActor.cpp" />
     <ClCompile Include="Core\Entity\Actor\JStaticMeshActor.cpp" />
-    <ClCompile Include="Core\Entity\Actor\MActorManager.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimationClip.cpp" />
     <ClCompile Include="Core\Entity\Animation\JAnimator.cpp" />
+    <ClCompile Include="Core\Entity\Animation\MAnimataionManager.cpp" />
     <ClCompile Include="Core\Entity\Audio\JAudioComponent.cpp" />
     <ClCompile Include="Core\Entity\Audio\MSoundManager.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCameraComponent.cpp" />
@@ -294,6 +300,7 @@
     <ClCompile Include="Core\Entity\Navigation\AStar.cpp" />
     <ClCompile Include="Core\Entity\Navigation\NavTest.cpp" />
     <ClCompile Include="Core\Entity\Navigation\Node.cpp" />
+    <ClCompile Include="Core\Entity\UI\MUIManager.cpp" />
     <ClCompile Include="Core\Gameplay\IGameMode.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
     <ClCompile Include="Core\Graphics\Font\XTKFont.cpp" />
@@ -309,6 +316,7 @@
     <ClCompile Include="Core\Graphics\Mesh\MMeshManager.cpp" />
     <ClCompile Include="Core\Graphics\Shader\FConstantBuffer.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JShader_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JShader_UI.cpp" />
     <ClCompile Include="Core\Graphics\XD3DDevice.cpp" />
     <ClCompile Include="Core\Graphics\Layer\XLayerBase.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial.cpp" />
@@ -347,6 +355,7 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />
     <ClCompile Include="Game\Src\Player\JPlayerCamera.cpp" />
     <ClCompile Include="GUI\Camera\GUI_Camera_Debug_Frustum.cpp" />
@@ -388,9 +397,6 @@
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
     <Content Include="Core\Interface\IGUIEditable.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\Entity\UI\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

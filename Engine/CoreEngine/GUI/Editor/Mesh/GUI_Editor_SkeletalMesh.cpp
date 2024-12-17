@@ -1,11 +1,13 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
+#include "Core/Entity/Animation/MAnimataionManager.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Interface/JWorld.h"
 
 GUI_Editor_SkeletalMesh::GUI_Editor_SkeletalMesh(const JText& InTitle)
 	: GUI_Editor_Base(InTitle)
@@ -152,7 +154,7 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{}
 
-	ImGui::Dummy(ImVec2(100, 100));
+	ImGui::Image(nullptr, ImVec2(100, 100));
 	// ImGui::Text(subMeshes[j]->GetName().c_str());
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
@@ -164,13 +166,7 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 
 		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
 		{
-			mPreviewAnimationClip = MakeUPtr<JAnimationClip>();
-			if (!Utils::Serialization::DeSerialize(str, mPreviewAnimationClip.get()))
-			{
-				LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-							   "Game/Animation/Unreal Take.jasset");
-				return;
-			}
+			mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str);
 
 			mMeshObject->SetAnimation(mPreviewAnimationClip.get());
 

@@ -50,6 +50,8 @@ namespace JMath
 		TVector& operator*=(const TVector&);
 		TVector& operator/=(const float Scale);
 
+		float operator[](int32_t Index) const;
+
 		// ------------------------ 단항 연산자 ----------------------------
 
 		bool IsNearlyZero(float Tolerance = M_KINDA_SMALL_NUMBER) const;
@@ -93,6 +95,8 @@ namespace JMath
 		TVector& operator=(TVector&&)      = default;
 
 		operator DirectX::XMVECTOR() const { return XMLoadFloat3(this); }
+
+		static float DistSquared(const TVector& V1, const TVector& V2);
 	};
 
 }

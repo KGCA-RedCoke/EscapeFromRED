@@ -1,15 +1,7 @@
 struct VertexIn_2D
 {
-	float3 Pos : POSITION;	// NDC(local) 좌표
+	float2 LocalPosition : POSITION;	// NDC(local) 좌표
 	float2 UV : TEXCOORD0;	// TexCoord 좌표
-	float4 Color : COLOR;	// 정점 컬러(대부분은 사용 안함)
-};
-
-struct PixelInput_2D
-{
-	float4 Pos : SV_POSITION;
-	float4 Color : COLOR0;
-	float2 UV : TEXCOORD0;
 };
 
 struct VertexIn_Base
@@ -38,11 +30,27 @@ struct FMaterialInstance
 	uint   Flag : MAT_TEXTUREFLAG;
 };
 
+struct FAnimKey
+{
+	float  ElapsedTime;	// 경과 시간
+	float3 Position;	// 위치
+	float4 Rotation;	// 회전
+	float3 Scale;		// 크기 
+};
+
+struct FSkeletalMeshInstance
+{
+	float ElapsedTime;	// 경과 시간
+	uint  AnimIndex;	// 애니메이션 인덱스
+};
+
 struct InstanceData
 {
 	row_major matrix  Transform : INST_TRANSFORM;
 	row_major matrix  InvTransform : INST_TRNASFORM_INVTRANS;
+	uint              Flags : INST_FLAG;
 	FMaterialInstance Material : INST_MAT;
+	float             ElapsedTime : INST_ELAPSEDTIME;
 };
 
 struct PixelIn_Base

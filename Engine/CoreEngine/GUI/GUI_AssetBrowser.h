@@ -109,6 +109,9 @@ struct AssetBrowserIconList
 	JTexture*       SkeletalMeshIcon;
 	JTexture*       MaterialIcon;
 	JTexture*       LevelIcon;
+	JTexture*       WidgetIcon;
+	JTexture*       AnimationIcon;
+	JTexture*       SoundIcon;
 };
 
 struct FBasicFilePreview

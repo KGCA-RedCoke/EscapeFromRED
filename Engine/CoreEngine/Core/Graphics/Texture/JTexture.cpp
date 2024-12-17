@@ -52,8 +52,7 @@ void JTexture::SetEditable()
 
 void JTexture::LoadFromFile()
 {
-	ComPtr<ID3D11Resource>  textureResource;
-	ComPtr<ID3D11Texture2D> texture;
+	ComPtr<ID3D11Resource> textureResource;
 
 
 	if (FAILED(CreateWICTextureFromFileEx(
@@ -81,19 +80,17 @@ void JTexture::LoadFromFile()
 	}
 
 	CheckResult(textureResource->QueryInterface(__uuidof(ID3D11Texture2D),
-												reinterpret_cast<void**>(texture.GetAddressOf())));
+												reinterpret_cast<void**>(mTexture2D.GetAddressOf())));
 
 	mShaderResourceView->GetDesc(&mSRVDesc);
-	texture->GetDesc(&mTextureDesc);
+	mTexture2D->GetDesc(&mTextureDesc);
 
 	textureResource = nullptr;
-	texture         = nullptr;
 }
 
 void JTexture::LoadFromFileEx()
 {
-	ComPtr<ID3D11Resource>  textureResource;
-	ComPtr<ID3D11Texture2D> texture;
+	ComPtr<ID3D11Resource> textureResource;
 
 	if (FAILED(CreateWICTextureFromFileEx(
 				   G_Device.GetDevice(),
@@ -114,15 +111,14 @@ void JTexture::LoadFromFileEx()
 	}
 
 	CheckResult(textureResource->QueryInterface(__uuidof(ID3D11Texture2D),
-												reinterpret_cast<void**>(texture.GetAddressOf())));
+												reinterpret_cast<void**>(mTexture2D.GetAddressOf())));
 
 	// mShaderResourceView->GetDesc(&mSRVDesc);
-	texture->GetDesc(&mTextureDesc);
+	mTexture2D->GetDesc(&mTextureDesc);
 
-	CacheRGBAData(texture);
+	CacheRGBAData(mTexture2D);
 
 	textureResource = nullptr;
-	texture         = nullptr;
 }
 
 void JTexture::CacheRGBAData(const ComPtr<ID3D11Texture2D>& InTex2D)

@@ -57,11 +57,11 @@ public:
 	class MMaterialManager*         MaterialManager;		// 머티리얼
 	class MMaterialInstanceManager* MaterialInstanceManager;// 머티리얼 인스턴스
 	class MMeshManager*             MeshManager;			// 메시
-	class MActorManager*            ActorManager;			// 액터
 	class MLevelManager*            LevelManager;			// 레벨
 	class MSoundManager*            SoundManager;			// 사운드
+	class MUIManager*               UIManager;				// UI
+	class MAnimataionManager*       AnimationManager;		// 애니메이션
 	class XD3DDevice*               D3D11API;				// 디바이스
-
 
 
 public:

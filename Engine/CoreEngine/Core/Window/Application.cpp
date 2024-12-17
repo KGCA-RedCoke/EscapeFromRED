@@ -73,7 +73,7 @@ void Application::Initialize()
 	viewportPtr->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		mFpsText->SetRenderTarget(GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
 	});
-	mFpsText = MakeUPtr<JFont>();
+	mFpsText = MakeUPtr<JFont>(nullptr);
 	mFpsText->Initialize();
 	mFpsText->SetFontSize(36);
 	mFpsText->SetColor(FLinearColor::Gallary);

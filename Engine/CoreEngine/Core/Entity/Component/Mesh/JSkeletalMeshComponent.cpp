@@ -1,6 +1,7 @@
 ﻿#include "JSkeletalMeshComponent.h"
 
 #include "Core/Entity/Animation/JAnimator.h"
+#include "Core/Entity/Animation/MAnimataionManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -136,6 +137,14 @@ void JSkeletalMeshComponent::SetSkeletalMesh(JTextView InSkeletalMeshPath)
 	mBoundingBox = mSkeletalMeshObject->GetBoundingBox();
 }
 
+void JSkeletalMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InSlot)
+{
+	if (mSkeletalMeshObject)
+	{
+		mSkeletalMeshObject->SetMaterialInstance(InMaterialInstance, InSlot);
+	}
+}
+
 void JSkeletalMeshComponent::SetAnimation(JAnimationClip* InAnimationClip)
 {
 	if (mSkeletalMeshObject)
@@ -165,4 +174,62 @@ void JSkeletalMeshComponent::ShowEditor()
 
 		}
 	}
+
+	ImGui::SeparatorText(u8("머티리얼 슬롯"));
+	for (int32_t i = 0; i < mSkeletalMeshObject->GetMaterialCount(); ++i)
+	{
+		const JMaterialInstance* materialInstance = mSkeletalMeshObject->GetMaterialInstance(i);
+		ImGui::Text(materialInstance->GetMaterialName().c_str());
+		ImGui::Image(nullptr, ImVec2(100, 100));
+		if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+			const char*         str     = static_cast<const char*>(payload->Data);
+
+			auto metaData = Utils::Serialization::GetType(str);
+
+			if (metaData.AssetType != HASH_ASSET_TYPE_MATERIAL_INSTANCE)
+			{
+				return;
+			}
+
+			if (auto matInstancePtr = MMaterialInstanceManager::Get().Load(str))
+			{
+				SetMaterialInstance(matInstancePtr, i);
+				return;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+	}
+
+	ImGui::SeparatorText(u8("애니메이션"));
+	ImGui::Image(nullptr, ImVec2(100, 100));
+	// ImGui::Text(subMeshes[j]->GetName().c_str());
+
+	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::GetDragDropPayload();;
+		const char*         str     = static_cast<const char*>(payload->Data);
+
+		auto metaData = Utils::Serialization::GetType(str);
+
+		switch (metaData.AssetType)
+		{
+		case HASH_ASSET_TYPE_ANIMATION_CLIP:
+			break;
+		// case HASH_ASSET_TYPE_ANIMATOR:
+		// 	break;
+		}
+
+		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
+		{
+			// mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str);
+
+			mSkeletalMeshObject->SetAnimation(GetWorld.AnimationManager->Load(str));
+
+			ImGui::EndDragDropTarget();
+		}
+	}
+
 }

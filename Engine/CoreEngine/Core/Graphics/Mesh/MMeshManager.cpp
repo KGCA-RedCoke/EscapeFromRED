@@ -5,9 +5,7 @@
 #include "Core/Graphics/Shader/MShaderManager.h"
 
 MMeshManager::MMeshManager()
-{
-	CreateIdentityInstanceBuffer(G_Device.GetDevice());
-}
+{}
 
 MMeshManager::~MMeshManager() {}
 
@@ -192,17 +190,4 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 	mInstanceData.clear();
 	MShaderManager::Get().mCachedShader = nullptr;
 
-}
-
-void MMeshManager::CreateIdentityInstanceBuffer(ID3D11Device* InDevice)
-{
-	// Instance 버퍼 생성
-	Utils::DX::CreateBuffer(InDevice,
-							D3D11_BIND_VERTEX_BUFFER,
-							reinterpret_cast<void**>(&IdentityInstanceData),
-							sizeof(FInstanceData_Mesh),
-							1,
-							IdentityBuffer.Buffer_Instance.GetAddressOf(),
-							D3D11_USAGE_DYNAMIC,
-							D3D11_CPU_ACCESS_WRITE);
 }

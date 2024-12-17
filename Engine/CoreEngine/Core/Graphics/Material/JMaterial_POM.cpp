@@ -86,10 +86,6 @@ void JMaterial_POM::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("TextureUsage",
-												 EMaterialParamValue::Integer,
-												 &FVector::ZeroVector,
-												 true));
 
 		Utils::Serialization::Serialize(NAME_MAT_POM, this);
 	}

@@ -43,7 +43,7 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	: JMeshObject(Other)
 {
 	mSkeletalMesh        = Other.mSkeletalMesh;
-	mSampleAnimation     = Other.mSampleAnimation;
+	mSampleAnimation     = UPtrCast<JAnimationClip>(Other.mSampleAnimation->Clone());
 	mInstanceBuffer_Bone = Other.mInstanceBuffer_Bone;
 }
 
@@ -81,7 +81,7 @@ void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
 								   updateBoneMatrixBuffer,
 								   boneCount * sizeof(FMatrix));
 
-	InDeviceContext->VSSetShaderResources(5, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
+	InDeviceContext->VSSetShaderResources(10, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
 
 	// if (!mLightMesh)
 	// {
@@ -176,17 +176,14 @@ void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 {
 	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
 
-	// mLightMesh->UpdateInstance_Transform(mSocketTransform);
-	// mLightMesh->AddInstance();
-
 	auto&         meshData     = mPrimitiveMeshData[0];
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-		// mInstanceData[j].MaterialData.Flag |= (1 << 11);
+		auto& currMesh         = subMeshes.empty() ? meshData : subMeshes[j];
+		mInstanceData[j].Flags = (1 << 11);
 		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
 
@@ -199,7 +196,21 @@ void JSkeletalMeshObject::Draw()
 
 	// 최종 본 행렬 업데이트
 	UpdateBoneBuffer(deviceContext);
-	JMeshObject::Draw();
+
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+	for (int32_t j = 0; j < subMeshCount; ++j)
+	{
+		mInstanceData[j].Transform.WorldMatrix           = FMatrix::Identity;
+		mInstanceData[j].Transform.WorldInverseTranspose = FMatrix::Identity;
+		mInstanceData[j].Flags                           = (1 << 11);
+		auto& currMesh                                   = subMeshes.empty() ? meshData : subMeshes[j];
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+	}
+
+	GetWorld.MeshManager->FlushCommandList(G_Device.GetImmediateDeviceContext());
 }
 
 void JSkeletalMeshObject::DrawID(uint32_t ID)
@@ -245,7 +256,7 @@ void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 		mSampleAnimation = nullptr;
 	}
 
-	mSampleAnimation = InAnimation;
+	mSampleAnimation = UPtrCast<JAnimationClip>(InAnimation->Clone());
 
 	// mSampleAnimation = InAnimation;
 	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
@@ -255,6 +266,4 @@ void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 void JSkeletalMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
 {
 	JMeshObject::SetMaterialInstance(InMaterialInstance, InIndex);
-
-	// mInstanceData[InIndex].MaterialData.Flag |= (1 << 11);
 }

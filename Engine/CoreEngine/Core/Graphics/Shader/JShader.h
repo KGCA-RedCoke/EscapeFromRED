@@ -8,6 +8,7 @@ constexpr const char* NAME_SHADER_BASIC        = "Shader/Basic.hlsl";
 constexpr const char* NAME_SHADER_BASIC_2D     = "Shader/Basic2D.hlsl";
 constexpr const char* NAME_SHADER_GNOMON       = "Shader/Gnomon.hlsl";
 constexpr const char* NAME_SHADER_ID           = "Shader/FBMP.hlsl";
+constexpr const char* NAME_SHADER_ID_UI        = "Shader/FBMP_UI.hlsl";
 constexpr const char* NAME_SHADER_SIMPLE_COLOR = "Shader/SimpleColor.hlsl";
 constexpr const char* NAME_SHADER_UI           = "Shader/Basic_2D.hlsl";
 

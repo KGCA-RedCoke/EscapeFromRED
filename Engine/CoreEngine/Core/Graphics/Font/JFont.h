@@ -10,8 +10,9 @@
 class JFont : public ICoreInterface, public IRenderable
 {
 public:
+	JFont();
 	explicit JFont(ID2D1RenderTarget* InRenderTarget = nullptr);
-	~JFont() override;
+	virtual  ~JFont() override;
 
 public:
 #pragma region Core Interface
@@ -41,19 +42,23 @@ public:
 	void SetScreenPosition(const JMath::TVector2& InLocation);
 	void SetNDCPosition(const JMath::TVector2& InLocation);
 
+	JWText       GetText() const { return mText; };
+	FLinearColor GetColor() const { return mBrushColor; }
+	float        GetFontSize() const { return mFontSize; }
+
 private:
 	void AdjustTextFormat();
 
 private:
-	ComPtr<IDWriteTextFormat> mTextFormat;
-	ID2D1RenderTarget*        mRenderTarget;
+	ComPtr<IDWriteTextFormat> mTextFormat   = nullptr;
+	ID2D1RenderTarget*        mRenderTarget = nullptr;
 	JWText                    mFontFamily;
-	DWRITE_FONT_WEIGHT        mFontWeight;
-	DWRITE_FONT_STYLE         mFontStyle;
-	DWRITE_FONT_STRETCH       mFontStretch;
-	float                     mFontSize;
+	DWRITE_FONT_WEIGHT        mFontWeight  = DWRITE_FONT_WEIGHT_NORMAL;
+	DWRITE_FONT_STYLE         mFontStyle   = DWRITE_FONT_STYLE_NORMAL;
+	DWRITE_FONT_STRETCH       mFontStretch = DWRITE_FONT_STRETCH_NORMAL;
+	float                     mFontSize    = 12.f;
 	JWText                    mText;
-	FLinearColor              mBrushColor;
+	FLinearColor              mBrushColor = FLinearColor::White;
 
 	JMath::TVector2 mScreenPosition;
 };

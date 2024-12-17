@@ -7,6 +7,7 @@
 #include "Camera/GUI_Camera_Debug_Frustum.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
 #include "Editor/GUI_Editor_Material.h"
@@ -194,10 +195,7 @@ void MGUIManager::UpdateGUIs(float DeltaTime) const
 	{
 		if (const auto& ptr = it->second)
 		{
-			if (ptr->bIsWindowOpen)
-			{
-				ptr->Update(DeltaTime);
-			}
+			ptr->Update(DeltaTime);
 		}
 	}
 }
@@ -254,6 +252,7 @@ void MGUIManager::Render()
 		ImGui::UpdatePlatformWindows(); // 새 뷰포트 생성 | 기존 뷰포트 상태, 위치 업데이트 | 필요없는 뷰포트 파괴 등
 		ImGui::RenderPlatformWindowsDefault(); // 각 뷰포트 렌더
 	}
+
 
 	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
 	{

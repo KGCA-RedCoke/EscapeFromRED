@@ -90,3 +90,8 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 	}
 	mLocalLocation += directionVec * 500.0f * DeltaTime;
 }
+
+void APlayerCharacter::CheckGround()
+{
+	
+}

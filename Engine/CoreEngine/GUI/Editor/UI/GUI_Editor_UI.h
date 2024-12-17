@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include "GUI/Editor/GUI_Editor_Base.h"
 
+class JWidgetComponent;
+class JUIComponent;
+
 class GUI_Editor_UI : public GUI_Editor_Base
 {
 public:
@@ -13,5 +16,9 @@ public:
 	void Render() override;
 
 private:
-	void DrawMenuBar();
+	void ShowEditWindow();
+
+private:
+	JWidgetComponent* mWidgetComponent;
+	JUIComponent*     mSelectedComponent = nullptr;
 };

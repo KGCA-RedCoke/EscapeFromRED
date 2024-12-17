@@ -12,7 +12,7 @@ namespace Utils::Fbx
 	class FbxFile;
 }
 
-enum class EMeshType : uint8_t
+enum EMeshType : uint8_t
 {
 	Static       = 1 << 10, // 정적 메시
 	Skeletal     = 1 << 11,   // 스켈레탈 메시

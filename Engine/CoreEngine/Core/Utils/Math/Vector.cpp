@@ -140,6 +140,23 @@ namespace JMath
 		return *this;
 	}
 
+	float TVector::operator[](int32_t Index) const
+	{
+		if (Index == 0)
+		{
+			return x;
+		}
+		if (Index == 1)
+		{
+			return y;
+		}
+		if (Index == 2)
+		{
+			return z;
+		}
+		return x;
+	}
+
 	bool TVector::IsNearlyZero(float Tolerance) const
 	{
 		return abs(x) <= Tolerance && abs(y) <= Tolerance && abs(z) <= Tolerance;
@@ -261,5 +278,10 @@ namespace JMath
 		z = XMVectorGetZ(InVector);
 
 		return *this;
+	}
+
+	float TVector::DistSquared(const TVector& V1, const TVector& V2)
+	{
+		return (V1 - V2).LengthSquared();
 	}
 }

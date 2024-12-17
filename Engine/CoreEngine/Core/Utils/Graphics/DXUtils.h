@@ -3,6 +3,7 @@
 #include "Core/Graphics/graphics_common_include.h"
 
 
+class JTexture;
 namespace Utils::DX
 {
 #pragma region ----------------------- Device Creation -----------------------
@@ -58,6 +59,11 @@ namespace Utils::DX
 
 	HRESULT CompileShader(const WCHAR* FileName, LPCSTR        EntryPoint,
 						  LPCSTR       ShaderModel, ID3DBlob** OutBlob);
+
+	ID3D11ShaderResourceView* CreateTextureArray(
+		ID3D11Device*            device,
+		ID3D11DeviceContext*     context,
+		const JArray<JTexture*>& textures);
 
 	/**
 	 * @brief ID3D11Buffer 버퍼 생성을 시도 실패시 종료

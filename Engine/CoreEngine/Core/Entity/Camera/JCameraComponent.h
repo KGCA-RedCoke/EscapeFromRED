@@ -50,7 +50,7 @@ public:
 #pragma endregion
 
 	uint32_t                GetHash() const override;
-	uint32_t GetType() const override;
+	uint32_t                GetType() const override;
 	UPtr<IManagedInterface> Clone() const override;
 
 	//---------------------------------------------- Camera ---------------------------------------------------------------
@@ -69,7 +69,7 @@ public:
 	 * @param InNearPlane 카메라 근접 평면 (이 값보다 가까이는 렌더링하지 않음)
 	 * @param InFarPlane 카메라 원격 평면  (이 값보다 멀리는 렌더링하지 않음)
 	 */
-	virtual void SetProjParams(float InFOV, float InAspect, float InNearPlane, float InFarPlane);
+	virtual void SetProjParams(float InFOV, float InAspect, float InNearPlane = 10.f, float InFarPlane = 100000.f);
 	//---------------------------------------------- Camera ---------------------------------------------------------------
 
 	// --------------------------------------------- Frustum --------------------------------------------------------------

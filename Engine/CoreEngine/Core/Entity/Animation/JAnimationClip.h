@@ -75,11 +75,17 @@ struct JAnimBoneTrack
 };
 
 
-class JAnimationClip : public JAsset
+class JAnimationClip : public JAsset, public IManagedInterface
 {
 public:
-	JAnimationClip()           = default;
+	JAnimationClip() = default;
+	JAnimationClip(JTextView InName);
+	JAnimationClip(const JAnimationClip& InOther);
 	~JAnimationClip() override = default;
+
+public:
+	UPtr<IManagedInterface> Clone() const override;
+	uint32_t                GetHash() const override;
 
 public:
 	uint32_t GetType() const override { return HASH_ASSET_TYPE_ANIMATION_CLIP; }

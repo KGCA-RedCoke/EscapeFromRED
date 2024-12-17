@@ -111,10 +111,6 @@ void JMaterial_Detail::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("TextureUsage",
-												 EMaterialParamValue::Integer,
-												 &FVector::ZeroVector,
-												 true));
 
 		Utils::Serialization::Serialize(NAME_MAT_DETAIL, this);
 	}

@@ -28,13 +28,13 @@ struct FMaterialInstance_Detail
 	float  Specular : MAT_SPECULAR;
 	float  TextureSize : MAT_TEXTURESIZE;
 	float  Tiling : MAT_TILING;
-	uint   Flag : MAT_TEXTUREFLAG;
 };
 
 struct InstanceData_Detail
 {
 	row_major matrix         Transform : INST_TRANSFORM;
 	row_major matrix         InvTransform : INST_TRNASFORM_INVTRANS;
+	uint                     Flags :INST_Flag;
 	FMaterialInstance_Detail Material : INST_MAT;
 };
 
@@ -81,7 +81,7 @@ PixelIn_Detail VS(VertexIn_Base Input, InstanceData_Detail Instance)
 	float4 localPos    = output.WorldSpace;
 	float3 normal      = Input.Normal;
 
-	if (Instance.Material.Flag & FLAG_MESH_ANIMATED || Instance.Material.Flag & FLAG_MESH_SKINNED)
+	if (Instance.Flags & FLAG_MESH_ANIMATED || Instance.Flags & FLAG_MESH_SKINNED)
 	{
 		for (int i = 0; i < 4; ++i)
 		{
@@ -165,6 +165,11 @@ float4 PS(PixelIn_Detail Input) : SV_TARGET
 
 	const float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Input.Material.Opacity;
 
+	if (opacity < .2f || Input.Material.Opacity < .2f)
+	{
+		discard;
+	}
+
 	float normDotLight = saturate(dot(normal, lightDir));
 
 	float3 diffuse  = albedo * normDotLight;
@@ -195,6 +200,7 @@ float4 PS(PixelIn_Detail Input) : SV_TARGET
 
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + ambient + specular;
+
 
 	return float4(finalColor, opacity);
 

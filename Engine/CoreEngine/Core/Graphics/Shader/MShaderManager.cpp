@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "InputLayouts.h"
+#include "JShader_UI.h"
 #include "Core/Graphics/Shader/JShader_Basic.h"
 
 MShaderManager::MShaderManager()
@@ -35,10 +36,11 @@ void MShaderManager::UpdateShader(ID3D11DeviceContext* InDeviceContext, JShader*
 
 void MShaderManager::Initialize_Initialize()
 {
-	BasicShader = Load<JShader_Basic>(NAME_SHADER_BASIC);
-	IDShader    = Load(NAME_SHADER_ID);
-	ColorShader = Load(NAME_SHADER_SIMPLE_COLOR);
-	UIShader    = Load(NAME_SHADER_UI);
+	BasicShader     = Load<JShader_Basic>(NAME_SHADER_BASIC);
+	IDShader        = Load(NAME_SHADER_ID);
+	UIElementShader = Load(NAME_SHADER_ID_UI);
+	ColorShader     = Load(NAME_SHADER_SIMPLE_COLOR);
+	UIShader        = Load<JShader_UI>(NAME_SHADER_UI);
 
 	Load(NAME_SHADER_GNOMON);
 

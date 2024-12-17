@@ -323,6 +323,7 @@ struct FMaterialInstanceData_Basic
 struct FInstanceData_Mesh
 {
 	FInstanceData Transform;	// 각 인스턴스 별로 다른 월드 행렬
+	uint32_t      Flags = (1 << 10);
 	float         MaterialData[256];
 	/*FMaterialInstanceData_Basic MaterialData;	// 머티리얼 데이터*/
 };

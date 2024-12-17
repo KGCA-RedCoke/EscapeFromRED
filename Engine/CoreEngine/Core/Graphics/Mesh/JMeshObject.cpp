@@ -8,8 +8,7 @@
 #include "Core/Interface/JWorld.h"
 
 JMeshObject::JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData)
-	: mName(ParseFile(InAssetPath)),
-	  mVertexSize(sizeof(Vertex::FVertexInfo_Base))
+	: mName(ParseFile(InAssetPath))
 {
 	mPath = InAssetPath;
 	mName = ParseFile(mPath);
@@ -139,7 +138,7 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	}
 
 	// 이전에 바인딩된 Delegate 해제
-	if (mDelegateIDs.count(InIndex))
+	if (mDelegateIDs.contains(InIndex))
 	{
 		InMaterialInstance->OnMaterialInstanceParamChanged.UnBind(mDelegateIDs[InIndex]);
 		mDelegateIDs.erase(InIndex);
@@ -156,7 +155,7 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 						 InMaterialInstance->GetMaterialSize(),
 						 InMaterialInstance->GetMaterialData(),
 						 size);
-				
+
 			}
 		}
 	});
@@ -184,18 +183,13 @@ int32_t JMeshObject::GetMaterialCount() const
 
 JMaterialInstance* JMeshObject::GetMaterialInstance(uint32_t InIndex) const
 {
-	if (InIndex >= mPrimitiveMeshData[0]->GetSubMaterialNum())
+	if (InIndex >= mMaterialInstances.size())
 	{
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return nullptr;
 	}
 
 	return mMaterialInstances[InIndex];
-}
-
-JMaterialInstance* JMeshObject::GetMaterialInstance(const JText& InName) const
-{
-	return nullptr;
 }
 
 void JMeshObject::AddInstance(float InCameraDistance)
@@ -217,42 +211,19 @@ void JMeshObject::AddInstance(float InCameraDistance)
 
 void JMeshObject::Draw()
 {
-	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
-	assert(deviceContext);
-
-	const auto&   meshData     = mPrimitiveMeshData[0];
+	auto&         meshData     = mPrimitiveMeshData[0];
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-
-		mMaterialInstances[j]->BindMaterial(deviceContext);
-
-		Utils::DX::UpdateDynamicBuffer(
-									   deviceContext,
-									   GetWorld.MeshManager->IdentityBuffer.Buffer_Instance.Get(),
-									   &mInstanceData[j],
-									   sizeof(FInstanceData_Mesh));
-
-		ID3D11Buffer* buffers[] = {
-			mGeometryBuffer[j].Buffer_Vertex.Get(), GetWorld.MeshManager->IdentityBuffer.Buffer_Instance.Get()
-		};
-		constexpr uint32_t stride[2] = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
-		constexpr uint32_t offset[2] = {0, 0};
-
-		// 버퍼 설정
-		deviceContext->IASetVertexBuffers(0,
-										  2,
-										  buffers,
-										  stride,
-										  offset);
-		deviceContext->IASetIndexBuffer(mGeometryBuffer[j].Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		const int32_t indexNum = currMesh->GetVertexData()->IndexArray.size();
-		deviceContext->DrawIndexed(indexNum, 0, 0);
+		mInstanceData[j].Transform.WorldMatrix           = FMatrix::Identity;
+		mInstanceData[j].Transform.WorldInverseTranspose = FMatrix::Identity;
+		auto& currMesh                                   = subMeshes.empty() ? meshData : subMeshes[j];
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
 	}
+
+	GetWorld.MeshManager->FlushCommandList(G_Device.GetImmediateDeviceContext());
 }
 
 void JMeshObject::DrawID(uint32_t ID)

@@ -4,6 +4,12 @@
 
 class JMeshObject;
 
+struct FRay
+{
+	FVector Origin;		// 광선의 시작점
+	FVector Direction;	// 광선의 방향
+};
+
 struct FPlane
 {
 	FVector Normal;		// 평면의 법선 벡터
@@ -31,13 +37,7 @@ struct FBox
 		  Extent(InExtent)
 	{}
 
-	bool Intersect(const FBox& InBox) const;
-};
-
-struct FSphere
-{
-	FVector Center;	// 구의 중심
-	float   Radius;	// 구의 반지름
+	bool Contains(const FVector& InPoint) const;
 };
 
 struct FBoxShape
@@ -52,6 +52,8 @@ struct FBoxShape
 	void DrawDebug() const;
 
 	bool Intersect(const FBoxShape& InBox) const;
+	bool IntersectOBB(const FBoxShape& InBox) const;
+	bool Contains(const FVector& InPoint) const;
 
 	FBoxShape() = default;
 
@@ -65,6 +67,54 @@ struct FBoxShape
 	}
 };
 
+struct FSphere
+{
+	FVector Center; // 구의 중심
+	float   Radius;   // 구의 반지름
+
+	FSphere() = default;
+
+	FSphere(const FVector& InCenter, float InRadius)
+		: Center(InCenter),
+		  Radius(InRadius)
+	{}
+
+	// 구와 구의 충돌 검사
+	bool Intersect(const FSphere& InSphere) const;
+
+	// 구와 점의 충돌 검사
+	bool ContainsPoint(const FVector& Point) const;
+};
+
+struct FCapsule
+{
+	FVector Center = FVector::ZeroVector;  // 캡슐의 중심
+	float   Radius = 50.f;    // 캡슐의 반지름 (둘레)
+	float   Height = 100.f;    // 캡슐의 높이 (끝점 사이의 거리, 반구 부분 제외)
+
+	FCapsule() = default;
+
+	FCapsule(const FVector& InCenter, float InRadius, float InHeight)
+		: Center(InCenter),
+		  Radius(InRadius),
+		  Height(InHeight) {}
+
+	// 두 캡슐의 충돌 여부 검사
+	bool Intersect(const FCapsule& Other) const;
+
+	// 캡슐과 점 간 거리 계산
+	float DistanceToPoint(const FVector& Point) const;
+
+	// 디버그용 캡슐 그리기
+	void DrawDebug() const;
+};
+
+static bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT);
+static bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, FVector& OutT);
+static bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,   // Ray 정보
+							const FVector& BoxCenter, const FVector  BoxAxis[3], const FVector& BoxExtent, // OBB 정보
+							FVector&       OutHitPoint // 충돌 지점
+);
 
 // class JShape : public JSceneComponent
 // {
