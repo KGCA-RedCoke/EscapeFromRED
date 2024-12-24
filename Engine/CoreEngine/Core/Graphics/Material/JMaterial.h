@@ -136,6 +136,7 @@ public:
 	 * 머티리얼을 GPU에 바인딩
 	 */
 	virtual void BindShader(ID3D11DeviceContext* InDeviceContext);
+	void UpdateMaterialParams(ID3D11DeviceContext* InDeviceContext, const void* InData, uint32_t InSize);
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 

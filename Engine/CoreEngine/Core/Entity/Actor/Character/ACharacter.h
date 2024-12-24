@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include "../AActor.h"
+#include "Core/Entity/Actor/APawn.h"
 
 class XKeyboardMouse;
 
-class ACharacter : public AActor
+class ACharacter : public APawn
 {
 public:
 	// Constructor
@@ -30,12 +30,18 @@ protected:
 	virtual void SetupInputComponent() {};
 
 public:
+	float    GetYaw() const { return mYaw; }
+	float    GetPitch() const { return mPitch; }
 	FVector2 GetMouseDelta() const;
 
 protected:
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
-	class JCameraComponent*       mFPSCamera;
 	UPtr<XKeyboardMouse>          mInput;
+
+	float   mLastYaw = 0;
+	float   mYaw     = 0;
+	float   mPitch   = 0;
+	FVector mForward;
 
 };
 

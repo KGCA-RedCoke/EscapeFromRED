@@ -41,6 +41,9 @@ public:
 
 	void SetScreenPosition(const JMath::TVector2& InLocation);
 	void SetNDCPosition(const JMath::TVector2& InLocation);
+	void SetNDCTextRect(const JMath::TVector2& InCenter, const JMath::TVector2& InSize);
+	void SetTextRect(FVector2 InCenter, FVector2 InSize);
+	void SetTextRect(const D2D1_RECT_F& InRect);
 
 	JWText       GetText() const { return mText; };
 	FLinearColor GetColor() const { return mBrushColor; }
@@ -58,6 +61,7 @@ private:
 	DWRITE_FONT_STRETCH       mFontStretch = DWRITE_FONT_STRETCH_NORMAL;
 	float                     mFontSize    = 12.f;
 	JWText                    mText;
+	D2D1_RECT_F               mTextRect;
 	FLinearColor              mBrushColor = FLinearColor::White;
 
 	JMath::TVector2 mScreenPosition;

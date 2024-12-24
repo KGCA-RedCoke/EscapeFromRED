@@ -527,4 +527,49 @@ namespace JMath
 		FXMMATRIX M = XMLoadFloat4x4(this);
 		return XMVectorGetX(XMMatrixDeterminant(M));
 	}
+
+	TMatrix TMatrix::CreateFromScaleRotationTranslation(const TVector& scale, const TQuaternion& rotation,
+														const TVector& translation)
+	{
+		FMatrix matrix;
+
+		// 1. Scale 적용
+		FMatrix scaleMatrix;
+		scaleMatrix.m[0][0] = scale.x;
+		scaleMatrix.m[1][1] = scale.y;
+		scaleMatrix.m[2][2] = scale.z;
+
+		// 2. Rotation 적용
+		FMatrix rotationMatrix = XMMatrixRotationQuaternion(rotation);
+
+		// 3. Translation 적용
+		FMatrix translationMatrix;
+		translationMatrix.m[0][3] = translation.x;
+		translationMatrix.m[1][3] = translation.y;
+		translationMatrix.m[2][3] = translation.z;
+
+		// 4. 최종 변환 행렬 계산: Scale * Rotation * Translation
+		matrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+		return matrix;
+	}
+
+	TMatrix TMatrix::Lerp(const TMatrix& M1, const TMatrix& M2, float t)
+	{
+		// M1과 M2의 데이터를 XMMatrix로 로드
+		XMMATRIX m1 = XMLoadFloat4x4(&M1);
+		XMMATRIX m2 = XMLoadFloat4x4(&M2);
+
+		// 행렬의 각 행에 대해 Lerp 수행
+		XMMATRIX returnMatrix;
+		returnMatrix.r[0] = XMVectorLerp(m1.r[0], m2.r[0], t);
+		returnMatrix.r[1] = XMVectorLerp(m1.r[1], m2.r[1], t);
+		returnMatrix.r[2] = XMVectorLerp(m1.r[2], m2.r[2], t);
+		returnMatrix.r[3] = XMVectorLerp(m1.r[3], m2.r[3], t);
+
+		// XMMatrix를 TMatrix로 변환하여 반환
+		TMatrix result;
+		XMStoreFloat4x4(&result, returnMatrix);
+		return result;
+	}
 }

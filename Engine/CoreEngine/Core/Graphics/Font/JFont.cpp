@@ -64,12 +64,7 @@ void JFont::Draw()
 							 mText.c_str(),
 							 mText.length(),
 							 mTextFormat.Get(),
-							 {
-								 mScreenPosition.x,
-								 mScreenPosition.y,
-								 mScreenPosition.x + 600.f,
-								 mScreenPosition.y + 600.f
-							 },
+							 mTextRect,
 							 GetWorld.D3D11API->GetBrush()
 							);
 
@@ -145,6 +140,29 @@ void JFont::SetNDCPosition(const JMath::TVector2& InLocation)
 
 	mScreenPosition.x = screenX * mRenderTarget->GetSize().width;
 	mScreenPosition.y = screenY * mRenderTarget->GetSize().height;
+}
+
+void JFont::SetNDCTextRect(const JMath::TVector2& InCenter, const JMath::TVector2& InSize)
+{
+	SetNDCPosition(InCenter);
+
+	mTextRect.left   = mScreenPosition.x - (InSize.x * mRenderTarget->GetSize().width / 2);
+	mTextRect.top    = mScreenPosition.y - (InSize.y * mRenderTarget->GetSize().height / 2);
+	mTextRect.right  = mScreenPosition.x + (InSize.x * mRenderTarget->GetSize().width / 2);
+	mTextRect.bottom = mScreenPosition.y + (InSize.y * mRenderTarget->GetSize().height / 2);
+}
+
+void JFont::SetTextRect(FVector2 InCenter, FVector2 InSize)
+{
+	mTextRect.left   = InCenter.x - InSize.x / 2;
+	mTextRect.top    = InCenter.y - InSize.y / 2;
+	mTextRect.right  = InCenter.x + InSize.x / 2;
+	mTextRect.bottom = InCenter.y + InSize.y / 2;
+}
+
+void JFont::SetTextRect(const D2D1_RECT_F& InRect)
+{
+	mTextRect = InRect;
 }
 
 void JFont::AdjustTextFormat()

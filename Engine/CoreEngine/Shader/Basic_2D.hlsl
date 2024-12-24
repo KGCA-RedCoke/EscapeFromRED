@@ -35,6 +35,8 @@ float4 SampleFromTextureArray(uint textureIndex, float2 uv)
 	float4 result;
 	float4 rgb;
 	float  mask;
+
+	[branch]
 	switch (textureIndex)
 	{
 	case 0:
@@ -298,12 +300,6 @@ float4 SampleFromTextureArray(uint textureIndex, float2 uv)
 		result = float4(0, 0, 0, 0);
 		break;
 	}
-
-	if (rgb.a < 0.01f)
-	{
-		mask = 0;
-	}
-
 
 	result = float4(rgb.rgb, mask);
 	return result;

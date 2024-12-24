@@ -1,6 +1,7 @@
 ﻿#include "JWorld.h"
 
-#include "Core/Entity/Animation/MAnimataionManager.h"
+#include "Core/Entity/Actor/JStaticMeshActor.h"
+#include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
@@ -62,7 +63,7 @@ void JWorld::Initialize()
 
 	UIManager = &MUIManager::Get();
 
-	AnimationManager = &MAnimataionManager::Get();
+	AnimationManager = &MAnimManager::Get();
 
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
@@ -78,6 +79,22 @@ void JWorld::Initialize()
 	assert(levelPath[0] != '\0');
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
+
+	// std::uniform_real_distribution dist(-10000.0f, 10000.0f);
+	// for (int i = 0; i < 1000; ++i)
+	// {
+	// 	std::mt19937 gen(i);
+	// 	float x = dist(gen);
+	// 	float y = dist(gen);
+	//
+	// 	auto* newActor = SpawnActor<JStaticMeshActor>("Sample",
+	// 								 FVector{x, 0.0f, y},
+	// 								 FVector::ZeroVector,
+	// 								 nullptr,
+	// 								 "Game/Mesh/SM_Couch_01.jasset");
+	// 	newActor->Initialize();
+	// }
+	// SpawnActor<JStaticMeshActor>("Sample", FVector::ZeroVector, FVector::ZeroVector, nullptr, "Game/Mesh/Cube.jasset");
 }
 
 void JWorld::Update(float DeltaTime)
@@ -89,6 +106,7 @@ void JWorld::Update(float DeltaTime)
 	LevelManager->Update(DeltaTime);
 
 	G_DebugBatch.Update(DeltaTime);
+	
 	// NAV_MAP.Update(DeltaTime);	
 }
 

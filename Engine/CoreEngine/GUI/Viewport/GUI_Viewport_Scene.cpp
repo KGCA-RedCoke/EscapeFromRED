@@ -11,6 +11,7 @@
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Window/Window.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
@@ -78,6 +79,8 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 void GUI_Viewport_Scene::ShowTopMenu()
 {
+	if (bIsGameMode)
+		return;
 	ImVec2 availSize = ImGui::GetContentRegionAvail();
 
 	// 창의 가로 크기 구하기
@@ -110,7 +113,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	ImGui::SameLine(0, spacing); // 버튼 간격 띄우기
 
 	// Play 버튼
-	if (ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
+	if (!bIsGameMode && ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
@@ -120,8 +123,14 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			nullptr,
 																			"Game/Mesh/SK_Hands_07.jasset");
 		character->Initialize();
-		
+
 		GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
+
+		// HideAndLockCursor(Window::GetWindow()->GetWindowHandle());
+		RECT rect{0, 0, (UINT)mCachedViewportHeight, (UINT)mCachedViewportWidth};
+		ShowCursor(FALSE);
+		// ClipCursor(&rect);
+		// SetCursorPos(0, 0);
 
 		bIsGameMode = true;
 	}

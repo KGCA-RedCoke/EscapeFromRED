@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "GUI/Editor/GUI_Editor_Base.h"
 
+class JActorComponent;
 constexpr const char* g_ComponentList[] = {
 	"Transform",
 	"Mesh",
@@ -31,7 +32,7 @@ class GUI_Editor_Actor : public GUI_Editor_Base
 {
 public:
 	/** 생성자 인자로 액터경로(이미 존재하는 에셋일 경우) 또는 액터 이름(새로 만들경우)를 넘겨준다. */
-	GUI_Editor_Actor(const JText& InPath, const JText& InClassName = "AActor");
+	GUI_Editor_Actor(const JText& InPath, JText InClassName = "AActor");
 
 	~GUI_Editor_Actor() override = default;
 
@@ -64,7 +65,7 @@ private:
 
 private:
 	UPtr<class AActor> mActorToEdit;			// 편집할 액터
-	JSceneComponent*   mSelectedSceneComponent;
+	JActorComponent*   mSelectedSceneComponent;
 	bool               bAddComponentListBox = false;
 	JText              mClassName;
 };

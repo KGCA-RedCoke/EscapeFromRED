@@ -1,10 +1,11 @@
 ﻿#include "GUI_Editor_SkeletalMesh.h"
 
-#include "Core/Entity/Animation/MAnimataionManager.h"
+#include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
@@ -154,8 +155,7 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 	if (ImGui::BeginChild("RightView", ImVec2(0, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Border))
 	{}
 
-	ImGui::Image(nullptr, ImVec2(100, 100));
-	// ImGui::Text(subMeshes[j]->GetName().c_str());
+	ImGui::Image(GetWorld.TextureManager->WhiteTexture->GetSRV(), ImVec2(100, 100));
 
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 	{
@@ -166,13 +166,24 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 
 		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
 		{
-			mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str);
+			if (!mPreviewAnimationClip || str != mPreviewAnimationClip->GetName())
+			{
+				mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str, mMeshObject->GetSkeletalMesh());
 
-			mMeshObject->SetAnimation(mPreviewAnimationClip.get());
+				mMeshObject->SetAnimation(mPreviewAnimationClip.get());
 
-			ImGui::EndDragDropTarget();
+				ImGui::EndDragDropTarget();
+			}
 		}
 	}
+
+	if (mPreviewAnimationClip)
+	{
+		float speed = mPreviewAnimationClip->GetAnimationSpeed();
+		ImGui::SliderFloat(u8("속도"), &speed, 0.1f, 10.f);
+		mPreviewAnimationClip->SetAnimationSpeed(speed);
+	}
+
 }
 
 void GUI_Editor_SkeletalMesh::DrawSaveButton() const

@@ -1,5 +1,7 @@
 ﻿#include "JAnimationClip.h"
 
+#include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
+
 
 void JAnimBoneTrack::AddKey(float InTime, const FVector& InPosition, const FVector4& InRotation, const FVector& InScale)
 {
@@ -46,7 +48,7 @@ bool JAnimBoneTrack::IsTrackEmpty() const
 	return false;
 }
 
-JAnimationClip::JAnimationClip(JTextView InName)
+JAnimationClip::JAnimationClip(JTextView InName, const Ptr<JSkeletalMesh>& InSkeletalMesh)
 	: mName(InName),
 	  mStartTime(0),
 	  mEndTime(0),
@@ -56,7 +58,25 @@ JAnimationClip::JAnimationClip(JTextView InName)
 	  bLooping(false),
 	  bPlaying(false),
 	  bRootMotion(false),
-	  mElapsedTime(0) {}
+	  mElapsedTime(0)
+{
+	mSkeletalMesh = InSkeletalMesh;
+}
+
+JAnimationClip::JAnimationClip(JTextView InName, const JSkeletalMeshComponent* InSkeletalMesh)
+	: mName(InName),
+	  mStartTime(0),
+	  mEndTime(0),
+	  mSourceSamplingInterval(0),
+	  mStartFrame(0),
+	  mEndFrame(0),
+	  bLooping(false),
+	  bPlaying(false),
+	  bRootMotion(false),
+	  mElapsedTime(0)
+{
+	mSkeletalMesh = InSkeletalMesh->GetSkeletalMesh();
+}
 
 JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	: mName(InOther.mName),
@@ -68,7 +88,9 @@ JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	  bLooping(InOther.bLooping),
 	  bPlaying(InOther.bPlaying),
 	  bRootMotion(InOther.bRootMotion),
-	  mTracks(InOther.mTracks)
+	  mTracks(InOther.mTracks),
+	  mBoneMatrix(InOther.mBoneMatrix),
+	  mInstanceData(InOther.mInstanceData)
 {
 	if (InOther.mSkeletalMesh.expired())
 	{
@@ -273,10 +295,10 @@ void JAnimationClip::TickAnim(const float DeltaSeconds)
 	}
 
 	// 경과시간 계산
-	mElapsedTime += DeltaSeconds * mFramePerSecond * mTickPerFrame * mAnimationSpeed;
+	mElapsedTime += DeltaSeconds * mAnimationSpeed;
 
 	// 경과 시간이 애니메이션의 시작 시간을 초과
-	if (mElapsedTime >= mEndTime * mFramePerSecond * mTickPerFrame)
+	if (mElapsedTime > mEndTime)
 	{
 		if (!bLooping)
 		{
@@ -285,28 +307,15 @@ void JAnimationClip::TickAnim(const float DeltaSeconds)
 		}
 
 		// 시작 시간으로 초기화
-		mElapsedTime = mStartTime * mFramePerSecond * mTickPerFrame;
+		mInstanceData.DeltaTime        = .5f;
+		mInstanceData.CurrentAnimIndex = mInstanceData.NextAnimIndex;
+		mInstanceData.NextAnimIndex    = 0;
+
+		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
+
+		return;
 	}
-
-	const auto& bones = mSkeletalMesh.lock()->GetSkeletonData().Joints;
-
-	for (int32_t boneIndex = 0; boneIndex < bones.size(); ++boneIndex)
-	{
-		const auto& boneParentIndex = bones[boneIndex].ParentIndex;
-
-		FMatrix parentAnimPose = boneParentIndex == -1
-									 ? FMatrix::Identity
-									 : mAnimationPose[boneParentIndex];
-
-		const FMatrix thisFramePose = FetchInterpolateBone(boneIndex, parentAnimPose, mElapsedTime);
-
-		mAnimationPose[boneIndex] = thisFramePose;
-	}
-	if (!bInterpolate)
-	{
-		bInterpolate = true;
-	}
-
+	UpdateInstanceData(mElapsedTime);
 }
 
 void JAnimationClip::OptimizeKeys()
@@ -354,32 +363,18 @@ FMatrix JAnimationClip::FetchInterpolateBone(const int32_t  InBoneIndex,
 											 const FMatrix& InParentBoneMatrix,
 											 const float    InAnimElapsedTime) const
 {
-	FVector     position       = FVector::ZeroVector;
-	FVector     cachedPosition = FVector::ZeroVector;
-	FQuaternion rotation       = FQuaternion::Identity;
-	FQuaternion cachedRotation = FQuaternion::Identity;
-	FVector     scale          = FVector::OneVector;
-	FVector     cachedScale    = FVector::OneVector;
+	FVector     position = FVector::ZeroVector;
+	FQuaternion rotation = FQuaternion::Identity;
+	FVector     scale    = FVector::OneVector;
 
 	FMatrix positionMat = FMatrix::Identity;
 	FMatrix rotationMat = FMatrix::Identity;
 	FMatrix scaleMat    = FMatrix::Identity;
 
-	float startTick = mStartTime * mFramePerSecond * mTickPerFrame;
+	float startTick = mStartTime;
 	float endTick   = 0.f;
 
 	const auto boneTrack = mTracks[InBoneIndex];
-
-	{
-		const auto cachedPose = mAnimationPose[InBoneIndex];
-		XMVECTOR   cachedPosition_Local, cachedRotation_Local, cachedScale_Local;
-		XMMatrixDecompose(&cachedScale_Local, &cachedRotation_Local, &cachedPosition_Local, cachedPose);
-
-		cachedPosition = cachedPosition_Local;
-		cachedRotation = cachedRotation_Local;
-		cachedScale    = cachedScale_Local;
-	}
-
 
 	if (!boneTrack)
 	{
@@ -387,60 +382,51 @@ FMatrix JAnimationClip::FetchInterpolateBone(const int32_t  InBoneIndex,
 		return FMatrix::Identity;
 	}
 
-	JAnimKey<FVector> startTrackPosition;
-	JAnimKey<FVector> endTrackPosition;
-	bool              bShouldInterpolate = FindDeltaKey<FVector>(boneTrack->TransformKeys.PositionKeys,
-																 InAnimElapsedTime,
-																 startTrackPosition,
-																 endTrackPosition);
+	int32_t startFrame = 0, endFrame = 0;
 
-	position  = startTrackPosition.Value;
-	startTick = startTrackPosition.Time * mFramePerSecond * mTickPerFrame;
-	if (bShouldInterpolate)
-	{
-		endTick  = endTrackPosition.Time * mFramePerSecond * mTickPerFrame;
-		position = XMVectorLerp(position,
-								endTrackPosition.Value,
-								(InAnimElapsedTime - startTick) / (endTick - startTick));
-	}
+	FindFrame(boneTrack->TransformKeys.PositionKeys,
+			  InAnimElapsedTime,
+			  startFrame,
+			  endFrame);
 
 
-	JAnimKey<FVector4> startTrackRotation;
-	JAnimKey<FVector4> endTrackRotation;
-	bShouldInterpolate = FindDeltaKey<FVector4>(boneTrack->TransformKeys.RotationKeys,
-												InAnimElapsedTime,
-												startTrackRotation,
-												endTrackRotation);
+	position = boneTrack->TransformKeys.PositionKeys[startFrame].Value;
+	// if (startFrame != endFrame)
+	// {
+	// 	startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time * mFramePerSecond * mTickPerFrame;
+	// 	endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time * mFramePerSecond * mTickPerFrame;
+	// 	position  = XMVectorLerp(position,
+	// 							 boneTrack->TransformKeys.PositionKeys[endFrame].Value,
+	// 							 (InAnimElapsedTime - startTick) / (endTick - startTick));
+	// }
 
-	rotation  = FQuaternion{startTrackRotation.Value};
-	startTick = startTrackRotation.Time * mFramePerSecond * mTickPerFrame;
-	if (bShouldInterpolate)
-	{
-		endTick  = endTrackRotation.Time * mFramePerSecond * mTickPerFrame;
-		rotation = FQuaternion::Slerp(rotation,
-									  FQuaternion{endTrackRotation.Value},
-									  (InAnimElapsedTime - startTick) / (endTick - startTick));
-	}
 
-	JAnimKey<FVector> startTrackScale;
-	JAnimKey<FVector> endTrackScale;
-	bShouldInterpolate = FindDeltaKey<FVector>(boneTrack->TransformKeys.ScaleKeys,
-											   InAnimElapsedTime,
-											   startTrackScale,
-											   endTrackScale);
-	scale     = startTrackScale.Value;
-	startTick = startTrackScale.Time * mFramePerSecond * mTickPerFrame;
-	if (bShouldInterpolate)
-	{
-		endTick = endTrackScale.Time * mFramePerSecond * mTickPerFrame;
-		scale   = XMVectorLerp(scale,
-							   endTrackScale.Value,
-							   (InAnimElapsedTime - startTick) / (endTick - startTick));
-	}
+	rotation = FQuaternion{boneTrack->TransformKeys.RotationKeys[startFrame].Value};
+	// if (startFrame != endFrame)
+	// {
+	// 	rotation = FQuaternion::Slerp(rotation,
+	// 								  FQuaternion{boneTrack->TransformKeys.RotationKeys[endFrame].Value},
+	// 								  (InAnimElapsedTime - startTick) / (endTick - startTick));
+	//
+	// }
+
+	scale = boneTrack->TransformKeys.ScaleKeys[startFrame].Value;
+	// if (startFrame != endFrame)
+	// {
+	// 	scale = XMVectorLerp(scale,
+	// 						 boneTrack->TransformKeys.ScaleKeys[endFrame].Value,
+	// 						 (InAnimElapsedTime - startTick) / (endTick - startTick));
+	// }
+
 
 	positionMat = XMMatrixTranslation(position.x, position.y, position.z);
 	XMStoreFloat4x4(&rotationMat, XMMatrixRotationQuaternion(rotation));
 	scaleMat = XMMatrixScaling(scale.x, scale.y, scale.z);
+
+	// FMatrix localTransform = FMatrix::CreateFromScaleRotationTranslation(scale,
+	// 																	 rotation,
+	// 																	 position
+	// 																	);
 
 	FMatrix finalMatrix = scaleMat * rotationMat * positionMat;
 	finalMatrix         = finalMatrix * InParentBoneMatrix;
@@ -448,39 +434,116 @@ FMatrix JAnimationClip::FetchInterpolateBone(const int32_t  InBoneIndex,
 	return finalMatrix;
 }
 
+FMatrix JAnimationClip::GetInterpolatedBone(const JText& InBoneName)
+{
+	auto it = mBoneMatrix.find(InBoneName);
+	if (it == mBoneMatrix.end())
+		return FMatrix::Identity;
+
+	auto& boneMatrix = it->second;
+
+	return FMatrix::Lerp(boneMatrix[mInstanceData.CurrentAnimIndex],
+						 boneMatrix[mInstanceData.NextAnimIndex],
+						 mInstanceData.DeltaTime);
+}
+
+void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
+{
+	const auto boneTrack = mTracks[0];
+
+	if (!boneTrack)
+	{
+		LOG_CORE_ERROR("Invalid Bone Track in JAnimationClip::FetchInterpolateBone");
+		return;
+	}
+
+	int32_t startFrame = 0, endFrame = 0;
+
+	FindFrame(boneTrack->TransformKeys.PositionKeys,
+			  InAnimElapsedTime,
+			  startFrame,
+			  endFrame);
+
+	float startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
+	float endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
+
+	mInstanceData.DeltaTime = (startFrame == endFrame) ? 0 : (InAnimElapsedTime - startTick) / (endTick - startTick);
+	mInstanceData.CurrentAnimIndex = startFrame;
+	mInstanceData.NextAnimIndex = endFrame;
+}
+
 void JAnimationClip::SetSkeletalMesh(const Ptr<JSkeletalMesh>& InSkeletalMesh)
 {
 	mSkeletalMesh = InSkeletalMesh;
-	mAnimationPose.clear();
-
-	for (int32_t i = 0; i < InSkeletalMesh->GetSkeletonData().Joints.size(); ++i)
-	{
-		mAnimationPose.push_back(FMatrix::Identity);
-	}
 }
 
-void JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureData)
+uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureData)
 {
-	const int32_t boneCount  = mSkeletalMesh.lock()->GetSkeletonData().Joints.size();
-	const int32_t frameCount = mEndFrame - mStartFrame;
-	const int32_t animSize   = frameCount * boneCount * 3;
-
-	OutTextureData.resize(animSize);
-
-	for (int32_t boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+	if (mSkeletalMesh.expired())
 	{
-		for (int32_t frameIndex = 0; frameIndex < frameCount; ++frameIndex)
-		{
-			int32_t index = (boneIndex * frameCount + frameIndex) * 3;
+		LOG_CORE_WARN("Skeletal Mesh is not initialized in JAnimationClip::GenerateAnimationTexture");
+		return 0;
+	}
 
-			// Keyframe
+	JSkeletalMesh* skeltal    = mSkeletalMesh.lock().get();
+	const auto&    skeleton   = skeltal->GetSkeletonData();
+	const auto&    skin       = skeltal->GetSkinData();
+	const int32_t  boneCount  = skeltal->GetSkeletonData().Joints.size();
+	const int32_t  frameCount = mEndFrame - mStartFrame;
+
+	JArray<FMatrix> boneWorldTransforms(boneCount); // 현재 프레임의 월드 변환 행렬
+
+	const uint32_t offset = OutTextureData.size();
+
+	// 데이터 채우기
+	for (int32_t frameIndex = 0; frameIndex < frameCount; ++frameIndex)
+	{
+		for (int32_t boneIndex = 0; boneIndex < boneCount; ++boneIndex)
+		{
+			const int32_t parentIndex = skeleton.Joints[boneIndex].ParentIndex;
+
+			// 로컬 변환 가져오기
 			const auto& positionKey = mTracks[boneIndex]->TransformKeys.PositionKeys[frameIndex];
 			const auto& rotationKey = mTracks[boneIndex]->TransformKeys.RotationKeys[frameIndex];
 			const auto& scaleKey    = mTracks[boneIndex]->TransformKeys.ScaleKeys[frameIndex];
 
-			OutTextureData[index + 0] = FVector4(positionKey.Value, 0.f);
-			OutTextureData[index + 1] = rotationKey.Value;
-			OutTextureData[index + 2] = FVector4(scaleKey.Value, 0.f);
+
+			FMatrix positionMat;
+			FMatrix rotationMat;
+			FMatrix scaleMat;
+			positionMat = XMMatrixTranslation(positionKey.Value.x, positionKey.Value.y, positionKey.Value.z);
+			XMStoreFloat4x4(&rotationMat, XMMatrixRotationQuaternion(rotationKey.Value));
+			scaleMat = XMMatrixScaling(scaleKey.Value.x, scaleKey.Value.y, scaleKey.Value.z);
+
+			FMatrix localTransform = scaleMat * rotationMat * positionMat;
+
+			// 부모 월드 변환 적용
+			if (parentIndex == -1)
+			{
+				boneWorldTransforms[boneIndex] = localTransform; // 루트 본
+			}
+			else
+			{
+				boneWorldTransforms[boneIndex] = localTransform * boneWorldTransforms[parentIndex];
+			}
+
+			// 최종 월드 변환 데이터 추가
+			const FMatrix& worldTransform = skin->GetInfluenceBoneInverseBindPose(skin->GetInfluenceBoneName(boneIndex)) *
+					boneWorldTransforms[boneIndex];
+
+			OutTextureData.emplace_back(FVector4{worldTransform.m[0]});
+			OutTextureData.emplace_back(FVector4{worldTransform.m[1]});
+			OutTextureData.emplace_back(FVector4{worldTransform.m[2]});
+			OutTextureData.emplace_back(FVector4{worldTransform.m[3]});
+
+			mBoneMatrix[skin->GetInfluenceBoneName(boneIndex)].push_back(worldTransform);
 		}
 	}
+
+	mAnimOffset                     = offset;
+	mInstanceData.CurrentAnimOffset = mAnimOffset;
+	mInstanceData.NextAnimOffset    = mAnimOffset;
+	mInstanceData.BoneCount         = boneCount;
+
+	return offset;
 }

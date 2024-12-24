@@ -129,7 +129,8 @@ void JUIComponent::AddInstance(float InCameraDistance)
 								  texSrv,
 								  opacityTexSrv,
 								  mInstanceData.TextureIndex,
-								  mInstanceData.OpacityIndex);
+								  mInstanceData.OpacityIndex,
+								  GetHash());
 
 	if (mText)
 		mText->Draw();
@@ -187,13 +188,13 @@ void JUIComponent::ShowEditor()
 
 	if (ImGui::CollapsingHeader(u8("텍스트")))
 	{
-		static char rawString[256];
-		ImGui::InputText(u8("텍스트 슬롯"), rawString, 256);
-
+		static JText rawText;
+		// rawText = WString2String(text);
+		ImGui::InputText(u8("텍스트 슬롯"), &rawText);
 
 		if (mText)
 		{
-			mText->SetText(String2WString(rawString));
+			mText->SetText(String2WString(rawText));
 
 			FLinearColor color = mText->GetColor();
 			ImGui::ColorEdit4(u8("텍스트 색상"), &color.R);
@@ -206,7 +207,11 @@ void JUIComponent::ShowEditor()
 		}
 		if (!mText)
 		{
-			AddText(String2WString(rawString), mInstanceData.Position, 24.0f, FLinearColor::Black);
+			AddText(String2WString(rawText),
+					mInstanceData.Position,
+					mInstanceData.Size * 0.025,
+					24.0f,
+					FLinearColor::Black);
 		}
 
 
@@ -246,12 +251,13 @@ void JUIComponent::ShowEditor()
 	}
 }
 
-void JUIComponent::AddText(JWTextView InText, const FVector2& InPosition, const float InSize, const FLinearColor& InColor)
+void JUIComponent::AddText(JWTextView InText, const FVector2& InPosition, const FVector2& InRectSize, const float InSize,
+						   const FLinearColor& InColor)
 {
 	assert(mWidgetComponent);
 	auto newText = MakeUPtr<JFont>(mWidgetComponent->GetRenderTarget());
 	newText->SetText(InText.data());
-	// newText->SetNDCPosition(InPosition);
+	newText->SetNDCTextRect(InPosition, InRectSize);
 	newText->SetFontSize(InSize);
 	newText->SetColor(InColor);
 
@@ -385,6 +391,11 @@ JUIComponent* JWidgetComponent::GetClickedComponent(const FVector2& InMousePos, 
 	return nullptr;
 }
 
+uint32_t JWidgetComponent::GetComponentSize() const
+{
+	return mUIComponents.size();
+}
+
 void JWidgetComponent::AddUIComponent(JTextView InName)
 {
 	auto newUIComp = MakeUPtr<JUIComponent>(InName.data());
@@ -404,7 +415,7 @@ void MUIManager::PostInitialize(const JText& OriginalNameOrPath, const JText& Pa
 
 void MUIManager::PushCommand(FInstanceData_UI&         InInstanceData, ID3D11ShaderResourceView* InTex,
 							 ID3D11ShaderResourceView* InOpacityTex, _Out_ int32_t&              OutTexIndex,
-							 _Out_ int32_t&            OutOpacityTexIndex)
+							 _Out_ int32_t&            OutOpacityTexIndex, uint32_t              ID)
 {
 	mInstanceData.emplace_back(InInstanceData);
 	mTextureSRVs.emplace_back(InTex);
@@ -439,7 +450,6 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 	ID3D11Buffer* buffers[2] = {g_VertexBuffer.Get(), g_InstanceBuffer.Get()};
 	uint32_t      strides[2] = {g_VertexStride, g_InstanceStride};
 	uint32_t      offsets[2] = {0, 0};
-
 	InContext->IASetVertexBuffers(0,
 								  2,
 								  buffers,
@@ -455,6 +465,7 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 									0,
 									0,
 									0);
+
 
 	mInstanceData.clear();
 	mTextureSRVs.clear();
@@ -507,7 +518,8 @@ MUIManager::MUIManager()
 							g_IndexBuffer.GetAddressOf()
 						   );
 
-	mShader = MShaderManager::Get().UIShader;
+	mShader        = MShaderManager::Get().UIShader;
+	mPickingShader = MShaderManager::Get().UIElementShader;
 }
 
 MUIManager::~MUIManager() {}

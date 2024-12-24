@@ -5,6 +5,7 @@
 class GUI_Base
 {
 public:
+	GUI_Base();
 	GUI_Base(const JText& InTitle);
 	virtual ~GUI_Base() = default;
 

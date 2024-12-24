@@ -163,12 +163,7 @@ void JStaticMeshComponent::ShowEditor()
 {
 	JSceneComponent::ShowEditor();
 
-	if (/*mParentSceneComponent->GetObjectType() == NAME_OBJECT_SKELETAL_MESH_COMPONENT*/
-		auto* parentSkeletalMesh = dynamic_cast<JSkeletalMeshComponent*>(mParentSceneComponent))
-	{
-		ImGui::SeparatorText(u8("소켓"));
-
-	}
+	
 
 	ImGui::SeparatorText(u8("머티리얼 슬롯"));
 	for (int32_t i = 0; i < GetMaterialCount(); ++i)

@@ -27,7 +27,6 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
 	PixelIn_Base output;
 
-	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
 	float3 normal      = Input.Normal;
 
@@ -48,10 +47,10 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 
 float4 PS(PixelIn_Base Input) : SV_TARGET
 {
-	float3 baseColor = Input.Material.BaseColor.rgb;
-	float  roughness = Input.Material.Roughness;
+	// float3 baseColor = Input.Material.BaseColor.rgb;
+	// float  roughness = Input.Material.Roughness;
 	float  opacity   = 1.f;
-	baseColor        = float3(0.354167f, 0.02538f, 0.f);
+	// baseColor        = float3(0.354167f, 0.02538f, 0.f);
 
 	opacity = g_OpacityTexture.Sample(g_SamplerLinearWrap, Input.TexCoord).r;
 	opacity *= 1.f;
@@ -61,7 +60,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 		discard;
 	}
 	// 최종 색상: 베이스 컬러에 오파시티를 적용
-	float4 finalColor = float4(baseColor, opacity);
+	// float4 finalColor = float4(baseColor, opacity);
 
-	return finalColor;
+	return (1, 1, 1, 1);
 }

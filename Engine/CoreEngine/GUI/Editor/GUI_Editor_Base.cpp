@@ -6,6 +6,9 @@
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
 
+GUI_Editor_Base::GUI_Editor_Base()
+	: GUI_Base() {}
+
 GUI_Editor_Base::GUI_Editor_Base(const JText& InTitle)
 	: GUI_Base(InTitle),
 	  mDeltaTime(0)

@@ -6,15 +6,12 @@ class JSkeletalMeshObject : public JMeshObject
 public:
 	JSkeletalMeshObject() = default;
 	JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData = {});
-	JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JSkeletalMeshObject& Other);
 	~JSkeletalMeshObject() override = default;
 
 public:
-	UPtr<IManagedInterface> Clone() const override;
-
-protected:
-	void UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext);
+	UPtr<IManagedInterface>      Clone() const override;
+	[[nodiscard]] const FMatrix& GetAnimBoneMatrix(const JText& Text) const;
 
 public:
 	uint32_t GetType() const override;
@@ -28,26 +25,22 @@ public:
 	void AddInstance(float InCameraDistance) override;
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
-	void DrawBone();
 
 public:
-	void SetAnimation(JAnimationClip* InAnimation);
-	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex) override;
+	void SetAnimation(const JAnimationClip* InAnimation);
+
+	Ptr<JSkeletalMesh> GetSkeletalMesh() const { return mSkeletalMesh; }
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
-	Ptr<JSkeletalMesh>  mSkeletalMesh;
-	Buffer::FBufferBone mInstanceBuffer_Bone;
+	Ptr<JSkeletalMesh> mSkeletalMesh;
 
 	// -------------------------- Animation Data --------------------------
-	UPtr<JAnimationClip> mSampleAnimation;
+	UPtr<JAnimationClip> mCurrentAnimation;
 
-	// public:
-	// 	JMeshObject*              mLightMesh       = nullptr;
-	// 	constexpr static uint32_t mHand_r_Index    = 29;
-	// 	FVector                   mSocketOffsetLoc = {-24.950527, -10.713480, -8.060391};
-	// 	FVector                   mSocketOffsetRot = {-38.99271, 83.490776, -2.771158};
-	// 	FMatrix                   mSocketTransform;
+	bool  bTransitAnimation      = false;
+	float mTransitionElapsedTime = 0.0f;
+	float mTransitionDuration    = 1.0f;
 
 	friend class GUI_Editor_SkeletalMesh;
 	friend class MMeshManager;

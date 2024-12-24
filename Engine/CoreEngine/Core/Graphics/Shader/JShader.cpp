@@ -376,6 +376,11 @@ void JShader::LoadShaderReflectionData()
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		CheckResult(cBuffer->GetDesc(&bufferDesc));
 
+		if (bufferDesc.Type != D3D_CT_CBUFFER)
+		{
+			continue;
+		}
+
 		D3D11_SHADER_INPUT_BIND_DESC bindDesc;
 		CheckResult(pixelShaderReflection->GetResourceBindingDescByName(bufferDesc.Name, &bindDesc));
 

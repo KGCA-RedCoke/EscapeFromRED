@@ -109,7 +109,7 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return false;
 	}
-	
+
 	// Parent Material Path
 	JText parentMaterialPath;
 	Utils::Serialization::DeSerialize_Text(parentMaterialPath, InFileStream);
@@ -118,7 +118,7 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 		mParentMaterial = MMaterialManager::Get().Load(parentMaterialPath);
 		mShader         = mParentMaterial->GetShader();
 	}
-	
+
 	// Instance Params
 	int32_t paramCount;
 	int32_t rawDataCount;
@@ -131,36 +131,40 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return true;
 	}
-	
+
 	for (int32_t i = 0; i < paramCount; ++i)
 	{
 		uint32_t key;
 		uint32_t index;
 		Utils::Serialization::DeSerialize_Primitive(&key, sizeof(key), InFileStream);
 		Utils::Serialization::DeSerialize_Primitive(&index, sizeof(index), InFileStream);
-	
+
 		mMaterialParamToRawDataIndex[key] = index;
 	}
-	
+
 	mMaterialRawData.resize(rawDataCount);
 	Utils::Serialization::DeSerialize_Primitive(mMaterialRawData.data(),
 												rawDataCount * sizeof(float),
 												InFileStream);
-	
+
 	for (int32_t i = 0; i < textureCount; ++i)
 	{
 		JText textureName;
 		Utils::Serialization::DeSerialize_Text(textureName, InFileStream);
 		mTextureMap[i] = textureName == "None" ? nullptr : GetWorld.TextureManager->Load(textureName);
 	}
-	
-	
+
+
 	return true;
 }
 
 void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext) const
 {
 	mParentMaterial->BindShader(InDeviceContext);
+
+	mShader->UpdateConstantData(InDeviceContext,
+								"CMaterialBuffer",
+								GetMaterialData());
 
 	for (auto& textureMap : mTextureMap)
 	{

@@ -13,9 +13,10 @@
 #include "Core/Interface/JWorld.h"
 
 
-GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath, const JText& InClassName)
+GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath, JText InClassName)
 	: GUI_Editor_Base(InPath),
-	  mClassName(InClassName)
+	  mSelectedSceneComponent(nullptr),
+	  mClassName(std::move(InClassName))
 {
 	mActorToEdit = UPtrCast<AActor>(MClassFactory::Get().Create(mClassName));
 	assert(mActorToEdit);
@@ -29,6 +30,8 @@ GUI_Editor_Actor::GUI_Editor_Actor(const JText& InPath, const JText& InClassName
 		Utils::Serialization::DeSerialize(InPath.c_str(), mActorToEdit.get());
 	}
 
+	mActorToEdit->Initialize();
+
 	mViewport = MViewportManager::Get().Load(mTitle, 1280, 720);
 	assert(mViewport);
 
@@ -40,21 +43,37 @@ void GUI_Editor_Actor::ShowMenuBar()
 {
 	GUI_Editor_Base::ShowMenuBar();
 
-	if (ImGui::BeginMenu(u8("추가")))
+	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::MenuItem(u8("박스")/*, nullptr, false, mActorToEdit != nullptr*/))
+		if (ImGui::BeginMenu(u8("추가")))
 		{
-			if (mSelectedSceneComponent)
+			if (ImGui::MenuItem(u8("박스")/*, nullptr, false, mActorToEdit != nullptr*/))
 			{
-				JBoxComponent* box = mActorToEdit->CreateDefaultSubObject<JBoxComponent>("BoxComponent",
-						 mActorToEdit.get(),
-						 mActorToEdit.get());
-				box->SetupAttachment(mSelectedSceneComponent);
+				if (auto* sceneComp = dynamic_cast<JSceneComponent*>(mSelectedSceneComponent))
+				{
+					JBoxComponent* box = mActorToEdit->CreateDefaultSubObject<JBoxComponent>("BoxComponent",
+							 mActorToEdit.get(),
+							 mActorToEdit.get());
+					box->SetupAttachment(sceneComp);
+				}
 			}
-		}
-		ImGui::EndMenu();
+			ImGui::EndMenu();
 
+		}
+
+		if ((ImGui::BeginMenu(u8("파일"))))
+		{
+			if (ImGui::MenuItem(u8("저장")))
+			{
+				Utils::Serialization::Serialize(mTitle.c_str(), mActorToEdit.get());
+			}
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
 	}
+
+
 }
 
 void GUI_Editor_Actor::Initialize()
@@ -136,20 +155,25 @@ void GUI_Editor_Actor::DrawHierarchy()
 				{
 					bAddComponentListBox = false;
 
-					if (n == 3 && mSelectedSceneComponent)
+					if (auto* sceneComp = dynamic_cast<JSceneComponent*>(mSelectedSceneComponent))
 					{
-						auto* light = mActorToEdit->CreateDefaultSubObject<JLight_Point>(g_ComponentList[n],
-								 mActorToEdit.get(),
-								 mActorToEdit.get());
-						light->SetupAttachment(mSelectedSceneComponent);
+						if (n == 3)
+						{
+							auto* light = mActorToEdit->CreateDefaultSubObject<JLight_Point>(g_ComponentList[n],
+									 mActorToEdit.get(),
+									 mActorToEdit.get());
+							light->SetupAttachment(sceneComp);
+						}
+						if (n == 4)
+						{
+							auto* meshComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(g_ComponentList[n],
+									 mActorToEdit.get(),
+									 mActorToEdit.get());
+							meshComp->SetupAttachment(sceneComp);
+						}
 					}
-					if (n == 4 && mSelectedSceneComponent)
-					{
-						auto* meshComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(g_ComponentList[n],
-								 mActorToEdit.get(),
-								 mActorToEdit.get());
-						meshComp->SetupAttachment(mSelectedSceneComponent);
-					}
+
+
 				}
 
 				if (item_highlight && ImGui::IsItemHovered())
@@ -175,6 +199,20 @@ void GUI_Editor_Actor::DrawHierarchy()
 			ImGui::EndTable();
 		}
 	}
+
+	ImGui::Dummy(ImVec2(0, 50));
+
+	ImGui::SeparatorText("Actor Components");
+	for (const auto& comp : mActorToEdit->mActorComponents)
+	{
+		ImGui::Text("%s", comp->GetName().c_str());
+		if (ImGui::IsItemFocused() || ImGui::IsItemClicked())
+		{
+			mSelectedSceneComponent = comp.get();
+		}
+		ImGui::Separator();
+	}
+
 	ImGui::EndChild();
 }
 
@@ -209,7 +247,7 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 		}
-		if (ImGui::IsItemFocused() || ImGui::IsItemClicked())
+		if (ImGui::IsItemFocused() && ImGui::IsItemClicked())
 		{
 			mSelectedSceneComponent = InSceneComponent;
 		}

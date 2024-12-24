@@ -7,6 +7,27 @@
 
 uint32_t JCameraComponent::s_CameraNum = 0;
 
+bool FFrustum::Check(const FQuad& InQuad) const
+{
+	for (const auto& plane : FrustumPlanes)
+	{
+		const float planeToCenter =
+				plane.A * InQuad.Center.x +
+				plane.C * InQuad.Center.z +
+				plane.D;
+		
+		const float distance =
+				fabs(plane.A * InQuad.Extent.x) +
+				fabs(plane.C * InQuad.Extent.z);
+		
+		if (planeToCenter <= -distance)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 bool FFrustum::Check(const FVector& InPoint) const
 {
 	for (const auto& FrustumPlane : FrustumPlanes)
@@ -84,7 +105,7 @@ JCameraComponent::JCameraComponent()
 	  mAspect(0),
 	  mNearPlane(10.f),
 	  mFarPlane(100000.f),
-	  mRotationValue(0.01f),
+	  mRotationValue(XM_PI / 180.0f),
 	  mTranslationValue(500.f)
 {
 	mLocalLocation = mDefaultEye;
@@ -106,7 +127,7 @@ JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor,
 	  mDefaultEye(0, 500.f, -1500.f),
 	  mNearPlane(10.f),
 	  mFarPlane(100000.f),
-	  mRotationValue(0.01f),
+	  mRotationValue(XM_PI / 180.0),
 	  mTranslationValue(500.f)
 {
 	mLocalLocation = mDefaultEye;
@@ -466,7 +487,6 @@ void JCameraComponent::UpdateRotation(float DeltaTime)
 	mMouseDelta.y  = 0.f;
 	mRotVelocity.x = 0.f;
 	mRotVelocity.y = 0.f;
-
 }
 
 JCamera_Debug::JCamera_Debug()

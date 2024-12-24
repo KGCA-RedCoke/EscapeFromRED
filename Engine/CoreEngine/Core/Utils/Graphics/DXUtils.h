@@ -83,9 +83,10 @@ namespace Utils::DX
 		uint32_t             InDataSize,
 		uint32_t             InDataNum,
 		_Out_ ID3D11Buffer** OutBuffer,
-		D3D11_USAGE          InUsage      = D3D11_USAGE_DEFAULT,
-		UINT                 InAccessFlag = 0
-	);
+		D3D11_USAGE          InUsage               = D3D11_USAGE_DEFAULT,
+		UINT                 InAccessFlag          = 0,
+		UINT                 InMiscFlag            = 0,
+		UINT                 InStructureByteStride = 0);
 
 	/**
 	 * @brief 버퍼내용 일괄 업데이트 (Usage가 Dynamic이 아니여도 상관없다)

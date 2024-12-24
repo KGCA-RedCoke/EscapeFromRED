@@ -8,7 +8,7 @@ JPlayerCamera::JPlayerCamera(JTextView InName, ACharacter* InOwner, JSceneCompon
 	  mOwnerCharacter(InOwner)
 {
 	mNearPlane     = 1.f;
-	mFOV           = M_PI / 3.f;
+	mFOV           = M_PI / 4.f;
 	mLocalLocation = FVector{0, 161.6f, -9.8f};
 }
 
@@ -19,17 +19,7 @@ void JPlayerCamera::Tick(float DeltaTime)
 	UpdateRotation(DeltaTime);
 	UpdateVelocity(DeltaTime);
 
-	float yawDelta   = mRotVelocity.x;
-	float pitchDelta = mRotVelocity.y;
-
-	mYaw += yawDelta;
-	mPitch += pitchDelta;
-
-	// Pitch(위 아래)를 제한
-	mPitch = max(-XM_PI / 2.0f, mPitch);
-	mPitch = min(+XM_PI / 1.5f, mPitch);
-
-	XMMATRIX mCameraRot = XMMatrixRotationRollPitchYaw(mPitch, mYaw, 0);
+	XMMATRIX mCameraRot = XMMatrixRotationRollPitchYaw(mOwnerCharacter->GetPitch(), mOwnerCharacter->GetYaw(), 0);
 	mCameraUp           = XMVector3TransformCoord(M_UpVector, mCameraRot);
 	mCameraAhead        = XMVector3TransformCoord(M_ForwardVector, mCameraRot);
 	mCameraRight        = XMVector3TransformCoord(M_RightVector, mCameraRot);
@@ -46,15 +36,15 @@ void JPlayerCamera::Tick(float DeltaTime)
 
 void JPlayerCamera::UpdateRotation(float DeltaTime)
 {
-	JCameraComponent::UpdateRotation(DeltaTime);
-
-	float fPercentOfNew = 1.0f / 2.f;
-	float fPercentOfOld = 1.0f - fPercentOfNew;
-	mMouseDelta.x       = mMouseDelta.x * fPercentOfOld + mOwnerCharacter->GetMouseDelta().x * fPercentOfNew;
-	mMouseDelta.y       = mMouseDelta.y * fPercentOfOld + mOwnerCharacter->GetMouseDelta().y * fPercentOfNew;
-
-	mRotVelocity.x = mMouseDelta.x * mRotationValue;
-	mRotVelocity.y = mMouseDelta.y * mRotationValue;
+	// JCameraComponent::UpdateRotation(DeltaTime);
+	//
+	// float fPercentOfNew = 1.0f / 2.f;
+	// float fPercentOfOld = 1.0f - fPercentOfNew;
+	// mMouseDelta.x       = mMouseDelta.x * fPercentOfOld + mOwnerCharacter->GetMouseDelta().x * fPercentOfNew;
+	// mMouseDelta.y       = mMouseDelta.y * fPercentOfOld + mOwnerCharacter->GetMouseDelta().y * fPercentOfNew;
+	//
+	// mRotVelocity.x = mMouseDelta.x * mRotationValue;
+	// mRotVelocity.y = mMouseDelta.y * mRotationValue;
 
 }
 

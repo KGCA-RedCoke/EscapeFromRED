@@ -3,7 +3,15 @@
 
 class MMaterialInstanceManager : public Manager_Base<JMaterialInstance, MMaterialInstanceManager>
 {
-	void PostInitialize(const JText& OriginalNameOrPath, const JText& ParsedName, const uint32_t NameHash, void* Entity) override;
+public:
+	void PostInitialize(const JText& OriginalNameOrPath, const JText& ParsedName, const uint32_t NameHash,
+						void*        Entity) override;
+	void UpdateMaterialInstance(const JMaterialInstance* InMaterialInstance);
+
+public:
+	JHash<JMaterial*, ComPtr<ID3D11Buffer>>             mBufferList;
+	JHash<JMaterial*, ComPtr<ID3D11ShaderResourceView>> mSRVList;
+
 public:
 #pragma region Singleton Boilerplate
 

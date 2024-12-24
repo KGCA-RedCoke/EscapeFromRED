@@ -23,19 +23,104 @@ float4 Mask_RGB(float InColor)
 	return float4(InColor, InColor, InColor, 1);
 };
 
+float dotfloat4(float4 a, float4 b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+float4 slerp(float4 v0, float4 v1, float t)
+{
+	// Compute the cosine of the angle between the two vectors.
+	float dot = dotfloat4(v0, v1);
+
+	const float DOT_THRESHOLD = 0.9995;
+	if (abs(dot) > DOT_THRESHOLD)
+	{
+		// If the inputs are too close for comfort, linearly interpolate
+		// and normalize the result.
+		float4 result = v0 + t * (v1 - v0);
+		normalize(result);
+		return result;
+	}
+
+	// If the dot product is negative, the quaternions
+	// have opposite handed-ness and slerp won't take
+	// the shorter path. Fix by reversing one quaternion.
+	if (dot < 0.0f)
+	{
+		v1  = -v1;
+		dot = -dot;
+	}
+
+	clamp(dot, -1, 1); // Robustness: Stay within domain of acos()
+	float theta_0 = acos(dot); // theta_0 = angle between input vectors
+	float theta   = theta_0 * t; // theta = angle between v0 and result 
+
+	float4 v2 = v1 - v0 * dot;
+	normalize(v2); // { v0, v2 } is now an orthonormal basis
+
+	return v0 * cos(theta) + v2 * sin(theta);
+}
+
+// https://blog.demofox.org/2016/02/19/normalized-vector-interpolation-tldr/
+float3 slerp(float3 start, float3 end, float percent)
+{
+	// Dot product - the cosine of the angle between 2 vectors.
+	float slerpDot = dot(start, end);
+	// Clamp it to be in the range of Acos()
+	// This may be unnecessary, but floating point
+	// precision can be a fickle mistress.
+	slerpDot = clamp(slerpDot, -1.0, 1.0);
+	// Acos(dot) returns the angle between start and end,
+	// And multiplying that by percent returns the angle between
+	// start and the final result.
+	float  theta       = acos(slerpDot) * percent;
+	float3 RelativeVec = normalize(end - start * slerpDot); // Orthonormal basis
+	// The final result.
+	return ((start * cos(theta)) + (RelativeVec * sin(theta)));
+}
+
+StructuredBuffer<float4> g_BoneTransforms : register(t10);
+
 /**
  * 버퍼로부터 본의 변환 행렬을 가져온다.
  */
-float4x4 FetchBoneTransform(uint Bone, StructuredBuffer<float4> BoneTransforms)
+float4x4 FetchBoneTransform(uint Bone)
 {
 	Bone *= 4;	// 4x4 행렬이므로 4를 곱해준다.
-	float4 row1 = BoneTransforms.Load(Bone + 0);	// 4x4 행렬의 첫번째 행
-	float4 row2 = BoneTransforms.Load(Bone + 1);	// 4x4 행렬의 두번째 행
-	float4 row3 = BoneTransforms.Load(Bone + 2);	// 4x4 행렬의 세번째 행
-	float4 row4 = BoneTransforms.Load(Bone + 3);	// 4x4 행렬의 네번째 행
+	float4 row1 = g_BoneTransforms.Load(Bone + 0);	// 4x4 행렬의 첫번째 행
+	float4 row2 = g_BoneTransforms.Load(Bone + 1);	// 4x4 행렬의 두번째 행
+	float4 row3 = g_BoneTransforms.Load(Bone + 2);	// 4x4 행렬의 세번째 행
+	float4 row4 = g_BoneTransforms.Load(Bone + 3);	// 4x4 행렬의 네번째 행
 
 	float4x4 Matrix = float4x4(row1, row2, row3, row4);	// 4x4 행렬 생성
 	return Matrix;
+}
+
+float4x4 LerpAnimBoneMatrix(uint  BoneCount, uint Offset, uint NextOffset, uint CurrentFrame, uint NextFrame,
+							float DeltaTime,
+							uint  BoneIndex, float BlendWeight)
+{
+	const uint currentFrameIndex = Offset / 4 + CurrentFrame * BoneCount + BoneIndex;
+	const uint nextFrameIndex    = Offset / 4 + (CurrentFrame + 1) * BoneCount + BoneIndex;
+
+	// 현재 애니메이션의 행렬
+	float4x4 currentMatrix = FetchBoneTransform(currentFrameIndex);
+
+	// 다음 애니메이션의 행렬
+	float4x4 nextMatrix = FetchBoneTransform(nextFrameIndex);
+
+	// 현재 프레임과 다음 프레임 사이 보간
+	float4x4 lerpedMatrix = lerp(currentMatrix, nextMatrix, DeltaTime);
+
+	if (Offset == NextOffset)
+	{
+		return lerpedMatrix;
+	}
+
+	// 애니메이션 블렌딩
+	float4x4 nextAnimMatrix = FetchBoneTransform(NextOffset / 4 + NextFrame * BoneCount + BoneIndex);
+	return lerp(lerpedMatrix, nextAnimMatrix, BlendWeight);
 }
 
 /**
@@ -147,7 +232,7 @@ float2 ParallaxOcclusionMapping(
 	int    minSteps,
 	int    maxSteps,
 	float  heightMapChannel // R: 0, G: 1, B: 2
-	)
+)
 {
 	/// TBN 공간에서의 뷰 벡터를 기반으로 UV 이동 방향 계산
 	float2 parallaxDir = normalize(viewDir.xy) * heightRatio;

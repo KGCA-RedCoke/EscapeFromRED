@@ -7,6 +7,7 @@
 
 
 AActor::AActor()
+	: mParentActor(nullptr)
 {
 	mObjectType = NAME_OBJECT_ACTOR;
 }
@@ -19,7 +20,8 @@ AActor::AActor(JTextView InName)
 }
 
 AActor::AActor(const AActor& Copy)
-	: JSceneComponent(Copy)
+	: JSceneComponent(Copy),
+	  mParentActor(Copy.mParentActor)
 {}
 
 void AActor::Initialize()
@@ -36,7 +38,7 @@ void AActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 
-	for (auto& actorComponent : mActorComponents)
+	for (const auto& actorComponent : mActorComponents)
 	{
 		actorComponent->Tick(DeltaTime);
 	}

@@ -2,7 +2,6 @@
 
 #include "MGUIManager.h"
 #include "Core/Entity/Level/MLevelManager.h"
-#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
@@ -10,6 +9,7 @@
 #include "Core/Utils/Math/MathUtility.h"
 #include "Editor/GUI_Editor_Material.h"
 #include "Editor/Actor/GUI_Editor_Actor.h"
+#include "Editor/Animation/GUI_Editor_Animator.h"
 #include "Editor/Mesh/GUI_Editor_Mesh.h"
 #include "Editor/Mesh/GUI_Editor_SkeletalMesh.h"
 #include "Editor/UI/GUI_Editor_UI.h"
@@ -55,6 +55,7 @@ void GUI_AssetBrowser::Initialize()
 	g_IconList.WidgetIcon       = MTextureManager::Get().Load(L"rsc/Icons/Actor/WidgetBlueprint_64x.png");
 	g_IconList.SoundIcon        = MTextureManager::Get().Load(L"rsc/Icons/Actor/SoundCue_64x.png");
 	g_IconList.AnimationIcon    = MTextureManager::Get().Load(L"rsc/Icons/Actor/AnimSequence_64.png");
+	g_IconList.AnimatorIcon     = MTextureManager::Get().Load(L"rsc/Icons/Actor/AnimInstance_64.png");
 
 	SetMultiFlagOptions();
 }
@@ -179,7 +180,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 									mFilteredItems.size() // [option] 아직 잘 모르겠다...
 								   );
 
-	// Use custom selection adapter: store ID in selection (recommended)
+	// Use custom selection adapter: store PinID in selection (recommended)
 	mSelection.UserData                = this;
 	mSelection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx){
 		GUI_AssetBrowser* self = static_cast<GUI_AssetBrowser*>(self_->UserData);
@@ -249,17 +250,20 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 				{
 					mNewFileName    = GenerateUniqueFileName(newRelativePath, "NewActor", ".jasset");
 					bOpenActorPopup = true;
-					// TODO: 액터 에디터 열기
-					// if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Actor>(newFileName))
-					// {
-					// 	ptr->OpenIfNotOpened();
-					// 	OnBrowserChange.Execute();
-					// }
 				}
 				if (ImGui::MenuItem(u8("머티리얼 생성")))
 				{
 					newFileName = GenerateUniqueFileName(newRelativePath, "NewMaterial", ".jasset");
 					if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Material>(newFileName))
+					{
+						ptr->OpenIfNotOpened();
+						OnBrowserChange.Execute();
+					}
+				}
+				if (ImGui::MenuItem(u8("애니메이터 생성")))
+				{
+					newFileName = GenerateUniqueFileName(newRelativePath, "NewAnimator", ".jasset");
+					if (auto ptr = MGUIManager::Get().Load<GUI_Editor_Animator>(newFileName))
 					{
 						ptr->OpenIfNotOpened();
 						OnBrowserChange.Execute();

@@ -41,7 +41,11 @@ namespace JMath
 			w = _w;
 		}
 
-		explicit TVector4(_In_reads_(4) const float* pArray) {}
+		explicit TVector4(_In_reads_(4) const float* pArray)
+			: XMFLOAT4(pArray)
+		{
+			
+		}
 		TVector4(XMFLOAT4 V);
 		TVector4(const XMFLOAT4& V);
 		explicit TVector4(const XMVECTORF32& F);

@@ -4,6 +4,7 @@
 class GUI_Editor_Base : public GUI_Base
 {
 public:
+	GUI_Editor_Base();
 	GUI_Editor_Base(const JText& InTitle);
 	~GUI_Editor_Base() override = default;
 

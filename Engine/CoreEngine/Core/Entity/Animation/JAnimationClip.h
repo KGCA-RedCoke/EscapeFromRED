@@ -4,6 +4,8 @@
 #include "Core/Utils/FileIO/JSerialization.h"
 #include "Core/Utils/Math/TMatrix.h"
 
+class JSkeletalMeshObject;
+class JSkeletalMeshComponent;
 namespace Utils::Fbx
 {
 	class FbxFile;
@@ -39,6 +41,22 @@ bool FindDeltaKey(const JAnimKeyList<T>& InKeys, const float InTime, JAnimKey<T>
 	}
 
 	return false;
+}
+
+inline void FindFrame(const JAnimKeyList<FVector>& InKeys,
+					  const float                  InTime,
+					  int32_t&                     OutStartTrack,
+					  int32_t&                     OutEndTrack)
+{
+	for (int32_t i = 0; i < InKeys.size(); ++i)
+	{
+		if (InKeys[i].Time >= InTime)
+		{
+			OutEndTrack = i;
+			return;
+		}
+		OutStartTrack = i;
+	}
 }
 
 /**
@@ -79,7 +97,8 @@ class JAnimationClip : public JAsset, public IManagedInterface
 {
 public:
 	JAnimationClip() = default;
-	JAnimationClip(JTextView InName);
+	JAnimationClip(JTextView InName, const Ptr<JSkeletalMesh>& InSkeletalMesh = nullptr);
+	JAnimationClip(JTextView InName, const JSkeletalMeshComponent* InSkeletalMesh);
 	JAnimationClip(const JAnimationClip& InOther);
 	~JAnimationClip() override = default;
 
@@ -88,6 +107,7 @@ public:
 	uint32_t                GetHash() const override;
 
 public:
+	JText    GetName() const { return mName; }
 	uint32_t GetType() const override { return HASH_ASSET_TYPE_ANIMATION_CLIP; }
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
@@ -110,18 +130,28 @@ public:
 	[[nodiscard]] FMatrix FetchInterpolateBone(const int32_t  InBoneIndex,
 											   const FMatrix& InParentBoneMatrix,
 											   const float    InAnimElapsedTime) const;
+	FMatrix GetInterpolatedBone(const JText& InBoneName);
+	void    UpdateInstanceData(const float InAnimElapsedTime);
 
 public:
 	[[nodiscard]] FORCEINLINE float GetStartTime() const { return mStartTime; }
 	[[nodiscard]] FORCEINLINE float GetEndTime() const { return mEndTime; }
 	[[nodiscard]] FORCEINLINE float GetSourceSamplingInterval() const { return mSourceSamplingInterval; }
+	[[nodiscard]] FORCEINLINE float GetAnimationSpeed() const { return mAnimationSpeed; }
 	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
-	[[nodiscard]] FORCEINLINE const JArray<FMatrix>& GetAnimPoses() { return mAnimationPose; }
 
 	void SetSkeletalMesh(const Ptr<class JSkeletalMesh>& InSkeletalMesh);
 
-private:
-	void GenerateAnimationTexture(_Out_ JArray<FVector4>& OutTextureData);
+	void SetAnimationSpeed(const float InSpeed) { mAnimationSpeed = InSpeed; }
+
+	[[nodiscard]] JSkeletalMesh* GetSkeletalMesh() const
+	{
+		return mSkeletalMesh.expired() ? nullptr : mSkeletalMesh.lock().get();
+	}
+
+	[[nodiscard]] const FSkeletalMeshInstanceData& GetInstanceData() const { return mInstanceData; }
+
+	uint32_t GenerateAnimationTexture(_Out_ JArray<FVector4>& OutTextureData);
 
 protected:
 	// ------------ Properties ------------
@@ -148,8 +178,11 @@ protected:
 	WPtr<JSkeletalMesh> mSkeletalMesh;	// 스켈레탈 메쉬
 
 	// ------------ Animation Data ------------
-	JArray<Ptr<JAnimBoneTrack>> mTracks;		// 본별로 트랙을 가지고 있는 배열
-	JArray<FMatrix>             mAnimationPose;	// 애니메이션 포즈
+	JArray<Ptr<JAnimBoneTrack>>   mTracks;		// 본별로 트랙을 가지고 있는 배열
+	JHash<JText, JArray<FMatrix>> mBoneMatrix;	// 본별로 행렬을 가지고 있는 해시맵
+	FSkeletalMeshInstanceData     mInstanceData;	// 애니메이션 인스턴스 데이터
+
+	uint32_t mAnimOffset = 0;	// 애니메이션 텍스쳐 오프셋
 
 	bool bInterpolate = false;
 

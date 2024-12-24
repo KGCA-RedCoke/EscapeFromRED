@@ -175,8 +175,21 @@ void GUI_Editor_Material::HandleFloat2Type(const FMaterialParam& Param)
 			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
 		}
 	}
+}
 
+void GUI_Editor_Material::HandleFloat3Type(const FMaterialParam& Param)
+{
+	if (float* instanceValue = static_cast<float*>(mMaterialToEdit->GetInstanceParam(Param.Key)))
+	{
+		FVector cachedValue = FVector{instanceValue[0], instanceValue[1], instanceValue[2]};
 
+		ImGui::DragFloat3(Param.Name.c_str(), instanceValue, 0.01f, 0.f, 1.f);
+
+		if (cachedValue != FVector{instanceValue[0], instanceValue[1], instanceValue[2]})
+		{
+			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
+		}
+	}
 }
 
 void GUI_Editor_Material::HandleFloat4Type(const FMaterialParam& Param) const
@@ -190,30 +203,8 @@ void GUI_Editor_Material::HandleFloat4Type(const FMaterialParam& Param) const
 		if (cachedValue != FVector4{instanceValue[0], instanceValue[1], instanceValue[2], instanceValue[3]})
 		{
 			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
-			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
 		}
 	}
-
-	// const FVector4 cachedColor = Param.Float4Value;
-	// float          color[4];
-	//
-	// ImGui::DragFloat4(Param.Name.c_str(), &Param.Float4Value.x, 0.01f, 0.f, 1.f);
-	// color[0] = Param.Float4Value.x;
-	// color[1] = Param.Float4Value.y;
-	// color[2] = Param.Float4Value.z;
-	// color[3] = Param.Float4Value.w;
-	// ImGui::SameLine();
-	//
-	// ImGui::ColorEdit4(Param.Name.c_str(),
-	// 				  reinterpret_cast<float*>(&color),
-	// 				  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-	// Param.Float4Value = FVector4{color[0], color[1], color[2], color[3]};
-	//
-	//
-	// if (cachedColor != Param.Float4Value)
-	// {
-	// 	mMaterialToEdit->EditInstanceParam(Param.Name, Param);
-	// }
 }
 
 

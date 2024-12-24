@@ -1,21 +1,104 @@
 ﻿#pragma once
-#include "Core/Utils/Math/Vector.h"
+#include "Core/Utils/Math/Vector4.h"
 
+enum class ETraceType : uint8_t
+{
+	Pawn,
+	BlockingVolume,
+	Ground,
+	Projectile,
+	Max
+};
+
+enum class ECollisionType
+{
+	None,
+	Quad,
+	Plane,
+	Ray,
+	Box,
+	Sphere,
+	Capsule
+};
+
+class ICollision;
+
+struct FHitResult
+{
+	ICollision* SrcCollision;
+	ICollision* DstCollision;
+
+	FVector HitLocation;
+	FVector HitNormal;
+	float   Distance;
+};
+
+
+DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, const FHitResult&);
+
+DECLARE_DYNAMIC_DELEGATE(FOnComponentOverlap, const FHitResult&);
+
+DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, const FHitResult&);
+
+class ICollision
+{
+public:
+	FOnComponentBeginOverlap OnComponentBeginOverlap;
+	FOnComponentOverlap      OnComponentOverlap;
+	FOnComponentEndOverlap   OnComponentEndOverlap;
+
+public:
+	virtual uint32_t       GetCollisionID() = 0;
+	virtual ETraceType     GetTraceType() const = 0;
+	virtual ECollisionType GetType() const = 0;
+	virtual bool           Intersect(const ICollision& InOther) const = 0;
+};
 
 class JMeshObject;
 
-struct FRay
+struct FRay : public ICollision
 {
 	FVector Origin;		// 광선의 시작점
 	FVector Direction;	// 광선의 방향
+
+	uint32_t       GetCollisionID() override;
+	ETraceType     GetTraceType() const override;
+	ECollisionType GetType() const override;
+	bool           Intersect(const ICollision& InOther) const override;
 };
 
-struct FPlane
+struct FQuad : public ICollision
+{
+	FVector Center;	// 사각형의 중심
+	FVector Extent;	// 사각형의 반지름
+
+	FQuad() = default;
+
+	FQuad(FVector InCenter, FVector InExtent)
+		: Center(InCenter),
+		  Extent(InExtent)
+	{}
+
+	uint32_t       GetCollisionID() override;
+	ETraceType     GetTraceType() const override;
+	ECollisionType GetType() const override;
+	bool           Intersect(const ICollision& InOther) const override;
+
+	bool Contains(const FVector& InPoint) const;
+	void DrawDebug() const;
+};
+
+struct FPlane : public ICollision
 {
 	FVector Normal;		// 평면의 법선 벡터
 	float   Distance;	// 원점으로부터 평면까지의 거리
 
 	float A, B, C, D;	// Ax + By + Cz + D = 0 (평면의 방정식)
+
+	uint32_t       GetCollisionID() override;
+	ETraceType     GetTraceType() const override;
+	ECollisionType GetType() const override;
+	bool           Intersect(const ICollision& InOther) const override;
 
 	void CreatePlane(FVector InNormal, FVector InPoint);
 	void CreatePlane(FVector InPoint0, FVector InPoint1, FVector InPoint2);
@@ -37,6 +120,12 @@ struct FBox
 		  Extent(InExtent)
 	{}
 
+	/*
+	uint32_t       GetCollisionID() override;
+	ETraceType     GetTraceType() const override;
+	ECollisionType GetType() const override;
+	bool           Intersect(const ICollision& InOther) const override;*/
+
 	bool Contains(const FVector& InPoint) const;
 };
 
@@ -50,6 +139,7 @@ struct FBoxShape
 	FVector Max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	void DrawDebug() const;
+
 
 	bool Intersect(const FBoxShape& InBox) const;
 	bool IntersectOBB(const FBoxShape& InBox) const;
@@ -115,29 +205,3 @@ static bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,   /
 							const FVector& BoxCenter, const FVector  BoxAxis[3], const FVector& BoxExtent, // OBB 정보
 							FVector&       OutHitPoint // 충돌 지점
 );
-
-// class JShape : public JSceneComponent
-// {
-// public:
-// 	void CreateOBBBox(const FVector& InCenter, const FVector& InExtent, const FVector InAxisX, const FVector InAxisY,
-// 					  const FVector  InAxisZ);
-// 	void CreateAABBBox(const FVector& InMin, const FVector& InMax);
-//
-// 	virtual void GenCollisionData() = 0;
-// };
-//
-// class JBoxComponent : public JShape
-// {
-// public:
-// 	void Initialize() override;
-// 	void Tick(float DeltaTime) override;
-//
-// public:
-// 	void SetExtent(const FVector& InExtent) { mBoxShape.Box.Extent = InExtent; }
-// 	void SetCenter(const FVector& InCenter) { mBoxShape.Box.Center = InCenter; }
-//
-// 	[[nodiscard]] const FBoxShape& GetBoxShape() const { return mBoxShape; }
-//
-// private:
-// 	FBoxShape mBoxShape;
-// };

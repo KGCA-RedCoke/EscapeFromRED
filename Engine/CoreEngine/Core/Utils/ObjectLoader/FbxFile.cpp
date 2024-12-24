@@ -271,8 +271,6 @@ namespace Utils::Fbx
 				}
 			}
 		}
-
-
 		return true;
 	}
 

@@ -60,7 +60,7 @@ public:
 	class MLevelManager*            LevelManager;			// 레벨
 	class MSoundManager*            SoundManager;			// 사운드
 	class MUIManager*               UIManager;				// UI
-	class MAnimataionManager*       AnimationManager;		// 애니메이션
+	class MAnimManager*             AnimationManager;		// 애니메이션
 	class XD3DDevice*               D3D11API;				// 디바이스
 
 

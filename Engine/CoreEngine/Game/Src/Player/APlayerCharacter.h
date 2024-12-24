@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
 
-// #define GET_PLAYER APlayerCharacter::Get()
+class JStaticMeshComponent;
 
-class APlayerCharacter : public ACharacter/*, public TSingleton<APlayerCharacter>*/
+class APlayerCharacter : public ACharacter
 {
 public:
 	APlayerCharacter();
@@ -16,22 +16,21 @@ public:
 
 private:
 	void SetupInputComponent() override;
+	void UpdateRotation();
 	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
 	void CheckGround();
 
+private:
+	class JCameraComponent* mFPSCamera;
+	JStaticMeshComponent*   mLightMesh;
 
-// #pragma region Singleton Boilerplate
-//
-// private:
-// 	friend class TSingleton<APlayerCharacter>;
-//
-// 	APlayerCharacter()           = default;
-// 	~APlayerCharacter() override = default;
-//
-// public:
-// 	APlayerCharacter(const APlayerCharacter&)            = delete;
-// 	APlayerCharacter& operator=(const APlayerCharacter&) = delete;
-//
-// #pragma endregion
+	FVector2 mMouseDelta;
+	FVector2 mRotVelocity;
+
+	JArray<class JAnimationClip*> mAnimList;
+	uint32_t                      mCurrentAnimIndex = 0;
+	bool                          bMove             = false;
 
 };
+
+REGISTER_CLASS_TYPE(APlayerCharacter);

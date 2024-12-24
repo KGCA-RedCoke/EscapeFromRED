@@ -6,9 +6,9 @@ JActorComponent::JActorComponent()
 	mObjectType = NAME_OBJECT_ACTOR_COMPONENT;
 }
 
-JActorComponent::JActorComponent(JTextView InName)
+JActorComponent::JActorComponent(JTextView InName, AActor* InOwnerActor)
 	: JObject(InName),
-	  mOwnerActor(nullptr)
+	  mOwnerActor(InOwnerActor)
 {
 	mObjectType = NAME_OBJECT_ACTOR_COMPONENT;
 }
@@ -21,8 +21,7 @@ JActorComponent::JActorComponent(const JActorComponent& Copy)
 	mOwnerActor = nullptr;
 }
 
-JActorComponent::~JActorComponent()
-{}
+JActorComponent::~JActorComponent() = default;
 
 bool JActorComponent::Serialize_Implement(std::ofstream& FileStream)
 {
@@ -83,4 +82,9 @@ void JActorComponent::Tick(float DeltaTime)
 void JActorComponent::Destroy()
 {
 	JObject::Destroy();
+}
+
+void JActorComponent::ShowEditor()
+{
+	
 }

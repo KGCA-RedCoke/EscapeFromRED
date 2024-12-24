@@ -76,8 +76,9 @@ void Application::Initialize()
 	mFpsText = MakeUPtr<JFont>(nullptr);
 	mFpsText->Initialize();
 	mFpsText->SetFontSize(36);
+	mFpsText->SetTextRect({50, 50}, {100, 100});
 	mFpsText->SetColor(FLinearColor::Gallary);
-	mFpsText->SetScreenPosition({5, 5});
+	// mFpsText->SetScreenPosition({5, 5});
 }
 
 void Application::Run()

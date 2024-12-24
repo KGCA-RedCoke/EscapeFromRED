@@ -16,9 +16,6 @@ JMeshObject::JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>&
 	mPrimitiveMeshData = InData;
 }
 
-JMeshObject::JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>& InData)
-	: JMeshObject(WString2String(InAssetPath), InData) {}
-
 JMeshObject::JMeshObject(const JMeshObject& Other)
 	: mName(Other.mName),
 	  mGeometryBuffer(Other.mGeometryBuffer),
@@ -136,44 +133,43 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return;
 	}
-
-	// 이전에 바인딩된 Delegate 해제
-	if (mDelegateIDs.contains(InIndex))
-	{
-		InMaterialInstance->OnMaterialInstanceParamChanged.UnBind(mDelegateIDs[InIndex]);
-		mDelegateIDs.erase(InIndex);
-	}
-
-	const size_t delegateID = InMaterialInstance->OnMaterialInstanceParamChanged.Bind([InMaterialInstance, InIndex, this]{
-		if (InMaterialInstance)
-		{
-			const int32_t size = InMaterialInstance->GetMaterialSize();
-
-			if (size > 0)
-			{
-				memcpy_s(&mInstanceData[InIndex].MaterialData,
-						 InMaterialInstance->GetMaterialSize(),
-						 InMaterialInstance->GetMaterialData(),
-						 size);
-
-			}
-		}
-	});
-
-	// ID 저장
-	mDelegateIDs[InIndex] = delegateID;
-
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
-	const int32_t size = InMaterialInstance->GetMaterialSize();
+	// // 이전에 바인딩된 Delegate 해제
+	// if (mDelegateIDs.contains(InIndex))
+	// {
+	// 	InMaterialInstance->OnMaterialInstanceParamChanged.UnBind(mDelegateIDs[InIndex]);
+	// 	mDelegateIDs.erase(InIndex);
+	// }
 
-	if (size > 0)
-	{
-		memcpy_s(&mInstanceData[InIndex].MaterialData,
-				 InMaterialInstance->GetMaterialSize(),
-				 InMaterialInstance->GetMaterialData(),
-				 size);
-	}
+	// const size_t delegateID = InMaterialInstance->OnMaterialInstanceParamChanged.Bind([InMaterialInstance, InIndex, this]{
+	// 	if (InMaterialInstance)
+	// 	{
+	// 		const int32_t size = InMaterialInstance->GetMaterialSize();
+	//
+	// 		if (size > 0)
+	// 		{
+	// 			memcpy_s(&mInstanceData[InIndex].MaterialData,
+	// 					 InMaterialInstance->GetMaterialSize(),
+	// 					 InMaterialInstance->GetMaterialData(),
+	// 					 size);
+	//
+	// 		}
+	// 	}
+	// });
+
+	// ID 저장
+	// mDelegateIDs[InIndex] = delegateID;
+
+	// const int32_t size = InMaterialInstance->GetMaterialSize();
+
+	// if (size > 0)
+	// {
+	// 	memcpy_s(&mInstanceData[InIndex].MaterialData,
+	// 			 InMaterialInstance->GetMaterialSize(),
+	// 			 InMaterialInstance->GetMaterialData(),
+	// 			 size);
+	// }
 }
 
 int32_t JMeshObject::GetMaterialCount() const

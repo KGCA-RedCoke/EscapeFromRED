@@ -2,7 +2,7 @@
 #include "JMeshObject.h"
 #include "Core/Manager/Manager_Base.h"
 
-#define MAX_INSTANCE 1000
+#define MAX_INSTANCE 1024
 
 class MMeshManager : public Manager_Base<class JMeshObject, MMeshManager>
 {
@@ -11,16 +11,17 @@ public:
 						void*        Entity) override;
 	void CreateBuffers(JMeshObject* MeshObject);
 
-	void GenGeometryBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
-	void GenBoneBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
+	void GenBuffer(ID3D11Device* InDevice, JMeshObject* MeshObject);
 
-	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, FInstanceData_Mesh& InInstanceData);
+	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, FInstanceData_Mesh& InInstanceData,
+					 ID3D11ShaderResourceView** InAnimTexture = nullptr);
+
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:
 	JHash<uint32_t, Buffer::FBufferMesh>                                   mBufferList;
-	JHash<uint32_t, JMaterialInstance*>                                    mMaterialInstance;
-	JHash<uint32_t, JHash<JMaterialInstance*, JArray<FInstanceData_Mesh>>> mInstanceData;
+	JHash<uint32_t, JHash<JMaterialInstance*, JArray<FInstanceData_Mesh>>> mInstanceData_Mesh;
+	JHash<uint32_t, ID3D11ShaderResourceView**>                            mInstanceData_Skeletal;
 
 
 #pragma region Singleton Boilerplate

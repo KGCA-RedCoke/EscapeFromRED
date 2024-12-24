@@ -288,18 +288,22 @@ namespace Buffer
 	struct FBufferInstance
 	{
 		ComPtr<ID3D11Buffer> Buffer_Instance;	// 인스턴싱 버퍼
+		ComPtr<ID3D11Buffer> Buffer_Bone;		// 본 버퍼
 	};
 
 	struct FBufferMesh
 	{
 		FBufferGeometry Geometry;
-		FBufferBone     Bone;
 		FBufferInstance Instance;
 
 		int32_t IndexCount = 0;
 	};
 
 }
+
+#define SLOT_MATERIAL 9
+#define SLOT_SKINNING 10
+
 
 // 인스턴싱 버퍼 구조체
 struct FInstanceData
@@ -308,33 +312,26 @@ struct FInstanceData
 	alignas(16) FMatrix WorldInverseTranspose = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 역행렬
 };
 
-struct FMaterialInstanceData_Basic
+struct FSkeletalMeshInstanceData
 {
-	FVector  BaseColor = FVector(0.2f, 0.2f, 0.2f);
-	float    AO        = 0.1f;
-	float    Roughness = 0.0f;
-	float    Metallic  = 0.04f;
-	float    Emissive  = 0.1f;
-	float    Specular  = 0.5f;
-	float    Opacity   = 1.f;
-	uint32_t Flag      = 0;
+	uint32_t CurrentAnimOffset = 0;	// 애니메이션 오프셋
+	uint32_t NextAnimOffset    = 0;	// 다음 애니메이션 오프셋
+	uint32_t CurrentAnimIndex  = 0;	// 애니메이션 인덱스
+	uint32_t NextAnimIndex     = 0;	// 다음 애니메이션 인덱스
+
+	float BoneCount   = 0;	// 본 갯수
+	float DeltaTime   = 0;	// 보간 시간
+	float BlendWeight = 0;	// 애니메이션 전환 여부
+	float Padding     = 0;	// 패딩
 };
 
 struct FInstanceData_Mesh
 {
-	FInstanceData Transform;	// 각 인스턴스 별로 다른 월드 행렬
-	uint32_t      Flags = (1 << 10);
-	float         MaterialData[256];
-	/*FMaterialInstanceData_Basic MaterialData;	// 머티리얼 데이터*/
+	FInstanceData             Transform;	// 각 인스턴스 별로 다른 월드 행렬
+	uint32_t                  Flags = (1 << 10);
+	FSkeletalMeshInstanceData SkeletalData;
 };
 
-struct FRenderCommand
-{
-	class IRenderable* ObjectToRender;	// 렌더 대상 오브젝트
-	FInstanceData      InstanceData;	// 인스턴싱 데이터
-};
-
-using RenderCommandList = JArray<FRenderCommand>;	// 렌더 명령어 리스트
 
 /**
  * 삼각형(정점)을 나타내는 데이터 구조체

@@ -1,6 +1,9 @@
 ﻿#include "GUI_Base.h"
 #include "imgui/imgui_internal.h"
 
+GUI_Base::GUI_Base()
+{}
+
 GUI_Base::GUI_Base(const JText& InTitle)
 	: mTitle(InTitle),
 	  bIsWindowOpen(true)

@@ -29,7 +29,7 @@ public:
 public:
 	void        BindMaterial(ID3D11DeviceContext* InDeviceContext) const;
 	const void* GetMaterialData() const { return mMaterialRawData.data(); }
-	const float GetMaterialSize() const { return mMaterialRawData.size() * sizeof(float); }
+	uint32_t    GetMaterialSize() const { return mMaterialRawData.size() * sizeof(float); }
 
 public:
 	void* GetInstanceParam(const JText& InParamName, bool bTextureParam = false);
@@ -37,9 +37,10 @@ public:
 	void  EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue);
 
 public:
-	FORCEINLINE JText   GetMaterialName() const { return ParseFile(mFileName); }
-	FORCEINLINE JText   GetMaterialPath() const { return mFileName; }
-	FORCEINLINE int32_t GetParamCount() const { return mMaterialRawData.size(); }
+	FORCEINLINE JText      GetMaterialName() const { return ParseFile(mFileName); }
+	FORCEINLINE JMaterial* GetParentMaterial() const { return mParentMaterial; }
+	FORCEINLINE JText      GetMaterialPath() const { return mFileName; }
+	FORCEINLINE int32_t    GetParamCount() const { return mMaterialRawData.size(); }
 
 public:
 	void SetParentMaterial(JMaterial* InParentMaterial);

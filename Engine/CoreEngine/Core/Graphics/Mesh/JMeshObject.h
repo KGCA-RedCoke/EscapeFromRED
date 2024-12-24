@@ -19,7 +19,6 @@ class JMeshObject : public JAsset,
 public:
 	JMeshObject() = default;
 	JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData = {});
-	JMeshObject(const JWText& InAssetPath, const JArray<Ptr<JMeshData>>& InData = {});
 	JMeshObject(const JMeshObject& Other);
 	~JMeshObject() override = default;
 
@@ -47,7 +46,7 @@ public:
 #pragma endregion
 
 public:
-	void UpdateInstance_Transform(const FMatrix& InWorldMatrix = FMatrix::Identity);
+	virtual void UpdateInstance_Transform(const FMatrix& InWorldMatrix = FMatrix::Identity);
 
 	virtual void       SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 	int32_t            GetMaterialCount() const;
@@ -68,8 +67,9 @@ protected:
 
 	// ----------------------------- Material Reference -----------------------------
 	JArray<JMaterialInstance*> mMaterialInstances;
-	JArray<FInstanceData_Mesh> mInstanceData;
 	JHash<uint32_t, size_t>    mDelegateIDs;
+
+	JArray<FInstanceData_Mesh> mInstanceData;
 
 private:
 	friend class Utils::Fbx::FbxFile;

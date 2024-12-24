@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Core/Entity/Component/Scene/JSceneComponent.h"
 
+class JMaterialInstance;
+class JSkeletalMesh;
 class JAnimationClip;
 class JAnimator;
 class JSkeletalMeshObject;
@@ -20,22 +22,25 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void Initialize() override;
 	void Tick(float DeltaTime) override;
 
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
 
 public:
-	void SetSkeletalMesh(JTextView InSkeletalMeshPath);
-	void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
-	void SetAnimation(JAnimationClip* InAnimationClip);
+	Ptr<JSkeletalMesh> GetSkeletalMesh() const;
+	void               SetSkeletalMesh(JTextView InSkeletalMeshPath);
+	void               SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0) const;
+	void               SetAnimation(const JAnimationClip* InAnimationClip) const;
 
 public:
-	void ShowEditor() override;
+	void           ShowEditor() override;
+	const FMatrix& GetAnimBoneMatrix(const JText& Text) const;
 
 private:
 	UPtr<JSkeletalMeshObject> mSkeletalMeshObject = nullptr;
-	UPtr<JAnimator>           mAnimator           = nullptr;
+	JAnimator*                mAnimator           = nullptr;
 };
 
 REGISTER_CLASS_TYPE(JSkeletalMeshComponent);

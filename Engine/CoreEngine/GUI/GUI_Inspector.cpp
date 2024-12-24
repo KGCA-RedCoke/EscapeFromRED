@@ -157,31 +157,3 @@ void GUI_Inspector::DrawDetails()
 	ImGui::EndChild();
 
 }
-
-void GUI_Inspector::DrawName()
-{}
-
-void GUI_Inspector::DrawTransform() const
-{
-	if (mSelectedSceneComponent)
-	{
-		mSelectedSceneComponent->ShowEditor();
-	}
-}
-
-void GUI_Inspector::DrawFlags()
-{}
-
-void GUI_Inspector::DrawMaterialSlot()
-{
-	// if (JStaticMeshActor* staticMeshActor = dynamic_cast<JStaticMeshActor*>(mSelectedSceneComponent))
-	// {
-	// 	if (ImGui::CollapsingHeader(u8("머티리얼")))
-	// 	{
-	// 		for (int32_t i = 0; i < staticMeshActor->GetMaterialCount(); ++i)
-	// 		{
-	// 			staticMeshActor->SetMaterialInstance();
-	// 		}
-	// 	}
-	// }
-}

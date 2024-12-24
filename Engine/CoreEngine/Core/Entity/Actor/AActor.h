@@ -78,6 +78,7 @@ protected:
 	JHash<JText, int32_t>         mChildActorComponentIndices;
 	JArray<UPtr<JActorComponent>> mActorComponents;
 
+	friend class GUI_Editor_Actor;
 };
 
 REGISTER_CLASS_TYPE(AActor);

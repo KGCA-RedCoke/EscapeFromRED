@@ -26,6 +26,13 @@ struct FInstanceData_UI
 	int32_t  OpacityIndex = 0;
 };
 
+struct FInstanceData_UI_Picking
+{
+	FVector2 Position;
+	FVector2 Size;
+	FVector4 Color;
+};
+
 DECLARE_DYNAMIC_DELEGATE(FOnUIHovered);
 
 DECLARE_DYNAMIC_DELEGATE(FOnUIUnhovered);
@@ -69,7 +76,8 @@ public:
 	void SetPosition(const FVector2& InPosition) { mInstanceData.Position = InPosition; }
 	void SetSize(const FVector2& InSize) { mInstanceData.Size = InSize; }
 	void SetColor(const FVector4& InColor) { mInstanceData.Color = InColor; }
-	void AddText(JWTextView InText, const FVector2& InPosition, const float InSize, const FLinearColor& InColor);
+	void AddText(JWTextView          InText, const FVector2& InPosition, const FVector2& InRectSize, const float InSize,
+				 const FLinearColor& InColor);
 
 	void SetWidgetComponent(JWidgetComponent* InWidgetComponent) { mWidgetComponent = InWidgetComponent; }
 
@@ -114,6 +122,7 @@ public:
 
 public:
 	JUIComponent* GetClickedComponent(const FVector2& InMousePos, const FVector2& InScreenPos) const;
+	uint32_t GetComponentSize() const;
 
 public:
 	void AddUIComponent(JTextView InName);
@@ -123,7 +132,6 @@ private:
 	JArray<UPtr<JUIComponent>> mUIComponents;
 	FVector2                   mMousePos;
 };
-
 
 class MUIManager : public Manager_Base<JWidgetComponent, MUIManager>
 {
@@ -136,15 +144,17 @@ public:
 					 ID3D11ShaderResourceView* InTex,
 					 ID3D11ShaderResourceView* InOpacityTex,
 					 _Out_ int32_t&            OutTexIndex,
-					 _Out_ int32_t&            OutOpacityTexIndex);
+					 _Out_ int32_t&            OutOpacityTexIndex,
+					 uint32_t                  ID);
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:
 	JShader_UI* mShader;
+	JShader*    mPickingShader;
 
 	JArray<FVertexData_UI> mVertexData;
 	JArray<uint32_t>       mIndexData;
-
+	
 	JArray<FInstanceData_UI>          mInstanceData;
 	JArray<ID3D11ShaderResourceView*> mTextureSRVs;
 	JArray<ID3D11ShaderResourceView*> mOpacityTextureSRVs;

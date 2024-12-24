@@ -70,9 +70,10 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		UPtr<AActor> loadActor = UPtrCast<AActor>(MClassFactory::Get().Create(objType));
 		if (loadActor->DeSerialize_Implement(InFileStream))
 		{
-
+			loadActor->Initialize();
 			mOcTree->Insert(loadActor.get());
 			mActors.push_back(std::move(loadActor));
+			
 		}
 	}
 
@@ -81,8 +82,8 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JLevel::InitializeLevel()
 {
-	mOcTree = MakeUPtr<Oc::JTree>();
-	mOcTree->Initialize({{0, 0, 0}, {10000, 10000, 10000}}, MAX_DEPTH);
+	mOcTree = MakeUPtr<Quad::JTree>();
+	mOcTree->Initialize({{0, 0, 0}, {10000, 0, 10000}}, MAX_DEPTH);
 }
 
 void JLevel::UpdateLevel(float DeltaTime)

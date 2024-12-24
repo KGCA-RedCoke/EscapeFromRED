@@ -93,6 +93,30 @@ inline JText GenerateUniqueFileName(const JText& InDirectory, const JText& InBas
 //--------------------------------------------- String Func -------------------------------------------------------------
 
 
+// void HideAndLockCursor(HWND hwnd) {
+// 	// 1. 커서 숨기기
+// 	ShowCursor(FALSE);
+//
+// 	// 2. 커서 위치 잠금
+// 	RECT windowRect;
+// 	GetClientRect(hwnd, &windowRect); // 클라이언트 영역 얻기
+// 	MapWindowPoints(hwnd, nullptr, (POINT*)&windowRect, 2); // 화면 좌표로 변환
+// 	ClipCursor(&windowRect); // 커서를 이 영역에 고정
+//
+// 	// 3. 커서를 화면 중앙으로 이동
+// 	POINT center;
+// 	center.x = (windowRect.left + windowRect.right) / 2;
+// 	center.y = (windowRect.top + windowRect.bottom) / 2;
+// 	SetCursorPos(center.x, center.y);
+// }
+//
+// void UnlockCursor() {
+// 	// 1. 커서 다시 표시
+// 	ShowCursor(TRUE);
+//
+// 	// 2. 커서 제한 해제
+// 	ClipCursor(nullptr);
+// }
 // ------------------------------------------- JHash Table ---------------------------------------------------------------
 constexpr const char* NAME_OBJECT_BASE                    = "JObject";
 constexpr const char* NAME_OBJECT_ACTOR_COMPONENT         = "JActorComponent";
@@ -102,12 +126,14 @@ constexpr const char* NAME_OBJECT_SKELETAL_MESH_COMPONENT = "JSkeletalMeshCompon
 constexpr const char* NAME_OBJECT_ACTOR                   = "AActor";
 constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_ACTOR     = "JSkeletalMeshActor";
+constexpr const char* NAME_OBJECT_PAWN                    = "APawn";
 constexpr const char* NAME_OBJECT_CHARACTER               = "ACharacter";
 constexpr const char* NAME_OBJECT_PLAYER_CHARACTER        = "APlayerCharacter";
 constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
 constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLight_Spot";
 constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLight_Point";
-constexpr const char* NAME_OBJECT_BOX_COMPONENT           = "JBoxComponent";
+constexpr const char* NAME_COMPONENT_BOX                  = "JBoxComponent";
+constexpr const char* NAME_COMPONENT_PAWN_MOVEMENT        = "JPawnMovementComponent";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 
@@ -115,6 +141,7 @@ constexpr uint32_t JAssetHash = StringHash_CompileTime("JASSET\0");
 
 constexpr uint32_t HASH_ASSET_TYPE_LEVEL             = StringHash_CompileTime("JLevel");
 constexpr uint32_t HASH_ASSET_TYPE_Actor             = StringHash_CompileTime("JActor");
+constexpr uint32_t HASH_ASSET_TYPE_Pawn              = StringHash_CompileTime("APawn");
 constexpr uint32_t HASH_ASSET_TYPE_Character         = StringHash_CompileTime("ACharacter");
 constexpr uint32_t HASH_ASSET_TYPE_PLAYER_CHARACTER  = StringHash_CompileTime("APlayerCharacter");
 constexpr uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash_CompileTime("J3DObject");
@@ -122,7 +149,10 @@ constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash_CompileTime("J
 constexpr uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash_CompileTime("JMaterial");
 constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash_CompileTime("JMaterialInstance");
 constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash_CompileTime("JAnimationClip");
+constexpr uint32_t HASH_ASSET_TYPE_ANIMATOR          = StringHash_CompileTime("JAnimator");
 constexpr uint32_t HASH_ASSET_TYPE_WIDGET            = StringHash_CompileTime("JWidget");
+
+constexpr uint32_t HASH_COMPONENT_TYPE_PawnMovement = StringHash_CompileTime("JPawnMovementComponent");
 
 constexpr uint32_t Hash_EXT_FBX    = StringHash_CompileTime(".fbx");
 constexpr uint32_t Hash_EXT_JASSET = StringHash_CompileTime(".jasset");

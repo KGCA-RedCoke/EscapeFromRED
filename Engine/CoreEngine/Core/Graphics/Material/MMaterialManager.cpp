@@ -5,7 +5,6 @@
 #include "JMaterial_Detail.h"
 #include "JMaterial_POM.h"
 #include "JMaterial_SkySphere.h"
-#include "Core/Graphics/Shader/MShaderManager.h"
 
 void MMaterialManager::SaveEngineMaterials()
 {

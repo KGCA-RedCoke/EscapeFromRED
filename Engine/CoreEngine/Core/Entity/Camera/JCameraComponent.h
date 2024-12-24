@@ -21,6 +21,7 @@ struct FFrustum
 	FVector FrustumPosition[8];
 	FPlane  FrustumPlanes[6];
 
+	[[nodiscard]] bool Check(const FQuad& InQuad) const;
 	[[nodiscard]] bool Check(const FVector& InPoint) const;
 	[[nodiscard]] bool Check(const FVector& InCenter, float InRadius) const;
 	[[nodiscard]] bool Check(const FBoxShape& InBox) const;
@@ -75,6 +76,11 @@ public:
 	// --------------------------------------------- Frustum --------------------------------------------------------------
 	void CreateFrustum();
 	void ExtractFrustumPlanes();
+
+	[[nodiscard]] FORCEINLINE bool IsQuadInFrustum(const FQuad& InQuad)
+	{
+		return mFrustum.Check(InQuad);
+	}
 
 	[[nodiscard]] FORCEINLINE bool IsBoxInFrustum(const FBoxShape& InBox)
 	{

@@ -2,7 +2,7 @@
 #include "Core/Entity/JObject.h"
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
-namespace Oc
+namespace Quad
 {
 	class JTree;
 }
@@ -40,10 +40,10 @@ public:
 	T* CreateActor(JTextView InName, Args&&... InArgs);
 
 public:
-	UPtr<Oc::JTree> mOcTree;
+	UPtr<Quad::JTree> mOcTree;
 
 	JArray<UPtr<class AActor>>      mActors;	// 레벨에 속한 액터들
-	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (Node ID, Node Actor Index)
+	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
 
 	// TODO : 레벨과 관련된 변수들 추가

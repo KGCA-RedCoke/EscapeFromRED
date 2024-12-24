@@ -28,6 +28,9 @@ public:
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void ShowEditor() override;
+
+public:
 	int32_t GetMaterialCount() const;
 	void    SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 

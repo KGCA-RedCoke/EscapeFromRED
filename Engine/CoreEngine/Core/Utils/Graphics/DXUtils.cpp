@@ -431,15 +431,18 @@ namespace Utils::DX
 	}
 
 	void CreateBuffer(ID3D11Device* InDevice, D3D11_BIND_FLAG InBindFlag, void**     InData, uint32_t InDataSize,
-					  uint32_t      InDataNum, ID3D11Buffer** OutBuffer, D3D11_USAGE InUsage, UINT    InAccessFlag)
+					  uint32_t      InDataNum, ID3D11Buffer** OutBuffer, D3D11_USAGE InUsage, UINT    InAccessFlag,
+					  UINT          InMiscFlag, UINT          InStructureByteStride)
 	{
 		D3D11_BUFFER_DESC bufferDesc;
 		{
-			bufferDesc.ByteWidth      = InDataNum * InDataSize; // 버퍼크기
-			bufferDesc.Usage          = InUsage;	// 버퍼의 읽기/쓰기 방법 지정
-			bufferDesc.BindFlags      = InBindFlag; // 파이프라인에 바인딩될 방법
-			bufferDesc.CPUAccessFlags = InAccessFlag; // 생성될 버퍼에 CPU가 접근하는 유형 (DX 성능에 매우 중요)
-			bufferDesc.MiscFlags      = 0; // 추가적인 옵션 플래그
+			bufferDesc.ByteWidth           = InDataNum * InDataSize; // 버퍼크기
+			bufferDesc.Usage               = InUsage;	// 버퍼의 읽기/쓰기 방법 지정
+			bufferDesc.BindFlags           = InBindFlag; // 파이프라인에 바인딩될 방법
+			bufferDesc.CPUAccessFlags      = InAccessFlag; // 생성될 버퍼에 CPU가 접근하는 유형 (DX 성능에 매우 중요)
+			bufferDesc.MiscFlags           = InMiscFlag; // 추가적인 옵션 플래그
+			bufferDesc.StructureByteStride = InStructureByteStride;
+
 		}
 
 		D3D11_SUBRESOURCE_DATA data;

@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Core/Entity/Component/JActorComponent.h"
+#include "Core/Graphics/ShaderStructs.h"
 
+class JSkeletalMeshComponent;
 class JSkeletalMesh;
 
 DECLARE_DYNAMIC_DELEGATE(FOnAnimStart);
@@ -9,38 +11,41 @@ DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
 
 DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
 
-class JAnimator : public JActorComponent
+class JAnimator : public JAsset, public IManagedInterface
 {
 public:
-	JAnimator(AActor* InOwnerActor);
+	JAnimator();
+	JAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp = nullptr);
 	~JAnimator() override = default;
 
 public:
+	UPtr<IManagedInterface> Clone() const override;
+	uint32_t                GetHash() const override;
+
+public:
 	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	bool Serialize_Implement(std::ofstream& FileStream) override;
-	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
+	void Initialize();
+	void BeginPlay();
+	void Tick(float DeltaTime);
+	void Destroy();
 
 public:
-	void Initialize() override;
-	void BeginPlay() override;
-	void Tick(float DeltaTime) override;
-	void Destroy() override;
+	void AddAnimationClip(const JText& InState, class JAnimationClip* InClip);
+	void SetState(const JText& InState);
 
-
-	
 protected:
-	// Target Skeleton
-	JSkeletalMesh* mSkeletalMesh;
+	JSkeletalMeshComponent* mSkeletalMeshComponent;
 
-	// Interpolation Bone Info
-	JArray<FMatrix> mBoneTransforms;
+	FSkeletalMeshInstanceData mSkeletalMeshInstanceData;
 
 	// State Machine
-	JHash<JText, UPtr<class JAnimationClip>> mStateMachine;
-
-	JText           mCurrentState;
-	JAnimationClip* mCurrentAnimation;
+	JHash<JText, class JAnimationClip*> mStateMachine;
+	JText                               mCurrentState;
+	JAnimationClip*                     mCurrentAnimation;
+	JAnimationClip*                     mPrevAnimation;
 
 };

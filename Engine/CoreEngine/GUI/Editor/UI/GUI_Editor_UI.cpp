@@ -40,7 +40,7 @@ void GUI_Editor_UI::ShowMenuBar()
 		{
 			if (ImGui::MenuItem("Box"))
 			{
-				mWidgetComponent->AddUIComponent(JTextView("Box"));
+				mWidgetComponent->AddUIComponent(std::format("BOX_{0}", mWidgetComponent->GetComponentSize()));
 			}
 			ImGui::EndMenu();
 		}
@@ -57,16 +57,18 @@ void GUI_Editor_UI::Update_Implementation(float DeltaTime)
 {
 	GUI_Editor_Base::Update_Implementation(DeltaTime);
 
-	ImVec2 mousePos = ImGui::GetMousePos();
-	mousePos.x -= ImGui::GetItemRectMin().x;
-	mousePos.y -= ImGui::GetItemRectMin().y;
 
-
-	mWidgetComponent->SetMousePos({mousePos.x, mousePos.y});
 	mWidgetComponent->Tick(DeltaTime);
 
 	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
 
+
+	ImVec2 mousePos = ImGui::GetMousePos();
+	mousePos.x -= ImGui::GetItemRectMin().x;
+	mousePos.y -= ImGui::GetItemRectMin().y;
+	mWidgetComponent->SetMousePos({mousePos.x, mousePos.y});
+
+	// LOG_CORE_INFO("Mouse Pos : {0}, {1}", mousePos.x, mousePos.y);
 	mWidgetComponent->AddInstance();
 
 

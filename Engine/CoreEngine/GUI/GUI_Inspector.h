@@ -24,10 +24,6 @@ private:
 	void DrawTreeNode(JSceneComponent* InSceneComponent);
 
 	void DrawDetails();
-	void DrawName();
-	void DrawTransform() const;
-	void DrawFlags();
-	void DrawMaterialSlot();
 
 private:
 	Utils::GUI::FSearchBar mSearchBar;

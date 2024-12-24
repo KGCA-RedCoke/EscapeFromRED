@@ -4,7 +4,6 @@ struct InstanceData_2D
 {
 	float2 InstancePos :INST_POSITION;
 	float2 InstanceScale :INST_SCALE;
-	float4 InstanceColor :INST_COLOR;
 	float4 InstanceID :INST_ID;
 };
 

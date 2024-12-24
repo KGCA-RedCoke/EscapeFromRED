@@ -226,6 +226,11 @@ void JMaterial::BindShader(ID3D11DeviceContext* InDeviceContext)
 	GetWorld.ShaderManager->UpdateShader(InDeviceContext, mShader);
 }
 
+void JMaterial::UpdateMaterialParams(ID3D11DeviceContext* InDeviceContext, const void* InData, uint32_t InSize)
+{
+	
+}
+
 void JMaterial::EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam)
 {
 	if (FMaterialParam* origin = GetMaterialParam(InParamName))

@@ -1,15 +1,14 @@
 ﻿#include "JSkeletalMeshObject.h"
 
 #include "MMeshManager.h"
+#include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/JWorld.h"
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData)
 {
-
-	mName       = InName;
-	mVertexSize = sizeof(Vertex::FVertexInfo_Base);
-	// mMeshConstantBuffer.MeshFlags = EnumAsByte(EMeshType::Skeletal);
+	mName = InName;
 
 	if (InData.empty())
 	{
@@ -26,25 +25,28 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 	assert(mPrimitiveMeshData.size() > 0);
 
 	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
-	// if (!Utils::Serialization::DeSerialize("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset", mSampleAnimation.get()))
-	// {
-	// 	LOG_CORE_ERROR("Failed to load animation object(Invalid Path maybe...): {0}",
-	// 				   "Game/Animation/Anim_Hands_Empty_Walk.jasset");
-	// }
-	// mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
-	// mSampleAnimation->Play();
 }
 
-JSkeletalMeshObject::JSkeletalMeshObject(const JWText& InName, const std::vector<Ptr<JMeshData>>& InData)
-	: JMeshObject(InName, InData)
-{}
-
 JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
-	: JMeshObject(Other)
 {
-	mSkeletalMesh        = Other.mSkeletalMesh;
-	mSampleAnimation     = UPtrCast<JAnimationClip>(Other.mSampleAnimation->Clone());
-	mInstanceBuffer_Bone = Other.mInstanceBuffer_Bone;
+	mName              = Other.mName;
+	mGeometryBuffer    = Other.mGeometryBuffer;
+	mVertexSize        = Other.mVertexSize;
+	mBoundingBox       = Other.mBoundingBox;
+	mPath              = Other.mPath;
+	mPrimitiveMeshData = Other.mPrimitiveMeshData;
+	mSkeletalMesh      = Other.mSkeletalMesh;
+
+	mInstanceData.resize(Other.mInstanceData.size());
+	mMaterialInstances.resize(Other.mMaterialInstances.size());
+
+	for (int32_t i = 0; i < Other.mInstanceData.size(); ++i)
+	{
+		JSkeletalMeshObject::SetMaterialInstance(Other.mMaterialInstances[i], i);
+	}
+
+	if (Other.mCurrentAnimation)
+		mCurrentAnimation = UPtrCast<JAnimationClip>(Other.mCurrentAnimation->Clone());
 }
 
 UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
@@ -52,65 +54,13 @@ UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
 	return MakeUPtr<JSkeletalMeshObject>(*this);
 }
 
-void JSkeletalMeshObject::UpdateBoneBuffer(ID3D11DeviceContext* InDeviceContext)
+const FMatrix& JSkeletalMeshObject::GetAnimBoneMatrix(const JText& Text) const
 {
-	if (mSampleAnimation == nullptr)
+	if (mCurrentAnimation)
 	{
-		return;
+		return mCurrentAnimation->GetInterpolatedBone(Text);
 	}
-
-	const auto& skinData  = mSkeletalMesh->GetSkinData();
-	const auto& animPoses = mSampleAnimation->GetAnimPoses();
-
-	const int32_t boneCount = skinData->GetInfluenceBoneCount();
-	FMatrix       updateBoneMatrixBuffer[255];
-
-	// 본 업데이트
-	for (int32_t i = 0; i < boneCount; ++i)
-	{
-		const JText jointName = skinData->GetInfluenceBoneName(i);
-		FMatrix     newPose   = skinData->GetInfluenceBoneInverseBindPose(jointName);
-
-		// 최종 본 변환 행렬 = 본 로컬 변환 행렬 * 본 역바인드 행렬(부모 본의 역바인드 행렬)
-		updateBoneMatrixBuffer[i] = newPose * animPoses[i]; /* * newAnimMatrix (여기에 애니메이션 프레임간의 보간된 본 로컬 변환 행렬을 곱해줌) */
-	}
-
-	Utils::DX::UpdateDynamicBuffer(
-								   InDeviceContext,
-								   mInstanceBuffer_Bone.Buffer_Bone.Get(),
-								   updateBoneMatrixBuffer,
-								   boneCount * sizeof(FMatrix));
-
-	InDeviceContext->VSSetShaderResources(10, 1, mInstanceBuffer_Bone.Resource_Bone.GetAddressOf());
-
-	// if (!mLightMesh)
-	// {
-	// 	mLightMesh         = GetWorld.MeshManager->CreateOrClone("Game/Mesh/SM_Flashlight_01.jasset");
-	// 	mSocketOffsetRot.x = XMConvertToRadians(mSocketOffsetRot.x);
-	// 	mSocketOffsetRot.y = XMConvertToRadians(mSocketOffsetRot.y);
-	// 	mSocketOffsetRot.z = XMConvertToRadians(mSocketOffsetRot.z);
-	// }
-	//
-	// // 1. 소켓 오프셋 행렬 생성 (로컬 변환)
-	// auto locMat = DirectX::XMMatrixTranslation(mSocketOffsetLoc.x, mSocketOffsetLoc.y, mSocketOffsetLoc.z);
-	//
-	// auto    rotMat             = XMMatrixRotationRollPitchYawFromVector(mSocketOffsetRot);
-	// FMatrix socketOffsetMatrix = FMatrix::Identity;
-	// socketOffsetMatrix         = socketOffsetMatrix * rotMat * locMat;
-	//
-	// // 2. 본의 월드 변환 계산 (월드 바인드 포즈 * 본 애니메이션 변환)
-	// FMatrix boneWorldMatrix = skinData->GetInfluenceWorldBindPose("hand_r") * socketOffsetMatrix * updateBoneMatrixBuffer[
-	// 	mHand_r_Index];
-	//
-	// // 3. 소켓 변환 적용
-	// mSocketTransform = boneWorldMatrix /** socketOffsetMatrix*/;
-	//
-	//
-	// // 3. 모델 월드 변환 적용
-	// mSocketTransform = socketOffsetMatrix *  skinData->GetInfluenceWorldBindPose("hand_r") *
-	// 		updateBoneMatrixBuffer[mHand_r_Index] * mInstanceData[0].Transform;
-
-
+	return FMatrix::Identity;
 }
 
 uint32_t JSkeletalMeshObject::GetType() const
@@ -166,25 +116,61 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JSkeletalMeshObject::Tick(float DeltaTime)
 {
-	if (mSampleAnimation)
+	if (mCurrentAnimation)
 	{
-		mSampleAnimation->TickAnim(DeltaTime);
+		mCurrentAnimation->TickAnim(DeltaTime);
+
+		auto& animData = mCurrentAnimation->GetInstanceData();
+
+		if (bTransitAnimation)
+		{
+			mTransitionElapsedTime += DeltaTime;
+
+			float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
+
+			for (int32_t i = 0; i < mInstanceData.size(); ++i)
+			{
+				mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
+				mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
+				mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
+			}
+
+			// 블렌딩 완료 시
+			if (BlendWeight >= 1.0f)
+			{
+				bTransitAnimation      = false;
+				mTransitionElapsedTime = 0.0f;
+			}
+		}
+		else
+		{
+			for (int32_t i = 0; i < mInstanceData.size(); ++i)
+			{
+				mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
+			}
+		}
 	}
 }
 
 void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 {
-	UpdateBoneBuffer(GetWorld.D3D11API->GetImmediateDeviceContext());
-
-	auto&         meshData     = mPrimitiveMeshData[0];
-	auto&         subMeshes    = meshData->GetSubMesh();
-	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+	auto&                      meshData     = mPrimitiveMeshData[0];
+	auto&                      subMeshes    = meshData->GetSubMesh();
+	const int32_t              subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+	auto                       it           = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh.get());
+	ID3D11ShaderResourceView** srv          = nullptr;
+	if (it != GetWorld.AnimationManager->mAnimTextureBuffer_SRV.end())
+	{
+		srv = it->second.GetAddressOf();
+	}
 
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		auto& currMesh         = subMeshes.empty() ? meshData : subMeshes[j];
-		mInstanceData[j].Flags = (1 << 11);
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(),
+										  mMaterialInstances[j],
+										  mInstanceData[j],
+										  srv);
 	}
 
 }
@@ -194,20 +180,24 @@ void JSkeletalMeshObject::Draw()
 	auto* deviceContext = GetWorld.D3D11API->GetImmediateDeviceContext();
 	assert(deviceContext);
 
-	// 최종 본 행렬 업데이트
-	UpdateBoneBuffer(deviceContext);
-
 	auto&         meshData     = mPrimitiveMeshData[0];
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
+	auto                       it  = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh.get());
+	ID3D11ShaderResourceView** srv = nullptr;
+	if (it != GetWorld.AnimationManager->mAnimTextureBuffer_SRV.end())
+	{
+		srv = it->second.GetAddressOf();
+	}
+
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
-		mInstanceData[j].Transform.WorldMatrix           = FMatrix::Identity;
-		mInstanceData[j].Transform.WorldInverseTranspose = FMatrix::Identity;
-		mInstanceData[j].Flags                           = (1 << 11);
-		auto& currMesh                                   = subMeshes.empty() ? meshData : subMeshes[j];
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
+		GetWorld.MeshManager->PushCommand(currMesh->GetHash(),
+										  mMaterialInstances[j],
+										  mInstanceData[j],
+										  srv);
 	}
 
 	GetWorld.MeshManager->FlushCommandList(G_Device.GetImmediateDeviceContext());
@@ -218,52 +208,16 @@ void JSkeletalMeshObject::DrawID(uint32_t ID)
 	JMeshObject::DrawID(ID);
 }
 
-void JSkeletalMeshObject::DrawBone()
+void JSkeletalMeshObject::SetAnimation(const JAnimationClip* InAnimation)
 {
-	//
-	// auto* deviceContext = G_Device.GetImmediateDeviceContext();
-	// assert(deviceContext);
-	//
-	// for (int32_t i = 0; i < mGeometryBuffer.size(); ++i)
-	// {
-	// 	Ptr<JSkeletalMesh> meshData = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[i]);
-	//
-	// 	const auto& pose = meshData->GetSkinData()->GetBindPoseWorldMap();
-	//
-	// 	for (auto& mat : pose)
-	// 	{
-	// 		Ptr<JMeshObject* sphere = GetWorld.MeshManager->CreateOrClone("Game/Mesh/Sphere.jasset");
-	// 		if (sphere)
-	// 		{
-	// 			auto boneWorld = mat.second;
-	// 			auto parentInv = mSkeletalMesh->GetSkinData()->GetInfluenceBoneInverseBindPose(mat.first);
-	//
-	// 			FMatrix newMat = parentInv * boneWorld;
-	// 			sphere->UpdateInstance_Transform(newMat);
-	// 			sphere->Draw();
-	// 		}
-	// 	}
-	// 	//
-	// }
-
-}
-
-void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
-{
-	if (mSampleAnimation)
+	if (mCurrentAnimation.get())
 	{
-		mSampleAnimation->Stop();
-		mSampleAnimation = nullptr;
+		mCurrentAnimation->Stop();
+		mCurrentAnimation = nullptr;
+		bTransitAnimation = true;
 	}
 
-	mSampleAnimation = UPtrCast<JAnimationClip>(InAnimation->Clone());
-
-	// mSampleAnimation = InAnimation;
-	mSampleAnimation->SetSkeletalMesh(mSkeletalMesh);
-	mSampleAnimation->Play();
-}
-
-void JSkeletalMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex)
-{
-	JMeshObject::SetMaterialInstance(InMaterialInstance, InIndex);
+	mCurrentAnimation = UPtrCast<JAnimationClip>(InAnimation->Clone());
+	mCurrentAnimation->SetSkeletalMesh(mSkeletalMesh);
+	mCurrentAnimation->Play();
 }

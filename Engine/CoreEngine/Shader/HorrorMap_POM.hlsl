@@ -11,10 +11,12 @@
 // Shading Model : lit
 // ------------------------------------------------------------------
 
-struct FMaterialInstance_POM
+cbuffer CMaterialBuffer : register(b9)
 {
 	float3 BaseColor : MAT_BASECOLOR;
-	float3 NormalColor : MAT_NORMAL;
+	float  NormalColor_R : MAT_NORMAL_R;
+	float  NormalColor_G : MAT_NORMAL_G;
+	float  NormalColor_B : MAT_NORMAL_B;
 	float  HeightRatio : MAT_HEIGHTRATIO;
 	float  MinStep : MAT_MINSTEP;
 	float  MaxStep : MAT_MAXSTEP;
@@ -22,30 +24,6 @@ struct FMaterialInstance_POM
 	float  GlobalRoughness : MAT_ROUGHNESS2;
 	float  Specular : MAT_SPECULAR;
 	float  Opacity : MAT_OPACITY;
-};
-
-struct InstanceData_POM
-{
-	row_major matrix      Transform : INST_TRANSFORM;
-	row_major matrix      InvTransform : INST_TRNASFORM_INVTRANS;
-	uint                  Flags : INST_FLAG;
-	FMaterialInstance_POM Material : INST_MAT;
-};
-
-struct PixelIn_POM
-{
-	float4 ClipSpace : SV_POSITION;
-	float4 WorldSpace : POSITION;
-	float4 VertexColor : COLOR0;
-	float2 TexCoord : TEXCOORD0;
-
-	float3 ViewDir : TEXCOORD1;
-
-	float3 Normal : TEXCOORD2;
-	float3 Tangent : TEXCOORD3;
-	float3 Binormal : TEXCOORD4;
-
-	FMaterialInstance_POM Material : MATERIAL;
 };
 
 Texture2D baseColorMap : register(t0);
@@ -58,18 +36,15 @@ Texture2D heightMap : register(t6);
 Texture2D opacityMap : register(t7);
 Texture2D specularMap : register(t8);
 
-StructuredBuffer<float4> g_BoneTransforms : register(t10);
-
 SamplerState Sampler_Linear : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
 
 
-PixelIn_POM VS(VertexIn_Base Input, InstanceData_POM Instance)
+PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
-	PixelIn_POM output;
+	PixelIn_Base output;
 
-	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
 	output.WorldSpace  = mul(Input.Pos, Instance.Transform);
 	output.ViewDir     = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
@@ -84,31 +59,31 @@ PixelIn_POM VS(VertexIn_Base Input, InstanceData_POM Instance)
 }
 
 
-float4 PS(PixelIn_POM Input) : SV_TARGET
+float4 PS(PixelIn_Base Input) : SV_TARGET
 {
-	float3 albedo       = Input.Material.BaseColor.rgb;
+	float3 albedo       = BaseColor.rgb;
 	float3 normal       = normalize(Input.Normal);
 	float  ambientColor = 1.0f;
 	float  roughness    = 0.5f;
 
 	float3x3 tbn = float3x3(Input.Tangent, Input.Binormal, Input.Normal);
 
-	const float roughnessFactor = Input.Material.Roughness;
+	const float roughnessFactor = Roughness;
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
 	const float3 lightDir       = normalize(DirectionalLightPos.xyz);
-	const float3 viewDir        = normalize(Input.ViewDir);
-	const float3 viewDirTangent = normalize(mul(viewDir, tbn));
+	const float3 viewDir        = Input.ViewDir;
+	const float3 viewDirTangent = mul(viewDir, tbn);
 
 	float4 height = heightMap.Sample(Sampler_Linear, Input.TexCoord);
 
 	const float2 texCoord = Input.TexCoord;/*ParallaxOcclusionMapping(
 																		Input.TexCoord,
-																		viewDir,
+																		viewDirTangent,
 																		height,
-																		Input.Material.HeightRatio,
-																		Input.Material.MinStep,
-																		Input.Material.MaxStep,
+																		HeightRatio,
+																		MinStep,
+																		MaxStep,
 																		0
 																	   );*/
 
@@ -121,17 +96,17 @@ float4 PS(PixelIn_POM Input) : SV_TARGET
 		normal = normalColor * 2.0f - 1.0f;
 		normal = normalize(mul(normal, tbn));
 	}
-	normal *= Input.Material.NormalColor;
+	normal *= float3(NormalColor_R, NormalColor_G, NormalColor_B);
 
 	ambientColor = aoMap.Sample(Sampler_Linear, texCoord).r;
-	roughness    = roughnessMap.Sample(Sampler_Linear, texCoord).g * roughnessFactor + Input.Material.GlobalRoughness;
+	roughness    = roughnessMap.Sample(Sampler_Linear, texCoord).g * roughnessFactor + GlobalRoughness;
 
-	const float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Input.Material.Opacity;
+	const float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Opacity;
 
 	float normDotLight = saturate(dot(normal, lightDir));
 
 	float3 diffuse  = albedo * normDotLight;
-	float3 f0       = lerp(0.04f, Input.Material.Specular, 0);
+	float3 f0       = lerp(0.04f, Specular, 0);
 	float3 specular = SpecularGGX(normal, viewDir, lightDir, roughness, f0);
 
 	// Point Lights and Spot Lights
@@ -159,6 +134,6 @@ float4 PS(PixelIn_POM Input) : SV_TARGET
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + ambient + specular;
 
-	return float4(finalColor, opacity);
+	return float4(albedo, opacity);
 
 }

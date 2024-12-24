@@ -30,6 +30,7 @@ private:
 
 	void HandleFloatType(const FMaterialParam& Param);
 	void HandleFloat2Type(const FMaterialParam& Param);
+	void HandleFloat3Type(const FMaterialParam& Param);
 	void HandleFloat4Type(const FMaterialParam& Param) const;
 	void HandleTextureType(const FMaterialParam& Param) const;
 

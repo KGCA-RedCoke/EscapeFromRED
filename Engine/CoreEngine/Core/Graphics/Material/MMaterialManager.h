@@ -5,9 +5,9 @@
 class MMaterialManager : public Manager_Base<JMaterial, MMaterialManager>
 {
 public:
-
 	void SaveEngineMaterials();
 	void LoadEngineMaterials();
+
 
 public:
 #pragma region Singleton Boilerplate

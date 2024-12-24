@@ -14,7 +14,7 @@
 // 텍스처 4장이 필요하다.
 static const int g_TextureCount = 3;
 
-struct SkyData
+cbuffer CMaterialBuffer : register(b9)
 {
 	// Sky VertexColor (블렌딩을 위한 색상)
 	float4 SkyColor_01 /*= float4(0.15f, 0.15f, 0.15f, 1.f)*/;
@@ -32,7 +32,6 @@ struct InstanceData_SkySphere
 	row_major matrix Transform : INST_TRANSFORM;
 	row_major matrix InvTransform : INST_TRNASFORM_INVTRANS;
 	uint             Flags : INST_FLAG;
-	SkyData          SkyData : INST_SKY_DATA;
 };
 
 struct VertexIn_3D
@@ -48,8 +47,6 @@ struct VertexOut_3D
 	float4 Pos : SV_POSITION;
 	float2 UV : TEXCOORD0;
 	float3 Normal : NORMAL;
-
-	SkyData SkyData : TEXCOORD1;
 };
 
 struct PixelInput_3D
@@ -57,8 +54,6 @@ struct PixelInput_3D
 	float4 Pos : SV_POSITION;
 	float2 UV : TEXCOORD0;
 	float3 Normal : NORMAL;
-
-	SkyData SkyData : TEXCOORD1;
 };
 
 Texture2D g_BaseTextureArray[g_TextureCount] : register(t0);
@@ -78,9 +73,7 @@ VertexOut_3D VS(VertexIn_3D Input, InstanceData_SkySphere Instance)
 
 	output.UV     = Input.UV;
 	output.Normal = Input.Normal;
-
-	output.SkyData = Instance.SkyData;
-
+	
 	return output;
 }
 
@@ -108,17 +101,17 @@ float4 PS(PixelInput_3D Input) : SV_TARGET
 	float3 cloud_01      = g_BaseTextureArray[1].Sample(g_SamplerLinearWrap, cloud_01_UV).rgb;
 	float3 cloud_02      = g_BaseTextureArray[2].Sample(g_SamplerLinearWrap, cloud_02_UV).rgb;
 
-	float3 lerpedCloudColor = Input.SkyData.CloudColor_01 * lerp(Input.SkyData.LightingStrength,
+	float3 lerpedCloudColor = CloudColor_01 * lerp(LightingStrength,
 																 1.0f,
 																 clamp(frac(CustomSine(GameTime, 10.f, 0.8f)), 0, 1));
 
 	float3 alpha = WorldAlignedBlend(normalize(Input.Normal), -1.869581, 0.075672f);
 
-	float3 emissiveColor = LerpFloat3(Input.SkyData.SkyColor_01.rgb, lerpedCloudColor.rgb, cloud_01);
+	float3 emissiveColor = LerpFloat3(SkyColor_01.rgb, lerpedCloudColor.rgb, cloud_01);
 	emissiveColor        = LerpFloat3(emissiveColor, lerpedCloudColor.rgb, sampleTexture);
-	emissiveColor        = LerpFloat3(emissiveColor, Input.SkyData.CloudColor_02.rgb, cloud_02);
+	emissiveColor        = LerpFloat3(emissiveColor, CloudColor_02.rgb, cloud_02);
 	emissiveColor        = LerpFloat3(emissiveColor,
-							   Input.SkyData.SkyColor_02.rgb,
+							   SkyColor_02.rgb,
 							   alpha);
 
 	return float4(emissiveColor, 1.f);

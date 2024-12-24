@@ -7,31 +7,32 @@
 #include "Game/Src/Player/JPlayerCamera.h"
 
 ACharacter::ACharacter()
+	: mSkeletalMeshComponent(nullptr)
 {
 	mObjectType = NAME_OBJECT_CHARACTER;
 }
 
 ACharacter::ACharacter(JTextView InName)
-	: AActor(InName),
-	  mSkeletalMeshComponent(nullptr),
-	  mFPSCamera(nullptr)
+	: APawn(InName),
+	  mSkeletalMeshComponent(nullptr)
 {
 	mObjectType = NAME_OBJECT_CHARACTER;
 }
 
 void ACharacter::Initialize()
 {
-	AActor::Initialize();
+	APawn::Initialize();
+
+	if (!mSkeletalMeshComponent)
+	{
+		mSkeletalMeshComponent = CreateDefaultSubObject<
+			JSkeletalMeshComponent>("SkeletalMeshComponent", this, this);
+	}
 }
 
 void ACharacter::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
-
-	if (mFPSCamera)
-	{
-		mLocalRotation.y = XMConvertToDegrees(mFPSCamera->GetYaw());
-	}
 }
 
 void ACharacter::Destroy()
@@ -63,7 +64,7 @@ bool ACharacter::DeSerialize_Implement(std::ifstream& InFileStream)
 	}
 
 	mSkeletalMeshComponent = static_cast<JSkeletalMeshComponent*>(GetChildSceneComponentByType("SkeletalMeshComponent"));
-	mFPSCamera             = static_cast<JPlayerCamera*>(GetChildSceneComponentByType("CameraComponent"));
+	// mFPSCamera             = static_cast<JPlayerCamera*>(GetChildSceneComponentByType("CameraComponent"));
 
 	return true;
 }

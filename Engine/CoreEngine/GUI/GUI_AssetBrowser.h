@@ -111,6 +111,7 @@ struct AssetBrowserIconList
 	JTexture*       LevelIcon;
 	JTexture*       WidgetIcon;
 	JTexture*       AnimationIcon;
+	JTexture*       AnimatorIcon;
 	JTexture*       SoundIcon;
 };
 

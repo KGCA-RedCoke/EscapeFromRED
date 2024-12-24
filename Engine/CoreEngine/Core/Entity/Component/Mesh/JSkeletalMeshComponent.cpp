@@ -1,7 +1,7 @@
 ﻿#include "JSkeletalMeshComponent.h"
 
 #include "Core/Entity/Animation/JAnimator.h"
-#include "Core/Entity/Animation/MAnimataionManager.h"
+#include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -84,6 +84,12 @@ bool JSkeletalMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
+void JSkeletalMeshComponent::Initialize()
+{
+	JSceneComponent::Initialize();
+
+}
+
 void JSkeletalMeshComponent::Tick(float DeltaTime)
 {
 	// TransformComponent에서 위치 업데이트
@@ -130,14 +136,18 @@ void JSkeletalMeshComponent::DrawID(uint32_t ID)
 	JSceneComponent::DrawID(ID);
 }
 
+Ptr<JSkeletalMesh> JSkeletalMeshComponent::GetSkeletalMesh() const
+{
+	return mSkeletalMeshObject ? mSkeletalMeshObject->GetSkeletalMesh() : nullptr;
+}
+
 void JSkeletalMeshComponent::SetSkeletalMesh(JTextView InSkeletalMeshPath)
 {
 	mSkeletalMeshObject = GetWorld.MeshManager->Clone<JSkeletalMeshObject>(InSkeletalMeshPath.data());
-	// mAnimator           = MakeUPtr<JAnimator>(mSkeletalMeshObject->mSkeletalMesh->mSkeleton);
-	mBoundingBox = mSkeletalMeshObject->GetBoundingBox();
+	mBoundingBox        = mSkeletalMeshObject->GetBoundingBox();
 }
 
-void JSkeletalMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InSlot)
+void JSkeletalMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InSlot) const
 {
 	if (mSkeletalMeshObject)
 	{
@@ -145,7 +155,7 @@ void JSkeletalMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialIn
 	}
 }
 
-void JSkeletalMeshComponent::SetAnimation(JAnimationClip* InAnimationClip)
+void JSkeletalMeshComponent::SetAnimation(const JAnimationClip* InAnimationClip) const
 {
 	if (mSkeletalMeshObject)
 	{
@@ -173,6 +183,11 @@ void JSkeletalMeshComponent::ShowEditor()
 			}
 
 		}
+	}
+
+	if (!mSkeletalMeshObject)
+	{
+		return;
 	}
 
 	ImGui::SeparatorText(u8("머티리얼 슬롯"));
@@ -226,10 +241,21 @@ void JSkeletalMeshComponent::ShowEditor()
 		{
 			// mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str);
 
-			mSkeletalMeshObject->SetAnimation(GetWorld.AnimationManager->Load(str));
+			mSkeletalMeshObject->
+					SetAnimation(GetWorld.AnimationManager->Load(str, mSkeletalMeshObject->GetSkeletalMesh()));
 
 			ImGui::EndDragDropTarget();
 		}
 	}
 
+}
+
+const FMatrix& JSkeletalMeshComponent::GetAnimBoneMatrix(const JText& Text) const
+{
+	if (mSkeletalMeshObject)
+	{
+		return mSkeletalMeshObject->GetAnimBoneMatrix(Text);
+	}
+
+	return FMatrix::Identity;
 }

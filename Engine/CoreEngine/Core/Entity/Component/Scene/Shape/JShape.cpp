@@ -3,6 +3,110 @@
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 
+uint32_t FRay::GetCollisionID()
+{
+	return 0;
+}
+
+ETraceType FRay::GetTraceType() const
+{
+	return {};
+}
+
+ECollisionType FRay::GetType() const
+{
+	return ECollisionType::Ray;
+}
+
+bool FRay::Intersect(const ICollision& InOther) const
+{
+	switch (InOther.GetType())
+	{
+	case ECollisionType::None:
+		break;
+	case ECollisionType::Quad:
+		break;
+	case ECollisionType::Plane:
+		break;
+	case ECollisionType::Ray:
+		break;
+	case ECollisionType::Box:
+		// return RayIntersectAABB(this, InOther);
+		break;
+	case ECollisionType::Sphere:
+		break;
+	case ECollisionType::Capsule:
+		break;
+	}
+
+	return false;
+}
+
+uint32_t FQuad::GetCollisionID()
+{
+	return 0;
+}
+
+ETraceType FQuad::GetTraceType() const
+{
+	return ETraceType::Max;
+}
+
+ECollisionType FQuad::GetType() const
+{
+	return ECollisionType::Quad;
+}
+
+bool FQuad::Intersect(const ICollision& InOther) const
+{
+	return false;
+}
+
+uint32_t FPlane::GetCollisionID()
+{
+	return 0;
+}
+
+ETraceType FPlane::GetTraceType() const
+{
+	return {};
+}
+
+ECollisionType FPlane::GetType() const
+{
+	return ECollisionType::Plane;
+}
+
+bool FPlane::Intersect(const ICollision& InOther) const
+{
+	return false;
+}
+
+
+bool FQuad::Contains(const FVector& InPoint) const
+{
+	return
+	(InPoint.x >= Center.x - Extent.x && InPoint.x <= Center.x + Extent.x &&
+		InPoint.z >= Center.z - Extent.z && InPoint.z <= Center.z + Extent.z);
+
+}
+
+void FQuad::DrawDebug() const
+{
+	FVector4 v0 = {Center.x - Extent.x, 0.0f, Center.z - Extent.z, 1.0f};
+	FVector4 v1 = {Center.x + Extent.x, 0.0f, Center.z - Extent.z, 1.0f};
+	FVector4 v2 = {Center.x + Extent.x, 0.0f, Center.z + Extent.z, 1.0f};
+	FVector4 v3 = {Center.x - Extent.x, 0.0f, Center.z + Extent.z, 1.0f};
+
+	G_DebugBatch.DrawQuad_Implement(
+									v0,
+									v1,
+									v2,
+									v3,
+									Colors::Green);
+
+}
+
 void FPlane::CreatePlane(FVector InNormal, FVector InPoint)
 {
 	InNormal.Normalize();
@@ -45,6 +149,28 @@ void FPlane::Normalize()
 	C = Normal.z;
 	D = Distance;
 }
+
+/*
+uint32_t FBox::GetCollisionID()
+{
+	return 0;
+}
+
+ETraceType FBox::GetTraceType() const
+{
+	return {};
+}
+
+ECollisionType FBox::GetType() const
+{
+	return ECollisionType::Box;
+}
+
+bool FBox::Intersect(const ICollision& InOther) const
+{
+	return false;
+}
+*/
 
 bool FBox::Contains(const FVector& InPoint) const
 {

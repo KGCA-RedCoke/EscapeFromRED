@@ -32,17 +32,56 @@ namespace JMath
 		TVector2& operator=(const ImVec2& V);
 		operator DirectX::XMVECTOR() const { return XMLoadFloat2(this); }
 
-		inline TVector2 operator+(const TVector2& V) const;
-		inline TVector2 operator-(const TVector2& V) const;
-		inline TVector2 operator*(const TVector2& V) const;
-		inline float    operator|(const TVector2& V) const;
-		inline float    operator^(const TVector2& V) const;
-		TVector2        operator/(const TVector2& V) const;
 
-		inline TVector2 operator+(float A) const;
-		inline TVector2 operator-(float A) const;
-		inline TVector2 operator*(float Scale) const;
-		TVector2        operator/(float Scale) const;
+		inline TVector2 operator+(const TVector2& V) const
+		{
+			return TVector2(x + V.x, y + V.y);
+		}
+
+		inline TVector2 operator-(const TVector2& V) const
+		{
+			return TVector2(x - V.x, y - V.y);
+		}
+
+		inline TVector2 operator*(const TVector2& V) const
+		{
+			return TVector2(x * V.x, y * V.y);
+		}
+
+		inline float operator|(const TVector2& V) const
+		{
+			return x * V.x + y * V.y;
+		}
+
+		inline float operator^(const TVector2& V) const
+		{
+			return x * V.y - y * V.x;
+		}
+
+		TVector2 operator/(const TVector2& V) const
+		{
+			return TVector2(x / V.x, y / V.y);
+		}
+
+		inline TVector2 operator+(float A) const
+		{
+			return TVector2(x + A, y + A);
+		}
+
+		inline TVector2 operator-(float A) const
+		{
+			return TVector2(x - A, y - A);
+		}
+
+		inline TVector2 operator*(float Scale) const
+		{
+			return TVector2(x * Scale, y * Scale);
+		}
+
+		TVector2 operator/(float Scale) const
+		{
+			return TVector2(x / Scale, y / Scale);
+		}
 
 		bool operator==(const TVector2& V) const;
 		bool operator==(const ImVec2& V) const;

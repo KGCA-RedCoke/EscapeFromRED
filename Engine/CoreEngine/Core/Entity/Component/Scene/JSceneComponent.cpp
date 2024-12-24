@@ -2,36 +2,12 @@
 
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
-#include "Core/Graphics/Material/MMaterialInstanceManager.h"
+#include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
+#include "Core/Graphics/Mesh/JMeshData.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Interface/JWorld.h"
 #include "imgui/imgui_stdlib.h"
 
-JSceneComponent_2D::JSceneComponent_2D() {}
-
-JSceneComponent_2D::JSceneComponent_2D(JTextView InName, AActor* InOwnerActor) {}
-
-JSceneComponent_2D::~JSceneComponent_2D() {}
-
-bool JSceneComponent_2D::Serialize_Implement(std::ofstream& FileStream)
-{
-	return JActorComponent::Serialize_Implement(FileStream);
-}
-
-bool JSceneComponent_2D::DeSerialize_Implement(std::ifstream& InFileStream)
-{
-	return JActorComponent::DeSerialize_Implement(InFileStream);
-}
-
-void JSceneComponent_2D::Initialize()
-{
-	m2DMaterialInstance = GetWorld.MaterialInstanceManager->Load(NAME_MAT_2D);
-}
-
-void JSceneComponent_2D::Tick(float DeltaTime)
-{
-	JActorComponent::Tick(DeltaTime);
-}
 
 JSceneComponent::JSceneComponent()
 	: mParentSceneComponent(nullptr)
@@ -194,6 +170,31 @@ void JSceneComponent::ShowEditor()
 		ImGui::DragFloat3(u8("크기"), &mLocalScale.x, 0.01f, 0.f, 10.0f);
 	}
 
+	if (auto* parentSkeletalMesh = dynamic_cast<JSkeletalMeshComponent*>(mParentSceneComponent))
+	{
+		ImGui::SeparatorText(u8("소켓"));
+
+		ImGui::DragFloat3(u8("위치 오프셋"), &mLocalLocation.x);
+		ImGui::DragFloat3(u8("회전 오프셋"), &mLocalRotation.x);
+		ImGui::DragFloat3(u8("크기 오프셋"), &mLocalScale.x);
+
+		const auto* meshData = parentSkeletalMesh->GetSkeletalMesh().get();
+		const auto* skinData = meshData->GetSkinData().get();
+		if (ImGui::BeginCombo("SOCKET", mSocketName.c_str()))
+		{
+			for (int32_t i = 0; i < skinData->GetBoneCount(); ++i)
+			{
+				const JText socketName = skinData->GetInfluenceBoneName(i);
+				if (ImGui::Selectable(socketName.c_str()))
+				{
+					AttachToBoneSocket(parentSkeletalMesh, socketName);
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+	}
+
 	ImGui::SeparatorText(u8("오브젝트 플래그"));
 	for (int32_t i = 0; i < 6; i++)
 	{
@@ -282,6 +283,21 @@ void JSceneComponent::SetWorldScale(const FVector& InScale)
 	}
 }
 
+void JSceneComponent::SetLocalLocation(const FVector& InTranslation)
+{
+	mLocalLocation = InTranslation;
+}
+
+void JSceneComponent::SetLocalRotation(const FVector& InRotation)
+{
+	mLocalRotation = InRotation;
+}
+
+void JSceneComponent::SetLocalScale(const FVector& InScale)
+{
+	mLocalScale = InScale;
+}
+
 void JSceneComponent::AddChildSceneComponent(JSceneComponent* Ptr)
 {}
 
@@ -302,7 +318,7 @@ void JSceneComponent::SetupAttachment(JSceneComponent* InParentComponent)
 	mOwnerActor->mChildSceneComponents.erase(mOwnerActor->mChildSceneComponents.begin() + index);
 
 	mParentSceneComponent = InParentComponent;
-	SetOwnerActor(InParentComponent->GetOwnerActor());
+	mOwnerActor           = InParentComponent->GetOwnerActor();
 }
 
 void JSceneComponent::AttachComponent(JSceneComponent* InChildComponent)
@@ -327,6 +343,14 @@ void JSceneComponent::AttachToActor(AActor* InParentActor, JSceneComponent* InCo
 
 }
 
+void JSceneComponent::AttachToBoneSocket(JSkeletalMeshComponent* InParent, JTextView InSocketName)
+{
+	SetupAttachment(InParent);
+
+	mParentSkeletal = InParent;
+	mSocketName     = InSocketName;
+}
+
 void JSceneComponent::DetachFromComponent()
 {}
 
@@ -345,26 +369,34 @@ void JSceneComponent::UpdateTransform()
 	mCachedLocalMat = mLocalMat;
 
 	// Step1. 로컬 좌표 변환
-	mLocalLocationMat = DirectX::XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z);
+	mLocalLocationMat = XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z);
 
 	mLocalRotationMat = XMMatrixRotationRollPitchYaw(
 													 XMConvertToRadians(mLocalRotation.x),
 													 XMConvertToRadians(mLocalRotation.y),
 													 XMConvertToRadians(mLocalRotation.z));
 
-	mLocalScaleMat = DirectX::XMMatrixScaling(mLocalScale.x, mLocalScale.y, mLocalScale.z);
+	mLocalScaleMat = XMMatrixScaling(mLocalScale.x, mLocalScale.y, mLocalScale.z);
 
 	mLocalMat = mLocalScaleMat * mLocalRotationMat * mLocalLocationMat;
 
 	// Step2. 부모 씬 컴포넌트가 존재한다면, 로컬 행렬을 계산
 	if (mParentSceneComponent)
 	{
-		mWorldMat = mLocalMat * mParentSceneComponent->mWorldMat;
+		if (mParentSkeletal)
+		{
+			mWorldMat = mLocalMat * mParentSkeletal->GetAnimBoneMatrix(mSocketName) * mParentSceneComponent->mWorldMat;
+		}
+		else
+		{
+			mWorldMat = mLocalMat * mParentSceneComponent->mWorldMat;
+		}
 	}
 	else // 부모가 없는 씬 컴포넌트는 그 자체 위치를 월드 위치로 사용
 	{
 		mWorldMat = mLocalMat;
 	}
+
 
 	DirectX::XMVECTOR scale, rot, loc;
 	XMMatrixDecompose(&scale, &rot, &loc, mWorldMat);
@@ -397,13 +429,13 @@ void JSceneComponent::UpdateWorldTransform()
 JBoxComponent::JBoxComponent()
 	: JSceneComponent()
 {
-	mObjectType = NAME_OBJECT_BOX_COMPONENT;
+	mObjectType = NAME_COMPONENT_BOX;
 }
 
 JBoxComponent::JBoxComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
 	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent)
 {
-	mObjectType = NAME_OBJECT_BOX_COMPONENT;
+	mObjectType = NAME_COMPONENT_BOX;
 }
 
 void JBoxComponent::Initialize()

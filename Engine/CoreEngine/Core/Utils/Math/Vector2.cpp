@@ -37,66 +37,6 @@ namespace JMath
 	}
 
 
-	TVector2 TVector2::operator+(const TVector2& V) const
-	{
-		return TVector2(x + V.x, y + V.y);
-	}
-
-
-	TVector2 TVector2::operator-(const TVector2& V) const
-	{
-		return TVector2(x - V.x, y - V.y);
-	}
-
-
-	TVector2 TVector2::operator*(const TVector2& V) const
-	{
-		return TVector2(x * V.x, y * V.y);
-	}
-
-
-	float TVector2::operator|(const TVector2& V) const
-	{
-		return x * V.x + y * V.y;
-	}
-
-
-	float TVector2::operator^(const TVector2& V) const
-	{
-		return x * V.y - y * V.x;
-	}
-
-
-	TVector2 TVector2::operator/(const TVector2& V) const
-	{
-		return TVector2(x / V.x, y / V.y);
-	}
-
-
-	TVector2 TVector2::operator+(float A) const
-	{
-		return TVector2(x + A, y + A);
-	}
-
-
-	TVector2 TVector2::operator-(float A) const
-	{
-		return TVector2(x - A, y - A);
-	}
-
-
-	TVector2 TVector2::operator*(float Scale) const
-	{
-		return TVector2(x * Scale, y * Scale);
-	}
-
-
-	TVector2 TVector2::operator/(float Scale) const
-	{
-		return TVector2(x / Scale, y / Scale);
-	}
-
-
 	bool TVector2::operator==(const TVector2& V) const
 	{
 		return x == V.x && y == V.y;

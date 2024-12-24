@@ -32,6 +32,8 @@ public:
 	 * 게임 오버
 	 */
 	virtual void GameOver() = 0;
+
+	virtual bool IsInGame() const = 0;
 };
 
 class JGameMode : public IGameMode
@@ -44,4 +46,15 @@ public:
 	uint32_t GetType() const override;
 	bool     Serialize_Implement(std::ofstream& FileStream) override;
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void StartGame() override;
+	void EndGame() override;
+	void CreatePlayer() override;
+	void GameOver() override;
+	bool IsInGame() const override { return bInGame; }
+
+private:
+	bool bInGame = false;
+
 };
