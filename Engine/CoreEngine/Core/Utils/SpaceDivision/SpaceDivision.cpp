@@ -39,9 +39,9 @@ void Quad::FNode::Update()
 
 void Quad::FNode::Render(JCameraComponent* InCamera)
 {
-	if (InCamera->IsQuadInFrustum(BoundArea))
+	if (InCamera->IsBoxInFrustum(BoundBox))
 	{
-		BoundArea.DrawDebug();
+		// BoundBox.DrawDebug();
 		for (const auto& actor : Actors)
 		{
 			if (actor)
@@ -66,7 +66,7 @@ void Quad::FNode::Subdivide(FNode* InRoot)
 	Root = InRoot;
 
 	const FVector center = BoundArea.Center;
-	const FVector extent = BoundArea.Extent * 0.5f;	// 부모 노드의 크기의 절반
+	const FVector extent = {BoundArea.Extent.x * 0.5f, BoundArea.Extent.y, BoundArea.Extent.z * 0.5f};	// 부모 노드의 크기의 절반
 	const FVector min    = center - extent;
 	const FVector max    = center + extent;
 
@@ -87,6 +87,7 @@ void Quad::FNode::Subdivide(FNode* InRoot)
 
 		// 자식 노드의 BoundArea 설정
 		Children[i]->BoundArea = FQuad(childCenters[i], extent);
+		Children[i]->BoundBox  = FBoxShape(childCenters[i], extent);
 	}
 
 	// 현재 노드는 더 이상 리프 노드가 아님
@@ -99,22 +100,12 @@ void Quad::FNode::Insert(AActor* InActor)
 	if (bIsLeaf)
 	{
 		// 최대 깊이 또는 자식 노드로 더 이상 분리할 수 없는 경우, 직접 저장
-		if (Depth >= MAX_DEPTH || Children[0] != nullptr)
+		if (Depth >= MAX_DEPTH || Children[0] == nullptr)
 		{
 			Actors.emplace_back(InActor);
 
 			return;
 		}
-
-		// // 자식 노드로 분리
-		// Subdivide();
-
-		// // 기존에 저장된 액터들을 재분배
-		// for (const auto& existingActor : Actors)
-		// {
-		// 	InsertIntoChildren(existingActor);
-		// }
-		// Actors.clear();
 	}
 
 	// 자식 노드 중 하나에 삽입
@@ -125,25 +116,9 @@ void Quad::FNode::InsertIntoChildren(AActor* InActor)
 {
 	const FBoxShape& actorBounds = InActor->GetBoundingVolume();
 
-	int32_t duplicateCount = 0;
-
-	// for (int i = 0; i < 4; ++i)
-	// {
-	// 	if (Children[i]->BoundArea.Contains(actorBounds.Box.Center))
-	// 	{
-	// 		duplicateCount++;
-	// 		if (duplicateCount > 1)
-	// 		{
-	// 			Actors.emplace_back(InActor);
-	// 			return;
-	// 		}
-	// 	}
-	//
-	// }
-
 	for (int i = 0; i < 4; ++i)
 	{
-		if (Children[i]->BoundArea.Contains(actorBounds.Box.Center))
+		if (Children[i]->BoundBox.Intersect(actorBounds))
 		{
 			Children[i]->Insert(InActor);
 			return;
@@ -202,6 +177,7 @@ void Quad::JTree::Initialize(const FQuad& InRootBoundArea, uint32_t InDepth)
 
 	mRootNode            = MakeUPtr<FNode>();
 	mRootNode->BoundArea = InRootBoundArea;
+	mRootNode->BoundBox  = FBoxShape(InRootBoundArea.Center, InRootBoundArea.Extent);
 
 	Subdivide(mRootNode.get(), InDepth, mRootNode.get());
 }

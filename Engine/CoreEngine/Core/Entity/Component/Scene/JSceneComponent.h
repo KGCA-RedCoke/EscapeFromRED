@@ -3,7 +3,12 @@
 #include "Core/Interface/IRenderable.h"
 #include "Core/Utils/Math/TMatrix.h"
 #include "Shape/JShape.h"
+#include "Shape/Collision/MCollisionManager.h"
 
+namespace Quad
+{
+	struct FNode;
+}
 /**
  * 씬 컴포넌트는 씬에 배치되는 모든 액터의 기본 컴포넌트
  * 위치 및 회전, 크기를 가지며, 이를 통해 컴포넌트의 위치 및 회전을 결정
@@ -26,6 +31,7 @@ public:
 	bool DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void Initialize() override;
 	void Tick(float DeltaTime) override;
 
 public:
@@ -124,8 +130,8 @@ protected:
 	FMatrix mLocalScaleMat    = FMatrix::Identity;
 	FMatrix mLocalMat         = FMatrix::Identity;
 
-	FMatrix mCachedLocalMat  = FMatrix::Identity;
-	FMatrix mCachedParentMat = FMatrix::Identity;
+	bool    bLocalDirty     = false;
+	FMatrix mCachedWorldMat = FMatrix::Identity;
 
 	JSkeletalMeshComponent* mParentSkeletal;
 	JText                   mSocketName;
@@ -134,16 +140,73 @@ protected:
 	friend class GUI_Inspector;
 };
 
-REGISTER_CLASS_TYPE(JSceneComponent);
+
+class JCollisionComponent : public JSceneComponent, public ICollision
+{
+public:
+	JCollisionComponent() = default;
+
+	JCollisionComponent(JTextView InName, AActor* InOwner = nullptr, JSceneComponent* InParent = nullptr)
+		: JSceneComponent(InName, InOwner, InParent) {};
+	~JCollisionComponent() override = default;
+
+public:
+	uint32_t GetType() const override;
+	bool     Serialize_Implement(std::ofstream& FileStream) override;
+	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
+
+public:
+	void Initialize() override;
+	void BeginPlay() override;
+	void Destroy() override;
+
+public:
+	FBoxShape      GetBox() const override;
+	FRay           GetRay() const override;
+	FSphere        GetSphere() const override;
+	uint32_t       GetCollisionID() override { return GetHash(); }
+	ETraceType     GetTraceType() const override { return mTraceType; }
+	ECollisionType GetCollisionType() const override { return mCollisionType; }
+	void           SetTraceType(ETraceType InType) override { mTraceType = InType; }
+	void           SetCollisionType(ECollisionType InType) override { mCollisionType = InType; }
+	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	Quad::FNode*   GetDivisionNode() const;
+
+public:
+	void ShowEditor() override;
+
+protected:
+	ETraceType        mTraceType     = ETraceType::Pawn;
+	ECollisionType    mCollisionType = ECollisionType::None;
+	DirectX::XMVECTOR mColor{{0.678431392f, 1.f, 0.184313729f, 1.f}};
+};
+
+class JLineComponent : public JCollisionComponent
+{
+public:
+	JLineComponent();
+	JLineComponent(JTextView InName, AActor* InOwnerActor = nullptr, JSceneComponent* InParentSceneComponent = nullptr);
+	~JLineComponent() override = default;
+
+public:
+	void Initialize() override;
+	void Tick(float DeltaTime) override;
+	void Draw() override;
+
+public:
+	void ShowEditor() override;
+
+public:
+	bool Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	ECollisionType GetCollisionType() const override;
+	FRay GetRay() const override;
+
+protected:
+	FRay mRay;
+};
 
 
-// class JShape : public JSceneComponent
-// {
-// public:
-// 	virtual void GenCollisionData() = 0;
-// };
-
-class JBoxComponent : public JSceneComponent, public IRenderable
+class JBoxComponent : public JCollisionComponent
 {
 public:
 	JBoxComponent();
@@ -153,16 +216,17 @@ public:
 public:
 	void Initialize() override;
 	void Tick(float DeltaTime) override;
-
-public:
-	void PreRender() override {}
-	void AddInstance(float InCameraDistance) override {};
-	void PostRender() override {};
 	void Draw() override;
-	void DrawID(uint32_t ID) override {};
 
 public:
 	void ShowEditor() override;
+
+public:
+	bool Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	ECollisionType GetCollisionType() const override;
+	FBoxShape GetBox() const override;
 };
 
+REGISTER_CLASS_TYPE(JSceneComponent);
+REGISTER_CLASS_TYPE(JLineComponent);
 REGISTER_CLASS_TYPE(JBoxComponent);

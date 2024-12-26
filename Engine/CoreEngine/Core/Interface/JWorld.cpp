@@ -33,46 +33,32 @@ JWorld::JWorld()
 
 void JWorld::Initialize()
 {
-	Application = Application::s_AppInstance;
-
 	G_Logger.Initialize();			 // Logger
 
-	D3D11API = &XD3DDevice::Get();
-
-	ShaderManager = &MShaderManager::Get();
-
-	CameraManager = &MCameraManager::Get();
-
-	ViewportManager = &MViewportManager::Get();
-
-	TextureManager = &MTextureManager::Get();
-
-	MaterialManager = &MMaterialManager::Get();
-	MaterialManager->SaveEngineMaterials();
-
+	Application             = Application::s_AppInstance;
+	D3D11API                = &XD3DDevice::Get();
+	ShaderManager           = &MShaderManager::Get();
+	CameraManager           = &MCameraManager::Get();
+	ViewportManager         = &MViewportManager::Get();
+	TextureManager          = &MTextureManager::Get();
+	MaterialManager         = &MMaterialManager::Get();
 	MaterialInstanceManager = &MMaterialInstanceManager::Get();
+	MeshManager             = &MMeshManager::Get();
+	LevelManager            = &MLevelManager::Get();
+	SoundManager            = &MSoundManager::Get();
+	GUIManager              = &MGUIManager::Get();
+	UIManager               = &MUIManager::Get();
+	AnimationManager        = &MAnimManager::Get();
+	ColliderManager         = &MCollisionManager::Get();
 
-	MeshManager = &MMeshManager::Get();
-
-	LevelManager = &MLevelManager::Get();
-
-	SoundManager = &MSoundManager::Get();
-
-	GUIManager = &MGUIManager::Get();
+	MaterialManager->SaveEngineMaterials();
 	GUIManager->Initialize(D3D11API->GetDevice(), D3D11API->GetImmediateDeviceContext());
-
-	UIManager = &MUIManager::Get();
-
-	AnimationManager = &MAnimManager::Get();
-
 	G_DebugBatch.Initialize();		 // Primitive Batch
-
-	// NAV_MAP.Initialize();
 
 	OnDebugModeChanged.Bind([](bool bDebugMode){});
 
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/Engine/Tex)"));
-	ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
+	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
 	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc)"));
 
 	const char* levelPath = g_settings["Editor.Level"]["DefaultLevel"].as<const char*>();
@@ -94,7 +80,6 @@ void JWorld::Initialize()
 	// 								 "Game/Mesh/SM_Couch_01.jasset");
 	// 	newActor->Initialize();
 	// }
-	// SpawnActor<JStaticMeshActor>("Sample", FVector::ZeroVector, FVector::ZeroVector, nullptr, "Game/Mesh/Cube.jasset");
 }
 
 void JWorld::Update(float DeltaTime)
@@ -103,11 +88,11 @@ void JWorld::Update(float DeltaTime)
 
 	SoundManager->Update(DeltaTime);
 
+	ColliderManager->UpdateCollision();
+
 	LevelManager->Update(DeltaTime);
 
 	G_DebugBatch.Update(DeltaTime);
-	
-	// NAV_MAP.Update(DeltaTime);	
 }
 
 void JWorld::Render()
@@ -116,12 +101,8 @@ void JWorld::Render()
 
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
 	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
-	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
-
-
+	// ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 	LevelManager->Render();
-	// NAV_MAP.Render();
-
 }
 
 void JWorld::Release()

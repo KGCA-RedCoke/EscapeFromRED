@@ -25,7 +25,8 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mCurrentAnimIndex = 1;
 	mSkeletalMeshComponent->SetAnimation(mAnimList.back());
 
-	mLightMesh = CreateDefaultSubObject<JStaticMeshComponent>("LightMesh", this, this);
+	mLightMesh = CreateDefaultSubObject<JStaticMeshComponent>("LightMesh", this);
+	mLightMesh->SetupAttachment(mSkeletalMeshComponent);
 	mLightMesh->SetMeshObject("Game/Mesh/SM_Flashlight_01.jasset");
 	mLightMesh->AttachToBoneSocket(mSkeletalMeshComponent, "hand_r");
 	mLightMesh->SetLocalLocation({-24.950527, -10.713480, -8.060391});
@@ -33,7 +34,9 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
-	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this, mSkeletalMeshComponent);
+	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this);
+	mFPSCamera->SetupAttachment(mSkeletalMeshComponent);
+
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
 
 }
@@ -53,6 +56,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		mInput->Update(DeltaTime);
 	}
+	UpdateRotation();
+	ACharacter::Tick(DeltaTime);
+
 	if (bMove && mCurrentAnimIndex != 0)
 	{
 		mSkeletalMeshComponent->SetAnimation(mAnimList[0]);
@@ -63,10 +69,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 		mSkeletalMeshComponent->SetAnimation(mAnimList[1]);
 		mCurrentAnimIndex = 1;
 	}
-
-	ACharacter::Tick(DeltaTime);
-
-	UpdateRotation();
 }
 
 void APlayerCharacter::Destroy()

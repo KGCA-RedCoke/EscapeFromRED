@@ -27,6 +27,11 @@ AActor::AActor(const AActor& Copy)
 void AActor::Initialize()
 {
 	JSceneComponent::Initialize();
+
+	for (const auto& actorComponent : mActorComponents)
+	{
+		actorComponent->Initialize();
+	}
 }
 
 void AActor::BeginPlay()
@@ -63,7 +68,7 @@ void AActor::Draw()
 
 uint32_t AActor::GetType() const
 {
-	// return JSceneComponent::GetType();
+	// return JSceneComponent::GetCollisionType();
 	return HASH_ASSET_TYPE_Actor;
 }
 

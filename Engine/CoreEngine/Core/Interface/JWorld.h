@@ -61,6 +61,7 @@ public:
 	class MSoundManager*            SoundManager;			// 사운드
 	class MUIManager*               UIManager;				// UI
 	class MAnimManager*             AnimationManager;		// 애니메이션
+	class MCollisionManager*        ColliderManager;		// 충돌체
 	class XD3DDevice*               D3D11API;				// 디바이스
 
 

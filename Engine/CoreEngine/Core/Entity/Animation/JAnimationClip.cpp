@@ -472,6 +472,11 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 	mInstanceData.NextAnimIndex = endFrame;
 }
 
+void JAnimationClip::AddTransition(const JText& InState, const std::function<bool>& InFunc)
+{
+	// mTransitionMap[InState].emplace_back(InFunc);
+}
+
 void JAnimationClip::SetSkeletalMesh(const Ptr<JSkeletalMesh>& InSkeletalMesh)
 {
 	mSkeletalMesh = InSkeletalMesh;

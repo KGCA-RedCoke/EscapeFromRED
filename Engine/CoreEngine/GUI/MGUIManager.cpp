@@ -14,6 +14,7 @@
 #include "Editor/LandScape/GUI_Editor_LandScape.h"
 #include "Editor/UI/GUI_Editor_UI.h"
 #include "Popup/GUI_Popup_FileBrowser.h"
+#include "Utils/GUI_Settings_Collision.h"
 #include "Viewport/GUI_Viewport_Scene.h"
 
 constexpr char Name_Viewport[]     = "Editor Viewport";
@@ -112,13 +113,26 @@ void MGUIManager::UpdateMainMenuBar()
 			{
 				static int32_t count = 0;
 				Load<GUI_AssetBrowser>(std::format("{}_{}", Name_AssetBrowser, count++))->Initialize();
-
 			}
+			if (ImGui::MenuItem(u8("종료")))
+			{
+				PostQuitMessage(0);
+			}
+
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu(u8("에디터")))
 		{
+			if (ImGui::MenuItem(u8("콜리전 매니저")))
+			{
+				// Collision Manager
+				if (GUI_Settings_Collision* collisionManager = Load<GUI_Settings_Collision>("Collision Manager"))
+				{
+					collisionManager->bIsWindowOpen = true;
+				}
+			}
+
 			if (ImGui::MenuItem(u8("머티리얼 에디터")))
 			{
 				if (GUI_Editor_Material* materialEditor = Load<GUI_Editor_Material>("Material Editor"))

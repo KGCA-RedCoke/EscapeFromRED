@@ -140,6 +140,8 @@ public:
 	[[nodiscard]] FORCEINLINE float GetAnimationSpeed() const { return mAnimationSpeed; }
 	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
 
+	void AddTransition(const JText& InState, const std::function<bool>& InFunc);
+
 	void SetSkeletalMesh(const Ptr<class JSkeletalMesh>& InSkeletalMesh);
 
 	void SetAnimationSpeed(const float InSpeed) { mAnimationSpeed = InSpeed; }
@@ -181,6 +183,8 @@ protected:
 	JArray<Ptr<JAnimBoneTrack>>   mTracks;		// 본별로 트랙을 가지고 있는 배열
 	JHash<JText, JArray<FMatrix>> mBoneMatrix;	// 본별로 행렬을 가지고 있는 해시맵
 	FSkeletalMeshInstanceData     mInstanceData;	// 애니메이션 인스턴스 데이터
+
+	// JHash<JAnimationClip*, JArray<std::function<bool>>> mTransitionMap;	// 전이 맵
 
 	uint32_t mAnimOffset = 0;	// 애니메이션 텍스쳐 오프셋
 

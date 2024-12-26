@@ -27,6 +27,8 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void             SetDivisionNode(Quad::FNode* InNode);
+	Quad::FNode*     GetNode() const;
 	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
 	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
 	JActorComponent* GetChildComponentByType(JTextView InType) const;
@@ -52,8 +54,7 @@ public:
 			mChildSceneComponentIndices.insert({obj->GetName(), mChildSceneComponents.size()});
 			mChildSceneComponents.push_back(std::move(obj));
 		}
-
-		else
+		else if constexpr (std::is_base_of_v<JActorComponent, ObjectType>)
 		{
 			if (mChildActorComponentIndices.contains(obj->GetName()))
 			{

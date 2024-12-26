@@ -132,6 +132,7 @@ constexpr const char* NAME_OBJECT_PLAYER_CHARACTER        = "APlayerCharacter";
 constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
 constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLight_Spot";
 constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLight_Point";
+constexpr const char* NAME_COMPONENT_RAY                  = "JLineComponent";
 constexpr const char* NAME_COMPONENT_BOX                  = "JBoxComponent";
 constexpr const char* NAME_COMPONENT_PAWN_MOVEMENT        = "JPawnMovementComponent";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
@@ -151,6 +152,8 @@ constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash_CompileTime("J
 constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash_CompileTime("JAnimationClip");
 constexpr uint32_t HASH_ASSET_TYPE_ANIMATOR          = StringHash_CompileTime("JAnimator");
 constexpr uint32_t HASH_ASSET_TYPE_WIDGET            = StringHash_CompileTime("JWidget");
+
+constexpr uint32_t HASH_COMPONENT_TYPE_COLLISION = StringHash_CompileTime("JCollisionComponent");
 
 constexpr uint32_t HASH_COMPONENT_TYPE_PawnMovement = StringHash_CompileTime("JPawnMovementComponent");
 

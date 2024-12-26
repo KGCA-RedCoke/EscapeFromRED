@@ -13,6 +13,7 @@ enum EObjectFlags : uint32_t
 	IsPendingKill = 1 << 3, // 소멸 대기 상태
 	DontDestroy   = 1 << 4, // 소멸하지 않는 상태 (레벨 전환 시 소멸되지 않음)
 	IgnoreFrustum = 1 << 5, // 카메라 프러스텀 체크 무시
+	ShouldTick    = 1 << 6  // Tick 함수 호출 여부
 };
 
 constexpr const char* NAME_OBJECT_FLAGS[] =
@@ -22,7 +23,8 @@ constexpr const char* NAME_OBJECT_FLAGS[] =
 	"IsValid",
 	"PendingKill",
 	"DontDestroy",
-	"IgnoreFrustum"
+	"IgnoreFrustum",
+	"ShouldTick"
 };
 
 class JObject : public JAsset,
@@ -46,7 +48,7 @@ public:
 public:
 	virtual void Initialize() {}
 	virtual void BeginPlay() {}
-	virtual void Tick(float DeltaTime) {}
+	virtual void Tick(float DeltaTime) {};
 
 	virtual void Destroy()
 	{
@@ -61,6 +63,7 @@ public:
 	[[nodiscard]] bool IsMarkedAsDirty() const { return mObjectFlags & EObjectFlags::MarkAsDirty; }
 	[[nodiscard]] bool IsDontDestroy() const { return mObjectFlags & EObjectFlags::DontDestroy; }
 	[[nodiscard]] bool IsIgnoreFrustum() const { return mObjectFlags & EObjectFlags::IgnoreFrustum; }
+	[[nodiscard]] bool ShouldTick() const { return mObjectFlags & EObjectFlags::ShouldTick; }
 
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
 

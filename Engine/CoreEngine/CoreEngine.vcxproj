@@ -220,6 +220,7 @@
     <ClInclude Include="GUI\GUI_Themes.h" />
     <ClInclude Include="GUI\MGUIManager.h" />
     <ClInclude Include="GUI\Popup\GUI_Popup_FileBrowser.h" />
+    <ClInclude Include="GUI\Utils\GUI_Settings_Collision.h" />
     <ClInclude Include="GUI\Utils\GUI_Utils.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport.h" />
     <ClInclude Include="GUI\Viewport\GUI_Viewport_Scene.h" />
@@ -391,6 +392,7 @@
     <ClCompile Include="GUI\GUI_Themes.cpp" />
     <ClCompile Include="GUI\MGUIManager.cpp" />
     <ClCompile Include="GUI\Popup\GUI_Popup_FileBrowser.cpp" />
+    <ClCompile Include="GUI\Utils\GUI_Settings_Collision.cpp" />
     <ClCompile Include="GUI\Utils\GUI_Utils.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport.cpp" />
     <ClCompile Include="GUI\Viewport\GUI_Viewport_Scene.cpp" />

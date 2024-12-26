@@ -10,14 +10,16 @@
 
 
 JSceneComponent::JSceneComponent()
-	: mParentSceneComponent(nullptr)
+	: mParentSceneComponent(nullptr),
+	  mParentSkeletal(nullptr)
 {
 	mObjectType = NAME_OBJECT_SCENE_COMPONENT;
 }
 
 JSceneComponent::JSceneComponent(JTextView        InName, AActor* InOwnerActor,
 								 JSceneComponent* InParentSceneComponent)
-	: JActorComponent(InName)
+	: JActorComponent(InName),
+	  mParentSkeletal(nullptr)
 {
 	mObjectType = NAME_OBJECT_SCENE_COMPONENT;
 
@@ -128,6 +130,16 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
+void JSceneComponent::Initialize()
+{
+	JActorComponent::Initialize();
+
+	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
+	{
+		mChildSceneComponents[i]->Initialize();
+	}
+}
+
 void JSceneComponent::Tick(float DeltaTime)
 {
 	UpdateTransform();
@@ -174,11 +186,11 @@ void JSceneComponent::ShowEditor()
 	{
 		ImGui::SeparatorText(u8("소켓"));
 
-		ImGui::DragFloat3(u8("위치 오프셋"), &mLocalLocation.x);
-		ImGui::DragFloat3(u8("회전 오프셋"), &mLocalRotation.x);
-		ImGui::DragFloat3(u8("크기 오프셋"), &mLocalScale.x);
-
 		const auto* meshData = parentSkeletalMesh->GetSkeletalMesh().get();
+		if (!meshData)
+		{
+			return;
+		}
 		const auto* skinData = meshData->GetSkinData().get();
 		if (ImGui::BeginCombo("SOCKET", mSocketName.c_str()))
 		{
@@ -286,16 +298,19 @@ void JSceneComponent::SetWorldScale(const FVector& InScale)
 void JSceneComponent::SetLocalLocation(const FVector& InTranslation)
 {
 	mLocalLocation = InTranslation;
+	bLocalDirty    = true;
 }
 
 void JSceneComponent::SetLocalRotation(const FVector& InRotation)
 {
 	mLocalRotation = InRotation;
+	bLocalDirty    = true;
 }
 
 void JSceneComponent::SetLocalScale(const FVector& InScale)
 {
 	mLocalScale = InScale;
+	bLocalDirty = true;
 }
 
 void JSceneComponent::AddChildSceneComponent(JSceneComponent* Ptr)
@@ -308,17 +323,21 @@ void JSceneComponent::SetupAttachment(JSceneComponent* InParentComponent)
 		return;
 	}
 
-	const int32_t index = mOwnerActor->mChildSceneComponentIndices[GetName()];
-
-	InParentComponent->mChildSceneComponentIndices[GetName()] = InParentComponent->mChildSceneComponents.size();
-	InParentComponent->mChildSceneComponents.push_back(std::move(mOwnerActor->mChildSceneComponents[index]));
-
-	// 원래 존재하던 mParentSceneComponent의 배열 업데이트
-	mOwnerActor->mChildSceneComponentIndices.erase(GetName());
-	mOwnerActor->mChildSceneComponents.erase(mOwnerActor->mChildSceneComponents.begin() + index);
-
 	mParentSceneComponent = InParentComponent;
-	mOwnerActor           = InParentComponent->GetOwnerActor();
+
+	if (mParentSceneComponent != mOwnerActor)
+	{
+		const int32_t index = mOwnerActor->mChildSceneComponentIndices[GetName()];
+
+		InParentComponent->mChildSceneComponentIndices[GetName()] = InParentComponent->mChildSceneComponents.size();
+		InParentComponent->mChildSceneComponents.push_back(std::move(mOwnerActor->mChildSceneComponents[index]));
+
+		// 원래 존재하던 mParentSceneComponent의 배열 업데이트
+		mOwnerActor->mChildSceneComponents.erase(mOwnerActor->mChildSceneComponents.begin() + index);
+		mOwnerActor->mChildSceneComponentIndices.erase(GetName());
+	}
+
+	mOwnerActor = mParentSceneComponent->GetOwnerActor();
 }
 
 void JSceneComponent::AttachComponent(JSceneComponent* InChildComponent)
@@ -366,10 +385,11 @@ JSceneComponent* JSceneComponent::GetComponentByName(const JText& InName)
 
 void JSceneComponent::UpdateTransform()
 {
-	mCachedLocalMat = mLocalMat;
+	// 로컬 행렬이 변경되었다면, 로컬 행렬을 계산
 
 	// Step1. 로컬 좌표 변환
 	mLocalLocationMat = XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z);
+	XMStoreFloat4x4(&mLocalLocationMat, XMMatrixTranslation(mLocalLocation.x, mLocalLocation.y, mLocalLocation.z));
 
 	mLocalRotationMat = XMMatrixRotationRollPitchYaw(
 													 XMConvertToRadians(mLocalRotation.x),
@@ -379,6 +399,7 @@ void JSceneComponent::UpdateTransform()
 	mLocalScaleMat = XMMatrixScaling(mLocalScale.x, mLocalScale.y, mLocalScale.z);
 
 	mLocalMat = mLocalScaleMat * mLocalRotationMat * mLocalLocationMat;
+
 
 	// Step2. 부모 씬 컴포넌트가 존재한다면, 로컬 행렬을 계산
 	if (mParentSceneComponent)
@@ -397,17 +418,27 @@ void JSceneComponent::UpdateTransform()
 		mWorldMat = mLocalMat;
 	}
 
+	// 이전 프레임 월드 행렬과 현재 프레임 월드 행렬이 같다면, 업데이트를 하지 않음 (Decompose는 연산비용이 비싸기 때문)
+	if (mCachedWorldMat == mWorldMat)
+	{
+		return;
+	}
 
-	DirectX::XMVECTOR scale, rot, loc;
+	XMVECTOR scale, rot, loc;
 	XMMatrixDecompose(&scale, &rot, &loc, mWorldMat);
 	mWorldLocation = loc;
 	mWorldRotation = rot;
 	mWorldScale    = scale;
 
-	if (mCachedLocalMat != mLocalMat)
-	{
-		MarkAsDirty();
-	}
+	mCachedWorldMat = mWorldMat;
+
+	// 프러스텀 박스(OBB) 업데이트
+	mBoundingBox.Box.Center       = mWorldLocation;
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+
+	MarkAsDirty();
 }
 
 void JSceneComponent::UpdateWorldTransform()
@@ -426,39 +457,240 @@ void JSceneComponent::UpdateWorldTransform()
 										 mWorldLocation.z);
 }
 
+uint32_t JCollisionComponent::GetType() const
+{
+	return HASH_COMPONENT_TYPE_COLLISION;
+}
+
+bool JCollisionComponent::Serialize_Implement(std::ofstream& FileStream)
+{
+	if (!JSceneComponent::Serialize_Implement(FileStream))
+	{
+		return false;
+	}
+	// Box Color
+	Utils::Serialization::Serialize_Primitive(&mColor, sizeof(mColor), FileStream);
+	return true;
+}
+
+bool JCollisionComponent::DeSerialize_Implement(std::ifstream& InFileStream)
+{
+	if (!JSceneComponent::DeSerialize_Implement(InFileStream))
+	{
+		return false;
+	}
+	// Box Color
+	Utils::Serialization::DeSerialize_Primitive(&mColor, sizeof(mColor), InFileStream);
+	return true;
+}
+
+void JCollisionComponent::Initialize()
+{
+	JSceneComponent::Initialize();
+
+	GetWorld.ColliderManager->EnrollCollision(this);
+}
+
+void JCollisionComponent::BeginPlay()
+{
+	JSceneComponent::BeginPlay();
+
+	// GetWorld.ColliderManager->EnrollCollision(this);
+}
+
+void JCollisionComponent::Destroy()
+{
+	JSceneComponent::Destroy();
+
+	GetWorld.ColliderManager->UnEnrollCollision(this);
+}
+
+FBoxShape JCollisionComponent::GetBox() const
+{
+	return {};
+}
+
+FRay JCollisionComponent::GetRay() const
+{
+	return {};
+}
+
+FSphere JCollisionComponent::GetSphere() const
+{
+	return {};
+}
+
+bool JCollisionComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
+{
+	return false;
+}
+
+Quad::FNode* JCollisionComponent::GetDivisionNode() const
+{
+	return nullptr;
+}
+
+void JCollisionComponent::ShowEditor()
+{
+	ImGui::InputText(u8("이름"),
+					 &mName,
+					 ImGuiInputTextFlags_CharsNoBlank);
+
+	ImGui::Separator();
+	ImGui::TextColored({0.7f, 0.42f, 0.19f, 1.f}, u8("변환 정보"));
+	ImGui::DragFloat3(u8("위치"), &mLocalLocation.x, 1.f);
+
+	ImGui::ColorEdit4(u8("디버그 색상"), &mColor.m128_f32[0]);
+
+	if (ImGui::BeginCombo(u8("충돌 타입"), TraceTypeToString(mTraceType)))
+	{
+		for (int32_t i = 0; i < EnumAsByte(ETraceType::Max); ++i)
+		{
+			if (ImGui::Selectable(TraceTypeToString(static_cast<ETraceType>(i))))
+			{
+				mTraceType = static_cast<ETraceType>(i);
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+}
+
+JLineComponent::JLineComponent()
+{
+	mObjectType = NAME_COMPONENT_RAY;
+}
+
+JLineComponent::JLineComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
+	: JCollisionComponent(InName, InOwnerActor, InParentSceneComponent)
+{
+	mObjectType = NAME_COMPONENT_RAY;
+}
+
+void JLineComponent::Initialize()
+{
+	JCollisionComponent::Initialize();
+}
+
+void JLineComponent::Tick(float DeltaTime)
+{
+	JCollisionComponent::Tick(DeltaTime);
+
+	mRay.Origin = mWorldLocation;
+}
+
+void JLineComponent::Draw()
+{
+	mRay.DrawDebug(mColor);
+}
+
+void JLineComponent::ShowEditor()
+{
+	JCollisionComponent::ShowEditor();
+	ImGui::DragFloat3(u8("방향"), &mRay.Direction.x, 0.1f, -360.0f, 360.0f);
+	ImGui::DragFloat(u8("길이"), &mRay.Length, 0.01f, 1.f, 1000.0f);
+}
+
+bool JLineComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
+{
+	const ECollisionType otherType = InOther->GetCollisionType();
+
+	switch (otherType)
+	{
+	case ECollisionType::None:
+		break;
+	case ECollisionType::Quad:
+		break;
+	case ECollisionType::Plane:
+		break;
+	case ECollisionType::Ray:
+		break;
+	case ECollisionType::Box:
+		return RayIntersectOBB(mRay, InOther->GetBox(), OutHitResult);
+		break;
+	case ECollisionType::Sphere:
+		break;
+	case ECollisionType::Capsule:
+		break;
+	}
+	return false;
+}
+
+ECollisionType JLineComponent::GetCollisionType() const
+{
+	return ECollisionType::Ray;
+}
+
+FRay JLineComponent::GetRay() const
+{
+	return mRay;
+}
+
 JBoxComponent::JBoxComponent()
-	: JSceneComponent()
+	: JCollisionComponent()
 {
 	mObjectType = NAME_COMPONENT_BOX;
 }
 
 JBoxComponent::JBoxComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
-	: JSceneComponent(InName, InOwnerActor, InParentSceneComponent)
+	: JCollisionComponent(InName, InOwnerActor, InParentSceneComponent)
 {
 	mObjectType = NAME_COMPONENT_BOX;
 }
 
 void JBoxComponent::Initialize()
 {
-	JSceneComponent::Initialize();
+	JCollisionComponent::Initialize();
 }
 
 void JBoxComponent::Tick(float DeltaTime)
 {
-	JSceneComponent::Tick(DeltaTime);
+	JCollisionComponent::Tick(DeltaTime);
 }
 
 void JBoxComponent::Draw()
 {
-	mBoundingBox.DrawDebug();
+	mBoundingBox.DrawDebug(mColor);
 }
 
 void JBoxComponent::ShowEditor()
 {
-	JSceneComponent::ShowEditor();
+	JCollisionComponent::ShowEditor();
+	ImGui::DragFloat3(u8("회전"), &mLocalRotation.x, 0.1f, -360.0f, 360.0f);
+	ImGui::DragFloat3(u8("크기"), &mBoundingBox.Box.Extent.x, 0.01f, 0.01f, 100.0f);
+}
 
-	ImGui::SeparatorText(u8("박스 컴포넌트"));
+bool JBoxComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
+{
+	const ECollisionType otherType = InOther->GetCollisionType();
 
-	ImGui::DragFloat3(u8("중심"), &mBoundingBox.Box.Center.x, 0.1f);
-	ImGui::DragFloat3(u8("반지름"), &mBoundingBox.Box.Extent.x, 0.1f);
+	switch (otherType)
+	{
+	case ECollisionType::None:
+		break;
+	case ECollisionType::Quad:
+		break;
+	case ECollisionType::Plane:
+		break;
+	case ECollisionType::Ray:
+		return RayIntersectOBB(InOther->GetRay(), mBoundingBox, OutHitResult);
+	case ECollisionType::Box:
+		return mBoundingBox.IntersectOBB(InOther->GetBox(), OutHitResult);
+	case ECollisionType::Sphere:
+		break;
+	case ECollisionType::Capsule:
+		break;
+	}
+
+	return false;
+}
+
+ECollisionType JBoxComponent::GetCollisionType() const
+{
+	return ECollisionType::Box;
+}
+
+FBoxShape JBoxComponent::GetBox() const
+{
+	return mBoundingBox;
 }

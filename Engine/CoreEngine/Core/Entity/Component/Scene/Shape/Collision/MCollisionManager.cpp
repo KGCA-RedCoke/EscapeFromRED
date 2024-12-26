@@ -47,7 +47,7 @@ void MCollisionManager::UpdateLayerCollision(ETraceType InRow, ETraceType InCol)
 		for (auto& colCollision : col)
 		{
 			// 동일한 오브젝트(자기자신)는 충돌검사를 하지 않는다.
-			if (InRow != InCol)
+			if (rowCollision != colCollision)
 			{
 				CheckCollision(rowCollision, colCollision);
 			}
@@ -106,7 +106,8 @@ bool MCollisionManager::Intersect(ICollision* InLeft, ICollision* InRight)
 {
 	if (InLeft && InRight)
 	{
-		// return InLeft->Intersect(InRight);
+		FHitResult hitResult;
+		return InLeft->Intersect(InRight, hitResult);
 	}
 
 	return false;

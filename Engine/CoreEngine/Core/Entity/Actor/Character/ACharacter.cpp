@@ -23,6 +23,8 @@ void ACharacter::Initialize()
 {
 	APawn::Initialize();
 
+	mObjectFlags |= EObjectFlags::ShouldTick;
+
 	if (!mSkeletalMeshComponent)
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<

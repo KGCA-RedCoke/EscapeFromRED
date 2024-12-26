@@ -13,7 +13,6 @@ JLightComponent::JLightComponent(JTextView InName, AActor* InOwnerActor, JSceneC
 	: JSceneComponent(InName, InOwnerActor, InParentComponent)
 {
 	mObjectType = NAME_OBJECT_LIGHT_COMPONENT;
-	JLightComponent::Initialize();
 }
 
 void JLightComponent::Initialize()

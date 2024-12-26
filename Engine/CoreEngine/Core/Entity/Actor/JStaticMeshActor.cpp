@@ -41,7 +41,9 @@ void JStaticMeshActor::Initialize()
 }
 
 void JStaticMeshActor::Tick(float DeltaTime)
-{}
+{
+	AActor::Tick(DeltaTime);
+}
 
 bool JStaticMeshActor::Serialize_Implement(std::ofstream& FileStream)
 {

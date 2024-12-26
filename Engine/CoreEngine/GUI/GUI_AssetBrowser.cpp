@@ -13,7 +13,7 @@
 #include "Editor/Mesh/GUI_Editor_Mesh.h"
 #include "Editor/Mesh/GUI_Editor_SkeletalMesh.h"
 #include "Editor/UI/GUI_Editor_UI.h"
-
+#include "imgui/imgui_stdlib.h"
 
 GUI_AssetBrowser::GUI_AssetBrowser(const std::string& InTitle)
 	: GUI_Base(InTitle),
@@ -194,7 +194,7 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 			(ImGui::Shortcut(ImGuiKey_F2, ImGuiInputFlags_Repeat) && mSelection.Size > 0) || bRequestRename;
 
 	const int currentItemIndexToFocus =
-			bWantDelete || bWantRename ? mSelection.ApplyDeletionPreLoop(msIO, mFilteredItems.size()) : -1;
+			bWantDelete /*|| bWantRename */ ? mSelection.ApplyDeletionPreLoop(msIO, mFilteredItems.size()) : -1;
 
 	UpdateClipperAndItemSpacing(msIO, start_pos, currentItemIndexToFocus);
 
@@ -490,6 +490,8 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 				return g_IconList.WidgetIcon->GetSRV();
 			case HASH_ASSET_TYPE_ANIMATION_CLIP:
 				return g_IconList.AnimationIcon->GetSRV();
+			case HASH_ASSET_TYPE_ANIMATOR:
+				return g_IconList.AnimatorIcon->GetSRV();
 			default:
 				return g_IconList.FileIcon->GetSRV();
 			}
@@ -506,32 +508,32 @@ void GUI_AssetBrowser::UpdateIcon(ImVec2 pos, int bIsItemSelected, FBasicFilePre
 
 			if (bRequestRename && bIsItemSelected)
 			{
-				// static JText renameBuffer;
-				//
-				// // 버퍼 초기화 (처음 rename 모드로 들어올 때 한 번만 초기화)
-				// if (renameBuffer.empty())
-				// {
-				// 	renameBuffer = WString2String(itemData->FileName);
-				// }
-				//
-				// // InputText로 텍스트 편집기 제공
-				// // ImGui::SetKeyboardFocusHere();  // 자동으로 포커스를 InputText로 설정
-				// if (ImGui::InputText("##RenameText",
-				// 					 renameBuffer.data(),
-				// 					 renameBuffer.size(),
-				// 					 ImGuiInputTextFlags_EnterReturnsTrue))
-				// {
-				// 	// Enter 키로 이름 변경 완료
-				// 	itemData->FileName = String2WString(renameBuffer);  // 변경한 이름을 적용
-				// 	bRequestRename     = false;  // 편집 모드 종료
-				// }
-				//
-				// // 편집을 취소하려면 esc 키 사용
-				// if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-				// {
-				// 	bRequestRename  = false;  // 편집 모드 종료
-				// 	renameBuffer[0] = '\0';  // 버퍼 초기화
-				// }
+				static JText renameBuffer;
+
+				// 버퍼 초기화 (처음 rename 모드로 들어올 때 한 번만 초기화)
+				if (renameBuffer.empty())
+				{
+					renameBuffer = WString2String(itemData->FileName);
+				}
+
+				// InputText로 텍스트 편집기 제공
+				// ImGui::SetKeyboardFocusHere();  // 자동으로 포커스를 InputText로 설정
+				ImGui::InputText("##RenameText", &renameBuffer);
+				if ((!ImGui::IsItemActive() && ImGui::IsMouseClicked(0)) || ImGui::IsKeyPressed(ImGuiKey_Enter))
+				{
+					bRequestRename = false;
+					renameBuffer.append(".jasset");
+					std::filesystem::rename(itemData->FilePath, itemData->FilePath.parent_path() / renameBuffer);
+					renameBuffer.clear();
+					OnBrowserChange.Execute();
+				}
+
+				// 편집을 취소하려면 esc 키 사용
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				{
+					bRequestRename = false;  // 편집 모드 종료
+					renameBuffer.clear();     // 버퍼 초기화
+				}
 			}
 			else
 			{
@@ -690,6 +692,12 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 		break;
 	case HASH_ASSET_TYPE_WIDGET:
 		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_UI>(fullFileName))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+		break;
+	case HASH_ASSET_TYPE_ANIMATOR:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Animator>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
 		}

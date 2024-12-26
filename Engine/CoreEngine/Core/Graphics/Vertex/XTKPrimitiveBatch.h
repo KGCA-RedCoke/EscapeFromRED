@@ -43,8 +43,8 @@ public:
 							GXMVECTOR InColor = Colors::White) const;
 	void DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis,
 							GXMVECTOR InColor = Colors::White) const;
-	void DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR InDirection, bool bNormalize = true,
-						   FXMVECTOR InColor                                          = Colors::White) const;
+	void DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR InDirection, float InLength,
+						   bool bNormalize = true, FXMVECTOR InColor                                          = Colors::White) const;
 	void DrawTriangle_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC,
 								GXMVECTOR InColor = Colors::White) const;
 	void DrawQuad_Implement(FXMVECTOR InPointA, FXMVECTOR InPointB, FXMVECTOR InPointC, GXMVECTOR InPointD,

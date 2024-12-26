@@ -12,7 +12,6 @@ JLight_Point::JLight_Point(JTextView InName, AActor* InOwnerActor, JSceneCompone
 	: JLightComponent(InName, InOwnerActor, InParentComponent)
 {
 	mObjectType = NAME_OBJECT_LIGHT_POINT;
-	JLight_Point::Initialize();
 }
 
 void JLight_Point::Initialize()

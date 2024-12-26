@@ -101,6 +101,23 @@ void JAnimator::AddAnimationClip(const JText& InState, JAnimationClip* InClip)
 	mStateMachine[InState] = InClip;
 }
 
+void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
+{
+	if (auto it = mStateMachine.find(InState); it != mStateMachine.end())
+	{
+		if (it->second->GetName() == InClipPath)
+		{
+			return;
+		}
+	}
+	mStateMachine[InState] = GetWorld.AnimationManager->Load(InClipPath);
+}
+
+void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState)
+{
+	
+}
+
 void JAnimator::SetState(const JText& InState)
 {
 	auto it = mStateMachine.find(InState);

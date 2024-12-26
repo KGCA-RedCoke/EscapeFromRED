@@ -7,7 +7,7 @@ class JPlayerCamera : public JCameraComponent
 {
 public:
 	JPlayerCamera();
-	JPlayerCamera(JTextView InName, ACharacter* InOwner, JSceneComponent* InParent);
+	JPlayerCamera(JTextView InName, ACharacter* InOwner, JSceneComponent* InParent = nullptr);
 	~JPlayerCamera() = default;
 
 public:

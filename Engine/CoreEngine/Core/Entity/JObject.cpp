@@ -76,3 +76,4 @@ bool JObject::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	return true;
 }
+

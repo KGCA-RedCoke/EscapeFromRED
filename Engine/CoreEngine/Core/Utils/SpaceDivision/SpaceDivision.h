@@ -16,7 +16,8 @@ namespace Quad
 		uint32_t CornerIndex[4] = {0, 0, 0, 0};
 		bool     bIsLeaf        = false;
 
-		FQuad BoundArea;
+		FQuad     BoundArea;
+		FBoxShape BoundBox;
 
 		JArray<AActor*> Actors;
 

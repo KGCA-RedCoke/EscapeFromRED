@@ -80,6 +80,7 @@ void XTKPrimitiveBatch::Draw()
 	DrawRay_Implement(
 					  origin,
 					  {10000.f, 0.f, 0.f, 0.f},
+					  1,
 					  false,
 					  {1.f, 0.f, 0.f, 1.f}
 					 );
@@ -88,6 +89,7 @@ void XTKPrimitiveBatch::Draw()
 	DrawRay_Implement(
 					  origin,
 					  {0.f, 0.f, 10000.f, 0.f},
+					  1,
 					  false,
 					  {0.f, 0.f, 1.f, 1.f}
 					 );
@@ -96,6 +98,7 @@ void XTKPrimitiveBatch::Draw()
 	DrawRay_Implement(
 					  origin,
 					  {0.f, 10000.f, 0.f, 0.f},
+					  1,
 					  false,
 					  {0.f, 1.f, 0.f, 1.f}
 					 );
@@ -290,14 +293,15 @@ void XTKPrimitiveBatch::DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajor
 	mBatch->Draw(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP, verts, c_ringSegments + 1);
 }
 
-void XTKPrimitiveBatch::DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR InDirection, bool bNormalize,
-										  FXMVECTOR InColor) const
+void XTKPrimitiveBatch::DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR   InDirection, float InLength,
+										  bool      bNormalize, FXMVECTOR InColor) const
 {
 	VertexPositionColor verts[3];
 	XMStoreFloat3(&verts[0].position, InOrigin);
 
 	XMVECTOR normDirection = XMVector3Normalize(InDirection);
 	XMVECTOR rayDirection  = (bNormalize) ? normDirection : InDirection;
+	rayDirection           = XMVectorScale(rayDirection, InLength);
 
 	XMVECTOR perpVector = XMVector3Cross(normDirection, g_XMIdentityR1);
 

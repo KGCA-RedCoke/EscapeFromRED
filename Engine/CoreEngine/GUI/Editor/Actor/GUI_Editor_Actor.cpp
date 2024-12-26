@@ -45,22 +45,6 @@ void GUI_Editor_Actor::ShowMenuBar()
 
 	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::BeginMenu(u8("추가")))
-		{
-			if (ImGui::MenuItem(u8("박스")/*, nullptr, false, mActorToEdit != nullptr*/))
-			{
-				if (auto* sceneComp = dynamic_cast<JSceneComponent*>(mSelectedSceneComponent))
-				{
-					JBoxComponent* box = mActorToEdit->CreateDefaultSubObject<JBoxComponent>("BoxComponent",
-							 mActorToEdit.get(),
-							 mActorToEdit.get());
-					box->SetupAttachment(sceneComp);
-				}
-			}
-			ImGui::EndMenu();
-
-		}
-
 		if ((ImGui::BeginMenu(u8("파일"))))
 		{
 			if (ImGui::MenuItem(u8("저장")))
@@ -72,7 +56,6 @@ void GUI_Editor_Actor::ShowMenuBar()
 		}
 		ImGui::EndMenuBar();
 	}
-
 
 }
 
@@ -150,37 +133,48 @@ void GUI_Editor_Actor::DrawHierarchy()
 		{
 			for (int n = 0; n < IM_ARRAYSIZE(g_ComponentList); n++)
 			{
-				const bool is_selected = (item_selected_idx == n);
-				if (ImGui::Selectable(g_ComponentList[n], is_selected))
+				const bool bIsSelected = (item_selected_idx == n);
+				if (ImGui::Selectable(g_ComponentList[n], bIsSelected))
 				{
 					bAddComponentListBox = false;
 
 					if (auto* sceneComp = dynamic_cast<JSceneComponent*>(mSelectedSceneComponent))
 					{
-						if (n == 3)
+						JSceneComponent* newSceneComp = nullptr;
+						JText            name = std::format("{}_{}", g_ComponentList[n], sceneComp->GetChildCount());
+						switch (n)
 						{
-							auto* light = mActorToEdit->CreateDefaultSubObject<JLight_Point>(g_ComponentList[n],
-									 mActorToEdit.get(),
+						case EComponentType::PointLight:
+							newSceneComp = mActorToEdit->CreateDefaultSubObject<JLight_Point>(name,
 									 mActorToEdit.get());
-							light->SetupAttachment(sceneComp);
-						}
-						if (n == 4)
-						{
-							auto* meshComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(g_ComponentList[n],
-									 mActorToEdit.get(),
+							newSceneComp->SetupAttachment(sceneComp);
+							break;
+						case EComponentType::SpotLight:
+							newSceneComp = mActorToEdit->CreateDefaultSubObject<JLight_Spot>(name,
 									 mActorToEdit.get());
-							meshComp->SetupAttachment(sceneComp);
+							newSceneComp->SetupAttachment(sceneComp);
+							break;
+						case EComponentType::BoxComponent:
+							newSceneComp = mActorToEdit->CreateDefaultSubObject<JBoxComponent>(name,
+									 mActorToEdit.get());
+							newSceneComp->SetupAttachment(sceneComp);
+							newSceneComp->Initialize();
+							break;
+						case EComponentType::LineComponent:
+							newSceneComp = mActorToEdit->CreateDefaultSubObject<JLineComponent>(name,
+									 mActorToEdit.get());
+							newSceneComp->SetupAttachment(sceneComp);
+							newSceneComp->Initialize();
+							break;
 						}
 					}
-
-
 				}
 
 				if (item_highlight && ImGui::IsItemHovered())
 					item_highlighted_idx = n;
 
 				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-				if (is_selected)
+				if (bIsSelected)
 					ImGui::SetItemDefaultFocus();
 			}
 			ImGui::EndListBox();
@@ -264,7 +258,6 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 			case HASH_ASSET_TYPE_STATIC_MESH:
 				{
 					auto* meshComp = mActorToEdit->CreateDefaultSubObject<JStaticMeshComponent>(ParseFile(str),
-							 mActorToEdit.get(),
 							 mActorToEdit.get());
 					meshComp->SetMeshObject(str);
 
@@ -273,7 +266,6 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:
 				auto* meshComp = mActorToEdit->CreateDefaultSubObject<JSkeletalMeshComponent>(ParseFile(str),
-						 mActorToEdit.get(),
 						 mActorToEdit.get());
 				meshComp->SetSkeletalMesh(str);
 

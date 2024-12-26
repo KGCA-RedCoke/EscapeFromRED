@@ -35,6 +35,8 @@ public:
 
 public:
 	void AddAnimationClip(const JText& InState, class JAnimationClip* InClip);
+	void AddAnimationClip(const JText& InState, const JText& InClipPath);
+	void AddAnimLink(const JText& SrcState, const JText& DstState);
 	void SetState(const JText& InState);
 
 protected:
@@ -48,4 +50,5 @@ protected:
 	JAnimationClip*                     mCurrentAnimation;
 	JAnimationClip*                     mPrevAnimation;
 
+	friend class GUI_Editor_Animator;
 };

@@ -1,73 +1,16 @@
 ﻿#pragma once
 #include "Core/Utils/Math/Vector4.h"
 
-enum class ETraceType : uint8_t
+struct FRay
 {
-	Pawn,
-	BlockingVolume,
-	Ground,
-	Projectile,
-	Max
+	FVector Origin = FVector::ZeroVector;		// 광선의 시작점
+	FVector Direction{0, 0, 1};	// 광선의 방향
+	float   Length = 100.f;		// 광선의 길이
+
+	void DrawDebug(DirectX::FXMVECTOR DebugColor = {{0.678431392f, 1.f, 0.184313729f, 1.f}}) const;
 };
 
-enum class ECollisionType
-{
-	None,
-	Quad,
-	Plane,
-	Ray,
-	Box,
-	Sphere,
-	Capsule
-};
-
-class ICollision;
-
-struct FHitResult
-{
-	ICollision* SrcCollision;
-	ICollision* DstCollision;
-
-	FVector HitLocation;
-	FVector HitNormal;
-	float   Distance;
-};
-
-
-DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, const FHitResult&);
-
-DECLARE_DYNAMIC_DELEGATE(FOnComponentOverlap, const FHitResult&);
-
-DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, const FHitResult&);
-
-class ICollision
-{
-public:
-	FOnComponentBeginOverlap OnComponentBeginOverlap;
-	FOnComponentOverlap      OnComponentOverlap;
-	FOnComponentEndOverlap   OnComponentEndOverlap;
-
-public:
-	virtual uint32_t       GetCollisionID() = 0;
-	virtual ETraceType     GetTraceType() const = 0;
-	virtual ECollisionType GetType() const = 0;
-	virtual bool           Intersect(const ICollision& InOther) const = 0;
-};
-
-class JMeshObject;
-
-struct FRay : public ICollision
-{
-	FVector Origin;		// 광선의 시작점
-	FVector Direction;	// 광선의 방향
-
-	uint32_t       GetCollisionID() override;
-	ETraceType     GetTraceType() const override;
-	ECollisionType GetType() const override;
-	bool           Intersect(const ICollision& InOther) const override;
-};
-
-struct FQuad : public ICollision
+struct FQuad
 {
 	FVector Center;	// 사각형의 중심
 	FVector Extent;	// 사각형의 반지름
@@ -79,26 +22,16 @@ struct FQuad : public ICollision
 		  Extent(InExtent)
 	{}
 
-	uint32_t       GetCollisionID() override;
-	ETraceType     GetTraceType() const override;
-	ECollisionType GetType() const override;
-	bool           Intersect(const ICollision& InOther) const override;
-
 	bool Contains(const FVector& InPoint) const;
 	void DrawDebug() const;
 };
 
-struct FPlane : public ICollision
+struct FPlane
 {
 	FVector Normal;		// 평면의 법선 벡터
 	float   Distance;	// 원점으로부터 평면까지의 거리
 
 	float A, B, C, D;	// Ax + By + Cz + D = 0 (평면의 방정식)
-
-	uint32_t       GetCollisionID() override;
-	ETraceType     GetTraceType() const override;
-	ECollisionType GetType() const override;
-	bool           Intersect(const ICollision& InOther) const override;
 
 	void CreatePlane(FVector InNormal, FVector InPoint);
 	void CreatePlane(FVector InPoint0, FVector InPoint1, FVector InPoint2);
@@ -120,12 +53,6 @@ struct FBox
 		  Extent(InExtent)
 	{}
 
-	/*
-	uint32_t       GetCollisionID() override;
-	ETraceType     GetTraceType() const override;
-	ECollisionType GetType() const override;
-	bool           Intersect(const ICollision& InOther) const override;*/
-
 	bool Contains(const FVector& InPoint) const;
 };
 
@@ -138,11 +65,10 @@ struct FBoxShape
 	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
 	FVector Max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
-	void DrawDebug() const;
-
+	void DrawDebug(DirectX::FXMVECTOR DebugColor = {{0.678431392f, 1.f, 0.184313729f, 1.f}}) const;
 
 	bool Intersect(const FBoxShape& InBox) const;
-	bool IntersectOBB(const FBoxShape& InBox) const;
+	bool IntersectOBB(const FBoxShape& Other, struct FHitResult& OutHitResult) const;
 	bool Contains(const FVector& InPoint) const;
 
 	FBoxShape() = default;
@@ -199,9 +125,13 @@ struct FCapsule
 	void DrawDebug() const;
 };
 
-static bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT);
-static bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, FVector& OutT);
-static bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,   // Ray 정보
-							const FVector& BoxCenter, const FVector  BoxAxis[3], const FVector& BoxExtent, // OBB 정보
-							FVector&       OutHitPoint // 충돌 지점
+bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT);
+bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,
+					 // Ray 정보
+					 const FVector& BoxCenter, const FVector BoxAxis[3], const FVector& BoxExtent,
+					 // OBB 정보
+					 FHitResult& OutHitResult // 충돌 지점
 );
+bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, struct FHitResult& OutHitResult);
+
+bool BoxIntersectOBB(const FBoxShape& InBox, const FBoxShape& Other, struct FHitResult& OutHitResult);

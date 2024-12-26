@@ -73,7 +73,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 			loadActor->Initialize();
 			mOcTree->Insert(loadActor.get());
 			mActors.push_back(std::move(loadActor));
-			
+
 		}
 	}
 
@@ -83,7 +83,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 void JLevel::InitializeLevel()
 {
 	mOcTree = MakeUPtr<Quad::JTree>();
-	mOcTree->Initialize({{0, 0, 0}, {10000, 0, 10000}}, MAX_DEPTH);
+	mOcTree->Initialize({{0, 0, 0}, {10000, 5000, 10000}}, MAX_DEPTH);
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -91,7 +91,10 @@ void JLevel::UpdateLevel(float DeltaTime)
 	std::erase_if(
 				  mActors,
 				  [&](UPtr<AActor>& actor){
-					  actor->Tick(DeltaTime);
+					  if (actor->ShouldTick())
+					  {
+						  actor->Tick(DeltaTime);
+					  }
 					  if (actor->IsPendingKill())
 					  {
 						  mOcTree->Remove(actor.get());

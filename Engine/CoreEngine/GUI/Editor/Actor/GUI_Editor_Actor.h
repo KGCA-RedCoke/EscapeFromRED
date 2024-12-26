@@ -2,15 +2,44 @@
 #include "GUI/Editor/GUI_Editor_Base.h"
 
 class JActorComponent;
+
+enum EComponentType : uint8_t
+{
+	Transform,
+	Mesh,
+	Camera,
+	PointLight,
+	SpotLight,
+	BoxComponent,
+	LineComponent,
+	SphereCollider,
+	CapsuleCollider,
+	RigidBody,
+	CharacterController,
+	NavMesh,
+	Path,
+	Waypoint,
+	Trigger,
+	Sound,
+	Particle,
+	Decal,
+	Billboard,
+	Text,
+	Widget,
+	Script,
+	Custom
+};
+
 constexpr const char* g_ComponentList[] = {
 	"Transform",
 	"Mesh",
 	"Camera",
-	"Point Light",
-	"Spot Light",
-	"Box Collider",
-	"Sphere Collider",
-	"Capsule Collider",
+	"PointLight",
+	"SpotLight",
+	"BoxComponent",
+	"LineComponent",
+	"SphereComponent",
+	"CapsuleComponent",
 	"RigidBody",
 	"Character Controller",
 	"NavMesh",
