@@ -7,11 +7,13 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Window/Window.h"
+#include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
@@ -54,18 +56,25 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			switch (metaData.AssetType)
 			{
 			case HASH_ASSET_TYPE_STATIC_MESH:
-				activeLevel->CreateActor<JStaticMeshActor>(name, assetPath);
+				activeLevel->CreateActor<JStaticMeshActor>(name, assetPath)->Initialize();
 				break;
 			case HASH_ASSET_TYPE_SKELETAL_MESH:
-				activeLevel->CreateActor<JSkeletalMeshActor>(name, assetPath);
+				activeLevel->CreateActor<JSkeletalMeshActor>(name, assetPath)->Initialize();
 				break;
 
 			case HASH_ASSET_TYPE_Actor:
 				{
 					AActor* newActor = activeLevel->CreateActor<AActor>(name);
 					Utils::Serialization::DeSerialize(assetPath, newActor);
+					newActor->Initialize();
 				}
 				break;
+			case HASH_ASSET_TYPE_Enemy:
+				{
+					AActor* newActor = activeLevel->CreateActor<AEnemy>(name);
+					Utils::Serialization::DeSerialize(assetPath, newActor);
+					newActor->Initialize();
+				}
 			default:
 				LOG_CORE_WARN("지원하지 않는 메시 타입.");
 				break;
@@ -130,6 +139,8 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		ShowCursor(FALSE);
 		// ClipCursor(&rect);
 		// SetCursorPos(0, 0);
+
+		G_NAV_MAP.Initialize();
 
 		bIsGameMode = true;
 	}

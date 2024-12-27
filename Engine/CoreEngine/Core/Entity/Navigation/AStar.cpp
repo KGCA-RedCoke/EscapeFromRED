@@ -3,73 +3,29 @@
 #include <fbxsdk/core/fbxsystemunit.h>
 
 #include "NavTest.h"
-#include "Core/Utils/Math/MathUtility.h"
-#include "Core/Entity/Actor/AActor.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 
-void AStar::Initialize()
-{
-}
+#include "Core/Utils/Math/Vector2.h"
+#define MAX_GCOST 700
+#define MIN_GCOST 700
 
-void AStar::BeginPlay()
-{
-}
-
-void AStar::Tick(float DeltaTime)
+AStar::AStar()
 {
     
-    mInputKeyboard.Update(DeltaTime);
-    PushHold = false;
-    if (IsKeyPressed(EKeyCode::Space))
-    {
-        PushHold = !PushHold;
-    }
-    if (PushHold)
-    {
-        FVector2 playerGrid = NAV_MAP.GridFromWorldPoint(NAV_MAP.PlayerPos);
-        
-        if (abs(playerGrid.x - NAV_MAP.GridFromWorldPoint(NewPlayerPos).x) >= 1 ||
-            abs(playerGrid.y - NAV_MAP.GridFromWorldPoint(NewPlayerPos).y) >= 1)
-        {
-            NewPlayerPos = NAV_MAP.PlayerPos;
-            FVector2 npcGrid = NAV_MAP.GridFromWorldPoint(GetOwnerActor()->GetWorldLocation());
-            // if (npcGrid.y < NAV_MAP.mGridGraph.size())
-            if (NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
-            {
-                FindPath(NAV_MAP.mGridGraph.at(npcGrid.y).at(npcGrid.x),
-                NAV_MAP.mGridGraph.at(playerGrid.y).at(playerGrid.x));
-                mSpeed = FMath::GenerateRandomFloat(300, 800);
-            }
-        }
-        if (mPath.size() > 1)
-            FollowPath(DeltaTime);
-        else
-        {
-            FVector rotation = GetOwnerActor()->GetLocalRotation();
-            rotation.y += DeltaTime * mRotateSpeed * 5;
-            GetOwnerActor()->SetLocalRotation(rotation);
-        }
-    }
-    auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-    G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-    for (auto grid : mPath)
-    {
-        NAV_MAP.DrawNode(FVector2(grid->GridX, grid->GridY), Colors::Cyan);
-    }
-    G_DebugBatch.PostRender();
 }
 
-void AStar::Destroy()
+AStar::~AStar()
 {
 }
 
-void AStar::FindPath(Ptr<Node> Start, Ptr<Node> Target)
+bool AStar::FindPath(Ptr<Node> Start, Ptr<Node> Target, float Weight)
 {
-    // PriorityQueue openSet;
+    Nav::Node::weight = Weight;
     std::vector<Ptr<Node>> openSet;
     UnOrdSet closedSet;
+    Start->GCost = 0;
     openSet.push_back(Start);
     std::push_heap(openSet.begin(), openSet.end(), CompareNode());
 
@@ -82,29 +38,55 @@ void AStar::FindPath(Ptr<Node> Start, Ptr<Node> Target)
         if (current == Target)
         {
             RetracePath(Start, Target);
-            return;
+            mLimitGCost = MAX_GCOST;
+            return true;
         }
         for (auto child : current->Children)
         {
-            if (closedSet.find(child.lock()) != closedSet.end())
+            Ptr<Node> childNode = child.lock();
+            if (!childNode) continue;
+            if (closedSet.find(childNode) != closedSet.end())
                 continue;
-            int newMoveCostToChild = current->GCost + GetDistance(current, child.lock());
-            if (newMoveCostToChild < child.lock()->GCost)
+            if (current->GCost > mLimitGCost)
             {
-                child.lock()->GCost = newMoveCostToChild;
-                child.lock()->HCost = GetDistance(current, Target);
-                child.lock()->Parent = current;
+                mLimitGCost = MIN_GCOST;
+                // std::vector<Ptr<Nav::Node>> TempPath;
+                // TempPath.push_back(Target);
+                // mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
+                // mPathIdx = 1;
+                return false;
             }
-            if (std::find(openSet.begin(), openSet.end(), child.lock()) == openSet.end())
+            int newMoveCostToChild = current->GCost + GetHeuristic(current, childNode);
+            if (newMoveCostToChild < childNode->GCost)
             {
-                child.lock()->GCost = newMoveCostToChild;
-                child.lock()->HCost = GetDistance(current, Target);
-                child.lock()->Parent = current;
-                openSet.push_back(child.lock());
+                childNode->GCost = newMoveCostToChild;
+                childNode->HCost = GetHeuristic(current, Target);
+                childNode->Parent = current;
+            }
+            if (std::find(openSet.begin(), openSet.end(), childNode) == openSet.end())
+            {
+                childNode->GCost = newMoveCostToChild;
+                childNode->HCost = GetHeuristic(current, Target);
+                childNode->Parent = current;
+                openSet.push_back(childNode);
                 std::push_heap(openSet.begin(), openSet.end(), CompareNode());
             }
         }
     }
+    return false;
+}
+
+int AStar::GetHeuristic(Ptr<Nav::Node> A, Ptr<Nav::Node> B)
+{
+    if (A->OwnerFloor == B->OwnerFloor)
+    {
+        return GetDistance(A, B);
+    }
+
+    Ptr<Nav::Node> EnterStair = (A->OwnerFloor < B->OwnerFloor) ? G_NAV_MAP.Stair1_2 : G_NAV_MAP.Stair2_1;
+    Ptr<Nav::Node> LeaveStair = (A->OwnerFloor < B->OwnerFloor) ? G_NAV_MAP.Stair2_1 : G_NAV_MAP.Stair1_2;
+
+    return GetDistance(A, EnterStair) + GetDistance(LeaveStair, B);
 }
 
 int AStar::GetDistance(Ptr<Node> A, Ptr<Node> B)
@@ -118,65 +100,61 @@ int AStar::GetDistance(Ptr<Node> A, Ptr<Node> B)
 
 void AStar::RetracePath(Ptr<Node> Start, Ptr<Node> Target)
 {
-    mPath.clear();
+    std::vector<Ptr<Nav::Node>> TempPath;
     Ptr<Node> current = Target;
     while (current != Start)
     {
-        mPath.push_back(current);
+        TempPath.push_back(current);
         current = current->Parent.lock();
     }
-    NAV_MAP.tempPath = mPath;
+    std::reverse(TempPath.begin(), TempPath.end());
+    mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
+    mPathIdx = 1;
 }
 
-void AStar::FollowPath(float DeltaTime)
+std::vector<Ptr<Node>> AStar::simplifyPath(const std::vector<Ptr<Node>>& path)
 {
-    FVector NextPos = mPath.back()->WorldPos;
-    FVector currentPos = GetOwnerActor()->GetWorldLocation();
-    FVector direction = NextPos - currentPos + NAV_MAP.NodeCenter;
-    if (abs(direction.Length()) < 10)
+    if (path.empty())
+        return path;
+    std::vector<Ptr<Node>> simplifiedPath;
+    simplifiedPath.push_back(path[0]); // 시작점
+    for (size_t i = 1; i < path.size() - 1; ++i)
     {
-        if (!IsPosUpdated)
-        {
-            mPath.pop_back();
-            IsPosUpdated = true;
-            
-            // std::cout << "nextNode : x = " << NextPos.x << " y = " << NextPos.y <<
-            //     "  direction : x = " << direction.x << " z = " << direction.z << std::endl;
+        Node* prev = simplifiedPath.back().get();
+        Node* next = path[i + 1].get();
+        std::vector<std::vector<Ptr<Node>>>& graph = (path[i]->OwnerFloor == EFloorType::FirstFloor)
+                                                ? G_NAV_MAP.mGridGraph : G_NAV_MAP.m2ndFloor;
+        if (prev->OwnerFloor == next->OwnerFloor &&
+            !IsLineBlocked(prev->GridPos, next->GridPos, graph)) { // prev와 next 사이에 장애물이 없으면
+            continue; // 중간 점 스킵
         }
+        simplifiedPath.push_back(path[i]); // 필요하면 추가
     }
-    else
-    {
-        IsPosUpdated = false;
-        FVector location = GetOwnerActor()->GetLocalLocation();
-        FVector NormalDirection;
-        direction.Normalize(NormalDirection);
-        location += NormalDirection * mSpeed * DeltaTime;
-        GetOwnerActor()->SetLocalLocation(location);
+    simplifiedPath.push_back(path.back()); // 끝점
+    return simplifiedPath;
+}
 
-        float theta = atan2(NormalDirection.x, NormalDirection.z);
-        float degree = theta * (180.0f / M_PI);
-        
-        FVector rotation = GetOwnerActor()->GetLocalRotation();
-        float targetAngle = degree + 180.0f;
-        float angleDifference = targetAngle - rotation.y;
+bool AStar::IsLineBlocked(FVector2 prevGrid, FVector2 nextGrid, std::vector<std::vector<Ptr<Node>>>& graph) // grid.x = col, grid.y = row
+{
+    int x0 = prevGrid.x, y0 = prevGrid.y;
+    int x1 = nextGrid.x, y1 = nextGrid.y;
+    int dx = abs(x1 - x0), dy = abs(y1 - y0);
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+    int err = dx - dy;
+    
+    while (true) {
+        // 현재 격자 셀이 장애물이 있는지 검사
+        if (graph.at(y0).at(x0)->Walkable == false)
+        {
+            obstacle = FVector2(x0, y0);
+            return true; // 장애물 발견
+        }
+        if (x0 == x1 && y0 == y1) break; // 목표 지점 도달
 
-        // 각도 차이를 -180도에서 180도 사이로 정규화
-        if (angleDifference > 180.0f)
-            angleDifference -= 360.0f;
-        else if (angleDifference < -180.0f)
-            angleDifference += 360.0f;
-
-        if (angleDifference > 0)
-            rotation.y += DeltaTime * mRotateSpeed; // 시계 방향 회전
-        else
-            rotation.y -= DeltaTime * mRotateSpeed; // 반시계 방향 회전
-
-        // 각도를 0도에서 360도 사이로 정규화
-        if (rotation.y >= 360.0f)
-            rotation.y -= 360.0f;
-        else if (rotation.y < 0.0f)
-            rotation.y += 360.0f;
-        
-        GetOwnerActor()->SetLocalRotation(rotation);
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
     }
+    return false; // 직선 경로에 장애물 없음
 }

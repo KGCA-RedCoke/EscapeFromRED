@@ -106,7 +106,7 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 
 		UPtr<JSceneComponent> newObj  = UPtrCast<JSceneComponent>(MClassFactory::Get().Create(childType));
 		newObj->mParentSceneComponent = this;
-		newObj->SetOwnerActor(mOwnerActor);
+		newObj->SetOwnerActor(mOwnerActor == nullptr ? static_cast<AActor*>(this) : mOwnerActor);
 
 		newObj->DeSerialize_Implement(InFileStream);
 		mChildSceneComponentIndices[newObj->GetName()] = i;

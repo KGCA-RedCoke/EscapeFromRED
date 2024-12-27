@@ -14,11 +14,11 @@ GUI_Editor_Node::GUI_Editor_Node(const JText& InTitle)
 
 void GUI_Editor_Node::Initialize()
 {
-	ed::Config config;
+	edC::Config config;
 
 	mSaveFilePath       = std::format("Configs/{}.json", ParseFile(mTitle));
 	config.SettingsFile = mSaveFilePath.c_str();
-	mContext            = ed::CreateEditor(&config);
+	mContext            = edC::CreateEditor(&config);
 }
 
 void GUI_Editor_Node::Update(float DeltaTime)
@@ -37,14 +37,14 @@ void GUI_Editor_Node::Update(float DeltaTime)
 
 			ShowMenuBar();
 
-			ed::SetCurrentEditor(mContext);
-			ed::Begin(mTitle.c_str(), ImVec2(0.0, 0.0f));
+			edC::SetCurrentEditor(mContext);
+			edC::Begin(mTitle.c_str(), ImVec2(0.0, 0.0f));
 			{
 				Update_Implementation(DeltaTime);
 			}
 			
-			ed::End();
-			ed::SetCurrentEditor(nullptr);
+			edC::End();
+			edC::SetCurrentEditor(nullptr);
 		}
 
 
@@ -65,7 +65,7 @@ void GUI_Editor_Node::Update_Implementation(float DeltaTime)
 
 void GUI_Editor_Node::Release()
 {
-	ed::DestroyEditor(mContext);
+	edC::DestroyEditor(mContext);
 }
 
 void GUI_Editor_Node::UpdateTouch(float DeltaTime)
@@ -77,17 +77,17 @@ void GUI_Editor_Node::UpdateTouch(float DeltaTime)
 	}
 }
 
-void GUI_Editor_Node::BuildNode(ed::FNode* InNode)
+void GUI_Editor_Node::BuildNode(edC::FNode* InNode)
 {
 	for (auto& input : InNode->Inputs)
 	{
 		input.Node = InNode;
-		input.Kind = ed::PinKind::Input;
+		input.Kind = edC::PinKind::Input;
 	}
 
 	for (auto& output : InNode->Outputs)
 	{
 		output.Node = InNode;
-		output.Kind = ed::PinKind::Output;
+		output.Kind = edC::PinKind::Output;
 	}
 }

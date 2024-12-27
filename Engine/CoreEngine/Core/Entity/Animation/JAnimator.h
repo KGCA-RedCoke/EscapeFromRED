@@ -17,6 +17,7 @@ class JAnimator : public JObject
 public:
 	JAnimator();
 	JAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp = nullptr);
+	JAnimator(const JAnimator& InCopy);
 	~JAnimator() override = default;
 
 public:

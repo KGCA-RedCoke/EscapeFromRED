@@ -3,6 +3,7 @@
 #include "JAnimationClip.h"
 #include "MAnimManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
+#include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
 
 JAnimator::JAnimator() {}
@@ -11,6 +12,11 @@ JAnimator::JAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
 	: mSkeletalMeshComponent(InSkeletalComp),
 	  mCurrentAnimation(nullptr)
 {}
+
+JAnimator::JAnimator(const JAnimator& InCopy)
+{
+	
+}
 
 UPtr<IManagedInterface> JAnimator::Clone() const
 {
@@ -80,7 +86,11 @@ bool JAnimator::DeSerialize_Implement(std::ifstream& InFileStream)
 }
 
 void JAnimator::Initialize()
-{}
+{
+	mMovementComponent = static_cast<JPawnMovementComponent*>(
+	mSkeletalMeshComponent->GetOwnerActor()->
+	GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
+}
 
 void JAnimator::BeginPlay()
 {}

@@ -22,5 +22,5 @@ protected:
 
 private:
 	JAnimator* mAnimator = nullptr;
-	ed::FNode* SpawnAnimSequenceNode(const JText& InState, const JText& InAnimClipText);
+	edC::FNode* SpawnAnimSequenceNode(const JText& InState, const JText& InAnimClipText);
 };
