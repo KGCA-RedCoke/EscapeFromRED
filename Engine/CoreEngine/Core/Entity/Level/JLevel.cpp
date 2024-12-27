@@ -48,6 +48,14 @@ bool JLevel::Serialize_Implement(std::ofstream& FileStream)
 		mActors[i]->Serialize_Implement(FileStream);
 	}
 
+	size_t widgetSize = mWidgetComponents.size();
+	Utils::Serialization::Serialize_Primitive(&widgetSize, sizeof(widgetSize), FileStream);
+	for (auto& widget : mWidgetComponents)
+	{
+		JText path = widget->GetPath();
+		Utils::Serialization::Serialize_Text(path, FileStream);
+	}
+
 	return true;
 }
 
@@ -81,6 +89,15 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		}
 	}
 
+	size_t widgetSize;
+	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	for (int32_t i = 0; i < widgetSize; ++i)
+	{
+		JText path;
+		Utils::Serialization::DeSerialize_Text(path, InFileStream);
+		mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	}
+
 	bThreadLoaded = true;
 
 	return true;
@@ -90,6 +107,8 @@ void JLevel::InitializeLevel()
 {
 	mOcTree = MakeUPtr<Quad::JTree>();
 	mOcTree->Initialize({{0, 0, 0}, {10000, 5000, 10000}}, MAX_DEPTH);
+
+	GetWorld.ViewportManager->Load("HUD", 1920, 1080);
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -110,6 +129,17 @@ void JLevel::UpdateLevel(float DeltaTime)
 					  return false;
 				  });
 
+	std::erase_if(
+				  mWidgetComponents,
+				  [&](JWidgetComponent* widget){
+					  if (widget->IsPendingKill())
+					  {
+						  widget = nullptr;
+						  return true;
+					  }
+					  return false;
+				  });
+
 	mOcTree->Update();
 }
 
@@ -117,21 +147,30 @@ void JLevel::RenderLevel()
 {
 	auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
+	GetWorld.ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
+
 	G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
 
 	// 옥트리 내부의 포함되는 액터들만 렌더링
 	// OcTree의 노드가 카메라의 Frustum과 교차하는지 체크
 	mOcTree->Render(GetWorld.CameraManager->GetCurrentMainCam());
-	// for (const auto& actor : mActors)
-	// {
-	// 	actor->Draw();
-	// }
-
+\
 	G_DebugBatch.Draw();
 
 	G_DebugBatch.PostRender();
 
 	MMeshManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
+
+	for (auto& widget : mWidgetComponents)
+	{
+		// if (widget->IsVisible())
+		// {
+		widget->AddInstance();
+		// MUIManager::Get().Load("Game/UI/NewWidget.jasset")->AddInstance();
+		// }
+	}
+	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
+
 }
 
 // void JLevel::AddActor(const Ptr<AActor>& InActor)

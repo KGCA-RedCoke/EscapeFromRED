@@ -4,6 +4,7 @@
 #include "GUI_Base.h"
 #include "Utils/GUI_Utils.h"
 
+class JWidgetComponent;
 class JLevel;
 
 class GUI_Inspector : public GUI_Base
@@ -28,6 +29,7 @@ private:
 private:
 	Utils::GUI::FSearchBar mSearchBar;
 	JSceneComponent*       mSelectedSceneComponent;
+	JWidgetComponent*      mSelectedWidgetComponent;
 	JLevel*                mLevel;
 	JHash<JText, AActor*>  mSceneComponents;
 

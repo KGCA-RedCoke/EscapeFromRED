@@ -148,6 +148,8 @@ public:
 					 uint32_t                  ID);
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
+	void SetHUD(JWidgetComponent* InHUD);
+
 public:
 	JWidgetComponent* LoadingScreen;
 

@@ -219,55 +219,55 @@ NodeStatus BT_BOSS::Dead()
 
 NodeStatus BT_BOSS::ChasePlayer(UINT N)
 {
-    int frameIdx = GetWorld.currentFrame % g_Index;    
-    if (frameIdx == mIdx)
-    {
-        FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
-        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
-        
-        Ptr<Nav::Node>& PlayerNode = (G_NAV_MAP.PlayerHeight < 560.f) 
-                                    ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
-                                    ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        if ((PlayerPos - LastPlayerPos).Length() >= 100 ||
-            NeedsPathReFind)
-            /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
-        {
-            LastPlayerPos = PlayerPos;
-            if (G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
-            {
-                mHasPath = PaStar->FindPath(NpcNode,
-                PlayerNode, 2);
-                NeedsPathReFind = false;
-                // PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
-                PaStar->mSpeed = 300.f;
-            }
-        }
-    }   
-    // if (!mHasPath)
-    //     return NodeStatus::Failure;
-    if (PaStar->mPath)
-    {
-        std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
-        
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        for (auto node : TempPath)
-        {
-            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        }
-        G_DebugBatch.PostRender();
-        
-        if (TempPath.size() && PaStar->mPathIdx < TempPath.size() - N)
-        {
-            FollowPath();
-            return NodeStatus::Failure;
-        }
-        else if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
-            return NodeStatus::Success;
-    }
+    // int frameIdx = GetWorld.currentFrame % g_Index;    
+    // if (frameIdx == mIdx)
+    // {
+    //     FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
+    //     FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
+    //     
+    //     Ptr<Nav::Node>& PlayerNode = (G_NAV_MAP.PlayerHeight < 560.f) 
+    //                                 ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x] 
+    //                                 : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
+    //     Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
+    //                                 ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x] 
+    //                                 : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
+    //     if ((PlayerPos - LastPlayerPos).Length() >= 100 ||
+    //         NeedsPathReFind)
+    //         /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
+    //     {
+    //         LastPlayerPos = PlayerPos;
+    //         if (G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
+    //         {
+    //             mHasPath = PaStar->FindPath(NpcNode,
+    //             PlayerNode, 2);
+    //             NeedsPathReFind = false;
+    //             // PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
+    //             PaStar->mSpeed = 300.f;
+    //         }
+    //     }
+    // }   
+    // // if (!mHasPath)
+    // //     return NodeStatus::Failure;
+    // if (PaStar->mPath)
+    // {
+    //     std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
+    //     
+    //     auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+    //     G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+    //     for (auto node : TempPath)
+    //     {
+    //         G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+    //     }
+    //     G_DebugBatch.PostRender();
+    //     
+    //     if (TempPath.size() && PaStar->mPathIdx < TempPath.size() - N)
+    //     {
+    //         FollowPath();
+    //         return NodeStatus::Failure;
+    //     }
+    //     else if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
+    //         return NodeStatus::Success;
+    // }
     return NodeStatus::Failure;
 }
 

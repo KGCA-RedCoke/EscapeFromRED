@@ -6,6 +6,7 @@ class APawn;
 
 enum class EMovementMode : uint8_t
 {
+	Idle,
 	Walking,
 	Running,
 	Crouching,
@@ -50,7 +51,7 @@ public:
 	[[nodiscard]] bool          IsBIsJumping() const { return bIsJumping; }
 	[[nodiscard]] bool          IsBIsFalling() const { return bIsFalling; }
 	[[nodiscard]] float         GetMaxWalkSpeed() const { return mMaxWalkSpeed; }
-	[[nodiscard]] float         GetCurrentWalkSpeed() const { return mCurrentWalkSpeed; }
+	[[nodiscard]] float         GetMaxJogSpeed() const { return mMaxJogSpeed; }
 	[[nodiscard]] float         GetGravityScale() const { return mGravityScale; }
 	[[nodiscard]] float         GetJumpPower() const { return mJumpPower; }
 	[[nodiscard]] FVector       GetVelocity() const { return mVelocity; }
@@ -77,7 +78,7 @@ protected:
 	bool bIsFalling;			// 낙하 중인지 여부
 
 	float mMaxWalkSpeed;		// 최대 이동 속도
-	float mCurrentWalkSpeed;	// 현재 이동 속도
+	float mMaxJogSpeed;			// 최대 뛰기 속도
 	float mGravityScale;		// 중력 스케일
 	float mJumpPower;			// 점프력
 

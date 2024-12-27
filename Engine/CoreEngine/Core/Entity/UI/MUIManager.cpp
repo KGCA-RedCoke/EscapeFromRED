@@ -472,6 +472,11 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 	mOpacityTextureSRVs.clear();
 }
 
+void MUIManager::SetHUD(JWidgetComponent* InHUD)
+{
+	
+}
+
 MUIManager::MUIManager()
 {
 	mVertexData.reserve(4);
@@ -521,7 +526,7 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
-	LoadingScreen = Load("Game/UI/NewWidget.jasset");
+	LoadingScreen = Load("Game/UI/LoadingScreen.jasset");
 }
 
 MUIManager::~MUIManager() {}

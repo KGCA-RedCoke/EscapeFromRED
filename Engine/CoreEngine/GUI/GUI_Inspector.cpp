@@ -3,6 +3,7 @@
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/ShaderStructs.h"
 #include "Core/Interface/JWorld.h"
 
@@ -55,6 +56,22 @@ void GUI_Inspector::Update_Implementation(float DeltaTime)
 		{
 
 			mLevel->mActors.push_back(UPtrCast<JStaticMeshActor>(mSelectedSceneComponent->Clone()));
+		}
+
+		for (auto& element : mLevel->mWidgetComponents)
+		{
+			ImGui::PushID(element->GetHash());
+			if (ImGui::Selectable(element->GetName().c_str(), mSelectedWidgetComponent == element))
+			{
+				mSelectedWidgetComponent = element;
+			}
+			ImGui::PopID();
+		}
+
+		if (mSelectedWidgetComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
+		{
+			mSelectedWidgetComponent->Destroy();
+			mSelectedWidgetComponent = nullptr;
 		}
 	}
 

@@ -2,17 +2,15 @@
 
 #include "Core/Entity/Actor/JSkeletalMeshActor.h"
 #include "Core/Entity/Actor/JStaticMeshActor.h"
-#include "Core/Entity/Actor/Character/ACharacter.h"
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Entity/Navigation/NavTest.h"
-#include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
-#include "Core/Window/Window.h"
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 
@@ -75,6 +73,14 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 					Utils::Serialization::DeSerialize(assetPath, newActor);
 					newActor->Initialize();
 				}
+				break;
+			case HASH_ASSET_TYPE_WIDGET:
+				{
+					JWidgetComponent* widget = MUIManager::Get().Load(assetPath);
+					activeLevel->AddWidgetComponent(widget);
+					widget->SetVisible(true);
+				}
+				break;
 			default:
 				LOG_CORE_WARN("지원하지 않는 메시 타입.");
 				break;

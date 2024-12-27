@@ -101,7 +101,6 @@ void JWorld::Render()
 	GUIManager->Render();
 
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
-	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
 	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 	LevelManager->Render();
 }

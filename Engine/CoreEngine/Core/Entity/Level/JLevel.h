@@ -2,6 +2,7 @@
 #include "Core/Entity/JObject.h"
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
+class JWidgetComponent;
 namespace Quad
 {
 	class JTree;
@@ -32,6 +33,7 @@ public:
 	virtual void RenderLevel();
 
 public:
+	void AddWidgetComponent(JWidgetComponent* InWidgetComponent) { mWidgetComponents.push_back(InWidgetComponent); }
 	bool IsLoaded() const { return bThreadLoaded; }
 
 public:
