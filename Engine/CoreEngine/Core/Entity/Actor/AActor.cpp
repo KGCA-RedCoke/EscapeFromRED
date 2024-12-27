@@ -66,6 +66,17 @@ void AActor::Draw()
 	}
 }
 
+void AActor::ShowEditor()
+{
+	JSceneComponent::ShowEditor();
+
+	for (auto& actorComponent : mActorComponents)
+	{
+		ImGui::SeparatorText(actorComponent->GetName().data());
+		actorComponent->ShowEditor();
+	}
+}
+
 uint32_t AActor::GetType() const
 {
 	// return JSceneComponent::GetCollisionType();

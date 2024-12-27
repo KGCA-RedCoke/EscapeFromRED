@@ -37,6 +37,27 @@ public:
 public:
 	virtual void Jump();
 
+	[[nodiscard]] FVector       GetMoveDirection() const { return mMoveDirection; }
+	[[nodiscard]] FVector       GetCachedMoveDirection() const { return mCachedMoveDirection; }
+	[[nodiscard]] FVector       GetPreviousLocation() const { return mPreviousLocation; }
+	[[nodiscard]] FVector       GetLocation() const { return mLocation; }
+	[[nodiscard]] FVector       GetMoveVelocity() const { return mMoveVelocity; }
+	[[nodiscard]] FVector       GetMoveAcceleration() const { return mMoveAcceleration; }
+	[[nodiscard]] FVector       GetLastMoveVelocity() const { return mLastMoveVelocity; }
+	[[nodiscard]] FVector       GetLastMoveAcceleration() const { return mLastMoveAcceleration; }
+	[[nodiscard]] EMovementMode GetMovementMode() const { return mMovementMode; }
+	[[nodiscard]] bool          IsBIsGrounded() const { return bIsGrounded; }
+	[[nodiscard]] bool          IsBIsJumping() const { return bIsJumping; }
+	[[nodiscard]] bool          IsBIsFalling() const { return bIsFalling; }
+	[[nodiscard]] float         GetMaxWalkSpeed() const { return mMaxWalkSpeed; }
+	[[nodiscard]] float         GetCurrentWalkSpeed() const { return mCurrentWalkSpeed; }
+	[[nodiscard]] float         GetGravityScale() const { return mGravityScale; }
+	[[nodiscard]] float         GetJumpPower() const { return mJumpPower; }
+	[[nodiscard]] FVector       GetVelocity() const { return mVelocity; }
+	[[nodiscard]] FVector       GetAcceleration() const { return mAcceleration; }
+	[[nodiscard]] FVector       GetAirResistance() const { return mAirResistance; }
+	[[nodiscard]] FVector       GetGroundFriction() const { return mGroundFriction; }
+
 protected:
 	FVector mMoveDirection;		// 이동 방향
 	FVector mCachedMoveDirection;	// 캐시된 이동 방향
@@ -56,6 +77,7 @@ protected:
 	bool bIsFalling;			// 낙하 중인지 여부
 
 	float mMaxWalkSpeed;		// 최대 이동 속도
+	float mCurrentWalkSpeed;	// 현재 이동 속도
 	float mGravityScale;		// 중력 스케일
 	float mJumpPower;			// 점프력
 

@@ -122,7 +122,7 @@ public:
 
 public:
 	JUIComponent* GetClickedComponent(const FVector2& InMousePos, const FVector2& InScreenPos) const;
-	uint32_t GetComponentSize() const;
+	uint32_t      GetComponentSize() const;
 
 public:
 	void AddUIComponent(JTextView InName);
@@ -148,13 +148,16 @@ public:
 					 uint32_t                  ID);
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
+public:
+	JWidgetComponent* LoadingScreen;
+
 private:
 	JShader_UI* mShader;
 	JShader*    mPickingShader;
 
 	JArray<FVertexData_UI> mVertexData;
 	JArray<uint32_t>       mIndexData;
-	
+
 	JArray<FInstanceData_UI>          mInstanceData;
 	JArray<ID3D11ShaderResourceView*> mTextureSRVs;
 	JArray<ID3D11ShaderResourceView*> mOpacityTextureSRVs;

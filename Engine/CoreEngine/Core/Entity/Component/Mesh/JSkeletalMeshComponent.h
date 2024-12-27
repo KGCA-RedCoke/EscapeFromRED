@@ -32,7 +32,8 @@ public:
 	Ptr<JSkeletalMesh> GetSkeletalMesh() const;
 	void               SetSkeletalMesh(JTextView InSkeletalMeshPath);
 	void               SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0) const;
-	void               SetAnimation(const JAnimationClip* InAnimationClip) const;
+	void               SetAnimation(JAnimationClip* InAnimationClip) const;
+	void               SetAnimator(JAnimator* InAnimator) { mAnimator = InAnimator; }
 
 public:
 	void           ShowEditor() override;

@@ -89,7 +89,12 @@ void JAnimator::Tick(float DeltaTime)
 {
 	if (mCurrentAnimation)
 	{
-		mCurrentAnimation->TickAnim(DeltaTime);
+		// mSkeletalMeshInstanceData = mCurrentAnimation->GetInstanceData();
+
+		if (!mCurrentAnimation->GetNextState().empty())
+		{
+			SetState(mCurrentAnimation->GetNextState());
+		}
 	}
 }
 
@@ -113,9 +118,19 @@ void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
 	mStateMachine[InState] = GetWorld.AnimationManager->Load(InClipPath);
 }
 
-void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState)
+void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
+							const float  InTransitionTime)
 {
-	
+	auto srcIt = mStateMachine.find(SrcState);
+	auto dstIt = mStateMachine.find(DstState);
+
+	if (srcIt == mStateMachine.end() || dstIt == mStateMachine.end())
+	{
+		LOG_CORE_ERROR("Source{} -> Dest{} 둘 중 하나 이상의 상태가 존재하지 않음", SrcState, DstState);
+		return;
+	}
+
+	srcIt->second->AddTransition(DstState, InFunc, InTransitionTime);
 }
 
 void JAnimator::SetState(const JText& InState)

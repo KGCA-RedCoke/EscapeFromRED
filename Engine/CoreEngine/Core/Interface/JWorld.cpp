@@ -78,7 +78,6 @@ void JWorld::Initialize()
 	// 								 FVector::ZeroVector,
 	// 								 nullptr,
 	// 								 "Game/Mesh/SM_Couch_01.jasset");
-	// 	newActor->Initialize();
 	// }
 }
 
@@ -101,7 +100,7 @@ void JWorld::Render()
 
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
 	ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
-	// ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
+	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 	LevelManager->Render();
 }
 

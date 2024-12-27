@@ -27,7 +27,10 @@ public:
 	void DrawID(uint32_t ID) override;
 
 public:
-	void SetAnimation(const JAnimationClip* InAnimation);
+	void UpdateInstance_Anim(const FSkeletalMeshInstanceData& InData);
+
+public:
+	void SetAnimation(JAnimationClip* InAnimation);
 
 	Ptr<JSkeletalMesh> GetSkeletalMesh() const { return mSkeletalMesh; }
 
@@ -36,7 +39,7 @@ protected:
 	Ptr<JSkeletalMesh> mSkeletalMesh;
 
 	// -------------------------- Animation Data --------------------------
-	UPtr<JAnimationClip> mCurrentAnimation;
+	JAnimationClip* mCurrentAnimation;
 
 	bool  bTransitAnimation      = false;
 	float mTransitionElapsedTime = 0.0f;

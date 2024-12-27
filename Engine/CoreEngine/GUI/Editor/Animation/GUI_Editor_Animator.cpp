@@ -31,6 +31,43 @@ void GUI_Editor_Animator::Release()
 	GUI_Editor_Node::Release();
 }
 
+void GUI_Editor_Animator::Update(float DeltaTime)
+{
+	if (!bIsWindowOpen)
+		return;
+
+
+	ImGui::Begin(mTitle.c_str(), &bIsWindowOpen, mWindowFlags);
+	{
+		bIsVisible = ImGui::IsItemVisible();
+
+		if (!ImGui::IsWindowCollapsed())
+		{
+			ChangeWindowStyleIfNotDocked();
+
+			ShowMenuBar();
+
+			ed::SetCurrentEditor(mContext);
+
+			DrawDetails(396.f);
+
+			ImGui::SameLine(0, 12.f);
+
+			ed::Begin(mTitle.c_str(), ImVec2(0.0, 0.0f));
+			{
+				Update_Implementation(DeltaTime);
+			}
+
+			ed::End();
+
+			ed::SetCurrentEditor(nullptr);
+		}
+
+
+		ImGui::End();
+	}
+}
+
 void GUI_Editor_Animator::Update_Implementation(float DeltaTime)
 {
 	if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
@@ -61,6 +98,7 @@ void GUI_Editor_Animator::Update_Implementation(float DeltaTime)
 			ed::Link(link.ID, link.StartPin, link.EndPin);
 		}
 	}
+
 }
 
 void GUI_Editor_Animator::ShowMenuBar()
@@ -88,6 +126,25 @@ void GUI_Editor_Animator::ShowMenuBar()
 		}
 	}
 	ImGui::EndMenuBar();
+}
+
+void GUI_Editor_Animator::DrawDetails(float paneWidth)
+{
+	ImGui::BeginChild("Selection", ImVec2(paneWidth, 0));
+
+	paneWidth = ImGui::GetContentRegionAvail().x;
+
+	ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
+	ImGui::Spring(0.0f, 0.0f);
+	if (ImGui::Button("Zoom to Content"))
+	{
+		ed::NavigateToContent();
+
+	}
+	ImGui::Spring();
+
+	ImGui::EndHorizontal();
+	ImGui::EndChild();
 }
 
 ed::FNode* GUI_Editor_Animator::SpawnAnimSequenceNode(const JText& InState, const JText& InAnimClipText)

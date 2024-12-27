@@ -321,7 +321,7 @@ struct FSkeletalMeshInstanceData
 
 	float BoneCount   = 0;	// 본 갯수
 	float DeltaTime   = 0;	// 보간 시간
-	float BlendWeight = 0;	// 애니메이션 전환 여부
+	float BlendWeight = .5f;	// 애니메이션 전환 여부
 	float Padding     = 0;	// 패딩
 };
 

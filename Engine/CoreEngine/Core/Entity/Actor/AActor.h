@@ -18,8 +18,10 @@ public:
 	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
-
 	void Draw() override;
+
+public:
+	void ShowEditor() override;
 
 public:
 	uint32_t GetType() const override;
@@ -27,8 +29,6 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	void             SetDivisionNode(Quad::FNode* InNode);
-	Quad::FNode*     GetNode() const;
 	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
 	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
 	JActorComponent* GetChildComponentByType(JTextView InType) const;

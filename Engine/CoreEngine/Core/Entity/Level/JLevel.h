@@ -32,6 +32,9 @@ public:
 	virtual void RenderLevel();
 
 public:
+	bool IsLoaded() const { return bThreadLoaded; }
+
+public:
 	// void AddActor(const Ptr<AActor>& InActor);
 
 	AActor* LoadActorFromPath(const JText& InPath);
@@ -40,6 +43,8 @@ public:
 	T* CreateActor(JTextView InName, Args&&... InArgs);
 
 public:
+	bool bThreadLoaded = false;
+
 	UPtr<Quad::JTree> mOcTree;
 
 	JArray<UPtr<class AActor>>      mActors;	// 레벨에 속한 액터들

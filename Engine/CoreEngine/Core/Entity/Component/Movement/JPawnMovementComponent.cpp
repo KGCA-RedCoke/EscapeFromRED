@@ -78,6 +78,7 @@ void JPawnMovementComponent::Tick(float DeltaTime)
 
 	mAcceleration     = (newVelocity - mVelocity) / DeltaTime;
 	mVelocity         = newVelocity;
+	mCurrentWalkSpeed = mVelocity.Length();
 	mPreviousLocation = thisFrameLocation;
 }
 
@@ -90,6 +91,10 @@ void JPawnMovementComponent::ShowEditor()
 {
 	// Max Walk Speed
 	ImGui::InputFloat("Max Walk Speed", &mMaxWalkSpeed);
+
+	ImGui::Text("Current Walk Speed: %f", mCurrentWalkSpeed);
+	ImGui::Text("Current Velocity: %f, %f, %f", mVelocity.x, mVelocity.y, mVelocity.z);
+	ImGui::Text("Current Acceleration: %f, %f, %f", mAcceleration.x, mAcceleration.y, mAcceleration.z);
 }
 
 void JPawnMovementComponent::Jump()

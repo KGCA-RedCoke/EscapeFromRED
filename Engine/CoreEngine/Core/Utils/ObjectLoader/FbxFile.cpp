@@ -832,7 +832,7 @@ namespace Utils::Fbx
 		}
 
 		CaptureAnimation(anim, Scene);
-		anim->OptimizeKeys();
+		// anim->OptimizeKeys();
 	}
 
 	void FbxFile::ParseAnimNode(FbxNode* InNode, int32_t InParentIndex, bool bSkeletalAnim)

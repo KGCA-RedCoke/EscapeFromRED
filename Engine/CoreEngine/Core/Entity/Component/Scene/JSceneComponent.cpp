@@ -432,12 +432,6 @@ void JSceneComponent::UpdateTransform()
 
 	mCachedWorldMat = mWorldMat;
 
-	// 프러스텀 박스(OBB) 업데이트
-	mBoundingBox.Box.Center       = mWorldLocation;
-	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
-	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
-	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
-
 	MarkAsDirty();
 }
 
@@ -646,6 +640,7 @@ void JBoxComponent::Initialize()
 void JBoxComponent::Tick(float DeltaTime)
 {
 	JCollisionComponent::Tick(DeltaTime);
+
 }
 
 void JBoxComponent::Draw()

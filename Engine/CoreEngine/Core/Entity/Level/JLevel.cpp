@@ -1,12 +1,16 @@
 ﻿#include "JLevel.h"
 
 #include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
+#include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "GUI/MGUIManager.h"
 
 JLevel::JLevel(const JText& InPath, bool bUseTree)
 	: JObject(InPath)
@@ -76,6 +80,8 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 
 		}
 	}
+
+	bThreadLoaded = true;
 
 	return true;
 }

@@ -15,8 +15,10 @@ public:
 	void Release() override;
 
 protected:
+	void Update(float DeltaTime) override;
 	void Update_Implementation(float DeltaTime) override;
 	void ShowMenuBar() override;
+	void DrawDetails(float paneWidth);
 
 private:
 	JAnimator* mAnimator = nullptr;

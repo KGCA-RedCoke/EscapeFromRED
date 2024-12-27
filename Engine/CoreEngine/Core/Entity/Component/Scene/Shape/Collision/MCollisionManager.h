@@ -130,7 +130,7 @@ public:
 private:
 	void UpdateLayerCollision(ETraceType InRow, ETraceType InCol);
 	void CheckCollision(ICollision* InLeft, ICollision* InRight);
-	bool Intersect(ICollision* InLeft, ICollision* InRight);
+	bool Intersect(ICollision* InLeft, ICollision* InRight, FHitResult& OutHitResult);
 
 private:
 	JHash<ETraceType, JArray<ICollision*>>   mLayerHash;		// 레이어별 충돌체 리스트

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
 
+class JAnimator;
 class JStaticMeshComponent;
 
 class APlayerCharacter : public ACharacter
@@ -30,6 +31,7 @@ private:
 	JArray<class JAnimationClip*> mAnimList;
 	uint32_t                      mCurrentAnimIndex = 0;
 	bool                          bMove             = false;
+	UPtr<JAnimator>               mPlayerAnimator;
 
 };
 

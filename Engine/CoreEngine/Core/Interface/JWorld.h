@@ -40,6 +40,8 @@ public:
 		newActor->SetWorldRotation(InRotation);
 		newActor->SetOwnerActor(InOwner);
 
+		newActor->Initialize();
+
 		return newActor;
 	}
 

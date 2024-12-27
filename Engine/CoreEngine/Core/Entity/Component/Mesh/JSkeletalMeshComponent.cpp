@@ -34,20 +34,9 @@ bool JSkeletalMeshComponent::Serialize_Implement(std::ofstream& FileStream)
 	Utils::Serialization::Serialize_Primitive(&bHasMeshObject, sizeof(bool), FileStream);
 	if (bHasMeshObject)
 	{
-		// mMeshObject->Serialize_Implement(FileStream);
 		auto filePath = std::format("Game/Mesh/{}.jasset", mSkeletalMeshObject->GetName());
 		Utils::Serialization::Serialize_Text(filePath, FileStream);
 	}
-
-	// // MaterialInstance
-	// int32_t materialCount = mSkeletalMeshObject->GetMaterialCount();
-	// Utils::Serialization::Serialize_Primitive(&materialCount, sizeof(int32_t), FileStream);
-	// for (int32_t i = 0; i < materialCount; ++i)
-	// {
-	// 	auto* materialInstance = mSkeletalMeshObject->GetMaterialInstance(i);
-	// 	auto  materialPath     = materialInstance->GetMaterialPath();
-	// 	Utils::Serialization::Serialize_Text(materialPath, FileStream);
-	// }
 
 	return true;
 }
@@ -70,17 +59,6 @@ bool JSkeletalMeshComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		SetSkeletalMesh(filePath);
 	}
 
-	// int32_t materialCount;
-	// Utils::Serialization::DeSerialize_Primitive(&materialCount, sizeof(int32_t), InFileStream);
-	// for (int32_t i = 0; i < materialCount; ++i)
-	// {
-	// 	JText materialPath;
-	// 	Utils::Serialization::DeSerialize_Text(materialPath, InFileStream);
-	//
-	// 	auto materialInstance = MMaterialInstanceManager::Get().Load(materialPath);
-	// 	SetMaterialInstance(materialInstance, i);
-	// }
-
 	return true;
 }
 
@@ -95,9 +73,21 @@ void JSkeletalMeshComponent::Tick(float DeltaTime)
 	// TransformComponent에서 위치 업데이트
 	JSceneComponent::Tick(DeltaTime);
 
+	// 프러스텀 박스(OBB) 업데이트
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldMat));
+	mBoundingBox.Box.Center       = XMVector3Transform(0.5f * (mBoundingBox.Max + mBoundingBox.Min), mWorldMat);
+	mBoundingBox.Box.Extent       = 0.5f * (mBoundingBox.Max - mBoundingBox.Min);
+
 	// MeshObject의 버퍼 업데이트
 	if (mSkeletalMeshObject)
 	{
+		if (mAnimator)
+		{
+			mAnimator->Tick(DeltaTime);
+		}
+
 		mSkeletalMeshObject->Tick(DeltaTime);
 		mSkeletalMeshObject->UpdateInstance_Transform(mWorldMat);
 	}
@@ -146,7 +136,7 @@ void JSkeletalMeshComponent::SetMaterialInstance(JMaterialInstance* InMaterialIn
 	}
 }
 
-void JSkeletalMeshComponent::SetAnimation(const JAnimationClip* InAnimationClip) const
+void JSkeletalMeshComponent::SetAnimation(JAnimationClip* InAnimationClip) const
 {
 	if (mSkeletalMeshObject)
 	{

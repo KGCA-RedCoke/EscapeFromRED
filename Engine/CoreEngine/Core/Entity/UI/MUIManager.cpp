@@ -520,6 +520,8 @@ MUIManager::MUIManager()
 
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
+
+	LoadingScreen = Load("Game/UI/NewWidget.jasset");
 }
 
 MUIManager::~MUIManager() {}

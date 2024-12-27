@@ -180,6 +180,15 @@ bool JAnimationClip::Serialize_Implement(std::ofstream& FileStream)
 				Utils::Serialization::Serialize_Primitive(&curve[k].Value, sizeof(int32_t), FileStream);
 			}
 		}
+
+		// int32_t stateSize = mTransitionMap.size();
+		// Utils::Serialization::Serialize_Primitive(&stateSize, sizeof(stateSize), FileStream);
+		// for (auto& [key, value] : mTransitionMap)
+		// {
+		// 	JText keyStr       = key;
+		// 	Utils::Serialization::Serialize_Text(keyStr, FileStream);
+		// 	// Utils::Serialization::Serialize_Text(animClipName, FileStream);
+		// }
 	}
 	return true;
 }
@@ -269,6 +278,7 @@ void JAnimationClip::Play()
 	mElapsedTime = mStartTime * mFramePerSecond * mTickPerFrame;
 	bPlaying     = true;
 	bLooping     = true;
+	mNextState   = "";
 }
 
 void JAnimationClip::Resume()
@@ -287,15 +297,20 @@ void JAnimationClip::Stop()
 	mElapsedTime = 0.0f;
 }
 
-void JAnimationClip::TickAnim(const float DeltaSeconds)
+bool JAnimationClip::TickAnim(const float DeltaSeconds)
 {
 	if (!bPlaying || mSkeletalMesh.expired())
 	{
-		return;
+		return true;
 	}
 
 	// 경과시간 계산
 	mElapsedTime += DeltaSeconds * mAnimationSpeed;
+
+	if (CheckTransition())
+	{
+		return false;
+	}
 
 	// 경과 시간이 애니메이션의 시작 시간을 초과
 	if (mElapsedTime > mEndTime)
@@ -303,7 +318,7 @@ void JAnimationClip::TickAnim(const float DeltaSeconds)
 		if (!bLooping)
 		{
 			Stop();
-			return;
+			return true;
 		}
 
 		// 시작 시간으로 초기화
@@ -313,9 +328,32 @@ void JAnimationClip::TickAnim(const float DeltaSeconds)
 
 		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 
-		return;
 	}
+
 	UpdateInstanceData(mElapsedTime);
+	return true;
+}
+
+bool JAnimationClip::CheckTransition()
+{
+	for (auto& transition : mTransitionMap)
+	{
+		JText nextState      = transition.first;
+		float transitionTime = transition.second[0].TransitionTime;
+
+		if (transition.second[0].Condition())
+		{
+			mNextState = nextState;
+
+			mInstanceData.DeltaTime        = transitionTime;
+			mInstanceData.CurrentAnimIndex = mInstanceData.NextAnimIndex;
+			mInstanceData.NextAnimIndex    = 0;
+			Stop();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void JAnimationClip::OptimizeKeys()
@@ -472,9 +510,9 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 	mInstanceData.NextAnimIndex = endFrame;
 }
 
-void JAnimationClip::AddTransition(const JText& InState, const std::function<bool>& InFunc)
+void JAnimationClip::AddTransition(const JText& InState, const std::function<bool()>& InFunc, float InTransitionTime)
 {
-	// mTransitionMap[InState].emplace_back(InFunc);
+	mTransitionMap[InState].emplace_back(InFunc, InTransitionTime);
 }
 
 void JAnimationClip::SetSkeletalMesh(const Ptr<JSkeletalMesh>& InSkeletalMesh)

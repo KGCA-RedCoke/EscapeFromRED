@@ -2,6 +2,7 @@
 #include "Core/Entity/Component/JActorComponent.h"
 #include "Core/Graphics/ShaderStructs.h"
 
+class JPawnMovementComponent;
 class JSkeletalMeshComponent;
 class JSkeletalMesh;
 
@@ -11,7 +12,7 @@ DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
 
 DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
 
-class JAnimator : public JAsset, public IManagedInterface
+class JAnimator : public JObject
 {
 public:
 	JAnimator();
@@ -28,16 +29,20 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	void Initialize();
-	void BeginPlay();
-	void Tick(float DeltaTime);
-	void Destroy();
+	void Initialize() override;
+	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
+	void Destroy() override;
 
 public:
 	void AddAnimationClip(const JText& InState, class JAnimationClip* InClip);
 	void AddAnimationClip(const JText& InState, const JText& InClipPath);
-	void AddAnimLink(const JText& SrcState, const JText& DstState);
+	void AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
+					 const float  InTransitionTime);
 	void SetState(const JText& InState);
+
+public:
+	FSkeletalMeshInstanceData GetAnimInstanceData() const { return mSkeletalMeshInstanceData; }
 
 protected:
 	JSkeletalMeshComponent* mSkeletalMeshComponent;
@@ -46,9 +51,14 @@ protected:
 
 	// State Machine
 	JHash<JText, class JAnimationClip*> mStateMachine;
+	JHash<JText, JArray<JText>>         mAnimLink;
 	JText                               mCurrentState;
 	JAnimationClip*                     mCurrentAnimation;
 	JAnimationClip*                     mPrevAnimation;
+
+	// Model Data
+	JPawnMovementComponent* mMovementComponent;
+
 
 	friend class GUI_Editor_Animator;
 };

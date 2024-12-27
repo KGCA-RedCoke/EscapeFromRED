@@ -1,6 +1,8 @@
 ﻿#include "JPlayerAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
+#include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
 
 JPlayerAnimator::JPlayerAnimator() {}
@@ -15,15 +17,25 @@ void JPlayerAnimator::Initialize()
 {
 	JAnimator::Initialize();
 
+	mMovementComponent = static_cast<JPawnMovementComponent*>(mSkeletalMeshComponent->GetOwnerActor()->
+		GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
+
 	AddAnimationClip("Idle_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands_Empty_Idle.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset",
 													 mSkeletalMeshComponent));
 	AddAnimationClip("Walk_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands_Empty_Walk.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Run.jasset",
 													 mSkeletalMeshComponent));
-	// AddAnimationClip("Run_Free", );
-	//
-	// AddAnimationClip("Idle_OneHand_Pistol", );
-	// AddAnimationClip("Walk_OneHand_Pistol", );
-	// AddAnimationClip("Run_OneHand_Pistol", );
+
+
+	AddAnimLink("Idle_Free", "Walk_Free", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+	AddAnimLink("Walk_Free", "Idle_Free", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+
+	SetState("Idle_Free");
+	mCurrentAnimation->Play();
+}
+
+void JPlayerAnimator::BeginPlay()
+{
+	JAnimator::BeginPlay();
 }

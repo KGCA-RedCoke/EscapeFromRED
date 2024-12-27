@@ -44,9 +44,6 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	{
 		JSkeletalMeshObject::SetMaterialInstance(Other.mMaterialInstances[i], i);
 	}
-
-	if (Other.mCurrentAnimation)
-		mCurrentAnimation = UPtrCast<JAnimationClip>(Other.mCurrentAnimation->Clone());
 }
 
 UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
@@ -70,9 +67,12 @@ uint32_t JSkeletalMeshObject::GetType() const
 
 bool JSkeletalMeshObject::Serialize_Implement(std::ofstream& FileStream)
 {
-	bool bSuccess = JMeshObject::Serialize_Implement(FileStream);
+	if (!JMeshObject::Serialize_Implement(FileStream))
+	{
+		return false;
+	}
 
-	return bSuccess;
+	return true;
 }
 
 bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
@@ -118,37 +118,40 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 {
 	if (mCurrentAnimation)
 	{
-		mCurrentAnimation->TickAnim(DeltaTime);
-
-		auto& animData = mCurrentAnimation->GetInstanceData();
-
-		if (bTransitAnimation)
+		if (mCurrentAnimation->TickAnim(DeltaTime))
 		{
-			mTransitionElapsedTime += DeltaTime;
+			auto& animData = mCurrentAnimation->GetInstanceData();
 
-			float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
-
-			for (int32_t i = 0; i < mInstanceData.size(); ++i)
+			if (bTransitAnimation)
 			{
-				mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
-				mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
-				mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
+				mTransitionElapsedTime += DeltaTime;
+
+				float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
+
+				for (int32_t i = 0; i < mInstanceData.size(); ++i)
+				{
+					mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
+					mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
+					mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
+				}
+
+				// 블렌딩 완료 시
+				if (BlendWeight >= 1.0f)
+				{
+					bTransitAnimation      = false;
+					mTransitionElapsedTime = 0.0f;
+				}
 			}
-
-			// 블렌딩 완료 시
-			if (BlendWeight >= 1.0f)
+			else
 			{
-				bTransitAnimation      = false;
-				mTransitionElapsedTime = 0.0f;
+				for (int32_t i = 0; i < mInstanceData.size(); ++i)
+				{
+					mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
+				}
 			}
 		}
-		else
-		{
-			for (int32_t i = 0; i < mInstanceData.size(); ++i)
-			{
-				mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
-			}
-		}
+
+	
 	}
 }
 
@@ -208,16 +211,24 @@ void JSkeletalMeshObject::DrawID(uint32_t ID)
 	JMeshObject::DrawID(ID);
 }
 
-void JSkeletalMeshObject::SetAnimation(const JAnimationClip* InAnimation)
+void JSkeletalMeshObject::UpdateInstance_Anim(const FSkeletalMeshInstanceData& InData)
 {
-	if (mCurrentAnimation.get())
+	for (int32_t i = 0; i < mInstanceData.size(); ++i)
+	{
+		mInstanceData[i].SkeletalData = InData;
+	}
+}
+
+void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
+{
+	if (mCurrentAnimation)
 	{
 		mCurrentAnimation->Stop();
 		mCurrentAnimation = nullptr;
 		bTransitAnimation = true;
 	}
 
-	mCurrentAnimation = UPtrCast<JAnimationClip>(InAnimation->Clone());
+	mCurrentAnimation = InAnimation;
 	mCurrentAnimation->SetSkeletalMesh(mSkeletalMesh);
 	mCurrentAnimation->Play();
 }

@@ -1,4 +1,6 @@
 ﻿#include "APlayerCharacter.h"
+
+#include "JPlayerAnimator.h"
 #include "JPlayerCamera.h"
 #include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
@@ -18,19 +20,21 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 		JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
 	mSkeletalMeshComponent->SetLocalRotation({0, 180, 0});
-	mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Run.jasset",
-														mSkeletalMeshComponent));
-	mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset",
-														mSkeletalMeshComponent));
+	mPlayerAnimator = MakeUPtr<JPlayerAnimator>(InName, mSkeletalMeshComponent);
+	mSkeletalMeshComponent->SetAnimator(mPlayerAnimator.get());
+	// mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Run.jasset",
+	// 													mSkeletalMeshComponent));
+	// mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset",
+	// 													mSkeletalMeshComponent));
 	mCurrentAnimIndex = 1;
-	mSkeletalMeshComponent->SetAnimation(mAnimList.back());
+	// mSkeletalMeshComponent->SetAnimation(mAnimList.back());
 
 	mLightMesh = CreateDefaultSubObject<JStaticMeshComponent>("LightMesh", this);
 	mLightMesh->SetupAttachment(mSkeletalMeshComponent);
 	mLightMesh->SetMeshObject("Game/Mesh/SM_Flashlight_01.jasset");
 	mLightMesh->AttachToBoneSocket(mSkeletalMeshComponent, "hand_r");
-	mLightMesh->SetLocalLocation({-24.950527, -10.713480, -8.060391});
-	mLightMesh->SetLocalRotation({-38.99271, 83.490776, -2.771158});
+	mLightMesh->SetLocalLocation({-55, 83.3, 0});
+	mLightMesh->SetLocalRotation({-25, 14, 8});
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
@@ -44,6 +48,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 void APlayerCharacter::Initialize()
 {
 	ACharacter::Initialize();
+	mPlayerAnimator->Initialize();
 
 	SetupInputComponent();
 }
@@ -58,17 +63,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	}
 	UpdateRotation();
 	ACharacter::Tick(DeltaTime);
-
-	if (bMove && mCurrentAnimIndex != 0)
-	{
-		mSkeletalMeshComponent->SetAnimation(mAnimList[0]);
-		mCurrentAnimIndex = 0;
-	}
-	if (!bMove && mCurrentAnimIndex != 1)
-	{
-		mSkeletalMeshComponent->SetAnimation(mAnimList[1]);
-		mCurrentAnimIndex = 1;
-	}
 }
 
 void APlayerCharacter::Destroy()

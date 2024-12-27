@@ -70,7 +70,7 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 	hitResult.SrcCollision = InLeft;
 	hitResult.DstCollision = InRight;
 
-	if (Intersect(InLeft, InRight))
+	if (Intersect(InLeft, InRight, hitResult))
 	{
 		hitResult.HitLocation = FVector::ZeroVector;
 		hitResult.HitNormal   = FVector::ZeroVector;
@@ -102,12 +102,12 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 
 }
 
-bool MCollisionManager::Intersect(ICollision* InLeft, ICollision* InRight)
+bool MCollisionManager::Intersect(ICollision* InLeft, ICollision* InRight, FHitResult& OutHitResult)
 {
 	if (InLeft && InRight)
 	{
 		FHitResult hitResult;
-		return InLeft->Intersect(InRight, hitResult);
+		return InLeft->Intersect(InRight, OutHitResult);
 	}
 
 	return false;
