@@ -30,7 +30,6 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 	// ID3D11ShaderResourceView* textureArraySRV = CreateTextureArray(device, context, mTextures.data(), mTextures.size());
 
-
 	InDeviceContext->PSSetShaderResources(0, mTextures.size(), mTextures.data());
 	InDeviceContext->PSSetShaderResources(64, mOpacityTextures.size(), mOpacityTextures.data());
 
