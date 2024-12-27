@@ -107,8 +107,6 @@ void JLevel::InitializeLevel()
 {
 	mOcTree = MakeUPtr<Quad::JTree>();
 	mOcTree->Initialize({{0, 0, 0}, {10000, 5000, 10000}}, MAX_DEPTH);
-
-	GetWorld.ViewportManager->Load("HUD", 1920, 1080);
 }
 
 void JLevel::UpdateLevel(float DeltaTime)

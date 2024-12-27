@@ -15,12 +15,18 @@ JAnimator::JAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
 
 JAnimator::JAnimator(const JAnimator& InCopy)
 {
-	
+	for (auto& [key, value] : InCopy.mStateMachine)
+	{
+		mStateMachine[key] = GetWorld.AnimationManager->Clone(value->GetName());
+	}
+	mAnimLink                 = InCopy.mAnimLink;
+	mSkeletalMeshComponent    = InCopy.mSkeletalMeshComponent;
+	mSkeletalMeshInstanceData = InCopy.mSkeletalMeshInstanceData;
 }
 
 UPtr<IManagedInterface> JAnimator::Clone() const
 {
-	return {};
+	return MakeUPtr<JAnimator>(*this);
 }
 
 uint32_t JAnimator::GetHash() const
@@ -80,7 +86,7 @@ bool JAnimator::DeSerialize_Implement(std::ifstream& InFileStream)
 
 		JAnimationClip* animClip = GetWorld.AnimationManager->Load(animClipName);
 		assert(animClip);
-		mStateMachine[keyStr] = animClip;
+		mStateMachine[keyStr] = UPtrCast<JAnimationClip>(animClip->Clone());
 	}
 	return true;
 }
@@ -88,8 +94,8 @@ bool JAnimator::DeSerialize_Implement(std::ifstream& InFileStream)
 void JAnimator::Initialize()
 {
 	mMovementComponent = static_cast<JPawnMovementComponent*>(
-	mSkeletalMeshComponent->GetOwnerActor()->
-	GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
+		mSkeletalMeshComponent->GetOwnerActor()->
+								GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
 }
 
 void JAnimator::BeginPlay()
@@ -113,7 +119,7 @@ void JAnimator::Destroy()
 
 void JAnimator::AddAnimationClip(const JText& InState, JAnimationClip* InClip)
 {
-	mStateMachine[InState] = InClip;
+	mStateMachine[InState] = UPtrCast<JAnimationClip>(InClip->Clone());
 }
 
 void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
@@ -125,7 +131,7 @@ void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
 			return;
 		}
 	}
-	mStateMachine[InState] = GetWorld.AnimationManager->Load(InClipPath);
+	mStateMachine[InState] = UPtrCast<JAnimationClip>(GetWorld.AnimationManager->Load(InClipPath)->Clone());
 }
 
 void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
@@ -154,7 +160,7 @@ void JAnimator::SetState(const JText& InState)
 
 	mPrevAnimation    = mCurrentAnimation;
 	mCurrentState     = InState;
-	mCurrentAnimation = it->second;
+	mCurrentAnimation = it->second.get();
 
 	mSkeletalMeshComponent->SetAnimation(mCurrentAnimation);
 }

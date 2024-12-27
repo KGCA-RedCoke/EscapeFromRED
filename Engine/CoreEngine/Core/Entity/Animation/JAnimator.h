@@ -51,11 +51,11 @@ protected:
 	FSkeletalMeshInstanceData mSkeletalMeshInstanceData;
 
 	// State Machine
-	JHash<JText, class JAnimationClip*> mStateMachine;
-	JHash<JText, JArray<JText>>         mAnimLink;
-	JText                               mCurrentState;
-	JAnimationClip*                     mCurrentAnimation;
-	JAnimationClip*                     mPrevAnimation;
+	JHash<JText, UPtr<class JAnimationClip>> mStateMachine;
+	JHash<JText, JArray<JText>>              mAnimLink;
+	JText                                    mCurrentState;
+	JAnimationClip*                          mCurrentAnimation;
+	JAnimationClip*                          mPrevAnimation;
 
 	// Model Data
 	JPawnMovementComponent* mMovementComponent;
