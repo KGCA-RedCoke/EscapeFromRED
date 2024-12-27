@@ -70,11 +70,11 @@ struct FHitResult
 };
 
 
-DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, const FHitResult&);
+DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, ICollision* Other, const FHitResult&);
 
-DECLARE_DYNAMIC_DELEGATE(FOnComponentOverlap, const FHitResult&);
+DECLARE_DYNAMIC_DELEGATE(FOnComponentOverlap, ICollision* Other, const FHitResult&);
 
-DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, const FHitResult&);
+DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, ICollision* Other, const FHitResult&);
 
 /**
  * 충돌체 인터페이스 클래스

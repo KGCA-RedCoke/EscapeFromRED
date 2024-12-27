@@ -27,9 +27,12 @@ void JKihyunAnimator::Initialize()
 
     AddAnimationClip("Idle",
                      GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Idle.jasset",
-                                                     mSkeletalMeshComponent));
+                     mSkeletalMeshComponent));
     AddAnimationClip("Walk",
-                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Run.jasset",
+                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Run_02.jasset",
+                     mSkeletalMeshComponent));
+    AddAnimationClip("Attack",
+                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Jump_Idle.jasset",
                                                      mSkeletalMeshComponent));
 
 

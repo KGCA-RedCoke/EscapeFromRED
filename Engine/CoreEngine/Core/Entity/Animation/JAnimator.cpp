@@ -93,6 +93,10 @@ bool JAnimator::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JAnimator::Initialize()
 {
+	if (!mSkeletalMeshComponent->GetOwnerActor())
+	{
+		return;
+	}
 	mMovementComponent = static_cast<JPawnMovementComponent*>(
 		mSkeletalMeshComponent->GetOwnerActor()->
 								GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));

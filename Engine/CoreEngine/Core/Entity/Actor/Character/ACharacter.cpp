@@ -29,6 +29,7 @@ void ACharacter::Initialize()
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<
 			JSkeletalMeshComponent>("SkeletalMeshComponent", this, this);
+		mSkeletalMeshComponent->Initialize();
 	}
 }
 
@@ -66,6 +67,7 @@ bool ACharacter::DeSerialize_Implement(std::ifstream& InFileStream)
 	}
 
 	mSkeletalMeshComponent = static_cast<JSkeletalMeshComponent*>(GetChildSceneComponentByType("SkeletalMeshComponent"));
+	mSkeletalMeshComponent->Initialize();
 	// mFPSCamera             = static_cast<JPlayerCamera*>(GetChildSceneComponentByType("CameraComponent"));
 
 	return true;

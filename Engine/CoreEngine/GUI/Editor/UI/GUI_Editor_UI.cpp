@@ -86,7 +86,7 @@ void GUI_Editor_UI::Render()
 	// 렌더 타겟을 현재 뷰포트로 설정
 	MViewportManager::Get().SetRenderTarget(mTitle.c_str(), FLinearColor::Alpha);
 	MShaderManager::Get().UpdateCamera(mCamera);
-	MUIManager::Get().FlushCommanaaaaaaaaawwwwwwwwwwwwwwwwdList(G_Device.GetImmediateDeviceContext());
+	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 }
 
 void GUI_Editor_UI::ShowEditWindow()

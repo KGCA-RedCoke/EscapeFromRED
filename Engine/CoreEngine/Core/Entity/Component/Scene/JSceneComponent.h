@@ -205,6 +205,27 @@ protected:
 	FRay mRay;
 };
 
+namespace CollisionEvent
+{
+	constexpr const char* OnEnter[] =
+		{
+		"Block",
+		"Player Damage"
+		};
+
+	constexpr const char* OnOverlap[] =
+		{
+		"Block",
+		"Player Damage"
+		};
+
+	constexpr const char* OnExit[] =
+		{
+		"Block",
+		"Player Damage"
+		};
+	
+}
 
 class JBoxComponent : public JCollisionComponent
 {
