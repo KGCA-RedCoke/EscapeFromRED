@@ -1,5 +1,6 @@
 ﻿#include "JPlayerAnimator.h"
 
+#include "APlayerCharacter.h"
 #include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
@@ -8,7 +9,10 @@
 JPlayerAnimator::JPlayerAnimator() {}
 
 JPlayerAnimator::JPlayerAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
-	: JAnimator(InName, InSkeletalComp) {}
+	: JAnimator(InName, InSkeletalComp)
+{
+	mOwnerCharacter = static_cast<APlayerCharacter*>(InSkeletalComp->GetOwnerActor());
+}
 
 JPlayerAnimator::JPlayerAnimator(JTextView InName, AActor* InOwnerActor)
 	: JAnimator(InName) {}
@@ -20,16 +24,28 @@ void JPlayerAnimator::Initialize()
 	mMovementComponent = static_cast<JPawnMovementComponent*>(mSkeletalMeshComponent->GetOwnerActor()->
 		GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
 
+	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Longs_Attack_L.jasset",
+													   mSkeletalMeshComponent);
+	attackAnim->OnAnimFinished.Bind([this](){
+		mOwnerCharacter->bShouldAttack = false;
+	});
+
 	AddAnimationClip("Idle_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Idle.jasset",
 													 mSkeletalMeshComponent));
 	AddAnimationClip("Walk_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Run.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/FPP_Longs_Walk1.jasset",
 													 mSkeletalMeshComponent));
+	AddAnimationClip("Attack", attackAnim);
 
 
 	AddAnimLink("Idle_Free", "Walk_Free", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 	AddAnimLink("Walk_Free", "Idle_Free", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+
+	AddAnimLink("Idle_Free", "Attack", [&](){ return mOwnerCharacter->bShouldAttack; }, 0.2f);
+	AddAnimLink("Walk_Free", "Attack", [&](){ return mOwnerCharacter->bShouldAttack; }, 0.2f);
+
+	AddAnimLink("Attack", "Idle_Free", [&](){ return !mOwnerCharacter->bShouldAttack; }, 0.2f);
 
 	SetState("Idle_Free");
 	mCurrentAnimation->Play();

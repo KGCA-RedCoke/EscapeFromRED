@@ -6,12 +6,6 @@ class JPawnMovementComponent;
 class JSkeletalMeshComponent;
 class JSkeletalMesh;
 
-DECLARE_DYNAMIC_DELEGATE(FOnAnimStart);
-
-DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
-
-DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
-
 class JAnimator : public JObject
 {
 public:
@@ -36,7 +30,7 @@ public:
 	void Destroy() override;
 
 public:
-	void AddAnimationClip(const JText& InState, class JAnimationClip* InClip);
+	void AddAnimationClip(const JText& InState, const class JAnimationClip* InClip);
 	void AddAnimationClip(const JText& InState, const JText& InClipPath);
 	void AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
 					 const float  InTransitionTime);

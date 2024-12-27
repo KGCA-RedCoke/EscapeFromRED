@@ -22,19 +22,14 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mSkeletalMeshComponent->SetLocalRotation({0, 180, 0});
 	mPlayerAnimator = MakeUPtr<JPlayerAnimator>(InName, mSkeletalMeshComponent);
 	mSkeletalMeshComponent->SetAnimator(mPlayerAnimator.get());
-	// mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Run.jasset",
-	// 													mSkeletalMeshComponent));
-	// mAnimList.push_back(GetWorld.AnimationManager->Load("Game/Animation/Anim_Hands__Lantern_01_Walk.jasset",
-	// 													mSkeletalMeshComponent));
-	mCurrentAnimIndex = 1;
-	// mSkeletalMeshComponent->SetAnimation(mAnimList.back());
+
 
 	mLightMesh = CreateDefaultSubObject<JStaticMeshComponent>("LightMesh", this);
 	mLightMesh->SetupAttachment(mSkeletalMeshComponent);
-	mLightMesh->SetMeshObject("Game/Mesh/SM_Flashlight_01.jasset");
+	mLightMesh->SetMeshObject("Game/Mesh/SM_Pickaxe_.jasset");
 	mLightMesh->AttachToBoneSocket(mSkeletalMeshComponent, "hand_r");
-	mLightMesh->SetLocalLocation({-55, 83.3, 0});
-	mLightMesh->SetLocalRotation({-25, 14, 8});
+	mLightMesh->SetLocalLocation({-50, 105, 30});
+	mLightMesh->SetLocalRotation({-137.6, 105, -87.1});
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
@@ -100,6 +95,10 @@ void APlayerCharacter::SetupInputComponent()
 									  this,
 									  std::placeholders::_1,
 									  -FVector::ForwardVector));
+
+	mInput->AddInputBinding(EKeyCode::LButton,
+							EKeyState::Pressed,
+							[this](float DeltaTime){ bShouldAttack = true; });
 }
 
 void APlayerCharacter::UpdateRotation()

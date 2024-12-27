@@ -140,6 +140,7 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 				{
 					bTransitAnimation      = false;
 					mTransitionElapsedTime = 0.0f;
+					mPreviewAnimationClip  = nullptr;
 				}
 			}
 			else
@@ -151,7 +152,7 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 			}
 		}
 
-	
+
 	}
 }
 
@@ -224,8 +225,8 @@ void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 	if (mCurrentAnimation)
 	{
 		mCurrentAnimation->Stop();
-		mCurrentAnimation = nullptr;
-		bTransitAnimation = true;
+		mPreviewAnimationClip = mCurrentAnimation;
+		bTransitAnimation     = true;
 	}
 
 	mCurrentAnimation = InAnimation;

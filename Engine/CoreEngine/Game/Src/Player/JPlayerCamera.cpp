@@ -8,7 +8,7 @@ JPlayerCamera::JPlayerCamera(JTextView InName, ACharacter* InOwner, JSceneCompon
 	  mOwnerCharacter(InOwner)
 {
 	mNearPlane     = 1.f;
-	mFOV           = M_PI / 4.f;
+	mFOV           = M_PI / 3.f;
 	mLocalLocation = FVector{0, 161.6f, -9.8f};
 }
 

@@ -92,9 +92,19 @@ struct JAnimBoneTrack
 	JArray<JAnimKeyList<int32_t>> CurveData;	// 애니메이션 커브 데이터
 };
 
+DECLARE_DYNAMIC_DELEGATE(FOnAnimStart);
+
+DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
+
+DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
 
 class JAnimationClip : public JAsset, public IManagedInterface
 {
+public:
+	FOnAnimStart    OnAnimStart;
+	FOnAnimFinished OnAnimFinished;
+	FOnAnimBlendOut OnAnimBlendOut;
+
 public:
 	JAnimationClip() = default;
 	JAnimationClip(JTextView InName, const Ptr<JSkeletalMesh>& InSkeletalMesh = nullptr);
@@ -122,7 +132,7 @@ public:
 
 private:
 	bool CheckTransition();
-	
+
 public:
 	void OptimizeKeys();
 	void AddTrack(const Ptr<JAnimBoneTrack>& Track);

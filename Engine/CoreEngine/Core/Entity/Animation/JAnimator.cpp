@@ -117,7 +117,7 @@ void JAnimator::Tick(float DeltaTime)
 void JAnimator::Destroy()
 {}
 
-void JAnimator::AddAnimationClip(const JText& InState, JAnimationClip* InClip)
+void JAnimator::AddAnimationClip(const JText& InState, const JAnimationClip* InClip)
 {
 	mStateMachine[InState] = UPtrCast<JAnimationClip>(InClip->Clone());
 }

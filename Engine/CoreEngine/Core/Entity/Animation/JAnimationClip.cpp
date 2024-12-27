@@ -92,6 +92,10 @@ JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	  mBoneMatrix(InOther.mBoneMatrix),
 	  mInstanceData(InOther.mInstanceData)
 {
+	OnAnimStart = InOther.OnAnimStart;
+	OnAnimFinished = InOther.OnAnimFinished;
+	OnAnimBlendOut = InOther.OnAnimBlendOut;
+	
 	if (InOther.mSkeletalMesh.expired())
 	{
 		return;
@@ -315,6 +319,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	// 경과 시간이 애니메이션의 시작 시간을 초과
 	if (mElapsedTime > mEndTime)
 	{
+		OnAnimFinished.Execute();
 		if (!bLooping)
 		{
 			Stop();
@@ -348,6 +353,8 @@ bool JAnimationClip::CheckTransition()
 			mInstanceData.DeltaTime        = transitionTime;
 			mInstanceData.CurrentAnimIndex = mInstanceData.NextAnimIndex;
 			mInstanceData.NextAnimIndex    = 0;
+			OnAnimBlendOut.Execute();
+
 			Stop();
 			return true;
 		}
@@ -479,6 +486,16 @@ FMatrix JAnimationClip::GetInterpolatedBone(const JText& InBoneName)
 		return FMatrix::Identity;
 
 	auto& boneMatrix = it->second;
+
+	if (mInstanceData.CurrentAnimIndex >= boneMatrix.size())
+	{
+		mInstanceData.CurrentAnimIndex = 0;
+	}
+	
+	if (mInstanceData.NextAnimIndex >= boneMatrix.size())
+	{
+		mInstanceData.NextAnimIndex = 0;
+	}
 
 	return FMatrix::Lerp(boneMatrix[mInstanceData.CurrentAnimIndex],
 						 boneMatrix[mInstanceData.NextAnimIndex],

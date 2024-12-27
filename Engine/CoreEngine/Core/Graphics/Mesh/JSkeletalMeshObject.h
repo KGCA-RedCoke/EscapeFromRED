@@ -40,6 +40,7 @@ protected:
 
 	// -------------------------- Animation Data --------------------------
 	JAnimationClip* mCurrentAnimation;
+	JAnimationClip* mPreviewAnimationClip;
 
 	bool  bTransitAnimation      = false;
 	float mTransitionElapsedTime = 0.0f;

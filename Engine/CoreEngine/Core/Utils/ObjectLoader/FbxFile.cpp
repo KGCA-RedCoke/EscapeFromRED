@@ -3,8 +3,8 @@
 #include "Core/Entity/Animation/JAnimationClip.h"
 #include "Core/Graphics/DirectMathHelper.h"
 #include "Core/Graphics/Material/Instance/JMaterialInstance.h"
-#include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JMeshData.h"
+#include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/JSkeletalMeshObject.h"
 #include "Core/Interface/JWorld.h"
 
@@ -795,8 +795,10 @@ namespace Utils::Fbx
 			return;
 
 		// 1프레임을 기준으로 시간을 설정 (우리는 프레임 단위로 애니메이션의 변환 행렬을 가져와야 함.)
-		FbxTime frameTime;
-		frameTime.SetTime(0, 0, 0, 1, 0, Scene->GetGlobalSettings().GetTimeMode());
+		FbxTime        frameTime;
+		FbxTime::EMode timeMode = Scene->GetGlobalSettings().GetTimeMode();
+		frameTime.SetTime(0, 0, 0, 1, 0, timeMode);
+		double frameRate = FbxTime::GetFrameRate(timeMode);
 
 		// 1프레임의 길이를 초 단위로 변환
 		float frameTimeSec = static_cast<float>(frameTime.GetSecondDouble());
@@ -816,6 +818,10 @@ namespace Utils::Fbx
 		anim->mStartTime               = startTime;
 		anim->mEndTime                 = endTime;
 		anim->mSourceSamplingInterval  = sampleTime;
+		if (frameRate >= 60)
+		{
+			anim->mEndFrame = anim->mEndFrame * (frameRate / 30);
+		}
 
 		mAnimations.push_back(anim);
 

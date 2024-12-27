@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Core/Entity/Animation/JAnimator.h"
 
+class APlayerCharacter;
+
 enum class EPlayerState : uint8_t
 {
 	Idle = 0,
@@ -24,4 +26,6 @@ public:
 	void Initialize() override;
 	void BeginPlay() override;
 
+private:
+	APlayerCharacter* mOwnerCharacter;
 };

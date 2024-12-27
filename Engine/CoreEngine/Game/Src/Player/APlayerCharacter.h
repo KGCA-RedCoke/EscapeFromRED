@@ -28,11 +28,12 @@ private:
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;
 
-	JArray<class JAnimationClip*> mAnimList;
-	uint32_t                      mCurrentAnimIndex = 0;
-	bool                          bMove             = false;
-	UPtr<JAnimator>               mPlayerAnimator;
+	bool            bMove = false;
+	bool            bShouldAttack;
+	bool            bShouldRun;
+	UPtr<JAnimator> mPlayerAnimator;
 
+	friend class JPlayerAnimator;
 };
 
 REGISTER_CLASS_TYPE(APlayerCharacter);
