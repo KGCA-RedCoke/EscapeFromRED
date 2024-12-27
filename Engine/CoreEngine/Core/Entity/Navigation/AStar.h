@@ -2,57 +2,45 @@
 #include <queue>
 #include "common_include.h"
 #include "Node.h"
-#include "Core/Entity/Component/JActorComponent.h"
 #include "Core/Input/XKeyboardMouse.h"
-
-namespace NAV
-{
-    class Node;
-}
+#include "Path.h"
 
 struct CompareNode
 {
-    bool operator()(const std::shared_ptr<NAV::Node>& a, const std::shared_ptr<NAV::Node>& b) const
-    {
-        int aFCost = a->FCost();
+    bool operator()(const std::shared_ptr<Nav::Node>& a, const std::shared_ptr<Nav::Node>& b) const
+    {        int aFCost = a->FCost();
         int bFCost = b->FCost();
         return aFCost > bFCost || (aFCost == bFCost && a->HCost > b->HCost);
     }
 };
 
-using PriorityQueue = std::priority_queue<Ptr<NAV::Node>, std::vector<Ptr<NAV::Node>>, CompareNode>;
-using UnOrdSet = std::unordered_set<Ptr<NAV::Node>>;
+using PriorityQueue = std::priority_queue<Ptr<Nav::Node>, std::vector<Ptr<Nav::Node>>, CompareNode>;
+using UnOrdSet = std::unordered_set<Ptr<Nav::Node>>;
 
-class AStar : public JActorComponent
+class AStar
 {
 public:
-    AStar(): JActorComponent()
-    {
-        mInputKeyboard.Initialize();
-    }
+    AStar();
+    ~AStar();
+    
+    bool FindPath(Ptr<Nav::Node> Start, Ptr<Nav::Node> Target, float Weight);
+    int GetHeuristic(Ptr<Nav::Node> A, Ptr<Nav::Node> B);
+    int GetDistance(Ptr<Nav::Node> A, Ptr<Nav::Node> B);
+    void RetracePath(Ptr<Nav::Node> Start, Ptr<Nav::Node> Target);
+    std::vector<Ptr<Nav::Node>> simplifyPath(const std::vector<Ptr<Nav::Node>> &path);
+    bool IsLineBlocked(FVector2 prevGrid, FVector2 nextGrid, std::vector<std::vector<Ptr<Nav::Node>>>& graph);
 
-    AStar(JTextView InName) : JActorComponent(InName) { mInputKeyboard.Initialize(); }
-
-    void Initialize() override;
-    void BeginPlay() override;
-    void Tick(float DeltaTime) override;
-    void Destroy() override;
-
-    void FindPath(Ptr<NAV::Node> Start, Ptr<NAV::Node> Target);
-    int GetDistance(Ptr<NAV::Node> A, Ptr<NAV::Node> B);
-    void RetracePath(Ptr<NAV::Node> Start, Ptr<NAV::Node> Target);
-    void FollowPath(float DeltaTime);
-
-    float mSpeed = 1000;
-    float mRotateSpeed = 300;
+    float mSpeed = 7;
+    float mRotateSpeed = 10;
+    float TurnDst = 1;
     bool IsPosUpdated = false;
-    bool PushToggle = false;
-    bool PushHold = false;
     FVector NewPlayerPos = FVector::ZeroVector;
-    std::vector<Ptr<NAV::Node>> mPath;
-
-private:
-    FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
-    FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
-    XKeyboardMouse mInputKeyboard;
+    // std::vector<Ptr<NAV::Node>> mPath;
+    Ptr<Path> mPath;
+    int mPathIdx = 1;
+    AActor* mOwnerActor = nullptr;
+    FVector2 obstacle = FVector2::ZeroVector;
+    int mLimitGCost = 500;
 };
+
+

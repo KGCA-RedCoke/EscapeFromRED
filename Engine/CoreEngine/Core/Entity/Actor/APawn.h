@@ -22,6 +22,7 @@ public:
 
 protected:
 	JPawnMovementComponent* mMovementComponent;
+	JLineComponent* mLineComponent;
 };
 
 REGISTER_CLASS_TYPE(APawn);

@@ -16,6 +16,7 @@
 #include "Core/Window/Application.h"
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
+#include "Core/Entity/Navigation/NavTest.h"
 
 extern ini::IniFile g_settings;
 
@@ -92,6 +93,7 @@ void JWorld::Update(float DeltaTime)
 	LevelManager->Update(DeltaTime);
 
 	G_DebugBatch.Update(DeltaTime);
+	currentFrame++;
 }
 
 void JWorld::Render()

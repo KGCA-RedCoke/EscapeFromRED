@@ -4,7 +4,7 @@
 #include "GUI_Node.h"
 #include "imgui/imgui_node_editor_internal.h"
 
-namespace ed = ax::NodeEditor;
+namespace edC = ax::NodeEditor;
 
 
 class GUI_Editor_Node : public GUI_Base
@@ -22,12 +22,12 @@ public:
 protected:
 	void UpdateTouch(float DeltaTime);
 
-	void BuildNode(ed::FNode* InNode);
+	void BuildNode(edC::FNode* InNode);
 
 protected:
-	ed::EditorContext* mContext = nullptr;
+	edC::EditorContext* mContext = nullptr;
 
-	JArray<UPtr<ed::FNode>> mNodes;
+	JArray<UPtr<edC::FNode>> mNodes;
 	JHash<uint32_t, float>  mNodeTouchTime;
 
 	JText mSaveFilePath;

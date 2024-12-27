@@ -114,6 +114,9 @@
     <ClInclude Include="Core\Entity\Audio\MSoundManager.h" />
     <ClInclude Include="Core\Entity\Camera\JCameraComponent.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BTBuilder.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
+    <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
@@ -131,6 +134,7 @@
     <ClInclude Include="Core\Entity\Navigation\AStar.h" />
     <ClInclude Include="Core\Entity\Navigation\NavTest.h" />
     <ClInclude Include="Core\Entity\Navigation\Node.h" />
+    <ClInclude Include="Core\Entity\Navigation\Path.h" />
     <ClInclude Include="Core\Entity\UI\MUIManager.h" />
     <ClInclude Include="Core\Gameplay\IGameMode.h" />
     <ClInclude Include="Core\Graphics\DirectMathHelper.h" />
@@ -199,6 +203,8 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
     <ClInclude Include="Game\Src\Player\JPlayerAnimator.h" />
@@ -299,6 +305,9 @@
     <ClCompile Include="Core\Entity\Audio\MSoundManager.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCameraComponent.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BTBuilder.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
@@ -316,6 +325,7 @@
     <ClCompile Include="Core\Entity\Navigation\AStar.cpp" />
     <ClCompile Include="Core\Entity\Navigation\NavTest.cpp" />
     <ClCompile Include="Core\Entity\Navigation\Node.cpp" />
+    <ClCompile Include="Core\Entity\Navigation\Path.cpp" />
     <ClCompile Include="Core\Entity\UI\MUIManager.cpp" />
     <ClCompile Include="Core\Gameplay\IGameMode.cpp" />
     <ClCompile Include="Core\Graphics\Font\JFont.cpp" />
@@ -371,6 +381,8 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />
     <ClCompile Include="Game\Src\Player\JPlayerAnimator.cpp" />

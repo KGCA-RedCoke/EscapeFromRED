@@ -47,20 +47,20 @@ void GUI_Editor_Animator::Update(float DeltaTime)
 
 			ShowMenuBar();
 
-			ed::SetCurrentEditor(mContext);
+			edC::SetCurrentEditor(mContext);
 
 			DrawDetails(396.f);
 
 			ImGui::SameLine(0, 12.f);
 
-			ed::Begin(mTitle.c_str(), ImVec2(0.0, 0.0f));
+			edC::Begin(mTitle.c_str(), ImVec2(0.0, 0.0f));
 			{
 				Update_Implementation(DeltaTime);
 			}
 
-			ed::End();
+			edC::End();
 
-			ed::SetCurrentEditor(nullptr);
+			edC::SetCurrentEditor(nullptr);
 		}
 
 
@@ -81,9 +81,9 @@ void GUI_Editor_Animator::Update_Implementation(float DeltaTime)
 		{
 			auto openPopupPosition = ImGui::GetMousePos();
 
-			ed::FNode* node = SpawnAnimSequenceNode("___", ParseFile(str));
+			edC::FNode* node = SpawnAnimSequenceNode("___", ParseFile(str));
 			node->Pos       = ImVec2(openPopupPosition.x, openPopupPosition.y);
-			ed::SetNodePosition(node->ID, node->Pos);
+			edC::SetNodePosition(node->ID, node->Pos);
 
 			ImGui::EndDragDropTarget();
 		}
@@ -95,7 +95,7 @@ void GUI_Editor_Animator::Update_Implementation(float DeltaTime)
 	{
 		for (auto& link : node->Links)
 		{
-			ed::Link(link.ID, link.StartPin, link.EndPin);
+			edC::Link(link.ID, link.StartPin, link.EndPin);
 		}
 	}
 
@@ -113,7 +113,7 @@ void GUI_Editor_Animator::ShowMenuBar()
 				{
 					/*for (auto& link : node->Links)
 					{
-						ed::Link(link.ID, link.StartPin, link.EndPin);
+						edC::Link(link.ID, link.StartPin, link.EndPin);
 					}*/
 
 					mAnimator->AddAnimationClip(node->Title, node->Name);
@@ -138,7 +138,7 @@ void GUI_Editor_Animator::DrawDetails(float paneWidth)
 	ImGui::Spring(0.0f, 0.0f);
 	if (ImGui::Button("Zoom to Content"))
 	{
-		ed::NavigateToContent();
+		edC::NavigateToContent();
 
 	}
 	ImGui::Spring();
@@ -147,17 +147,17 @@ void GUI_Editor_Animator::DrawDetails(float paneWidth)
 	ImGui::EndChild();
 }
 
-ed::FNode* GUI_Editor_Animator::SpawnAnimSequenceNode(const JText& InState, const JText& InAnimClipText)
+edC::FNode* GUI_Editor_Animator::SpawnAnimSequenceNode(const JText& InState, const JText& InAnimClipText)
 {
-	auto       newNode = MakeUPtr<ed::FNode>(InAnimClipText);
-	ed::FNode* node    = newNode.get();
+	auto       newNode = MakeUPtr<edC::FNode>(InAnimClipText);
+	edC::FNode* node    = newNode.get();
 
 	uint32_t inputHash  = StringHash(std::format("{}_Input", InAnimClipText).c_str());
 	uint32_t outputHash = StringHash(std::format("{}_Output", InAnimClipText).c_str());
 
-	newNode->Type = ed::NodeType::AnimSequence;
-	newNode->Inputs.emplace_back(ed::FPin(inputHash, "", ed::PinType::Flow));
-	newNode->Outputs.emplace_back(ed::FPin(outputHash, "", ed::PinType::Flow));
+	newNode->Type = edC::NodeType::AnimSequence;
+	newNode->Inputs.emplace_back(edC::FPin(inputHash, "", edC::PinType::Flow));
+	newNode->Outputs.emplace_back(edC::FPin(outputHash, "", edC::PinType::Flow));
 	newNode->Title = InState;
 
 	BuildNode(node);

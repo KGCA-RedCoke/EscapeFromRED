@@ -4,8 +4,8 @@
 struct FRay
 {
 	FVector Origin = FVector::ZeroVector;		// 광선의 시작점
-	FVector Direction{0, 0, 1};	// 광선의 방향
-	float   Length = 100.f;		// 광선의 길이
+	FVector Direction{0, -1, 0};	// 광선의 방향
+	float   Length = 300.f;		// 광선의 길이
 
 	void DrawDebug(DirectX::FXMVECTOR DebugColor = {{0.678431392f, 1.f, 0.184313729f, 1.f}}) const;
 };

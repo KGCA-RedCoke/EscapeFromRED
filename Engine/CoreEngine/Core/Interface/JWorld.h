@@ -92,6 +92,8 @@ public:
 public:
 	JWorld(const JWorld&)            = delete;
 	JWorld& operator=(const JWorld&) = delete;
+	long long currentFrame = 0;
 
 #pragma endregion
 };
+

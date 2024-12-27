@@ -667,7 +667,12 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 			newWindow->OpenIfNotOpened();
 		}
 		break;
-	case HASH_ASSET_TYPE_STATIC_MESH:
+	case HASH_ASSET_TYPE_Enemy:
+		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Actor>(fullFileName, NAME_OBJECT_ENEMY))
+		{
+			newWindow->OpenIfNotOpened();
+		}
+		break;	case HASH_ASSET_TYPE_STATIC_MESH:
 		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Mesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();
