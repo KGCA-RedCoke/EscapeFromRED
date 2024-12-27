@@ -127,10 +127,12 @@ struct FCapsule
 
 bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT);
 bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,
-					 // Ray 정보
-					 const FVector& BoxCenter, const FVector BoxAxis[3], const FVector& BoxExtent,
-					 // OBB 정보
-					 FHitResult& OutHitResult // 충돌 지점
+                     float RayLength,
+                     // Ray 정보
+                     const FVector& BoxCenter, const FVector BoxAxis[3],
+                     const FVector& BoxExtent,
+                     // OBB 정보
+                     FHitResult& OutHitResult // 충돌 지점
 );
 bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, struct FHitResult& OutHitResult);
 

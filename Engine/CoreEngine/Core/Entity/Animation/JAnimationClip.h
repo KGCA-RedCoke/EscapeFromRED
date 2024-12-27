@@ -185,7 +185,7 @@ protected:
 	int32_t mStartFrame; 				// 시작 프레임
 	int32_t mEndFrame;					// 끝 프레임
 
-	float mAnimationSpeed = 1.f;	// 애니메이션 속도
+	float mAnimationSpeed = 0.8f;	// 애니메이션 속도
 	float mFramePerSecond = 30.f;	// 초당 프레임 수
 	float mTickPerFrame   = 160.f;	// 프레임당 틱 수
 

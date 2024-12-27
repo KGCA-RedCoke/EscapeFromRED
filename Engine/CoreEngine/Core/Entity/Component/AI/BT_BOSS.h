@@ -61,6 +61,7 @@ public:
     bool mHasPath = false;
     bool runningFlag = false;
     EFloorType mFloorType = EFloorType::FirstFloor;
+    static bool mIsPlayGame;
 
 private:
     FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }

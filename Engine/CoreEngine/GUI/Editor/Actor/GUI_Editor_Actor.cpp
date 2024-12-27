@@ -246,6 +246,11 @@ void GUI_Editor_Actor::DrawTreeNode(JSceneComponent* InSceneComponent)
 			mSelectedSceneComponent = InSceneComponent;
 		}
 
+		if (mSelectedSceneComponent && ImGui::IsKeyPressed(ImGuiKey_Delete))
+		{
+			mSelectedSceneComponent->Destroy();
+		}
+
 		if (ImGui::IsMouseReleased(0) && ImGui::BeginDragDropTarget())
 		{
 			const ImGuiPayload* payload = ImGui::GetDragDropPayload();;

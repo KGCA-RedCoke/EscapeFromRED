@@ -327,12 +327,16 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		}
 
 		// 시작 시간으로 초기화
-		mInstanceData.DeltaTime        = .5f;
-		mInstanceData.CurrentAnimIndex = mInstanceData.NextAnimIndex;
+		mInstanceData.BlendWeight		= 0.f;
+		mInstanceData.CurrentAnimOffset = 0.f;
+		mInstanceData.NextAnimOffset	= 0.f;
+		mInstanceData.DeltaTime			 = .0f;
+		mInstanceData.CurrentAnimIndex = 0;
 		mInstanceData.NextAnimIndex    = 0;
 
 		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 
+		return true;
 	}
 
 	UpdateInstanceData(mElapsedTime);

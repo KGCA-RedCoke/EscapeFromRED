@@ -89,14 +89,14 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		}
 	}
 
-	size_t widgetSize;
-	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
-	for (int32_t i = 0; i < widgetSize; ++i)
-	{
-		JText path;
-		Utils::Serialization::DeSerialize_Text(path, InFileStream);
-		mWidgetComponents.push_back(MUIManager::Get().Load(path));
-	}
+	// size_t widgetSize;
+	// Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	// for (int32_t i = 0; i < widgetSize; ++i)
+	// {
+	// 	JText path;
+	// 	Utils::Serialization::DeSerialize_Text(path, InFileStream);
+	// 	mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	// }
 
 	bThreadLoaded = true;
 

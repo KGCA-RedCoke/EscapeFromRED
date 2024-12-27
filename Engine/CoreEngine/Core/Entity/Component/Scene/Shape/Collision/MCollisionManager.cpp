@@ -72,19 +72,15 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 
 	if (Intersect(InLeft, InRight, hitResult))
 	{
-		hitResult.HitLocation = FVector::ZeroVector;
-		hitResult.HitNormal   = FVector::ZeroVector;
-		hitResult.Distance    = 0;
-
 		if (mCollisionHash[id.ID])
 		{
-			InLeft->OnComponentOverlap.Execute(hitResult);
-			InRight->OnComponentOverlap.Execute(hitResult);
+			InLeft->OnComponentOverlap.Execute(InRight, hitResult);
+			InRight->OnComponentOverlap.Execute(InLeft, hitResult);
 		}
 		else
 		{
-			InLeft->OnComponentBeginOverlap.Execute(hitResult);
-			InRight->OnComponentBeginOverlap.Execute(hitResult);
+			InLeft->OnComponentBeginOverlap.Execute(InRight,hitResult);
+			InRight->OnComponentBeginOverlap.Execute(InLeft, hitResult);
 
 			mCollisionHash[id.ID] = true;
 		}
@@ -93,8 +89,8 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 	{
 		if (mCollisionHash[id.ID])
 		{
-			InLeft->OnComponentEndOverlap.Execute(hitResult);
-			InRight->OnComponentEndOverlap.Execute(hitResult);
+			InLeft->OnComponentEndOverlap.Execute(InRight, hitResult);
+			InRight->OnComponentEndOverlap.Execute(InLeft, hitResult);
 
 			mCollisionHash[id.ID] = false;
 		}

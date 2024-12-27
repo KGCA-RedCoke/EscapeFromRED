@@ -7,12 +7,14 @@ AEnemy::AEnemy()
     : APawn(),
       mSkeletalMeshComponent(nullptr)
 {
+    mObjectType = NAME_OBJECT_ENEMY;
 }
 
 AEnemy::AEnemy(JTextView InName)
     : APawn(InName),
       mSkeletalMeshComponent(nullptr)
 {
+    mObjectType = NAME_OBJECT_ENEMY;
 }
 
 void AEnemy::Initialize()
