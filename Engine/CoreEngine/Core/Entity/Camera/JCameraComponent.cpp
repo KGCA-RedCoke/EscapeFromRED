@@ -116,7 +116,7 @@ JCameraComponent::JCameraComponent()
 			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
 			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
 
-	JCameraComponent::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+	JCameraComponent::SetProjParams(M_PI / 3, aspect, mNearPlane, mFarPlane);
 
 	JCameraComponent::Initialize();
 }

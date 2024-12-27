@@ -24,17 +24,17 @@ void JPlayerAnimator::Initialize()
 	mMovementComponent = static_cast<JPawnMovementComponent*>(mSkeletalMeshComponent->GetOwnerActor()->
 		GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
 
-	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Longs_Attack_L.jasset",
+	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Attack_D.jasset",
 													   mSkeletalMeshComponent);
 	attackAnim->OnAnimFinished.Bind([this](){
 		mOwnerCharacter->bShouldAttack = false;
 	});
 
 	AddAnimationClip("Idle_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/Anim_Idle.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Idle.jasset",
 													 mSkeletalMeshComponent));
 	AddAnimationClip("Walk_Free",
-					 GetWorld.AnimationManager->Load("Game/Animation/FPP_Longs_Walk1.jasset",
+					 GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Walk.jasset",
 													 mSkeletalMeshComponent));
 	AddAnimationClip("Attack", attackAnim);
 
