@@ -28,6 +28,7 @@ protected:
 
     float mDeltaTime;
     float mMaxHeight = 100.f;
+    float mYVelocity = 0.f;
 };
 
 REGISTER_CLASS_TYPE(APawn);
