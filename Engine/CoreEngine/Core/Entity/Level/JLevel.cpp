@@ -114,10 +114,8 @@ void JLevel::UpdateLevel(float DeltaTime)
 	std::erase_if(
 				  mActors,
 				  [&](UPtr<AActor>& actor){
-					  if (actor->ShouldTick())
-					  {
-						  actor->Tick(DeltaTime);
-					  }
+					  actor->Tick(DeltaTime);
+
 					  if (actor->IsPendingKill())
 					  {
 						  mOcTree->Remove(actor.get());

@@ -64,6 +64,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 				{
 					AActor* newActor = activeLevel->CreateActor<AActor>(name);
 					Utils::Serialization::DeSerialize(assetPath, newActor);
+					newActor->SetName(name);
 					newActor->Initialize();
 				}
 				break;
@@ -71,6 +72,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 				{
 					AActor* newActor = activeLevel->CreateActor<AEnemy>(name);
 					Utils::Serialization::DeSerialize(assetPath, newActor);
+					newActor->SetName(name);
 					newActor->Initialize();
 				}
 				break;

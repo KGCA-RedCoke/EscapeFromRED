@@ -65,6 +65,8 @@ public:
 	[[nodiscard]] bool IsIgnoreFrustum() const { return mObjectFlags & EObjectFlags::IgnoreFrustum; }
 	[[nodiscard]] bool ShouldTick() const { return mObjectFlags & EObjectFlags::ShouldTick; }
 
+	void SetName(JTextView InName) { mName = InName; }
+
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
 
 	void SetVisible(bool bVisible)

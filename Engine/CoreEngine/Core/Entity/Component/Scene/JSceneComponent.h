@@ -60,6 +60,7 @@ public:
 	void SetWorldRotation(const FVector& InRotation);
 	void SetWorldScale(const FVector& InScale);
 
+	void AddLocalLocation(const FVector& InTranslation);
 	void SetLocalLocation(const FVector& InTranslation);
 	void SetLocalRotation(const FVector& InRotation);
 	void SetLocalScale(const FVector& InScale);
@@ -197,9 +198,9 @@ public:
 	void ShowEditor() override;
 
 public:
-	bool Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
 	ECollisionType GetCollisionType() const override;
-	FRay GetRay() const override;
+	FRay           GetRay() const override;
 
 protected:
 	FRay mRay;
@@ -208,23 +209,23 @@ protected:
 namespace CollisionEvent
 {
 	constexpr const char* OnEnter[] =
-		{
+	{
 		"Block",
 		"Player Damage"
-		};
+	};
 
 	constexpr const char* OnOverlap[] =
-		{
+	{
 		"Block",
 		"Player Damage"
-		};
+	};
 
 	constexpr const char* OnExit[] =
-		{
+	{
 		"Block",
 		"Player Damage"
-		};
-	
+	};
+
 }
 
 class JBoxComponent : public JCollisionComponent
@@ -243,9 +244,9 @@ public:
 	void ShowEditor() override;
 
 public:
-	bool Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
 	ECollisionType GetCollisionType() const override;
-	FBoxShape GetBox() const override;
+	FBoxShape      GetBox() const override;
 };
 
 REGISTER_CLASS_TYPE(JSceneComponent);

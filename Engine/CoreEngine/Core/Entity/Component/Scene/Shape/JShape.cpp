@@ -152,7 +152,90 @@ bool FBoxShape::Intersect(const FBoxShape& InBox) const
 
 bool FBoxShape::IntersectOBB(const FBoxShape& Other, FHitResult& OutHitResult) const
 {
-	return BoxIntersectOBB(*this, Other, OutHitResult);
+	// return BoxIntersectOBB(*this, Other, OutHitResult);
+	 FVector T = Box.Center - Other.Box.Center; // 두 OBB의 중심 거리 벡터
+  
+    const FVector* AxisA = Box.LocalAxis;     // A의 로컬 축
+    const FVector* AxisB = Other.Box.LocalAxis; // B의 로컬 축
+  
+    const FVector ExtentA = Box.Extent;       // A의 Extent
+    const FVector ExtentB = Other.Box.Extent; // B의 Extent
+  
+    FVector CrossAxis[3][3];
+    OutHitResult.Distance = FLT_MAX; // 초기화
+  
+    // 축 간의 교차 외적 저장
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            CrossAxis[i][j] = AxisA[i].Cross(AxisB[j]);
+        }
+    }
+  
+    // Helper: 투영 함수
+    auto project = [](const FVector& Axis, const FVector& Extent, const FVector LocalAxis[3]) -> float {
+        return fabs(Extent.x * Axis.Dot(LocalAxis[0])) +
+               fabs(Extent.y * Axis.Dot(LocalAxis[1])) +
+               fabs(Extent.z * Axis.Dot(LocalAxis[2]));
+    };
+  
+    // SAT 검사
+    for (int i = 0; i < 3; ++i)
+    {
+        // A의 로컬 축
+        float Distance = fabs(T.Dot(AxisA[i]));
+        float ProjA = ExtentA[i];
+        float ProjB = project(AxisA[i], ExtentB, AxisB);
+  
+        if (Distance > ProjA + ProjB) return false;
+  
+        if (OutHitResult.Distance > ProjA + ProjB - Distance)
+        {
+            OutHitResult.HitNormal = (T.Dot(AxisA[i]) < 0) ? AxisA[i] : -AxisA[i];
+            OutHitResult.Distance = ProjA + ProjB - Distance;
+        }
+  
+        // B의 로컬 축
+        Distance = fabs(T.Dot(AxisB[i]));
+        ProjA = project(AxisB[i], ExtentA, AxisA);
+        ProjB = ExtentB[i];
+  
+        if (Distance > ProjA + ProjB) return false;
+  
+        if (OutHitResult.Distance > ProjA + ProjB - Distance)
+        {
+            OutHitResult.HitNormal = (T.Dot(AxisB[i]) < 0) ? AxisB[i] : -AxisB[i];
+            OutHitResult.Distance = ProjA + ProjB - Distance;
+        }
+    }
+  
+    // A와 B의 축 간 교차 검사
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            const FVector& Axis = CrossAxis[i][j];
+            if (Axis.LengthSquared() < M_KINDA_SMALL_NUMBER)
+                continue; // 축이 너무 작으면 무시
+  
+            FVector NormalizedAxis;
+        	Axis.Normalize(NormalizedAxis);
+            float Distance = fabs(T.Dot(NormalizedAxis));
+            float ProjA = project(NormalizedAxis, ExtentA, AxisA);
+            float ProjB = project(NormalizedAxis, ExtentB, AxisB);
+  
+            if (Distance > ProjA + ProjB) return false;
+  
+            if (OutHitResult.Distance > ProjA + ProjB - Distance)
+            {
+                OutHitResult.HitNormal = (T.Dot(NormalizedAxis) < 0) ? NormalizedAxis : -NormalizedAxis;
+                OutHitResult.Distance = ProjA + ProjB - Distance;
+            }
+        }
+    }
+  
+    return true;
 }
 
 bool FBoxShape::Contains(const FVector& InPoint) const
@@ -223,6 +306,7 @@ void FCapsule::DrawDebug() const
 
 bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT)
 {
+
 	float tMin = FLT_MIN /* -std::numeric_limits<float>::infinity();*/;
 	float tMax = FLT_MAX /*std::numeric_limits<float>::infinity()*/;
 
@@ -312,110 +396,107 @@ bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, FHitResult& OutH
 
 bool BoxIntersectOBB(const FBoxShape& InBox, const FBoxShape& Other, FHitResult& OutHitResult)
 {
-    FVector boxCenterDist = InBox.Box.Center - Other.Box.Center; // 두 OBB의 중심 거리 벡터
+	FVector boxCenterDist = InBox.Box.Center - Other.Box.Center; // 두 OBB의 중심 거리 벡터
 
-    // A와 B의 로컬 축
-    const FVector* axisA = InBox.Box.LocalAxis;
-    const FVector* axisB = Other.Box.LocalAxis;
+	// A와 B의 로컬 축
+	const FVector* axisA = InBox.Box.LocalAxis;
+	const FVector* axisB = Other.Box.LocalAxis;
 
-    // A의 Extent와 B의 Extent
-    const FVector extentA = InBox.Box.Extent;
-    const FVector extentB = Other.Box.Extent;
+	// A의 Extent와 B의 Extent
+	const FVector extentA = InBox.Box.Extent;
+	const FVector extentB = Other.Box.Extent;
 
-    // 축 간의 교차 외적 저장
-    FVector crossAxis[3][3];
-    for (int i = 0; i < 3; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            crossAxis[i][j] = axisA[i].Cross(axisB[j]);
-        }
-    }
+	// 축 간의 교차 외적 저장
+	FVector crossAxis[3][3];
 
-    // Helper: 투영 함수
-    auto project = [](const FVector& Axis, const FVector& Extent, const FVector LocalAxis[3]) -> float {
-        return fabs(Extent.x * Axis.Dot(LocalAxis[0])) +
-               fabs(Extent.y * Axis.Dot(LocalAxis[1])) +
-               fabs(Extent.z * Axis.Dot(LocalAxis[2]));
-    };
+	// 모든 축에 대해 SAT 검사
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			crossAxis[i][j] = axisA[i].Cross(axisB[j]);
+		}
+	}
 
-    float   minOverlap = FLT_MAX;
-    FVector bestAxis   = FVector::ZeroVector;
+	// Helper: 투영 함수
+	auto project = [](const FVector& Axis, const FVector& Extent, const FVector LocalAxis[3]) -> float{
+		return fabs(Extent.x * Axis.Dot(LocalAxis[0])) +
+				fabs(Extent.y * Axis.Dot(LocalAxis[1])) +
+				fabs(Extent.z * Axis.Dot(LocalAxis[2]));
+	};
 
-    // SAT 검사
-    for (int i = 0; i < 3; ++i)
-    {
-        // A의 로컬 축 검사
-        float distance = fabs(boxCenterDist.Dot(axisA[i]));
-        float projA    = extentA[i];
-        float projB    = project(axisA[i], extentB, axisB);
+	float   minOverlap = FLT_MAX;
+	FVector bestAxis   = FVector::ZeroVector;
 
-        float overlap = (projA + projB) - distance;
-        if (overlap < 0.0f)
-            return false;
+	// SAT(Separating Axis Theorem) 검사 루프
+	// 	로컬 축 검사:  
+	// axis[i] 축에 대해 두 박스의 중심 거리(boxCenterDist)를 투영
+	// extent[i]는 박스의 axis[i] 축에 대한 반지름
+	// project(axisA[i], extentB, axisB)는 B 박스의 axisA[i] 축에 대한 투영 길이
+	// 두 박스의 투영 거리가 두 반지름의 합보다 크면 충돌하지 않음.
+	for (int i = 0; i < 3; ++i)
+	{
+		// A의 로컬 축 검사
+		float distance = fabs(boxCenterDist.Dot(axisA[i]));
+		float projA    = extentA[i];
+		float projB    = project(axisA[i], extentB, axisB);
 
-        if (overlap < minOverlap)
-        {
-            minOverlap = overlap;
-            bestAxis   = axisA[i];
-        }
+		float overlap = (projA + projB) - distance;
+		if (overlap < 0.0f)
+			return false;
 
-        // B의 로컬 축 검사
-        distance = fabs(boxCenterDist.Dot(axisB[i]));
-        projA    = project(axisB[i], extentA, axisA);
-        projB    = extentB[i];
-        overlap  = (projA + projB) - distance;
-        if (overlap < 0.0f)
-            return false;
+		if (overlap < minOverlap)
+		{
+			minOverlap = overlap;
+			bestAxis   = axisA[i];
+		}
 
-        if (overlap < minOverlap)
-        {
-            minOverlap = overlap;
-            bestAxis   = axisB[i];
-        }
-    }
+		// B의 로컬 축 검사
+		distance = fabs(boxCenterDist.Dot(axisB[i]));
+		projA    = project(axisB[i], extentA, axisA);
+		projB    = extentB[i];
+		overlap  = (projA + projB) - distance;
+		if (overlap < 0.0f)
+			return false;
 
-    // A와 B의 축 간 교차 검사
-    for (int i = 0; i < 3; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            const FVector& axis = crossAxis[i][j];
-            if (axis.LengthSquared() < M_KINDA_SMALL_NUMBER)
-                continue; // 축이 0에 가까우면 무시
+		if (overlap < minOverlap)
+		{
+			minOverlap = overlap;
+			bestAxis   = axisB[i];
+		}
+	}
 
-            const float distance = fabs(boxCenterDist.Dot(axis));
-            const float projA    = project(axis, extentA, axisA);
-            const float projB    = project(axis, extentB, axisB);
-            float       overlap  = (projA + projB) - distance;
-            if (overlap < 0.0f)
-                return false;
+	// A와 B의 축 간 교차 검사
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			const FVector& axis = crossAxis[i][j];
+			if (axis.LengthSquared() < M_KINDA_SMALL_NUMBER)
+				continue; // 축이 0에 가까우면 무시
 
-            if (overlap < minOverlap)
-            {
-                minOverlap = overlap;
-                bestAxis   = axis;
-            }
-        }
-    }
+			const float distance = fabs(boxCenterDist.Dot(axis));
+			const float projA    = project(axis, extentA, axisA);
+			const float projB    = project(axis, extentB, axisB);
+			float       overlap  = (projA + projB) - distance;
+			if (overlap < 0.0f)
+				return false;
 
-    // 방향 조정
-    // bestAxis.Normalize();
-    // if (boxCenterDist.Dot(bestAxis) < 0.0f)
-    // {
-    //     bestAxis = -bestAxis;
-    // }
+			if (overlap < minOverlap)
+			{
+				minOverlap = overlap;
+				bestAxis   = axis;
+			}
+		}
+	}
+	bestAxis.Normalize();
+	// 충돌 정보를 저장
+	OutHitResult.HitNormal   = bestAxis;
+	OutHitResult.Distance    = minOverlap;
+	OutHitResult.HitLocation = InBox.Box.Center + OutHitResult.HitNormal * (extentA.Length() - minOverlap * 0.5f);
 
-    // 충돌 정보를 저장
-    OutHitResult.HitNormal   = bestAxis;
-    OutHitResult.Distance    = minOverlap;
-	OutHitResult.HitLocation = InBox.Box.Center - OutHitResult.HitNormal * (extentA.Length() - minOverlap * 0.5f);
-
-    return true;
+		return true;
 }
-	// FVector penetrationVector = OutHitResult.HitNormal * minOverlap;
-	// OutHitResult.HitLocation = InBox.Box.Center + penetrationVector * 0.5f;
-
 
 // Quad::FNode* JCollisionComponent::GetDivisionNode() const
 // {
