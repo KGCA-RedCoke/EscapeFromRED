@@ -61,6 +61,12 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 	id.Left  = InLeft->GetCollisionID();
 	id.Right = InRight->GetCollisionID();
 
+	// 부모 자식간의 충돌검사는 하지 않는다.
+	if (InLeft->GetActorID() == InRight->GetActorID())
+	{
+		return;
+	}
+
 	if (!mCollisionHash.contains(id.ID))
 	{
 		mCollisionHash[id.ID] = false;
@@ -79,7 +85,7 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 		}
 		else
 		{
-			InLeft->OnComponentBeginOverlap.Execute(InRight,hitResult);
+			InLeft->OnComponentBeginOverlap.Execute(InRight, hitResult);
 			InRight->OnComponentBeginOverlap.Execute(InLeft, hitResult);
 
 			mCollisionHash[id.ID] = true;

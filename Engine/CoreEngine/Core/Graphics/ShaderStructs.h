@@ -17,6 +17,7 @@ constexpr uint32_t SIZE_MAX_BONE_NUM = 255;
 namespace CBuffer
 {
 	constexpr const char* NAME_CONSTANT_BUFFER_CAMERA                = "CameraConstantBuffer";
+	constexpr const char* NAME_CONSTANT_BUFFER_VIEWPORTSCALE         = "ViewportScale";
 	constexpr const char* NAME_CONSTANT_BUFFER_LIGHT                 = "LightConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_TIME                  = "TimeConstantBuffer";
 	constexpr const char* NAME_CONSTANT_BUFFER_SKY                   = "ColorConstantBuffer";

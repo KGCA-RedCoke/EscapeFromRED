@@ -1,11 +1,13 @@
 ﻿#include "MUIManager.h"
 
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
 #include "Core/Graphics/Shader/JShader_UI.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Texture/JTexture.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "imgui/imgui_stdlib.h"
 
@@ -353,7 +355,7 @@ void JWidgetComponent::Tick(float DeltaTime)
 
 void JWidgetComponent::AddInstance()
 {
-	for (int32_t i = mUIComponents.size() - 1; i >= 0; --i)
+	for (int32_t i = 0 ; i < mUIComponents.size() ; /*i >= 0;*/ ++i)
 	{
 		mUIComponents[i]->AddInstance(0);
 	}
@@ -440,7 +442,11 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 		mShader->SetTextureParams(mTextureSRVs[i], mOpacityTextureSRVs[i]);
 	}
 
+	float aspect = GetWorld.CameraManager->GetCurrentMainCam()->GetAspect();
+	FVector2 camera(aspect, 1.0f);
+
 	mShader->BindShaderPipeline(InContext);
+	mShader->UpdateConstantData(InContext, CBuffer::NAME_CONSTANT_BUFFER_VIEWPORTSCALE, &camera);
 
 	Utils::DX::UpdateDynamicBuffer(InContext,
 								   g_InstanceBuffer.Get(),
@@ -473,9 +479,7 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 }
 
 void MUIManager::SetHUD(JWidgetComponent* InHUD)
-{
-	
-}
+{}
 
 MUIManager::MUIManager()
 {

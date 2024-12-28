@@ -342,9 +342,9 @@ void JSceneComponent::SetupAttachment(JSceneComponent* InParentComponent)
 		// 원래 존재하던 mParentSceneComponent의 배열 업데이트
 		mOwnerActor->mChildSceneComponents.erase(mOwnerActor->mChildSceneComponents.begin() + index);
 		mOwnerActor->mChildSceneComponentIndices.erase(GetName());
-	}
 
-	mOwnerActor = mParentSceneComponent->GetOwnerActor();
+		mOwnerActor = mParentSceneComponent->GetOwnerActor();
+	}
 }
 
 void JSceneComponent::AttachComponent(JSceneComponent* InChildComponent)
@@ -527,6 +527,16 @@ FRay JCollisionComponent::GetRay() const
 FSphere JCollisionComponent::GetSphere() const
 {
 	return {};
+}
+
+uint32_t JCollisionComponent::GetCollisionID()
+{
+	return GetOwnerActor()->GetHash() + GetHash();
+}
+
+uint32_t JCollisionComponent::GetActorID() const
+{
+	return GetOwnerActor()->GetHash();
 }
 
 bool JCollisionComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const

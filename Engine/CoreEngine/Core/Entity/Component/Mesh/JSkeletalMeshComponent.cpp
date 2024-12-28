@@ -100,7 +100,7 @@ void JSkeletalMeshComponent::Draw()
 	{
 		FVector distance = mWorldLocation - GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
 		float   dist     = distance.Length();
-		mBoundingBox.DrawDebug();
+		// mBoundingBox.DrawDebug();
 		mSkeletalMeshObject->AddInstance(dist);
 	}
 

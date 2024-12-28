@@ -65,10 +65,6 @@ void APawn::Initialize()
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
 			assert(sceneComponent);
 			const ETraceType type = sceneComponent->GetTraceType();
-			LOG_CORE_INFO("From :{}  To :{}, Hit Info(HitLocation.y) :{}",
-						  GetName(),
-						  dynamic_cast<JSceneComponent*>(InOther)->GetName(),
-						  OutHitResult.HitLocation.y);
 
 			switch (type)
 			{
@@ -112,10 +108,12 @@ void APawn::Initialize()
 	{
 		mCollisionBox = CreateDefaultSubObject<JBoxComponent>("CollisionBox", this);
 		mCollisionBox->SetupAttachment(this);
+		mCollisionBox->SetLocalLocation({0, 115, 0});
+		mCollisionBox->SetLocalScale({1, 2, 1});
 		mCollisionBox->Initialize();
 
 		mCollisionBox->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
-			
+
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
 			assert(sceneComponent);
 
@@ -186,14 +184,3 @@ void APawn::Destroy()
 {
 	AActor::Destroy();
 }
-
-// void APawn::HandlePawnToPawn(const FHitResult& HitResult)
-// {
-//     FVector pushDirection = HitResult.HitNormal * HitResult.Distance * 5;
-//     pushDirection *= mDeltaTime;
-//     FVector ThisPosition = GetWorldLocation();
-//     FVector OtherPosition = DstCollision.mOwnerActor->GetWorldLocation();
-//     
-//     mOwnerActor->SetWorldLocation(ThisPosition - pushDirection);
-//     OtherBoxComp.mOwnerActor->SetWorldLocation(OtherPosition + pushDirection);
-// }

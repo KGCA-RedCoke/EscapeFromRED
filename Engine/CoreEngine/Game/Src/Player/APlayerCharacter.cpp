@@ -1,5 +1,7 @@
 ﻿#include "APlayerCharacter.h"
 
+#include <DirectXColors.h>
+
 #include "JPlayerAnimator.h"
 #include "JPlayerCamera.h"
 #include "Core/Entity/Animation/MAnimManager.h"
@@ -15,7 +17,10 @@ APlayerCharacter::APlayerCharacter()
 APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	: ACharacter(InName)
 {
+	// 프러스텀 무시
 	SetFlag(IgnoreFrustum);
+
+	// 스켈레탈 부착
 	mSkeletalMeshComponent = CreateDefaultSubObject<
 		JSkeletalMeshComponent>(ParseFile(InMeshPath.data()), this, this);
 	mSkeletalMeshComponent->SetSkeletalMesh(InMeshPath);
@@ -23,13 +28,21 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mPlayerAnimator = MakeUPtr<JPlayerAnimator>(InName, mSkeletalMeshComponent);
 	mSkeletalMeshComponent->SetAnimator(mPlayerAnimator.get());
 
+	// 무기 부착
+	mWeaponMesh = CreateDefaultSubObject<JStaticMeshComponent>("Weapon", this);
+	mWeaponMesh->SetupAttachment(mSkeletalMeshComponent);
+	mWeaponMesh->SetMeshObject("Game/Mesh/SM_Pickaxe_.jasset");
+	mWeaponMesh->AttachToBoneSocket(mSkeletalMeshComponent, "hand_r");
+	mWeaponMesh->SetLocalLocation({-53, 110, 54});
+	mWeaponMesh->SetLocalRotation({-127, 89, -82});
 
-	mLightMesh = CreateDefaultSubObject<JStaticMeshComponent>("LightMesh", this);
-	mLightMesh->SetupAttachment(mSkeletalMeshComponent);
-	mLightMesh->SetMeshObject("Game/Mesh/SM_Pickaxe_.jasset");
-	mLightMesh->AttachToBoneSocket(mSkeletalMeshComponent, "hand_r");
-	mLightMesh->SetLocalLocation({-50, 105, 30});
-	mLightMesh->SetLocalRotation({-137.6, 105, -87.1});
+	// 무기 콜라이더 부착
+	mWeaponCollision = CreateDefaultSubObject<JBoxComponent>("WeaponCollision", this);
+	mWeaponCollision->SetTraceType(ETraceType::Pawn);
+	mWeaponCollision->SetupAttachment(mWeaponMesh);
+	mWeaponCollision->SetLocalLocation({0, 100, 0});
+	mWeaponCollision->SetLocalScale({0.5, 0.5, 0.5f});
+	mWeaponCollision->SetColor(DirectX::Colors::Orange);
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
@@ -37,14 +50,17 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mFPSCamera->SetupAttachment(mSkeletalMeshComponent);
 
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
-
 }
 
 void APlayerCharacter::Initialize()
 {
 	ACharacter::Initialize();
 	mPlayerAnimator->Initialize();
+}
 
+void APlayerCharacter::BeginPlay()
+{
+	ACharacter::BeginPlay();
 	SetupInputComponent();
 }
 

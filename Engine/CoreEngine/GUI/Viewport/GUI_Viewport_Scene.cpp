@@ -139,6 +139,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			FVector::ZeroVector,
 																			nullptr,
 																			"Game/Mesh/SK_Hands_07.jasset");
+		character->BeginPlay();
 
 		// GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 
@@ -148,8 +149,8 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// ClipCursor(&rect);
 		// SetCursorPos(0, 0);
 
-		G_NAV_MAP.Initialize();
+		// G_NAV_MAP.Initialize();
 		GetWorld.mIsPlayGame = true;
-		bIsGameMode = true;
+		bIsGameMode          = true;
 	}
 }

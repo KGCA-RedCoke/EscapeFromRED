@@ -92,10 +92,10 @@ JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	  mBoneMatrix(InOther.mBoneMatrix),
 	  mInstanceData(InOther.mInstanceData)
 {
-	OnAnimStart = InOther.OnAnimStart;
+	OnAnimStart    = InOther.OnAnimStart;
 	OnAnimFinished = InOther.OnAnimFinished;
 	OnAnimBlendOut = InOther.OnAnimBlendOut;
-	
+
 	if (InOther.mSkeletalMesh.expired())
 	{
 		return;
@@ -325,15 +325,6 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 			Stop();
 			return true;
 		}
-
-		// 시작 시간으로 초기화
-		mInstanceData.BlendWeight		= 0.f;
-		mInstanceData.CurrentAnimOffset = 0.f;
-		mInstanceData.NextAnimOffset	= 0.f;
-		mInstanceData.DeltaTime			 = .0f;
-		mInstanceData.CurrentAnimIndex = 0;
-		mInstanceData.NextAnimIndex    = 0;
-
 		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 
 		return true;
@@ -495,7 +486,7 @@ FMatrix JAnimationClip::GetInterpolatedBone(const JText& InBoneName)
 	{
 		mInstanceData.CurrentAnimIndex = 0;
 	}
-	
+
 	if (mInstanceData.NextAnimIndex >= boneMatrix.size())
 	{
 		mInstanceData.NextAnimIndex = 0;

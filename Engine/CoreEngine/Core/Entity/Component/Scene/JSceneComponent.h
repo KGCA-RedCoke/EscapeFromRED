@@ -165,7 +165,8 @@ public:
 	FBoxShape      GetBox() const override;
 	FRay           GetRay() const override;
 	FSphere        GetSphere() const override;
-	uint32_t       GetCollisionID() override { return GetHash(); }
+	uint32_t       GetCollisionID() override;
+	uint32_t       GetActorID() const override;
 	ETraceType     GetTraceType() const override { return mTraceType; }
 	ECollisionType GetCollisionType() const override { return mCollisionType; }
 	void           SetTraceType(ETraceType InType) override { mTraceType = InType; }
@@ -175,6 +176,7 @@ public:
 
 public:
 	void ShowEditor() override;
+	void SetColor(const DirectX::XMVECTOR& InColor) { mColor = InColor; }
 
 protected:
 	ETraceType        mTraceType     = ETraceType::Pawn;

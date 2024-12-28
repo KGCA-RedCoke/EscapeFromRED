@@ -12,6 +12,7 @@ public:
 
 public:
 	void Initialize() override;
+	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 	void Destroy() override;
 
@@ -23,7 +24,8 @@ private:
 
 private:
 	class JCameraComponent* mFPSCamera;
-	JStaticMeshComponent*   mLightMesh;
+	JStaticMeshComponent*   mWeaponMesh;
+	JBoxComponent*          mWeaponCollision;
 
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;

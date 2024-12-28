@@ -74,12 +74,9 @@ void JPawnMovementComponent::Tick(float DeltaTime)
 
 	const FVector thisFrameLocation = mOwnerActor->GetWorldLocation();
 	FVector       newVelocity       = (thisFrameLocation - mPreviousLocation);
-	mPreviousLocation = thisFrameLocation;
-
-	if (newVelocity.IsNearlyZero())
-		return;
 	newVelocity /= DeltaTime;
 
+	mPreviousLocation = thisFrameLocation;
 	mAcceleration     = (newVelocity - mVelocity) / DeltaTime;
 	mVelocity         = newVelocity;
 }

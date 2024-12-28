@@ -14,6 +14,11 @@ Texture2D g_MaskTextureArray[64] : register(t64);
 
 SamplerState g_LinearSampler : register(s0);
 
+cbuffer ViewportScale : register(b0)
+{
+	float2 ViewportScale;
+};
+
 struct InstanceData_2D
 {
 	float2 InstancePos :INST_POSITION;
@@ -310,7 +315,7 @@ PixelInput_2D VS(VertexIn_2D Input, InstanceData_2D Instance)
 	PixelInput_2D output;
 
 	// 로컬 좌표를 NDC로 변환
-	float2 scaledPosition = Input.LocalPosition * Instance.InstanceScale;
+	float2 scaledPosition = Input.LocalPosition * Instance.InstanceScale * ViewportScale;
 	output.Pos            = float4(scaledPosition + Instance.InstancePos, 0.5f, 1.0f);
 
 	output.UV       = Input.UV;

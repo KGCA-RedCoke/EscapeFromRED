@@ -32,10 +32,10 @@ void AEnemy::Initialize()
         mSkeletalMeshComponent->SetupAttachment(this);
     }
 
-    if (!mBehaviorTree)
-    {
-        mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree");
-    }
+    // if (!mBehaviorTree)
+    // {
+    //     mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree");
+    // }
 
     if (mSkeletalMeshComponent)
     {
