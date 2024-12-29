@@ -120,38 +120,36 @@ void JSkeletalMeshObject::Tick(float DeltaTime)
 	{
 		if (mCurrentAnimation->TickAnim(DeltaTime))
 		{
+
+			for (int32_t i = 0; i < mInstanceData.size(); ++i)
+			{
+				mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
+			}
+
+		}
+		if (bTransitAnimation)
+		{
 			auto& animData = mCurrentAnimation->GetInstanceData();
 
-			if (bTransitAnimation)
+			mTransitionElapsedTime += DeltaTime;
+
+			float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
+
+			for (int32_t i = 0; i < mInstanceData.size(); ++i)
 			{
-				mTransitionElapsedTime += DeltaTime;
-
-				float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
-
-				for (int32_t i = 0; i < mInstanceData.size(); ++i)
-				{
-					mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
-					mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
-					mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
-				}
-
-				// 블렌딩 완료 시
-				if (BlendWeight >= 1.0f)
-				{
-					bTransitAnimation      = false;
-					mTransitionElapsedTime = 0.0f;
-					mPreviewAnimationClip  = nullptr;
-				}
+				mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
+				mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
+				mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
 			}
-			else
+
+			// 블렌딩 완료 시
+			if (BlendWeight >= 1.0f)
 			{
-				for (int32_t i = 0; i < mInstanceData.size(); ++i)
-				{
-					mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
-				}
+				bTransitAnimation      = false;
+				mTransitionElapsedTime = 0.0f;
+				mPreviewAnimationClip  = nullptr;
 			}
 		}
-
 
 	}
 }

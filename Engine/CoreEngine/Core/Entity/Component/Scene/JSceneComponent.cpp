@@ -539,6 +539,11 @@ uint32_t JCollisionComponent::GetActorID() const
 	return GetOwnerActor()->GetHash();
 }
 
+uint32_t JCollisionComponent::GetNodeIndex() const
+{
+	return 0;
+}
+
 bool JCollisionComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
 {
 	return false;

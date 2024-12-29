@@ -325,12 +325,19 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 			Stop();
 			return true;
 		}
-		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 
-		return true;
+		// 루프 시 경과 시간을 보존하여 다음 루프에 연결
+		float loopOverflowTime = mElapsedTime - mEndTime;
+		mElapsedTime           = mStartTime + loopOverflowTime;
+	}
+	UpdateInstanceData(mElapsedTime);
+
+	if (mInstanceData.CurrentAnimIndex == 0)
+	{
+		OnAnimStart.Execute();
 	}
 
-	UpdateInstanceData(mElapsedTime);
+
 	return true;
 }
 
@@ -509,17 +516,32 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 
 	int32_t startFrame = 0, endFrame = 0;
 
-	FindFrame(boneTrack->TransformKeys.PositionKeys,
-			  InAnimElapsedTime,
-			  startFrame,
-			  endFrame);
+	float startTick;
+	float endTick;
 
-	float startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
-	float endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
+	if (FindFrame(boneTrack->TransformKeys.PositionKeys, InAnimElapsedTime, startFrame, endFrame))
+	{
+		// 정상적으로 startFrame과 endFrame을 찾은 경우
+		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
+		endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
 
-	mInstanceData.DeltaTime = (startFrame == endFrame) ? 0 : (InAnimElapsedTime - startTick) / (endTick - startTick);
-	mInstanceData.CurrentAnimIndex = startFrame;
-	mInstanceData.NextAnimIndex = endFrame;
+		mInstanceData.DeltaTime        = (InAnimElapsedTime - startTick) / (endTick - startTick);
+		mInstanceData.CurrentAnimIndex = startFrame;
+		mInstanceData.NextAnimIndex    = endFrame;
+	}
+	else
+	{
+		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
+		endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
+
+		// 시간을 주기적으로 처리하여 DeltaTime을 계산
+		float loopDuration      = endTick - startTick + (startTick < endTick ? 0.0f : mEndTime);
+		float relativeTime      = fmod(InAnimElapsedTime - startTick, loopDuration);
+		mInstanceData.DeltaTime = relativeTime / loopDuration;
+
+		mInstanceData.CurrentAnimIndex = startFrame;
+		mInstanceData.NextAnimIndex    = endFrame;
+	}
 }
 
 void JAnimationClip::AddTransition(const JText& InState, const std::function<bool()>& InFunc, float InTransitionTime)

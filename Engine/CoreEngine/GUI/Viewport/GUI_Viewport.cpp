@@ -30,7 +30,7 @@ void GUI_Viewport::Initialize()
 	mViewportData->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		if (mEditorCameraRef)
 		{
-			mEditorCameraRef->SetProjParams(M_PI / 4,
+			mEditorCameraRef->SetProjParams(M_PI / 3.f,
 											static_cast<float>(InWidth) / static_cast<float>(InHeight),
 											10.f,
 											100000.f);

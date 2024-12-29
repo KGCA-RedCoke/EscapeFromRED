@@ -27,6 +27,9 @@ void JPlayerAnimator::Initialize()
 	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Attack_D.jasset",
 													   mSkeletalMeshComponent);
 	attackAnim->OnAnimFinished.Bind([this](){
+		
+	});
+	attackAnim->OnAnimFinished.Bind([this](){
 		mOwnerCharacter->bShouldAttack = false;
 	});
 

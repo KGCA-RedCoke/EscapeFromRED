@@ -168,6 +168,7 @@ public:
 	FSphere        GetSphere() const override;
 	uint32_t       GetCollisionID() override;
 	uint32_t       GetActorID() const override;
+	uint32_t       GetNodeIndex() const override;
 	ETraceType     GetTraceType() const override { return mTraceType; }
 	ECollisionType GetCollisionType() const override { return mCollisionType; }
 	void           SetTraceType(ETraceType InType) override { mTraceType = InType; }

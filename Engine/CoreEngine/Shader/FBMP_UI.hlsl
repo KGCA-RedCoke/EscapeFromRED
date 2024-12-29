@@ -10,7 +10,6 @@ struct InstanceData_2D
 struct PixelInput_2D
 {
 	float4          Pos : SV_POSITION;
-	float2          UV : TEXCOORD0;
 	InstanceData_2D Instance : INST_DATA;
 };
 
@@ -23,7 +22,6 @@ PixelInput_2D VS(VertexIn_2D Input, InstanceData_2D Instance)
 	float2 scaledPosition = Input.LocalPosition * Instance.InstanceScale;
 	output.Pos            = float4(scaledPosition + Instance.InstancePos, 0.5f, 1.0f);
 
-	output.UV       = Input.UV;
 	output.Instance = Instance;
 
 	return output;

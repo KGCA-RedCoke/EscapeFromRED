@@ -15,11 +15,11 @@ bool FFrustum::Check(const FQuad& InQuad) const
 				plane.A * InQuad.Center.x +
 				plane.C * InQuad.Center.z +
 				plane.D;
-		
+
 		const float distance =
 				fabs(plane.A * InQuad.Extent.x) +
 				fabs(plane.C * InQuad.Extent.z);
-		
+
 		if (planeToCenter <= -distance)
 		{
 			return false;
@@ -138,7 +138,7 @@ JCameraComponent::JCameraComponent(const JTextView InName, AActor* InOwnerActor,
 			static_cast<float>(Application::s_AppInstance->GetWindowWidth()) /
 			static_cast<float>(Application::s_AppInstance->GetWindowHeight());
 
-	JCameraComponent::SetProjParams(M_PI / 4, aspect, mNearPlane, mFarPlane);
+	JCameraComponent::SetProjParams(M_PI / 2.5f, aspect, mNearPlane, mFarPlane);
 
 	JCameraComponent::Initialize();
 }

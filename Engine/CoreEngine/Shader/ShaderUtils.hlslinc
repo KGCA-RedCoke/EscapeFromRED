@@ -101,8 +101,10 @@ float4x4 LerpAnimBoneMatrix(uint  BoneCount, uint Offset, uint NextOffset, uint 
 							float DeltaTime,
 							uint  BoneIndex, float BlendWeight)
 {
+	bool bSameAnimation = Offset == NextOffset;
+
 	const uint currentFrameIndex = Offset / 4 + CurrentFrame * BoneCount + BoneIndex;
-	const uint nextFrameIndex    = Offset / 4 + (CurrentFrame + 1) * BoneCount + BoneIndex;
+	uint       nextFrameIndex    = ((bSameAnimation ? Offset : NextOffset) / 4 + NextFrame * BoneCount + BoneIndex);
 
 	// 현재 애니메이션의 행렬
 	float4x4 currentMatrix = FetchBoneTransform(currentFrameIndex);
@@ -111,16 +113,10 @@ float4x4 LerpAnimBoneMatrix(uint  BoneCount, uint Offset, uint NextOffset, uint 
 	float4x4 nextMatrix = FetchBoneTransform(nextFrameIndex);
 
 	// 현재 프레임과 다음 프레임 사이 보간
-	float4x4 lerpedMatrix = lerp(currentMatrix, nextMatrix, DeltaTime);
+	
+	float4x4 lerpedMatrix = lerp(currentMatrix, nextMatrix, (bSameAnimation ? DeltaTime : BlendWeight));
 
-	if (Offset == NextOffset)
-	{
-		return lerpedMatrix;
-	}
-
-	// 애니메이션 블렌딩
-	float4x4 nextAnimMatrix = FetchBoneTransform(NextOffset / 4 + NextFrame * BoneCount + BoneIndex);
-	return lerp(lerpedMatrix, nextAnimMatrix, BlendWeight);
+	return lerpedMatrix;
 }
 
 /**

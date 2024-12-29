@@ -56,8 +56,7 @@ void GUI_Editor_UI::ShowMenuBar()
 void GUI_Editor_UI::Update_Implementation(float DeltaTime)
 {
 	GUI_Editor_Base::Update_Implementation(DeltaTime);
-
-
+	
 	mWidgetComponent->Tick(DeltaTime);
 
 	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());

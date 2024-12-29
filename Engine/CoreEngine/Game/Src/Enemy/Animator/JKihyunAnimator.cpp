@@ -6,44 +6,39 @@
 #include "Core/Interface/JWorld.h"
 
 JKihyunAnimator::JKihyunAnimator()
-{
-}
+{}
 
 JKihyunAnimator::JKihyunAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
-    : JAnimator(InName, InSkeletalComp)
-{
-}
+	: JAnimator(InName, InSkeletalComp)
+{}
 
 JKihyunAnimator::JKihyunAnimator(JTextView InName, AActor* InOwnerActor)
-    : JAnimator(InName)
-{
-}
+	: JAnimator(InName)
+{}
 
 void JKihyunAnimator::Initialize()
 {
-    JAnimator::Initialize();
+	JAnimator::Initialize();
 
+	AddAnimationClip("Idle",
+					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Idle.jasset",
+													 mSkeletalMeshComponent));
+	AddAnimationClip("Walk",
+					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Run.jasset",
+													 mSkeletalMeshComponent));
+	AddAnimationClip("Death",
+					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Death_Spinning.jasset",
+													 mSkeletalMeshComponent));
 
+	AddAnimLink("Idle", "Walk", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+	AddAnimLink("Walk", "Idle", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+	
 
-    AddAnimationClip("Idle",
-                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Idle.jasset",
-                     mSkeletalMeshComponent));
-    AddAnimationClip("Walk",
-                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Run_02.jasset",
-                     mSkeletalMeshComponent));
-    AddAnimationClip("Attack",
-                     GetWorld.AnimationManager->Load("Game/Animation/Anim_Zombie_Jump_Idle.jasset",
-                                                     mSkeletalMeshComponent));
-
-
-    AddAnimLink("Idle", "Walk", [&]() { return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
-    AddAnimLink("Walk", "Idle", [&]() { return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
-
-    SetState("Idle");
-    mCurrentAnimation->Play();
+	SetState("Idle");
+	mCurrentAnimation->Play();
 }
 
 void JKihyunAnimator::BeginPlay()
 {
-    JAnimator::BeginPlay();
+	JAnimator::BeginPlay();
 }

@@ -94,6 +94,7 @@ public:
 	virtual FBoxShape      GetBox() const = 0;
 	virtual FSphere        GetSphere() const = 0;
 	virtual uint32_t       GetActorID() const = 0;
+	virtual uint32_t       GetNodeIndex() const = 0;
 	virtual void           SetTraceType(ETraceType InType) = 0;
 	virtual void           SetCollisionType(ECollisionType InType) = 0;
 	virtual bool           Intersect(ICollision* InOther, _Out_ FHitResult& OutHitResult) const = 0;

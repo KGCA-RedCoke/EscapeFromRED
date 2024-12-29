@@ -161,8 +161,7 @@ void JAnimator::SetState(const JText& InState)
 	{
 		return;
 	}
-
-	mPrevAnimation    = mCurrentAnimation;
+	
 	mCurrentState     = InState;
 	mCurrentAnimation = it->second.get();
 
