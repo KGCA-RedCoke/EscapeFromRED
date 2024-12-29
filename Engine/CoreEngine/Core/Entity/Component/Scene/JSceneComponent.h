@@ -66,6 +66,7 @@ public:
 	void SetLocalScale(const FVector& InScale);
 
 	void SetParentSceneComponent(JSceneComponent* Ptr) { mParentSceneComponent = Ptr; }
+	JSceneComponent* GetParentSceneComponent(){ return mParentSceneComponent; }
 	void AddChildSceneComponent(JSceneComponent* Ptr);
 
 	/**

@@ -1,7 +1,7 @@
 ﻿#include "APawn.h"
 
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
-
+#define INIT_HEIGHT 0.f
 APawn::APawn()
 	: mMovementComponent(nullptr)
 {
@@ -69,34 +69,26 @@ void APawn::Initialize()
 			switch (type)
 			{
 			case ETraceType::Pawn:
-				{
-					mMaxHeight              = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
-					FVector currentLocation = GetWorldLocation();
-
-					if (currentLocation.y > mMaxHeight)
-						currentLocation.y -= 98 * mDeltaTime;
-					{
-						// TODO: 이건 박스의 Location만 변경 (OwnerActor를 변경해야 함)
-						SetWorldLocation(currentLocation);
-					}
-				}
 				break;
 			case ETraceType::BlockingVolume:
 				break;
 			case ETraceType::Ground:
 				{
-					mMaxHeight              = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
-					FVector currentLocation = GetWorldLocation();
+					float MaxHeight         = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
+					
+					FVector currentLocation = GetLocalLocation();
 					mYVelocity += 980 * mDeltaTime;
-					if (currentLocation.y > mMaxHeight)
+					float epsilon = 1e-2f; // 작은 값 설정
+					if (currentLocation.y > MaxHeight + epsilon)
 					{
-						AddLocalLocation(-mYVelocity * mDeltaTime);
+						AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
 					}
-					else
+					else if (currentLocation.y < MaxHeight - epsilon)
 					{
-						mLocalLocation.y = mMaxHeight;
-						mYVelocity       = 0.f;
+						AddLocalLocation(FVector(0, MaxHeight-currentLocation.y, 0));
+						mYVelocity        = 0.f;
 					}
+					mMaxHeight = MaxHeight;
 				}
 				break;
 			}
@@ -117,7 +109,7 @@ void APawn::Initialize()
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
 			assert(sceneComponent);
 
-			auto* Other = sceneComponent->GetOwnerActor();
+			auto* Other = sceneComponent->GetParentSceneComponent();
 			assert(Other);
 
 			const ETraceType type = sceneComponent->GetTraceType();
@@ -127,10 +119,10 @@ void APawn::Initialize()
 			case ETraceType::Pawn:
 				{
 					// 두 물체의 상대적인 위치를 계산
-					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
+					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
 
 					// 1. 침투 해결 (겹침 제거)
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
 
 					// 물체가 밀려야 할 방향을 계산 (충돌 법선에 따라 위치 조정)
 					// 상대 위치의 방향에 따라 밀어내는 방향 결정
@@ -154,10 +146,9 @@ void APawn::Initialize()
 					FVector OtherPosition    = Other->GetWorldLocation();
 					FVector RelativePosition = ThisPosition - OtherPosition;
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
 
 					ThisPosition -= (RelativePosition.Dot(HitResult.HitNormal) < 0) ? correction : -correction;
-					// ThisPosition -= correction;
 					SetWorldLocation(ThisPosition);
 				}
 				break;
@@ -178,6 +169,7 @@ void APawn::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
 	mDeltaTime = DeltaTime;
+	mMaxHeight = INIT_HEIGHT;
 }
 
 void APawn::Destroy()

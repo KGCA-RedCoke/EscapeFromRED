@@ -26,7 +26,7 @@ protected:
 	JLineComponent*         mLineComponent;
 
 	float mDeltaTime;
-	float mMaxHeight = 100.f;
+	float mMaxHeight = 0.f;
 	float mYVelocity = 0.f;
 };
 
