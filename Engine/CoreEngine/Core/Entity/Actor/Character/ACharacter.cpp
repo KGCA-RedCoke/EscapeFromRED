@@ -35,7 +35,7 @@ void ACharacter::Initialize()
 
 void ACharacter::Tick(float DeltaTime)
 {
-	AActor::Tick(DeltaTime);
+	APawn::Tick(DeltaTime);
 }
 
 void ACharacter::Destroy()

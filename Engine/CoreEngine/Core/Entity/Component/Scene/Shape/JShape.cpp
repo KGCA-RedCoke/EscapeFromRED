@@ -381,7 +381,12 @@ bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir, const floa
 	}
 
 	// 최종 tMin과 tMax가 Ray 길이를 초과하는지 확인
-	return tMin <= RayLength && tMax >= 0.f;
+	if (tMin <= RayLength && tMax >= 0.f)
+	{
+		OutHitResult.HitLocation = RayOrigin + tMin * RayDir; // Ray의 tMin 지점
+		return true;
+	}
+	return false;
 }
 
 bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, FHitResult& OutHitResult)
