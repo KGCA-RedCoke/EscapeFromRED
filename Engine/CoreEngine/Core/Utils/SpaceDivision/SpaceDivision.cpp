@@ -72,16 +72,17 @@ void Quad::FNode::Subdivide(FNode* InRoot)
 
 	// 4개 자식 노드의 중심점을 계산
 	const FVector childCenters[4] = {
-		FVector(min.x, 0.0f, min.z),
-		FVector(max.x, 0.0f, min.z),
-		FVector(min.x, 0.0f, max.z),
-		FVector(max.x, 0.0f, max.z),
+		FVector(min.x, 0.0f, min.z),	// 좌하단
+		FVector(max.x, 0.0f, min.z),	// 우하단
+		FVector(min.x, 0.0f, max.z),	// 좌상단
+		FVector(max.x, 0.0f, max.z), // 우상단
 	};
 
 	// 각 자식 노드 생성
 	for (int i = 0; i < 4; ++i)
 	{
 		Children[i]         = MakeUPtr<FNode>();
+		Children[i]->Index  = Index + i + 1;
 		Children[i]->Parent = this;
 		Children[i]->Depth  = Depth + 1;
 
@@ -103,6 +104,7 @@ void Quad::FNode::Insert(AActor* InActor)
 		if (Depth >= MAX_DEPTH || Children[0] == nullptr)
 		{
 			Actors.emplace_back(InActor);
+			InActor->SetNodeIndex(Index);
 
 			return;
 		}
@@ -127,6 +129,7 @@ void Quad::FNode::InsertIntoChildren(AActor* InActor)
 
 	// 액터가 어떤 자식 노드와도 교차하지 않으면, 현재 노드에 저장
 	Actors.emplace_back(InActor);
+	InActor->SetNodeIndex(Index);
 }
 
 bool Quad::FNode::Remove(AActor* InActor)
@@ -176,6 +179,7 @@ void Quad::JTree::Initialize(const FQuad& InRootBoundArea, uint32_t InDepth)
 	}
 
 	mRootNode            = MakeUPtr<FNode>();
+	mRootNode->Index     = 0;
 	mRootNode->BoundArea = InRootBoundArea;
 	mRootNode->BoundBox  = FBoxShape(InRootBoundArea.Center, InRootBoundArea.Extent);
 
@@ -210,6 +214,12 @@ void Quad::JTree::Render(JCameraComponent* InCamera)
 
 void Quad::JTree::Remove(AActor* InActor)
 {
+	if (InActor->IsIgnoreFrustum())
+	{
+		std::erase_if(IgnoreFrustumActors, [&](AActor* Actor){ return Actor == InActor; });
+		return;
+	}
+
 	mRootNode->Remove(InActor);
 }
 

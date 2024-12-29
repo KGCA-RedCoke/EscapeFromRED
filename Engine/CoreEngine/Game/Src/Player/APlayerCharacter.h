@@ -9,6 +9,7 @@ class APlayerCharacter : public ACharacter
 public:
 	APlayerCharacter();
 	APlayerCharacter(JTextView InName, JTextView InMeshPath);
+	~APlayerCharacter() override = default;
 
 public:
 	void Initialize() override;

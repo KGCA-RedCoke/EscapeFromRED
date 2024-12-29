@@ -66,6 +66,9 @@ void JWorld::Initialize()
 	assert(levelPath[0] != '\0');
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
+	//
+	// AnimationManager->Clone("Game/Animation/FPP_Halb_Idle.jasset");
+	// AnimationManager->Clone("Game/Animation/FPP_Halb_Walk.jasset");
 
 	// std::uniform_real_distribution dist(-10000.0f, 10000.0f);
 	// for (int i = 0; i < 1000; ++i)

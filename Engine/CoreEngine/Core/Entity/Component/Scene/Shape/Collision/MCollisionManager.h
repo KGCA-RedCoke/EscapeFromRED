@@ -13,6 +13,20 @@ union CollisionID
 	};
 
 	uint64_t ID;
+
+	CollisionID(uint32_t InLeft, uint32_t InRight)
+	{
+		if (InLeft < InRight)
+		{
+			Left  = InLeft;
+			Right = InRight;
+		}
+		else
+		{
+			Left  = InRight;
+			Right = InLeft;
+		}
+	}
 };
 
 enum class ETraceType : uint8_t
@@ -21,6 +35,7 @@ enum class ETraceType : uint8_t
 	BlockingVolume,
 	Ground,
 	Projectile,
+	PlayerWeapon,
 	Max
 };
 
@@ -98,6 +113,8 @@ public:
 	virtual void           SetTraceType(ETraceType InType) = 0;
 	virtual void           SetCollisionType(ECollisionType InType) = 0;
 	virtual bool           Intersect(ICollision* InOther, _Out_ FHitResult& OutHitResult) const = 0;
+	virtual bool           CollisionEnabled() const = 0;
+	virtual void           EnableCollision(bool bEnable) = 0;
 };
 
 class MCollisionManager : public TSingleton<MCollisionManager>

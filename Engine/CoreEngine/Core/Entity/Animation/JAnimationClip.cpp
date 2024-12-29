@@ -48,7 +48,7 @@ bool JAnimBoneTrack::IsTrackEmpty() const
 	return false;
 }
 
-JAnimationClip::JAnimationClip(JTextView InName, const Ptr<JSkeletalMesh>& InSkeletalMesh)
+JAnimationClip::JAnimationClip(JTextView InName, JSkeletalMesh* InSkeletalMesh)
 	: mName(InName),
 	  mStartTime(0),
 	  mEndTime(0),
@@ -95,12 +95,7 @@ JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	OnAnimStart    = InOther.OnAnimStart;
 	OnAnimFinished = InOther.OnAnimFinished;
 	OnAnimBlendOut = InOther.OnAnimBlendOut;
-
-	if (InOther.mSkeletalMesh.expired())
-	{
-		return;
-	}
-	SetSkeletalMesh(InOther.mSkeletalMesh.lock());
+	mSkeletalMesh  = InOther.mSkeletalMesh;
 }
 
 UPtr<IManagedInterface> JAnimationClip::Clone() const
@@ -303,7 +298,7 @@ void JAnimationClip::Stop()
 
 bool JAnimationClip::TickAnim(const float DeltaSeconds)
 {
-	if (!bPlaying || mSkeletalMesh.expired())
+	if (!bPlaying || !mSkeletalMesh)
 	{
 		return true;
 	}
@@ -549,24 +544,23 @@ void JAnimationClip::AddTransition(const JText& InState, const std::function<boo
 	mTransitionMap[InState].emplace_back(InFunc, InTransitionTime);
 }
 
-void JAnimationClip::SetSkeletalMesh(const Ptr<JSkeletalMesh>& InSkeletalMesh)
+void JAnimationClip::SetSkeletalMesh(JSkeletalMesh* InSkeletalMesh)
 {
 	mSkeletalMesh = InSkeletalMesh;
 }
 
 uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureData)
 {
-	if (mSkeletalMesh.expired())
+	if (!mSkeletalMesh)
 	{
 		LOG_CORE_WARN("Skeletal Mesh is not initialized in JAnimationClip::GenerateAnimationTexture");
 		return 0;
 	}
 
-	JSkeletalMesh* skeltal    = mSkeletalMesh.lock().get();
-	const auto&    skeleton   = skeltal->GetSkeletonData();
-	const auto&    skin       = skeltal->GetSkinData();
-	const int32_t  boneCount  = skeltal->GetSkeletonData().Joints.size();
-	const int32_t  frameCount = mEndFrame - mStartFrame;
+	const auto&   skeleton   = mSkeletalMesh->GetSkeletonData();
+	const auto&   skin       = mSkeletalMesh->GetSkinData();
+	const int32_t boneCount  = mSkeletalMesh->GetSkeletonData().Joints.size();
+	const int32_t frameCount = mEndFrame - mStartFrame;
 
 	JArray<FMatrix> boneWorldTransforms(boneCount); // 현재 프레임의 월드 변환 행렬
 

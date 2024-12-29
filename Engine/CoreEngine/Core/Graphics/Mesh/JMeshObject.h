@@ -20,7 +20,7 @@ public:
 	JMeshObject() = default;
 	JMeshObject(const JText& InAssetPath, const JArray<Ptr<JMeshData>>& InData = {});
 	JMeshObject(const JMeshObject& Other);
-	~JMeshObject() override = default;
+	~JMeshObject() override;
 
 public:
 	UPtr<IManagedInterface> Clone() const override;

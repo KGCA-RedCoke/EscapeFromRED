@@ -152,6 +152,15 @@ void JSceneComponent::Tick(float DeltaTime)
 	}
 }
 
+void JSceneComponent::Destroy()
+{
+	JActorComponent::Destroy();
+	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
+	{
+		mChildSceneComponents[i]->Destroy();
+	}
+}
+
 void JSceneComponent::Draw()
 {
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
@@ -187,7 +196,7 @@ void JSceneComponent::ShowEditor()
 	{
 		ImGui::SeparatorText(u8("소켓"));
 
-		const auto* meshData = parentSkeletalMesh->GetSkeletalMesh().get();
+		const auto* meshData = parentSkeletalMesh->GetSkeletalMesh();
 		if (!meshData)
 		{
 			return;
@@ -541,7 +550,7 @@ uint32_t JCollisionComponent::GetActorID() const
 
 uint32_t JCollisionComponent::GetNodeIndex() const
 {
-	return 0;
+	return GetOwnerActor()->GetNodeIndex();
 }
 
 bool JCollisionComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
@@ -686,7 +695,10 @@ void JBoxComponent::Tick(float DeltaTime)
 
 void JBoxComponent::Draw()
 {
-	mBoundingBox.DrawDebug(mColor);
+	if (bCollisionEnabled)
+	{
+		mBoundingBox.DrawDebug(mColor);
+	}
 }
 
 void JBoxComponent::ShowEditor()

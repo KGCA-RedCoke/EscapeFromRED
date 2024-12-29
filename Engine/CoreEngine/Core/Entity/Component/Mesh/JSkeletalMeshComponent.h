@@ -29,11 +29,11 @@ public:
 	void DrawID(uint32_t ID) override;
 
 public:
-	Ptr<JSkeletalMesh> GetSkeletalMesh() const;
-	void               SetSkeletalMesh(JTextView InSkeletalMeshPath);
-	void               SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0) const;
-	void               SetAnimation(JAnimationClip* InAnimationClip) const;
-	void               SetAnimator(JAnimator* InAnimator) { mAnimator = InAnimator; }
+	JSkeletalMesh* GetSkeletalMesh() const;
+	void           SetSkeletalMesh(JTextView InSkeletalMeshPath);
+	void           SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0) const;
+	void           SetAnimation(JAnimationClip* InAnimationClip) const;
+	void           SetAnimator(JAnimator* InAnimator) { mAnimator = InAnimator; }
 
 public:
 	void           ShowEditor() override;

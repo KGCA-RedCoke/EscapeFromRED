@@ -24,7 +24,7 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JText& InName, const JArray<Ptr<J
 
 	assert(mPrimitiveMeshData.size() > 0);
 
-	mSkeletalMesh = std::dynamic_pointer_cast<JSkeletalMesh>(mPrimitiveMeshData[0]);
+	mSkeletalMesh = dynamic_cast<JSkeletalMesh*>(mPrimitiveMeshData[0].get());
 }
 
 JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
@@ -44,6 +44,12 @@ JSkeletalMeshObject::JSkeletalMeshObject(const JSkeletalMeshObject& Other)
 	{
 		JSkeletalMeshObject::SetMaterialInstance(Other.mMaterialInstances[i], i);
 	}
+}
+
+JSkeletalMeshObject::~JSkeletalMeshObject()
+{
+	mSkeletalMesh = nullptr;
+	mPrimitiveMeshData.clear();
 }
 
 UPtr<IManagedInterface> JSkeletalMeshObject::Clone() const
@@ -159,7 +165,7 @@ void JSkeletalMeshObject::AddInstance(float InCameraDistance)
 	auto&                      meshData     = mPrimitiveMeshData[0];
 	auto&                      subMeshes    = meshData->GetSubMesh();
 	const int32_t              subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
-	auto                       it           = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh.get());
+	auto                       it           = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh);
 	ID3D11ShaderResourceView** srv          = nullptr;
 	if (it != GetWorld.AnimationManager->mAnimTextureBuffer_SRV.end())
 	{
@@ -186,7 +192,7 @@ void JSkeletalMeshObject::Draw()
 	auto&         subMeshes    = meshData->GetSubMesh();
 	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
 
-	auto                       it  = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh.get());
+	auto                       it  = GetWorld.AnimationManager->mAnimTextureBuffer_SRV.find(mSkeletalMesh);
 	ID3D11ShaderResourceView** srv = nullptr;
 	if (it != GetWorld.AnimationManager->mAnimTextureBuffer_SRV.end())
 	{
@@ -228,6 +234,9 @@ void JSkeletalMeshObject::SetAnimation(JAnimationClip* InAnimation)
 	}
 
 	mCurrentAnimation = InAnimation;
-	mCurrentAnimation->SetSkeletalMesh(mSkeletalMesh);
+	if (!mCurrentAnimation->GetSkeletalMesh())
+	{
+		mCurrentAnimation->SetSkeletalMesh(mSkeletalMesh);
+	}
 	mCurrentAnimation->Play();
 }

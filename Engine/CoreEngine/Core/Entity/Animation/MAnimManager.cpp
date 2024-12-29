@@ -40,7 +40,9 @@ void MAnimManager::PostInitialize(const JText& OriginalNameOrPath, const JText& 
 		auto it = mAnimTextureBuffer_SRV.find(skeletal);
 		if (it != mAnimTextureBuffer_SRV.end())
 		{
-			mAnimTextureBuffer[skeletal].Reset();
+			mAnimTextureBuffer[skeletal]     = nullptr;
+			mAnimTextureBuffer_SRV[skeletal] = nullptr;
+
 		}
 		Utils::DX::CreateBuffer(
 								G_Device.GetDevice(),

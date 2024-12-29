@@ -33,6 +33,11 @@ JMeshObject::JMeshObject(const JMeshObject& Other)
 	}
 }
 
+JMeshObject::~JMeshObject()
+{
+	mPrimitiveMeshData.clear();
+}
+
 UPtr<IManagedInterface> JMeshObject::Clone() const
 {
 	return MakeUPtr<JMeshObject>(*this);

@@ -12,6 +12,7 @@ namespace Quad
 
 	struct FNode
 	{
+		uint32_t Index          = 0;
 		uint32_t Depth          = 0;
 		uint32_t CornerIndex[4] = {0, 0, 0, 0};
 		bool     bIsLeaf        = false;

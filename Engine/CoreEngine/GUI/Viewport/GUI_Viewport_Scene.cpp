@@ -149,7 +149,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// ClipCursor(&rect);
 		// SetCursorPos(0, 0);
 
-		// G_NAV_MAP.Initialize();
+		G_NAV_MAP.Initialize();
 		GetWorld.mIsPlayGame = true;
 		bIsGameMode          = true;
 	}

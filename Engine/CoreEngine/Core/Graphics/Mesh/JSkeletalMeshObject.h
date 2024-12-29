@@ -7,7 +7,7 @@ public:
 	JSkeletalMeshObject() = default;
 	JSkeletalMeshObject(const JText& InName, const JArray<Ptr<JMeshData>>& InData = {});
 	JSkeletalMeshObject(const JSkeletalMeshObject& Other);
-	~JSkeletalMeshObject() override = default;
+	~JSkeletalMeshObject() override;
 
 public:
 	UPtr<IManagedInterface>      Clone() const override;
@@ -32,11 +32,11 @@ public:
 public:
 	void SetAnimation(JAnimationClip* InAnimation);
 
-	Ptr<JSkeletalMesh> GetSkeletalMesh() const { return mSkeletalMesh; }
+	JSkeletalMesh* GetSkeletalMesh() const { return mSkeletalMesh; }
 
 protected:
 	// -------------------------- Skin Mesh Data --------------------------
-	Ptr<JSkeletalMesh> mSkeletalMesh;
+	JSkeletalMesh* mSkeletalMesh;
 
 	// -------------------------- Animation Data --------------------------
 	JAnimationClip* mCurrentAnimation;

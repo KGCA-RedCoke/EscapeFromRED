@@ -33,6 +33,7 @@ public:
 public:
 	void Initialize() override;
 	void Tick(float DeltaTime) override;
+	void Destroy() override;
 
 public:
 	void PreRender() override {}
@@ -65,9 +66,9 @@ public:
 	void SetLocalRotation(const FVector& InRotation);
 	void SetLocalScale(const FVector& InScale);
 
-	void SetParentSceneComponent(JSceneComponent* Ptr) { mParentSceneComponent = Ptr; }
-	JSceneComponent* GetParentSceneComponent(){ return mParentSceneComponent; }
-	void AddChildSceneComponent(JSceneComponent* Ptr);
+	void             SetParentSceneComponent(JSceneComponent* Ptr) { mParentSceneComponent = Ptr; }
+	JSceneComponent* GetParentSceneComponent() { return mParentSceneComponent; }
+	void             AddChildSceneComponent(JSceneComponent* Ptr);
 
 	/**
 	 *	씬 컴포넌트를 부모 컴포넌트에 부착
@@ -174,6 +175,8 @@ public:
 	void           SetTraceType(ETraceType InType) override { mTraceType = InType; }
 	void           SetCollisionType(ECollisionType InType) override { mCollisionType = InType; }
 	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	bool           CollisionEnabled() const override { return bCollisionEnabled; }
+	void           EnableCollision(bool bEnable) override { bCollisionEnabled = bEnable; }
 	Quad::FNode*   GetDivisionNode() const;
 
 public:
@@ -181,8 +184,9 @@ public:
 	void SetColor(const DirectX::XMVECTOR& InColor) { mColor = InColor; }
 
 protected:
-	ETraceType        mTraceType     = ETraceType::Pawn;
-	ECollisionType    mCollisionType = ECollisionType::None;
+	ETraceType        mTraceType        = ETraceType::Pawn;
+	ECollisionType    mCollisionType    = ECollisionType::None;
+	bool              bCollisionEnabled = true;
 	DirectX::XMVECTOR mColor{{0.678431392f, 1.f, 0.184313729f, 1.f}};
 };
 

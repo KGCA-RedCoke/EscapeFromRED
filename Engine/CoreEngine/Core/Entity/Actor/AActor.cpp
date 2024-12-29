@@ -43,6 +43,11 @@ void AActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.Center       = XMVector3Transform(FVector::ZeroVector, mWorldLocationMat);
+
 	for (const auto& actorComponent : mActorComponents)
 	{
 		actorComponent->Tick(DeltaTime);
@@ -52,6 +57,11 @@ void AActor::Tick(float DeltaTime)
 void AActor::Destroy()
 {
 	JSceneComponent::Destroy();
+
+	for (const auto& actorComponent : mActorComponents)
+	{
+		actorComponent->Destroy();
+	}
 }
 
 void AActor::Draw()

@@ -108,7 +108,7 @@ public:
 
 public:
 	JAnimationClip() = default;
-	JAnimationClip(JTextView InName, const Ptr<JSkeletalMesh>& InSkeletalMesh = nullptr);
+	JAnimationClip(JTextView InName, JSkeletalMesh* InSkeletalMesh = nullptr);
 	JAnimationClip(JTextView InName, const JSkeletalMeshComponent* InSkeletalMesh);
 	JAnimationClip(const JAnimationClip& InOther);
 	~JAnimationClip() override = default;
@@ -156,7 +156,7 @@ public:
 
 	void AddTransition(const JText& InState, const std::function<bool()>& InFunc, float InTransitionTime);
 
-	void SetSkeletalMesh(const Ptr<class JSkeletalMesh>& InSkeletalMesh);
+	void SetSkeletalMesh(JSkeletalMesh* InSkeletalMesh);
 
 	void SetAnimationSpeed(const float InSpeed) { mAnimationSpeed = InSpeed; }
 
@@ -164,7 +164,7 @@ public:
 
 	[[nodiscard]] JSkeletalMesh* GetSkeletalMesh() const
 	{
-		return mSkeletalMesh.expired() ? nullptr : mSkeletalMesh.lock().get();
+		return mSkeletalMesh;
 	}
 
 	[[nodiscard]] JText GetState() const { return mStateName; }
@@ -197,7 +197,7 @@ protected:
 	float mElapsedTime;				// 경과 시간
 
 	// ------------ Skeletal Mesh Data ------------
-	WPtr<JSkeletalMesh> mSkeletalMesh;	// 스켈레탈 메쉬
+	JSkeletalMesh* mSkeletalMesh;	// 스켈레탈 메쉬
 
 	// ------------ Animation Data ------------
 	struct FTransitionData

@@ -70,6 +70,9 @@ public:
 		return objPtr;
 	}
 
+	void     SetNodeIndex(uint32_t InIndex) { mNodeIndex = InIndex; }
+	uint32_t GetNodeIndex() const { return mNodeIndex; }
+
 protected:
 	AActor*         mParentActor;
 	JArray<AActor*> mChildActors;
@@ -80,6 +83,9 @@ protected:
 	JArray<UPtr<JActorComponent>> mActorComponents;
 
 	friend class GUI_Editor_Actor;
+
+private:
+	uint32_t mNodeIndex = 0;
 };
 
 REGISTER_CLASS_TYPE(AActor);

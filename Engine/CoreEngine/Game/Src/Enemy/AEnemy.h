@@ -40,9 +40,14 @@ constexpr const char* GetEnemyTypeString(EEnemyType InType)
 	return "Unknown";
 }
 
+class AEnemy;
+DECLARE_DYNAMIC_DELEGATE(FOnEnemyHit, const FHitResult& HitResult);
 
 class AEnemy : public APawn
 {
+public:
+	FOnEnemyHit OnEnemyHit;
+
 public:
 	// Constructor
 	AEnemy();
@@ -64,12 +69,17 @@ public:
 public:
 	void ShowEditor() override;
 
+public:
+	virtual void OnHit(ICollision* InActor, const FHitResult& HitResult);
+
 protected:
 	EEnemyType                    mEnemyType;
 	EEnemyState                   mEnemyState;
 	UPtr<JAnimator>               mAnimator;
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
 	class BT_BOSS*                mBehaviorTree;
+
+	friend class JKihyunAnimator;
 };
 
 REGISTER_CLASS_TYPE(AEnemy)

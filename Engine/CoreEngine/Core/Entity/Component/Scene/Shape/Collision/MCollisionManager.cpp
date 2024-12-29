@@ -57,12 +57,15 @@ void MCollisionManager::UpdateLayerCollision(ETraceType InRow, ETraceType InCol)
 
 void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 {
-	CollisionID id;
-	id.Left  = InLeft->GetCollisionID();
-	id.Right = InRight->GetCollisionID();
+	CollisionID id(InLeft->GetCollisionID(), InRight->GetCollisionID());
 
 	// 부모 자식간의 충돌검사는 하지 않는다.
-	if (InLeft->GetActorID() == InRight->GetActorID())
+	if ((InLeft->GetActorID() == InRight->GetActorID()) || !(InLeft->CollisionEnabled() && InRight->CollisionEnabled()))
+	{
+		return;
+	}
+
+	if (InLeft->GetNodeIndex() != InRight->GetNodeIndex() && !(InLeft->GetNodeIndex() == 0 || InRight->GetNodeIndex() == 0))
 	{
 		return;
 	}

@@ -4,13 +4,17 @@
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Enemy/AEnemy.h"
 
 JKihyunAnimator::JKihyunAnimator()
 {}
 
 JKihyunAnimator::JKihyunAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
 	: JAnimator(InName, InSkeletalComp)
-{}
+{
+	mEnemy = dynamic_cast<AEnemy*>(InSkeletalComp->GetOwnerActor());
+	assert(mEnemy);
+}
 
 JKihyunAnimator::JKihyunAnimator(JTextView InName, AActor* InOwnerActor)
 	: JAnimator(InName)
@@ -26,13 +30,24 @@ void JKihyunAnimator::Initialize()
 	AddAnimationClip("Walk",
 					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Run.jasset",
 													 mSkeletalMeshComponent));
+
+	auto* deathAnim =  GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Death_Spinning.jasset",
+													 mSkeletalMeshComponent);
+	deathAnim->OnAnimFinished.Bind([this]()
+								   {
+									   mEnemy->Destroy();
+								   });
 	AddAnimationClip("Death",
-					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Death_Spinning.jasset",
-													 mSkeletalMeshComponent));
+					 deathAnim);
 
 	AddAnimLink("Idle", "Walk", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 	AddAnimLink("Walk", "Idle", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+
+	AddAnimLink("Idle", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
+	AddAnimLink("Walk", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
+
 	
+
 
 	SetState("Idle");
 	mCurrentAnimation->Play();

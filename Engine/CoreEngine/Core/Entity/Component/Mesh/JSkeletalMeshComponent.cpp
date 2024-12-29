@@ -117,7 +117,7 @@ void JSkeletalMeshComponent::DrawID(uint32_t ID)
 	JSceneComponent::DrawID(ID);
 }
 
-Ptr<JSkeletalMesh> JSkeletalMeshComponent::GetSkeletalMesh() const
+JSkeletalMesh* JSkeletalMeshComponent::GetSkeletalMesh() const
 {
 	return mSkeletalMeshObject ? mSkeletalMeshObject->GetSkeletalMesh() : nullptr;
 }

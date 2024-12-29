@@ -135,7 +135,7 @@ void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
 			return;
 		}
 	}
-	mStateMachine[InState] = UPtrCast<JAnimationClip>(GetWorld.AnimationManager->Load(InClipPath)->Clone());
+	mStateMachine[InState] = GetWorld.AnimationManager->Clone(InClipPath, mSkeletalMeshComponent);
 }
 
 void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
@@ -161,7 +161,7 @@ void JAnimator::SetState(const JText& InState)
 	{
 		return;
 	}
-	
+
 	mCurrentState     = InState;
 	mCurrentAnimation = it->second.get();
 

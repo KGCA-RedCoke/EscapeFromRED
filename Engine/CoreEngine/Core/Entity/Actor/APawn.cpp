@@ -2,6 +2,7 @@
 
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #define INIT_HEIGHT 0.f
+
 APawn::APawn()
 	: mMovementComponent(nullptr)
 {
@@ -74,8 +75,8 @@ void APawn::Initialize()
 				break;
 			case ETraceType::Ground:
 				{
-					float MaxHeight         = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
-					
+					float MaxHeight = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
+
 					FVector currentLocation = GetLocalLocation();
 					mYVelocity += 980 * mDeltaTime;
 					float epsilon = 1e-2f; // 작은 값 설정
@@ -85,8 +86,8 @@ void APawn::Initialize()
 					}
 					else if (currentLocation.y < MaxHeight - epsilon)
 					{
-						AddLocalLocation(FVector(0, MaxHeight-currentLocation.y, 0));
-						mYVelocity        = 0.f;
+						AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
+						mYVelocity = 0.f;
 					}
 					mMaxHeight = MaxHeight;
 				}
@@ -142,14 +143,11 @@ void APawn::Initialize()
 				break;
 			case ETraceType::BlockingVolume:
 				{
-					FVector ThisPosition     = GetWorldLocation();
-					FVector OtherPosition    = Other->GetWorldLocation();
-					FVector RelativePosition = ThisPosition - OtherPosition;
+					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime;
 
-					ThisPosition -= (RelativePosition.Dot(HitResult.HitNormal) < 0) ? correction : -correction;
-					SetWorldLocation(ThisPosition);
+					AddLocalLocation((RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction);
 				}
 				break;
 			case ETraceType::Ground:
@@ -160,6 +158,28 @@ void APawn::Initialize()
 			// case ETraceType::Projectile:
 			//     
 			//     break;
+			}
+		});
+		mCollisionBox->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
+			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
+			assert(sceneComponent);
+
+			auto* Other = sceneComponent->GetParentSceneComponent();
+			assert(Other);
+
+			const ETraceType type = sceneComponent->GetTraceType();
+
+			switch (type)
+			{
+			case ETraceType::BlockingVolume:
+				{
+					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
+
+					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime;
+
+					AddLocalLocation((RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction);
+				}
+				break;
 			}
 		});
 	}
@@ -175,4 +195,7 @@ void APawn::Tick(float DeltaTime)
 void APawn::Destroy()
 {
 	AActor::Destroy();
+
+	mLineComponent->Destroy();
+	mCollisionBox->Destroy();
 }

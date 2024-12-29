@@ -18,7 +18,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	: ACharacter(InName)
 {
 	// 프러스텀 무시
-	SetFlag(IgnoreFrustum);
+	// SetFlag(IgnoreFrustum);
 
 	// 스켈레탈 부착
 	mSkeletalMeshComponent = CreateDefaultSubObject<
@@ -38,11 +38,12 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 
 	// 무기 콜라이더 부착
 	mWeaponCollision = CreateDefaultSubObject<JBoxComponent>("WeaponCollision", this);
-	mWeaponCollision->SetTraceType(ETraceType::Pawn);
+	mWeaponCollision->SetTraceType(ETraceType::PlayerWeapon);
 	mWeaponCollision->SetupAttachment(mWeaponMesh);
 	mWeaponCollision->SetLocalLocation({0, 100, 0});
 	mWeaponCollision->SetLocalScale({0.5, 0.5, 0.5f});
 	mWeaponCollision->SetColor(DirectX::Colors::Orange);
+	mWeaponCollision->EnableCollision(false);
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
