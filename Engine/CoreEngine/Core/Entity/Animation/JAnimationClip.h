@@ -99,12 +99,15 @@ DECLARE_DYNAMIC_DELEGATE(FOnAnimFinished);
 
 DECLARE_DYNAMIC_DELEGATE(FOnAnimBlendOut);
 
+DECLARE_DYNAMIC_DELEGATE(FOnAnimEvent);
+
 class JAnimationClip : public JAsset, public IManagedInterface
 {
 public:
 	FOnAnimStart    OnAnimStart;
 	FOnAnimFinished OnAnimFinished;
 	FOnAnimBlendOut OnAnimBlendOut;
+	FOnAnimEvent	OnAnimEvent;
 
 public:
 	JAnimationClip() = default;
@@ -141,6 +144,10 @@ public:
 	void RemoveAllTracks();
 
 public:
+	void SetLoop(bool bEnableLoop);
+	void SetRootMotion(bool bEnableRootMotion);
+
+public:
 	[[nodiscard]] FMatrix FetchInterpolateBone(const int32_t  InBoneIndex,
 											   const FMatrix& InParentBoneMatrix,
 											   const float    InAnimElapsedTime) const;
@@ -150,6 +157,7 @@ public:
 public:
 	[[nodiscard]] FORCEINLINE float GetStartTime() const { return mStartTime; }
 	[[nodiscard]] FORCEINLINE float GetEndTime() const { return mEndTime; }
+	[[nodiscard]] FORCEINLINE uint32_t GetEndFrame() const {return mEndFrame;}
 	[[nodiscard]] FORCEINLINE float GetSourceSamplingInterval() const { return mSourceSamplingInterval; }
 	[[nodiscard]] FORCEINLINE float GetAnimationSpeed() const { return mAnimationSpeed; }
 	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
@@ -170,6 +178,9 @@ public:
 	[[nodiscard]] JText GetState() const { return mStateName; }
 
 	[[nodiscard]] JText GetNextState() const { return mNextState; }
+
+	[[nodiscard]] FVector GetRMPosition() const {return mRootMotionValue.Position;}
+	[[nodiscard]] FQuaternion GetRMQuaternion() const {return mRootMotionValue.Rotation;}
 
 	[[nodiscard]] const FSkeletalMeshInstanceData& GetInstanceData() const { return mInstanceData; }
 
@@ -213,11 +224,20 @@ protected:
 	JHash<JText, JArray<FMatrix>>         mBoneMatrix;	// 본별로 행렬을 가지고 있는 해시맵
 	FSkeletalMeshInstanceData             mInstanceData;	// 애니메이션 인스턴스 데이터
 
+	struct FRootMotionValue
+	{
+		FVector Position;
+		FQuaternion Rotation;
+	} mRootMotionValue;
+	
 	uint32_t mAnimOffset = 0;	// 애니메이션 텍스쳐 오프셋
 
 	bool bInterpolate = false;
 
 	friend class Utils::Fbx::FbxFile;
+
+public:
+	JArray<FOnAnimEvent>                 mEvents;
 };
 
 template <typename T>

@@ -9,6 +9,9 @@ using JWTextView = std::wstring_view;
 template <typename K, typename V>
 using JHash = std::unordered_map<K, V>;
 
+template <typename K, typename V>
+using JOrderedHash = std::map<K, V>;
+
 template <typename T>
 using JArray = std::vector<T>;
 
