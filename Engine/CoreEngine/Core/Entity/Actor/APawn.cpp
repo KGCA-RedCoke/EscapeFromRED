@@ -54,13 +54,11 @@ void APawn::Initialize()
 	if (!mMovementComponent)
 	{
 		mMovementComponent = CreateDefaultSubObject<JPawnMovementComponent>("MovementComponent", this);
-		mMovementComponent->Initialize();
 	}
 	if (!mLineComponent)
 	{
 		mLineComponent = CreateDefaultSubObject<JLineComponent>("LineComponent", this);
 		mLineComponent->SetupAttachment(this);
-		mLineComponent->Initialize();
 
 		mLineComponent->OnComponentOverlap.Bind([this](ICollision* InOther, const FHitResult& OutHitResult){
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
@@ -103,7 +101,6 @@ void APawn::Initialize()
 		mCollisionBox->SetupAttachment(this);
 		mCollisionBox->SetLocalLocation({0, 115, 0});
 		mCollisionBox->SetLocalScale({1, 2, 1});
-		mCollisionBox->Initialize();
 
 		mCollisionBox->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
 
@@ -143,11 +140,13 @@ void APawn::Initialize()
 				break;
 			case ETraceType::BlockingVolume:
 				{
-					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
+					FVector ThisPosition     = GetWorldLocation();
+					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
 
-					AddLocalLocation((RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction);
+					ThisPosition -= (RelativePosition.Dot(HitResult.HitNormal) < 0) ? correction : -correction;
+					SetWorldLocation(ThisPosition);
 				}
 				break;
 			case ETraceType::Ground:

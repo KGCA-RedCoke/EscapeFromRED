@@ -29,7 +29,6 @@ void ACharacter::Initialize()
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<
 			JSkeletalMeshComponent>("SkeletalMeshComponent", this, this);
-		mSkeletalMeshComponent->Initialize();
 	}
 }
 
