@@ -9,11 +9,16 @@ namespace Quad
 }
 class AActor;
 
+DECLARE_DYNAMIC_DELEGATE(FOnLevelLoaded);
+
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
  */
 class JLevel : public JObject
 {
+public:
+	FOnLevelLoaded OnLevelLoaded;
+
 public:
 	JLevel() = default;
 	JLevel(const JText& InPath, bool bUseTree = true);

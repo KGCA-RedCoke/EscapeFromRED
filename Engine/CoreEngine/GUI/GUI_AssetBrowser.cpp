@@ -239,7 +239,8 @@ void GUI_AssetBrowser::UpdateMultiSelection(ImVec2 start_pos)
 				{
 					newFileName = GenerateUniqueFileName(newRelativePath, "NewLevel", ".jasset");
 
-					JLevel* newLevel = MLevelManager::Get().CreateLevel(newFileName);
+					JLevel* newLevel        = MLevelManager::Get().CreateLevel(newFileName);
+					newLevel->bThreadLoaded = true;
 
 					if (Utils::Serialization::Serialize(newFileName.c_str(), newLevel))
 					{
@@ -672,7 +673,8 @@ void GUI_AssetBrowser::HandleAssetClicked(FBasicFilePreview* ItemData)
 		{
 			newWindow->OpenIfNotOpened();
 		}
-		break;	case HASH_ASSET_TYPE_STATIC_MESH:
+		break;
+	case HASH_ASSET_TYPE_STATIC_MESH:
 		if (const auto newWindow = MGUIManager::Get().Load<GUI_Editor_Mesh>(fullFileName))
 		{
 			newWindow->OpenIfNotOpened();

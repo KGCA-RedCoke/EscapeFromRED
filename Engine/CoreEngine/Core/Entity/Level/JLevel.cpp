@@ -6,7 +6,6 @@
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
-#include "Core/Graphics/Shader/MShaderManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
@@ -15,6 +14,9 @@
 JLevel::JLevel(const JText& InPath, bool bUseTree)
 	: JObject(InPath)
 {
+	OnLevelLoaded.Bind([&](){
+		bThreadLoaded = true;
+	});
 	if (bUseTree)
 	{
 		JLevel::InitializeLevel();
@@ -97,9 +99,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		Utils::Serialization::DeSerialize_Text(path, InFileStream);
 		mWidgetComponents.push_back(MUIManager::Get().Load(path));
 	}
-
-	bThreadLoaded = true;
-
+	OnLevelLoaded.Execute();
 	return true;
 }
 
@@ -111,6 +111,10 @@ void JLevel::InitializeLevel()
 
 void JLevel::UpdateLevel(float DeltaTime)
 {
+	if (!bThreadLoaded)
+	{
+		return;
+	}
 	std::erase_if(
 				  mActors,
 				  [&](UPtr<AActor>& actor){

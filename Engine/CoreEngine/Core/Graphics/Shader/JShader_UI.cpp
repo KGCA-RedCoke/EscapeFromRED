@@ -1,7 +1,9 @@
 ﻿#include "JShader_UI.h"
 
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Interface/JWorld.h"
 
 JShader_UI::JShader_UI(const JText& InName)
 	: JShader(InName)
@@ -35,10 +37,21 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 	mTextures.clear();
 	mOpacityTextures.clear();
+
+	float    aspect = GetWorld.CameraManager->GetCurrentMainCam()->GetAspect();
+	FVector2 camera(aspect, 1.0f);
+	UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_VIEWPORTSCALE, &camera);
+
+	UpdateGlobalConstantBuffer(InDeviceContext);
 }
 
 void JShader_UI::UpdateGlobalConstantBuffer(ID3D11DeviceContext* InDeviceContext)
-{}
+{
+	for (int32_t i = 0; i < mDefaultShaderData.ConstantBuffers.size(); ++i)
+	{
+		mDefaultShaderData.ConstantBuffers.at(i).SetConstantBuffer(InDeviceContext);
+	}
+}
 
 void JShader_UI::SetTextureParams(ID3D11ShaderResourceView* InTexture, ID3D11ShaderResourceView* InOpacityTexture)
 {

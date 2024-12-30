@@ -206,6 +206,7 @@
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
+    <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
     <ClInclude Include="Game\Src\Player\JPlayerAnimator.h" />
     <ClInclude Include="Game\Src\Player\JPlayerCamera.h" />
@@ -386,6 +387,7 @@
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
+    <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />
     <ClCompile Include="Game\Src\Player\JPlayerAnimator.cpp" />
     <ClCompile Include="Game\Src\Player\JPlayerCamera.cpp" />

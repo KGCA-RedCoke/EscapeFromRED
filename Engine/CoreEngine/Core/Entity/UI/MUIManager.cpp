@@ -355,7 +355,7 @@ void JWidgetComponent::Tick(float DeltaTime)
 
 void JWidgetComponent::AddInstance()
 {
-	for (int32_t i = mUIComponents.size() - 1; i >= 0; --i)
+	for (int32_t i = 0; i < mUIComponents.size(); ++i)
 	{
 		mUIComponents[i]->AddInstance(0);
 	}
@@ -442,11 +442,7 @@ void MUIManager::FlushCommandList(ID3D11DeviceContext* InContext)
 		mShader->SetTextureParams(mTextureSRVs[i], mOpacityTextureSRVs[i]);
 	}
 
-	float aspect = GetWorld.CameraManager->GetCurrentMainCam()->GetAspect();
-	FVector2 camera(aspect, 1.0f);
-
 	mShader->BindShaderPipeline(InContext);
-	mShader->UpdateConstantData(InContext, CBuffer::NAME_CONSTANT_BUFFER_VIEWPORTSCALE, &camera);
 
 	Utils::DX::UpdateDynamicBuffer(InContext,
 								   g_InstanceBuffer.Get(),
@@ -530,7 +526,7 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
-	LoadingScreen = Load("Game/UI/LoadingScreen.jasset");
+	LoadingScreen = Load("Game/UI/LoadingScene.jasset");
 }
 
 MUIManager::~MUIManager() {}

@@ -13,6 +13,10 @@ public:
 	void Destroy();
 
 public:
+	JLevel* LoadIntroLevel();
+	JLevel* LoadMainLevel();
+
+public:
 	JLevel* CreateLevel(const JText& InSavePath);
 
 public:

@@ -1,13 +1,11 @@
 ﻿#pragma once
 #include "Core/Entity/Level/JLevel.h"
 
-class JUIComponent;
-
-class JLevel_Intro : public JLevel
+class JLevel_Main : public JLevel
 {
 public:
-	JLevel_Intro();
-	~JLevel_Intro() override;
+	JLevel_Main();
+	~JLevel_Main() override;
 
 public:
 	void InitializeLevel() override;

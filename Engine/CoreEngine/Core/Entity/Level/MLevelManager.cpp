@@ -6,6 +6,8 @@
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Level/JLevel_Intro.h"
+#include "Game/Src/Level/JLevel_Main.h"
 
 void MLevelManager::PostInitialize(const JText& OriginalNameOrPath, const JText& ParsedName, const uint32_t NameHash,
 								   void*        Entity)
@@ -34,7 +36,6 @@ void MLevelManager::Render()
 	{
 		if (!mActiveLevel->IsLoaded())
 		{
-			// MViewportManager::Get().SetRenderTarget("Editor Viewport", FLinearColor::Blue);
 			MUIManager::Get().LoadingScreen->AddInstance();
 			MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 		}
@@ -47,6 +48,26 @@ void MLevelManager::Render()
 
 void MLevelManager::Destroy()
 {}
+
+JLevel* MLevelManager::LoadIntroLevel()
+{
+	uint32_t hash       = StringHash("IntroLevel");
+	auto     introLevel = MakeUPtr<JLevel_Intro>();
+	auto*    ptr        = introLevel.get();
+	mManagedList[hash]  = std::move(introLevel);
+
+	return ptr;
+}
+
+JLevel* MLevelManager::LoadMainLevel()
+{
+	uint32_t hash      = StringHash("MainLevel");
+	auto     mainLevel = MakeUPtr<JLevel_Main>();
+	auto*    ptr       = mainLevel.get();
+	mManagedList[hash] = std::move(mainLevel);
+
+	return ptr;
+}
 
 JLevel* MLevelManager::CreateLevel(const JText& InSavePath)
 {
