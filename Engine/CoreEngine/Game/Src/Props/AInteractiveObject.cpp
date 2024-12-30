@@ -1,28 +1,28 @@
-﻿#include "ABoundingBox.h"
+﻿#include "AInteractiveObject.h"
 
-ABoundingBox::ABoundingBox()
+AInteractiveObject::AInteractiveObject()
 	: AActor()
 {
 	mObjectType = NAME_OBJECT_BOUNDING_BOX;
 }
 
-ABoundingBox::ABoundingBox(JTextView InName)
+AInteractiveObject::AInteractiveObject(JTextView InName)
 	: AActor(InName)
 {
 	mObjectType = NAME_OBJECT_BOUNDING_BOX;
 }
 
-uint32_t ABoundingBox::GetType() const
+uint32_t AInteractiveObject::GetType() const
 {
 	return HASH_ASSET_TYPE_BoundingBox;
 }
 
-bool ABoundingBox::Serialize_Implement(std::ofstream& FileStream)
+bool AInteractiveObject::Serialize_Implement(std::ofstream& FileStream)
 {
 	return AActor::Serialize_Implement(FileStream);
 }
 
-bool ABoundingBox::DeSerialize_Implement(std::ifstream& InFileStream)
+bool AInteractiveObject::DeSerialize_Implement(std::ifstream& InFileStream)
 {
 	bool bSuccess = AActor::DeSerialize_Implement(InFileStream);
 
@@ -31,7 +31,7 @@ bool ABoundingBox::DeSerialize_Implement(std::ifstream& InFileStream)
 	return bSuccess;
 }
 
-void ABoundingBox::Initialize()
+void AInteractiveObject::Initialize()
 {
 	AActor::Initialize();
 
@@ -41,17 +41,17 @@ void ABoundingBox::Initialize()
 	}
 }
 
-void ABoundingBox::Tick(float DeltaTime)
+void AInteractiveObject::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
 }
 
-void ABoundingBox::Destroy()
+void AInteractiveObject::Destroy()
 {
 	AActor::Destroy();
 }
 
-void ABoundingBox::ShowEditor()
+void AInteractiveObject::ShowEditor()
 {
 	AActor::ShowEditor();
 

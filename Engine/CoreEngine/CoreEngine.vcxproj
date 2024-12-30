@@ -210,7 +210,7 @@
     <ClInclude Include="Game\Src\Player\JPlayerAnimator.h" />
     <ClInclude Include="Game\Src\Player\JPlayerCamera.h" />
     <ClInclude Include="Game\Src\Player\Weapon\AWeapon.h" />
-    <ClInclude Include="Game\Src\Props\ABoundingBox.h" />
+    <ClInclude Include="Game\Src\Props\AInteractiveObject.h" />
     <ClInclude Include="GUI\Camera\GUI_Camera_Debug_Frustum.h" />
     <ClInclude Include="GUI\Editor\Actor\GUI_Editor_Actor.h" />
     <ClInclude Include="GUI\Editor\Animation\GUI_Editor_Animator.h" />
@@ -390,7 +390,7 @@
     <ClCompile Include="Game\Src\Player\JPlayerAnimator.cpp" />
     <ClCompile Include="Game\Src\Player\JPlayerCamera.cpp" />
     <ClCompile Include="Game\Src\Player\Weapon\AWeapon.cpp" />
-    <ClCompile Include="Game\Src\Props\ABoundingBox.cpp" />
+    <ClCompile Include="Game\Src\Props\AInteractiveObject.cpp" />
     <ClCompile Include="GUI\Camera\GUI_Camera_Debug_Frustum.cpp" />
     <ClCompile Include="GUI\Editor\Actor\GUI_Editor_Actor.cpp" />
     <ClCompile Include="GUI\Editor\Animation\GUI_Editor_Animator.cpp" />

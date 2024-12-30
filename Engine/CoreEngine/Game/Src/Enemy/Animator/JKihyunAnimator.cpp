@@ -31,12 +31,12 @@ void JKihyunAnimator::Initialize()
 					 GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Run.jasset",
 													 mSkeletalMeshComponent));
 
-	auto* deathAnim =  GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Death_Spinning.jasset",
-													 mSkeletalMeshComponent);
-	deathAnim->OnAnimFinished.Bind([this]()
-								   {
-									   mEnemy->Destroy();
-								   });
+	auto* deathAnim = GetWorld.AnimationManager->Load("Game/Animation/BigZombie/BZ_Death_Spinning.jasset",
+													  mSkeletalMeshComponent);
+	deathAnim->OnAnimFinished.Bind([this](){
+		if (mEnemy)
+			mEnemy->Destroy();
+	});
 	AddAnimationClip("Death",
 					 deathAnim);
 
@@ -45,8 +45,6 @@ void JKihyunAnimator::Initialize()
 
 	AddAnimLink("Idle", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
 	AddAnimLink("Walk", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
-
-	
 
 
 	SetState("Idle");

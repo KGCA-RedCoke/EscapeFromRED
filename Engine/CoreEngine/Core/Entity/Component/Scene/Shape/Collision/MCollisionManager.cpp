@@ -111,7 +111,6 @@ bool MCollisionManager::Intersect(ICollision* InLeft, ICollision* InRight, FHitR
 {
 	if (InLeft && InRight)
 	{
-		FHitResult hitResult;
 		return InLeft->Intersect(InRight, OutHitResult);
 	}
 

@@ -164,7 +164,7 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 	directionVec.Normalize();
 
 	// 현재 위치 업데이트
-	mLocalLocation += directionVec * 500.0f * DeltaTime;
+	AddLocalLocation(directionVec * 500.0f * DeltaTime);
 }
 
 void APlayerCharacter::CheckGround()

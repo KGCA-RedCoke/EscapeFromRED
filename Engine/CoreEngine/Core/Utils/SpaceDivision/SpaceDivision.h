@@ -5,7 +5,7 @@
 class AActor;
 class JCameraComponent;
 
-#define MAX_DEPTH 3
+#define MAX_DEPTH 4
 
 namespace Quad
 {
@@ -27,7 +27,7 @@ namespace Quad
 		UPtr<FNode> Children[4] = {nullptr, nullptr, nullptr, nullptr};
 
 		void Update();
-		void Render(JCameraComponent* InCamera);
+		void Render(JCameraComponent* InCamera); 
 
 		void Subdivide(FNode* InRoot);
 		void Insert(AActor* InActor);

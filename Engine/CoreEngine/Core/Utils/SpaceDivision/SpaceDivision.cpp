@@ -41,7 +41,7 @@ void Quad::FNode::Render(JCameraComponent* InCamera)
 {
 	if (InCamera->IsBoxInFrustum(BoundBox))
 	{
-		// BoundBox.DrawDebug();
+		BoundArea.DrawDebug();
 		for (const auto& actor : Actors)
 		{
 			if (actor)
@@ -82,7 +82,7 @@ void Quad::FNode::Subdivide(FNode* InRoot)
 	for (int i = 0; i < 4; ++i)
 	{
 		Children[i]         = MakeUPtr<FNode>();
-		Children[i]->Index  = Index + i + 1;
+		Children[i]->Index  = Index * 4 + (i + 1);
 		Children[i]->Parent = this;
 		Children[i]->Depth  = Depth + 1;
 

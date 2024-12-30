@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/AActor.h"
 
-class ABoundingBox : public AActor
+class AInteractiveObject : public AActor
 {
 public:
-	ABoundingBox();
-	ABoundingBox(JTextView InName);
-	~ABoundingBox() override = default;
+	AInteractiveObject();
+	AInteractiveObject(JTextView InName);
+	~AInteractiveObject() override = default;
 
 public:
 	uint32_t GetType() const override;
