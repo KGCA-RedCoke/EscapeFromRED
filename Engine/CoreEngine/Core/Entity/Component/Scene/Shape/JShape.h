@@ -23,7 +23,7 @@ struct FQuad
 	{}
 
 	bool Contains(const FVector& InPoint) const;
-	void DrawDebug() const;
+	void DrawDebug(DirectX::FXMVECTOR DebugColor = {{0.678431392f, 1.f, 0.184313729f, 1.f}}) const;
 };
 
 struct FPlane
@@ -100,6 +100,8 @@ struct FSphere
 
 	// 구와 점의 충돌 검사
 	bool ContainsPoint(const FVector& Point) const;
+
+	void DrawDebug(DirectX::FXMVECTOR DebugColor = {{0.678431392f, 1.f, 0.184313729f, 1.f}}) const;
 };
 
 struct FCapsule
@@ -127,12 +129,12 @@ struct FCapsule
 
 bool RayIntersectAABB(const FRay& InRay, const FBoxShape& InBox, float& OutT);
 bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,
-                     float RayLength,
-                     // Ray 정보
-                     const FVector& BoxCenter, const FVector BoxAxis[3],
-                     const FVector& BoxExtent,
-                     // OBB 정보
-                     FHitResult& OutHitResult // 충돌 지점
+					 float          RayLength,
+					 // Ray 정보
+					 const FVector& BoxCenter, const FVector BoxAxis[3],
+					 const FVector& BoxExtent,
+					 // OBB 정보
+					 FHitResult& OutHitResult // 충돌 지점
 );
 bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, struct FHitResult& OutHitResult);
 

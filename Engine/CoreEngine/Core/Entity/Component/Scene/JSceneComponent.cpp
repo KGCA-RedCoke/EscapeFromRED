@@ -523,6 +523,34 @@ void JCollisionComponent::Destroy()
 	GetWorld.ColliderManager->UnEnrollCollision(this);
 }
 
+void JCollisionComponent::Draw()
+{
+	if (!GetWorld.bDebugMode)
+	{
+		return;
+	}
+
+	switch (GetCollisionType())
+	{
+	case ECollisionType::None:
+		break;
+	case ECollisionType::Quad:
+		break;
+	case ECollisionType::Plane:
+		break;
+	case ECollisionType::Ray:
+		GetRay().DrawDebug(mColor);
+		break;
+	case ECollisionType::Box:
+		GetBox().DrawDebug(mColor);
+		break;
+	case ECollisionType::Sphere:
+		break;
+	case ECollisionType::Capsule:
+		break;
+	}
+}
+
 FBoxShape JCollisionComponent::GetBox() const
 {
 	return {};
@@ -596,13 +624,15 @@ void JCollisionComponent::ShowEditor()
 
 JLineComponent::JLineComponent()
 {
-	mObjectType = NAME_COMPONENT_RAY;
+	mObjectType    = NAME_COMPONENT_RAY;
+	mCollisionType = ECollisionType::Ray;
 }
 
 JLineComponent::JLineComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
 	: JCollisionComponent(InName, InOwnerActor, InParentSceneComponent)
 {
-	mObjectType = NAME_COMPONENT_RAY;
+	mObjectType    = NAME_COMPONENT_RAY;
+	mCollisionType = ECollisionType::Ray;
 }
 
 void JLineComponent::Initialize()
@@ -615,11 +645,6 @@ void JLineComponent::Tick(float DeltaTime)
 	JCollisionComponent::Tick(DeltaTime);
 
 	mRay.Origin = mWorldLocation;
-}
-
-void JLineComponent::Draw()
-{
-	mRay.DrawDebug(mColor);
 }
 
 void JLineComponent::ShowEditor()
@@ -668,13 +693,15 @@ FRay JLineComponent::GetRay() const
 JBoxComponent::JBoxComponent()
 	: JCollisionComponent()
 {
-	mObjectType = NAME_COMPONENT_BOX;
+	mObjectType    = NAME_COMPONENT_BOX;
+	mCollisionType = ECollisionType::Box;
 }
 
 JBoxComponent::JBoxComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
 	: JCollisionComponent(InName, InOwnerActor, InParentSceneComponent)
 {
-	mObjectType = NAME_COMPONENT_BOX;
+	mObjectType    = NAME_COMPONENT_BOX;
+	mCollisionType = ECollisionType::Box;
 }
 
 void JBoxComponent::Initialize()
@@ -691,14 +718,6 @@ void JBoxComponent::Tick(float DeltaTime)
 	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldRotationMat));
 	mBoundingBox.Box.Center       = XMVector3Transform(FVector::ZeroVector, mWorldLocationMat);
 	mBoundingBox.Box.Extent       = mWorldScale * 50.f;
-}
-
-void JBoxComponent::Draw()
-{
-	if (bCollisionEnabled)
-	{
-		mBoundingBox.DrawDebug(mColor);
-	}
 }
 
 void JBoxComponent::ShowEditor()

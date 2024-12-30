@@ -96,7 +96,7 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 void GUI_Viewport_Scene::ShowTopMenu()
 {
-	if (bIsGameMode)
+	if (GetWorld.bGameMode)
 		return;
 	ImVec2 availSize = ImGui::GetContentRegionAvail();
 
@@ -130,7 +130,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	ImGui::SameLine(0, spacing); // 버튼 간격 띄우기
 
 	// Play 버튼
-	if (!bIsGameMode && ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
+	if (!GetWorld.bGameMode && ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
@@ -150,7 +150,6 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// SetCursorPos(0, 0);
 
 		G_NAV_MAP.Initialize();
-		GetWorld.mIsPlayGame = true;
-		bIsGameMode          = true;
+		GetWorld.bGameMode = true;
 	}
 }

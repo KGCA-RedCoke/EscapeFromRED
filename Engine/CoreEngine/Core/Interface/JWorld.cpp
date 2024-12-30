@@ -1,6 +1,5 @@
 ﻿#include "JWorld.h"
 
-#include "Core/Entity/Actor/JStaticMeshActor.h"
 #include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
@@ -16,7 +15,6 @@
 #include "Core/Window/Application.h"
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
-#include "Core/Entity/Navigation/NavTest.h"
 
 extern ini::IniFile g_settings;
 

@@ -60,7 +60,7 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 
 	ImGui::Image(mViewportData->SRV.Get(), ImGui::GetContentRegionAvail());
 
-	if ((ImGui::IsItemHovered() || ImGui::IsItemFocused()) && !bIsGameMode)
+	if ((ImGui::IsItemHovered() || ImGui::IsItemFocused()) && !GetWorld.bGameMode)
 	{
 		if (mEditorCameraRef)
 			mEditorCameraRef->Tick(DeltaTime);

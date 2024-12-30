@@ -33,8 +33,6 @@ protected:
 	bool bIsFocused;
 	bool bIsHovered;
 
-	bool bIsGameMode;
-
 	JCamera_Debug* mEditorCameraRef;
 	FViewportData* mViewportData;
 

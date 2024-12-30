@@ -66,8 +66,13 @@ public:
 	class MCollisionManager*        ColliderManager;		// 충돌체
 	class XD3DDevice*               D3D11API;				// 디바이스
 
-
 public:
+	struct
+	{
+		bool bDebugMode = false;
+		bool bGameMode  = false;
+	};
+
 	struct
 	{
 		Buffer::FBuffer_Light_Point Data[127];
@@ -90,11 +95,9 @@ public:
 	JWorld();
 
 public:
-	JWorld(const JWorld&)            = delete;
-	JWorld& operator=(const JWorld&) = delete;
+	JWorld(const JWorld&)              = delete;
+	JWorld&   operator=(const JWorld&) = delete;
 	long long currentFrame = 0;
-	bool mIsPlayGame = false;
 
 #pragma endregion
 };
-

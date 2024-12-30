@@ -1,6 +1,7 @@
 ﻿#include "SpaceDivision.h"
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
+#include "Core/Interface/JWorld.h"
 
 void Quad::FNode::Update()
 {
@@ -41,7 +42,10 @@ void Quad::FNode::Render(JCameraComponent* InCamera)
 {
 	if (InCamera->IsBoxInFrustum(BoundBox))
 	{
-		BoundArea.DrawDebug();
+		if (GetWorld.bDebugMode)
+		{
+			BoundArea.DrawDebug();
+		}
 		for (const auto& actor : Actors)
 		{
 			if (actor)

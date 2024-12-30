@@ -8,6 +8,7 @@
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/ObjectLoader/FbxFile.h"
 #include "Core/Window/Window.h"
 #include "Editor/GUI_Editor_Material.h"
@@ -87,6 +88,9 @@ void MGUIManager::Release()
 
 void MGUIManager::UpdateMainMenuBar()
 {
+	if (GetWorld.bGameMode)
+		return;
+
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu(u8("파일")))
@@ -205,6 +209,11 @@ void MGUIManager::UpdateMainMenuBar()
 
 void MGUIManager::UpdateGUIs(float DeltaTime) const
 {
+	if (GetWorld.bGameMode)
+	{
+		mStaticGUI[1]->Update(DeltaTime);
+		return;
+	}
 	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
 	{
 		if (const auto& ptr = it->second)
@@ -267,17 +276,21 @@ void MGUIManager::Render()
 		ImGui::RenderPlatformWindowsDefault(); // 각 뷰포트 렌더
 	}
 
-
-	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
+	if (GetWorld.bGameMode)
 	{
-		if (const auto& ptr = it->second)
-		{
-			if (ptr->bIsWindowOpen)
-			{
-				ptr->Render();
-			}
-		}
+		mStaticGUI[1]->Render();
+		return;
 	}
+	// for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
+	// {
+	// 	if (const auto& ptr = it->second)
+	// 	{
+	// 		if (ptr->bIsWindowOpen)
+	// 		{
+	// 			ptr->Render();
+	// 		}
+	// 	}
+	// }
 }
 
 void MGUIManager::ScaleAllSize(float InScale)

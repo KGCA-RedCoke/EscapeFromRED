@@ -1,6 +1,7 @@
 ﻿#include "GUI_Settings_Collision.h"
 
 #include "Core/Entity/Component/Scene/Shape/Collision/MCollisionManager.h"
+#include "Core/Interface/JWorld.h"
 
 GUI_Settings_Collision::GUI_Settings_Collision(const JText& InTitle)
 	: GUI_Base(InTitle) {}
@@ -12,6 +13,11 @@ void GUI_Settings_Collision::Initialize()
 
 void GUI_Settings_Collision::Update_Implementation(float DeltaTime)
 {
+	if (ImGui::Checkbox("Show Collision Layer", &GetWorld.bDebugMode))
+	{
+		LOG_CORE_INFO("Show Collision Layer: {}", GetWorld.bDebugMode);
+	}
+
 	// 테이블 생성
 	if (ImGui::BeginTable("CollisionLayerTable",
 						  EnumAsByte(ETraceType::Max) + 1,

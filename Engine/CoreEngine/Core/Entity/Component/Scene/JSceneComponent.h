@@ -162,6 +162,7 @@ public:
 	void Initialize() override;
 	void BeginPlay() override;
 	void Destroy() override;
+	void Draw() override;
 
 public:
 	FBoxShape      GetBox() const override;
@@ -200,7 +201,6 @@ public:
 public:
 	void Initialize() override;
 	void Tick(float DeltaTime) override;
-	void Draw() override;
 
 public:
 	void ShowEditor() override;
@@ -246,7 +246,6 @@ public:
 public:
 	void Initialize() override;
 	void Tick(float DeltaTime) override;
-	void Draw() override;
 
 public:
 	void ShowEditor() override;

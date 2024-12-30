@@ -60,6 +60,7 @@ private:
 	bool                  bOpenFileBrowser;
 	bool                  bRenderWireFrame = false;
 
+
 #pragma region Singleton Boilerplate
 
 private:
