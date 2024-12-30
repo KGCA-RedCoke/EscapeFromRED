@@ -644,6 +644,12 @@ void JLineComponent::Tick(float DeltaTime)
 	JCollisionComponent::Tick(DeltaTime);
 
 	mRay.Origin = mWorldLocation;
+	mRay.Origin.y += 50.f;
+}
+
+void JLineComponent::SetLength(float InLength)
+{
+	mRay.Length = InLength;
 }
 
 void JLineComponent::ShowEditor()

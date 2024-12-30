@@ -76,13 +76,14 @@ void APawn::Initialize()
 
 					FVector currentLocation = GetLocalLocation();
 					mYVelocity += 980 * mDeltaTime;
-					float epsilon = 1e-2f; // 작은 값 설정
-					if (currentLocation.y > MaxHeight + epsilon)
+					// mLocalLocation.y = MaxHeight;	
+					if (currentLocation.y > MaxHeight + FLT_EPSILON)
 					{
 						AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
 					}
-					else if (currentLocation.y < MaxHeight - epsilon)
+					else if (currentLocation.y < MaxHeight - FLT_EPSILON)
 					{
+						// mLocalLocation.y = MaxHeight - FLT_EPSILON;
 						AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
 						mYVelocity = 0.f;
 					}
@@ -181,6 +182,9 @@ void APawn::Initialize()
 			}
 		});
 	}
+
+	mLineComponent->SetLength(2000);
+	
 	AActor::Initialize();
 
 }

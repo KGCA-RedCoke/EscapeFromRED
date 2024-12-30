@@ -63,7 +63,7 @@ void APlayerCharacter::BeginPlay()
 {
 	ACharacter::BeginPlay();
 	SetupInputComponent();
-	SetLocalLocation({0, 150, 0});
+	SetLocalLocation({0, 250, 0});
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
