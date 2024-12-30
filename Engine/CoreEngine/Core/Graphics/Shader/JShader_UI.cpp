@@ -39,7 +39,7 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	mOpacityTextures.clear();
 
 	float    aspect = GetWorld.CameraManager->GetCurrentMainCam()->GetAspect();
-	FVector2 camera(aspect, 1.0f);
+	FVector2 camera(1.0f, aspect);
 	UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_VIEWPORTSCALE, &camera);
 
 	UpdateGlobalConstantBuffer(InDeviceContext);

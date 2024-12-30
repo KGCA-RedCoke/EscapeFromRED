@@ -336,8 +336,8 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
         OnAnimStart.Execute();
     }
 
-    mEvents[mInstanceData.CurrentAnimIndex].Execute();
-    return true;
+    // mEvents[mInstanceData.CurrentAnimIndex].Execute();
+    return true;ddd
 }
 
 bool JAnimationClip::CheckTransition()

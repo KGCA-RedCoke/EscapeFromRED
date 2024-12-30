@@ -19,6 +19,11 @@ JLevel_Main::JLevel_Main()
 
 		bThreadLoaded = true;
 
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Pawn, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::BlockingVolume, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::PlayerWeapon, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Ground, true);
+
 	});
 	mWidgetComponents.reserve(1);
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/Crosshair.jasset"));
