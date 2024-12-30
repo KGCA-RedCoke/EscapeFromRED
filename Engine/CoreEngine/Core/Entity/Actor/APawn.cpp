@@ -75,7 +75,7 @@ void APawn::Initialize()
 					float MaxHeight = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
 
 					FVector currentLocation = GetLocalLocation();
-					mYVelocity += 980 * mDeltaTime;
+					mYVelocity += 980 * mDeltaTime * 2;
 					// mLocalLocation.y = MaxHeight;	
 					if (currentLocation.y > MaxHeight + FLT_EPSILON)
 					{
@@ -116,37 +116,22 @@ void APawn::Initialize()
 			{
 			case ETraceType::Pawn:
 				{
-					// 두 물체의 상대적인 위치를 계산
-					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
+					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 
-					// 1. 침투 해결 (겹침 제거)
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * 0.5;
 
-					// 물체가 밀려야 할 방향을 계산 (충돌 법선에 따라 위치 조정)
-					// 상대 위치의 방향에 따라 밀어내는 방향 결정
-					if (RelativePosition.Dot(HitResult.HitNormal) < 0)
-					{
-						// BoxA는 법선 반대 방향으로 이동, BoxB는 법선 방향으로 이동
-						AddLocalLocation(-correction); // BoxA를 법선 반대 방향으로 이동
-						Other->AddLocalLocation(correction); // BoxB를 법선 방향으로 이동
-					}
-					else
-					{
-						// 반대로, BoxA는 법선 방향으로 이동, BoxB는 법선 반대 방향으로 이동
-						AddLocalLocation(correction); // BoxA를 법선 방향으로 이동
-						Other->AddLocalLocation(-correction); // BoxB를 법선 반대 방향으로 이동
-					}
+					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
+					AddLocalLocation(correction);
 				}
 				break;
 			case ETraceType::BlockingVolume:
 				{
-					FVector ThisPosition     = GetWorldLocation();
 					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime * 5.f;
+					FVector correction = HitResult.HitNormal * HitResult.Distance;
 
-					ThisPosition -= (RelativePosition.Dot(HitResult.HitNormal) < 0) ? correction : -correction;
-					SetWorldLocation(ThisPosition);
+					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
+					AddLocalLocation(correction);
 				}
 				break;
 			case ETraceType::Ground:
@@ -159,28 +144,7 @@ void APawn::Initialize()
 			//     break;
 			}
 		});
-		mCollisionBox->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
-			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
-			assert(sceneComponent);
-
-			auto* Other = sceneComponent->GetParentSceneComponent();
-			assert(Other);
-
-			const ETraceType type = sceneComponent->GetTraceType();
-
-			switch (type)
-			{
-			case ETraceType::BlockingVolume:
-				{
-					FVector RelativePosition = GetWorldLocation() - Other->GetWorldLocation();
-
-					FVector correction = HitResult.HitNormal * HitResult.Distance * mDeltaTime;
-
-					AddLocalLocation((RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction);
-				}
-				break;
-			}
-		});
+		
 	}
 
 	mLineComponent->SetLength(2000);

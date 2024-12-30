@@ -34,7 +34,7 @@ void AEnemy::Initialize()
 
 	if (!mBehaviorTree)
 	{
-		mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree");
+		mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree", this);
 	}
 
 	if (mSkeletalMeshComponent)
@@ -119,6 +119,6 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 	if (traceType == ETraceType::PlayerWeapon)
 	{
 		mEnemyState = EEnemyState::Death;
-		// OnEnemyHit.Execute(HitResult);
 	}
 }
+

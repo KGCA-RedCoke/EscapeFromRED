@@ -7,13 +7,14 @@
 #include "enums.h"
 #include "Core/Entity/Navigation/Node.h"
 
+class AEnemy;
 class AStar;
 
 class BT_BOSS : public JActorComponent,
 				public std::enable_shared_from_this<BT_BOSS>
 {
 public:
-	BT_BOSS(JTextView InName);
+	BT_BOSS(JTextView InName, AActor* InOwner);
 	~BT_BOSS() override;
 
 	void Initialize() override;
@@ -62,6 +63,8 @@ public:
 	bool        runningFlag = false;
 	EFloorType  mFloorType  = EFloorType::FirstFloor;
 	static bool mIsPlayGame;
+
+	AEnemy* mOwnerEnemy;
 
 private:
 	template <typename TBuilder>

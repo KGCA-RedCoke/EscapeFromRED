@@ -38,6 +38,9 @@ void JKihyunAnimator::Initialize()
 	AddAnimLink("Idle", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
 	AddAnimLink("Walk", "Death", [&](){ return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
 
+	AddAnimLink("Idle", "Attack", [&](){ return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
+	AddAnimLink("Walk", "Attack", [&](){ return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
+	
 
 	SetState("Idle");
 	mCurrentAnimation->Play();
