@@ -21,7 +21,6 @@ ACharacter::ACharacter(JTextView InName)
 
 void ACharacter::Initialize()
 {
-	APawn::Initialize();
 
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
@@ -29,7 +28,11 @@ void ACharacter::Initialize()
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<
 			JSkeletalMeshComponent>("SkeletalMeshComponent", this, this);
+		mSkeletalMeshComponent->Initialize();
 	}
+
+	APawn::Initialize();
+
 }
 
 void ACharacter::Tick(float DeltaTime)

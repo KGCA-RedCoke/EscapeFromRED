@@ -203,6 +203,7 @@ public:
 	void Tick(float DeltaTime) override;
 
 public:
+	void SetLength(float InLength);
 	void ShowEditor() override;
 
 public:
