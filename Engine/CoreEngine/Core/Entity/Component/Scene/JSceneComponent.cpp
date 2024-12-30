@@ -134,12 +134,11 @@ bool JSceneComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JSceneComponent::Initialize()
 {
-	JActorComponent::Initialize();
-
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->Initialize();
 	}
+	JActorComponent::Initialize();
 }
 
 void JSceneComponent::Tick(float DeltaTime)

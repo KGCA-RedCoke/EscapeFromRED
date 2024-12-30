@@ -26,12 +26,11 @@ AActor::AActor(const AActor& Copy)
 
 void AActor::Initialize()
 {
-	JSceneComponent::Initialize();
-
 	for (const auto& actorComponent : mActorComponents)
 	{
 		actorComponent->Initialize();
 	}
+	JSceneComponent::Initialize();
 }
 
 void AActor::BeginPlay()

@@ -74,6 +74,10 @@ void XTKPrimitiveBatch::PostRender()
 
 void XTKPrimitiveBatch::Draw()
 {
+	if (GetWorld.bGameMode)
+	{
+		return;
+	}
 	constexpr FVector4 origin = {0, 0, 0, 0};
 
 	// Draw X Axis (Infinity Line)
@@ -102,8 +106,6 @@ void XTKPrimitiveBatch::Draw()
 					  false,
 					  {0.f, 1.f, 0.f, 1.f}
 					 );
-
-	DrawCapsule_Implement(FMatrix::Identity, 40.f, 200.f);
 
 }
 

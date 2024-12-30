@@ -45,7 +45,6 @@ bool APawn::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void APawn::Initialize()
 {
-	AActor::Initialize();
 
 	mMovementComponent = static_cast<JPawnMovementComponent*>(GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
 	mLineComponent     = static_cast<JLineComponent*>(GetChildComponentByType(NAME_COMPONENT_RAY));
@@ -182,6 +181,8 @@ void APawn::Initialize()
 			}
 		});
 	}
+	AActor::Initialize();
+
 }
 
 void APawn::Tick(float DeltaTime)
