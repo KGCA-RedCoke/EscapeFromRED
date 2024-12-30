@@ -355,7 +355,7 @@ void JWidgetComponent::Tick(float DeltaTime)
 
 void JWidgetComponent::AddInstance()
 {
-	for (int32_t i = 0 ; i < mUIComponents.size() ; /*i >= 0;*/ ++i)
+	for (int32_t i = mUIComponents.size() - 1; i >= 0; --i)
 	{
 		mUIComponents[i]->AddInstance(0);
 	}
