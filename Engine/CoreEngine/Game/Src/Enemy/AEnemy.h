@@ -72,6 +72,7 @@ public:
 public:
     virtual void OnHit(ICollision* InActor, const FHitResult& HitResult);
     void SetEnemyState(EEnemyState InNewState) { mEnemyState = InNewState; }
+    EEnemyState GetEnemyState() { return mEnemyState; }
 
 protected:
     EEnemyType mEnemyType;

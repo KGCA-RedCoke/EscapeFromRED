@@ -75,7 +75,7 @@ void APawn::Initialize()
 					float MaxHeight = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
 
 					FVector currentLocation = GetLocalLocation();
-					mYVelocity += 980 * mDeltaTime * 2;
+					mYVelocity += 980 * mDeltaTime;
 					// mLocalLocation.y = MaxHeight;	
 					if (currentLocation.y > MaxHeight + FLT_EPSILON)
 					{

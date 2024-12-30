@@ -19,7 +19,6 @@ AEnemy::AEnemy(JTextView InName)
 
 void AEnemy::Initialize()
 {
-	APawn::Initialize();
 
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
@@ -37,18 +36,23 @@ void AEnemy::Initialize()
 		mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree", this);
 	}
 
+
+	
+	APawn::Initialize();
+
 	if (mSkeletalMeshComponent)
 	{
 		mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
-
+	
 	assert(mCollisionBox);
 	mCollisionBox->OnComponentBeginOverlap.Bind(std::bind(&AEnemy::OnHit,
 														  this,
 														  std::placeholders::_1,
 														  std::placeholders::_2));
+
 }
 
 void AEnemy::Tick(float DeltaTime)

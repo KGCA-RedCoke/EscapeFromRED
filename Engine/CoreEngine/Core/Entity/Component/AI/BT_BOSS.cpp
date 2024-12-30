@@ -70,14 +70,14 @@ NodeStatus BT_BOSS::Attack()
         if (mElapsedTime > 0.5)
         {
             mElapsedTime = 0;
-            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             return NodeStatus::Success;
         }
         else
         {
             mElapsedTime += mDeltaTime;
             runningFlag = true;
-            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             return NodeStatus::Running;
         }
     }
@@ -90,18 +90,19 @@ NodeStatus BT_BOSS::Attack2()
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
-        runningFlag = false;
-        FVector rotation = mOwnerActor->GetLocalRotation();
-        rotation.y -= mDeltaTime * PaStar->mRotateSpeed * 20;
-        mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 1.0)
+        if (mEventStartFlag)
         {
-            mElapsedTime = 0;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            mEventStartFlag = false;
+        }
+        runningFlag = false;
+        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        {
+            mEventStartFlag = true;
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -109,7 +110,6 @@ NodeStatus BT_BOSS::Attack2()
     else
         return NodeStatus::Failure;
 }
-
 NodeStatus BT_BOSS::JumpAttack()
 {
     int frameIdx = GetWorld.currentFrame % g_Index;
@@ -273,12 +273,12 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         }
         G_DebugBatch.PostRender();
 
-        if (TempPath.size() && PaStar->mPathIdx < TempPath.size() - N)
+        if (TempPath.size() && (PlayerPos - mOwnerActor->GetWorldLocation()).Length() > 150)
         {
             FollowPath();
             return NodeStatus::Failure;
         }
-        else if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
+        else //if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
             return NodeStatus::Success;
     }
     return NodeStatus::Failure;
@@ -454,10 +454,10 @@ void BT_BOSS::SetupTree2()
              // .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
              //     .AddActionNode(LAMBDA(JumpAttack))
              // .EndBranch()
-             .AddSequence("")
+                .AddSequence("")
              //     .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-             .AddActionNode(LAMBDA(ChasePlayer, 0))
-             .AddActionNode(LAMBDA(Attack))
-             .EndBranch()
+                     .AddActionNode(LAMBDA(ChasePlayer, 0))
+                     .AddActionNode(LAMBDA(Attack2))
+                 .EndBranch()
              .Build();
 }

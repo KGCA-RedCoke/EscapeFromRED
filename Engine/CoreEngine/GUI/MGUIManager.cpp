@@ -281,16 +281,16 @@ void MGUIManager::Render()
 		mStaticGUI[1]->Render();
 		return;
 	}
-	// for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
-	// {
-	// 	if (const auto& ptr = it->second)
-	// 	{
-	// 		if (ptr->bIsWindowOpen)
-	// 		{
-	// 			ptr->Render();
-	// 		}
-	// 	}
-	// }
+	for (auto it = mManagedList.begin(); it != mManagedList.end(); ++it)
+	{
+		if (const auto& ptr = it->second)
+		{
+			if (ptr->bIsWindowOpen)
+			{
+				ptr->Render();
+			}
+		}
+	}
 }
 
 void MGUIManager::ScaleAllSize(float InScale)
