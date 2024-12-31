@@ -6,7 +6,7 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
-#include "Core/Entity/Component/AI/BT_BOSS.h"
+#include "Core/Entity/Component/AI/BtBase.h"
 
 void NavTest::Initialize()
 {

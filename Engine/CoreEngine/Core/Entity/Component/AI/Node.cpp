@@ -1,5 +1,5 @@
 ﻿#include "Node.h"
-#include "BT_BOSS.h"
+#include "BtBase.h"
 
 Bt::Node::~Node()
 {}

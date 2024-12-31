@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Animation/JAnimator.h"
 
-class ABoss;
+class AKillerClown;
 
 class JKillerClownAnimator : public JAnimator
 {
@@ -15,5 +15,5 @@ public:
     void BeginPlay() override;
 
 private:
-    ABoss* mBoss = nullptr; // 소유 액터
+    AKillerClown* mBoss = nullptr; // 소유 액터
 };

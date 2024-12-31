@@ -7,22 +7,32 @@
 #include "Core/Entity/Navigation/AStar.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
+#include "Game/Src/Enemy/AEnemy.h"
 
 
 #define MAG 0.01f
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
-BT_BigZombie::BT_BigZombie(JTextView InName, int Index): JActorComponent(InName)
+
+BT_BigZombie::BT_BigZombie(JTextView InName, AActor* InOwner)
+    : BtBase(InName, InOwner)
 {
-    mIdx = Index;
-    mInputKeyboard.Initialize();
-    PaStar = MakePtr<AStar>();
+    // mInputKeyboard.Initialize();
     SetupTree2();
 }
 
-BT_BigZombie::~BT_BigZombie(){}
+BT_BigZombie::~BT_BigZombie()
+{
+}
 
-void BT_BigZombie::Initialize() { JActorComponent::Initialize(); }
+void BT_BigZombie::Initialize()
+{
+    assert(mOwnerActor);
+    mOwnerEnemy = dynamic_cast<AEnemy*>(mOwnerActor);
+    assert(mOwnerEnemy);
+    
+    JActorComponent::Initialize();
+}
 
 void BT_BigZombie::BeginPlay() { JActorComponent::BeginPlay(); }
 
@@ -30,18 +40,8 @@ void BT_BigZombie::Destroy() { JActorComponent::Destroy(); }
 
 void BT_BigZombie::Tick(float DeltaTime)
 {
-    JActorComponent::Tick(DeltaTime);
-    BBTick();
-    mInputKeyboard.Update(DeltaTime);
-    mDeltaTime = DeltaTime;
-    JSceneComponent* Collider = mOwnerActor->GetChildSceneComponentByName("123123");
-    // mFloorHeight = static_cast<JBoxComponent*>(Collider)->GroundHeight;
-    BTRoot->tick();
-}
-
-void BT_BigZombie::BBTick()
-{
-    // FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(G_NAV_MAP.PlayerPos);
+    // mInputKeyboard.Update(DeltaTime);
+    BtBase::Tick(DeltaTime);
 }
 
 ////////////////////////////////////////////////
@@ -51,7 +51,7 @@ void BT_BigZombie::BBTick()
 
 NodeStatus BT_BigZombie::Attack()
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
         runningFlag = false;
@@ -61,12 +61,14 @@ NodeStatus BT_BigZombie::Attack()
         if (mElapsedTime > 0.5)
         {
             mElapsedTime = 0;
-            return NodeStatus::Success;   
+            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            return NodeStatus::Success;
         }
         else
         {
             mElapsedTime += mDeltaTime;
             runningFlag = true;
+            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             return NodeStatus::Running;
         }
     }
@@ -76,21 +78,24 @@ NodeStatus BT_BigZombie::Attack()
 
 NodeStatus BT_BigZombie::Attack2()
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();
+    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+        return NodeStatus::Failure;
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
-        runningFlag = false;
-        FVector rotation = mOwnerActor->GetLocalRotation();
-        rotation.y -= mDeltaTime * PaStar->mRotateSpeed * 20;
-        mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 1.0)
+        if (mEventStartFlag)
         {
-            mElapsedTime = 0;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            mEventStartFlag = false;
+        }
+        runningFlag = false;
+        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        {
+            mEventStartFlag = true;
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -98,10 +103,9 @@ NodeStatus BT_BigZombie::Attack2()
     else
         return NodeStatus::Failure;
 }
-
 NodeStatus BT_BigZombie::JumpAttack()
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
         runningFlag = false;
@@ -145,10 +149,10 @@ NodeStatus BT_BigZombie::JumpAttack()
 void BT_BigZombie::MoveNPCWithJump(float jumpHeight, float duration)
 {
     // NPC에서 플레이어까지의 거리 계산 (x, z 평면)
-    FVector playerPos = G_NAV_MAP.PlayerPos;
+    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
     FVector location = mOwnerActor->GetWorldLocation();
-    float dx = playerPos.x - location.x;
-    float dz = playerPos.z - location.z;
+    float dx = PlayerPos.x - location.x;
+    float dz = PlayerPos.z - location.z;
 
     // 매 프레임 NPC의 이동 속도 계산
     float vx = (dx / duration);
@@ -163,7 +167,7 @@ void BT_BigZombie::MoveNPCWithJump(float jumpHeight, float duration)
 
 NodeStatus BT_BigZombie::Hit()
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
         runningFlag = false;
@@ -175,7 +179,7 @@ NodeStatus BT_BigZombie::Hit()
             mElapsedTime = 0;
             rotation.x = 0.f;
             mOwnerActor->SetLocalRotation(rotation);
-            return NodeStatus::Success;   
+            return NodeStatus::Success;
         }
         else
         {
@@ -190,82 +194,62 @@ NodeStatus BT_BigZombie::Hit()
 
 NodeStatus BT_BigZombie::Dead()
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();
-    if (frameIdx == mIdx || runningFlag)
+    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
     {
-        runningFlag = false;
-        FVector rotation = mOwnerActor->GetLocalRotation();
-        rotation.x = 90.f;
-        mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 1)
-        {
-            mElapsedTime = 0;
-            rotation.x = 0.f;
-            mOwnerActor->SetLocalRotation(rotation);
-            mPhase++;
-            return NodeStatus::Success;
-        }
-        else
-        {
-            mElapsedTime += mDeltaTime;
-            runningFlag = true;
-            return NodeStatus::Running;
-        }
+        isPendingKill = true;
+        return NodeStatus::Success;
     }
-    else
-        return NodeStatus::Failure;
+    return NodeStatus::Failure;
 }
 
 NodeStatus BT_BigZombie::ChasePlayer(UINT N)
 {
-    int frameIdx = G_NAV_MAP.currentFrame % G_NAV_MAP.ColliderTarget.size();    
+    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+    FVector NpcPos = mOwnerActor->GetWorldLocation();
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx)
     {
-        FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(G_NAV_MAP.PlayerPos);
-        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
-        
-        Ptr<Nav::Node>& PlayerNode = (G_NAV_MAP.PlayerHeight < 560.f) 
-                                    ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
-                                    ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        if ((G_NAV_MAP.PlayerPos - LastPlayerPos).Length() >= 100 ||
+        FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
+        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);
+        Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
+                                         ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
+                                         : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
+        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
+                                      ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+                                      : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
+        if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
-            /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
         {
-            LastPlayerPos = G_NAV_MAP.PlayerPos;
-            if (G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
+            LastPlayerPos = PlayerPos;
+            if (PlayerNode->Walkable)
             {
                 mHasPath = PaStar->FindPath(NpcNode,
-                PlayerNode, 2);
+                                            PlayerNode,
+                                            2);
                 NeedsPathReFind = false;
                 // PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
                 PaStar->mSpeed = 300.f;
             }
         }
-    }   
-    // if (!mHasPath)
-    //     return NodeStatus::Failure;
+    }
     if (PaStar->mPath)
     {
         std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
-        
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        for (auto node : TempPath)
+
+        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        // for (auto node : TempPath)
+        // {
+        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+        // }
+        // G_DebugBatch.PostRender();
+
+        if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
-            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        }
-        G_DebugBatch.PostRender();
-        
-        if (TempPath.size() && PaStar->mPathIdx < TempPath.size() - N)
-        {
+            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
+                return NodeStatus::Success;
             FollowPath();
-            return NodeStatus::Failure;
         }
-        else if ((G_NAV_MAP.PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
-            return NodeStatus::Success;
     }
     return NodeStatus::Failure;
 }
@@ -279,38 +263,25 @@ void BT_BigZombie::FollowPath()
     {
         mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
         PaStar->mPathIdx++;
-        // mIsPosUpdated = true;
     }
     else
     {
-        // mIsPosUpdated = false;
         FVector rotation = RotateTowards(direction, mOwnerActor->GetLocalRotation());
         mOwnerActor->SetLocalRotation(rotation);
-        
+
         FVector velocity = FVector::ZeroVector;
-        
+
         float rotationRadians = rotation.y * M_PI / 180.0f;
         velocity += FVector(-sin(rotationRadians), direction.y / 10, -cos(rotationRadians));
         velocity *= PaStar->mSpeed * mDeltaTime;
         FVector resultPos = currentPos + velocity;
-        // resultPos.y = mFloorHeight;
         mOwnerActor->SetWorldLocation(resultPos);
-        
+
         auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
         G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        G_DebugBatch.DrawRay_Implement(currentPos, 100 * velocity
-            , false, Colors::BlueViolet);
+        G_DebugBatch.DrawRay_Implement(currentPos, 100 * velocity, false, Colors::BlueViolet);
         G_DebugBatch.PostRender();
-        
     }
-}
-
-NodeStatus BT_BigZombie::IsPressedKey(EKeyCode Key)
-{
-    if (IsKeyPressed(Key))
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
 }
 
 NodeStatus BT_BigZombie::IsPlayerClose(const UINT N)
@@ -333,7 +304,6 @@ NodeStatus BT_BigZombie::Not(NodeStatus state)
 
 NodeStatus BT_BigZombie::RandP(float p)
 {
-
     float num = FMath::GenerateRandomFloat(0.f, 1.f);
     if (num < p)
         return NodeStatus::Success;
@@ -353,10 +323,10 @@ FVector BT_BigZombie::RotateTowards(FVector direction, FVector rotation)
 {
     FVector NormalDirection;
     direction.Normalize(NormalDirection);
-        
+
     float theta = atan2(NormalDirection.x, NormalDirection.z);
     float degree = theta * (180.0f / M_PI);
-        
+
     float targetAngle = degree + 180.0f;
     float angleDifference = targetAngle - rotation.y;
 
@@ -376,7 +346,7 @@ FVector BT_BigZombie::RotateTowards(FVector direction, FVector rotation)
         rotation.y -= 360.0f;
     else if (rotation.y < 0.0f)
         rotation.y += 360.0f;
-    
+
     return rotation;
 }
 
@@ -384,77 +354,75 @@ FVector BT_BigZombie::RotateTowards(FVector direction, FVector rotation)
 // 보스 패턴
 void BT_BigZombie::SetupTree()
 {
-    BTRoot = builder
-            .CreateRoot<Selector>()
-#pragma region Phase1
-                .AddDecorator(LAMBDA(IsPhase, 1))
-                    .AddSelector("")
-                        .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-                            .AddActionNode(LAMBDA(JumpAttack))
-                        .EndBranch()
-                        .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-                            .AddActionNode(LAMBDA(Dead))
-                        .EndBranch()
-                        // .AddDecorator(LAMBDA(RandP, 0.005f))
-                        //     .AddActionNode(LAMBDA(JumpAttack))
-                        // .EndBranch()
-                        .AddSequence("")
-                            .AddActionNode(LAMBDA(ChasePlayer, 0))
-#pragma region              Attak
-                            .AddSelector("")
-                                .AddDecorator(LAMBDA(RandP, 0.5f))
-                                    .AddActionNode(LAMBDA(Attack))
-                                .EndBranch()
-                                .AddDecorator(LAMBDA(RandP, 1.0f))
-                                    .AddActionNode(LAMBDA(Attack2))
-                                .EndBranch()
-                            .EndBranch()
-#pragma endregion
-                        .EndBranch()
-                    .EndBranch()
-                .EndBranch()
-#pragma endregion
-#pragma region Phase2
-                .AddDecorator(LAMBDA(IsPhase, 2))
-                    .AddSelector("")
-                        .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-                            .AddActionNode(LAMBDA(Hit))
-                        .EndBranch()
-                        .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-                            .AddActionNode(LAMBDA(Dead))
-                        .EndBranch()
-                        .AddDecorator(LAMBDA(RandP, 0.0005f))
-                            .AddActionNode(LAMBDA(JumpAttack))
-                        .EndBranch()
-                        .AddSequence("")
-                            .AddActionNode(LAMBDA(ChasePlayer, 1))
-#pragma region Attak
-                            .AddSelector("")
-                                .AddDecorator(LAMBDA(RandP, 0.5f))
-                                    .AddActionNode(LAMBDA(Attack))
-                                .EndBranch()
-                                .AddActionNode(LAMBDA(Attack2))
-                            .EndBranch()
-#pragma endregion
-                        .EndBranch()
-                    .EndBranch()
-                .EndBranch()
-#pragma endregion
-            .Build();
+    // 	BTRoot = builder
+    // 			.CreateRoot<Selector>()
+    // #pragma region Phase1
+    // 			.AddDecorator(LAMBDA(IsPhase, 1))
+    // 			.AddSelector("")
+    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
+    // 			.AddActionNode(LAMBDA(JumpAttack))
+    // 			.EndBranch()
+    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
+    // 			.AddActionNode(LAMBDA(Dead))
+    // 			.EndBranch()
+    // 			// .AddDecorator(LAMBDA(RandP, 0.005f))
+    // 			//     .AddActionNode(LAMBDA(JumpAttack))
+    // 			// .EndBranch()
+    // 			.AddSequence("")
+    // 			.AddActionNode(LAMBDA(ChasePlayer, 0))
+    // #pragma region              Attak
+    // 			.AddSelector("")
+    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
+    // 			.AddActionNode(LAMBDA(Attack))
+    // 			.EndBranch()
+    // 			.AddDecorator(LAMBDA(RandP, 1.0f))
+    // 			.AddActionNode(LAMBDA(Attack2))
+    // 			.EndBranch()
+    // 			.EndBranch()
+    // #pragma endregion
+    // 			.EndBranch()
+    // 			.EndBranch()
+    // 			.EndBranch()
+    // #pragma endregion
+    // #pragma region Phase2
+    // 			.AddDecorator(LAMBDA(IsPhase, 2))
+    // 			.AddSelector("")
+    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
+    // 			.AddActionNode(LAMBDA(Hit))
+    // 			.EndBranch()
+    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
+    // 			.AddActionNode(LAMBDA(Dead))
+    // 			.EndBranch()
+    // 			.AddDecorator(LAMBDA(RandP, 0.0005f))
+    // 			.AddActionNode(LAMBDA(JumpAttack))
+    // 			.EndBranch()
+    // 			.AddSequence("")
+    // 			.AddActionNode(LAMBDA(ChasePlayer, 1))
+    // #pragma region Attak
+    // 			.AddSelector("")
+    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
+    // 			.AddActionNode(LAMBDA(Attack))
+    // 			.EndBranch()
+    // 			.AddActionNode(LAMBDA(Attack2))
+    // 			.EndBranch()
+    // #pragma endregion
+    // 			.EndBranch()
+    // 			.EndBranch()
+    // 			.EndBranch()
+    // #pragma endregion
+    // 			.Build();
 }
 
 // 단순 추적, 공격
 void BT_BigZombie::SetupTree2()
 {
     BTRoot = builder
-            .CreateRoot<Selector>()
-                // .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-                //     .AddActionNode(LAMBDA(JumpAttack))
-                // .EndBranch()
-                .AddSequence("")
-                    .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-                    .AddActionNode(LAMBDA(ChasePlayer, 0))
-                    .AddActionNode(LAMBDA(Attack))
-                .EndBranch()
-            .Build();
+             .CreateRoot<Selector>()
+                 .AddActionNode(LAMBDA(Dead))
+                 .AddSequence("")
+                    // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+                     .AddActionNode(LAMBDA(ChasePlayer, 0))
+                     .AddActionNode(LAMBDA(Attack2))
+                 .EndBranch()
+             .Build();
 }

@@ -79,7 +79,7 @@ protected:
     EEnemyState mEnemyState;
     UPtr<JAnimator> mAnimator;
     class JSkeletalMeshComponent* mSkeletalMeshComponent;
-    class BT_BOSS* mBehaviorTree;
+    class BtBase* mBehaviorTree;
 
     friend class JKihyunAnimator;
 };

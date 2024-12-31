@@ -15,10 +15,9 @@
 
 
 BT_BOSS::BT_BOSS(JTextView InName, AActor* InOwner)
-    : JActorComponent(InName, InOwner),
-      mIdx(g_Index++)
+    : BtBase(InName, InOwner)
 {
-    PaStar = MakePtr<AStar>();
+    // mInputKeyboard.Initialize();
     SetupTree2();
 }
 
@@ -41,16 +40,8 @@ void BT_BOSS::Destroy() { JActorComponent::Destroy(); }
 
 void BT_BOSS::Tick(float DeltaTime)
 {
-    JActorComponent::Tick(DeltaTime);
-    BBTick();
-    mDeltaTime = DeltaTime;
-    if (GetWorld.bGameMode && !isPendingKill)
-        BTRoot->tick();
-}
-
-void BT_BOSS::BBTick()
-{
-    // FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
+    // mInputKeyboard.Update(DeltaTime);
+    BtBase::Tick(DeltaTime);
 }
 
 ////////////////////////////////////////////////
@@ -226,12 +217,8 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
                                       ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
                                       : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        // bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
-        // bool Temp2 = (PlayerPos.y < 600.f) ? false : true;
-        // LOG_CORE_INFO("NPC  : {}   Player : {}", Temp, Temp2);
         if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
-        /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
         {
             LastPlayerPos = PlayerPos;
             if (PlayerNode->Walkable)
@@ -245,29 +232,24 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
             }
         }
     }
-    // if (!mHasPath)
-    //     return NodeStatus::Failure;
     if (PaStar->mPath)
     {
         std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
 
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        for (auto node : TempPath)
-        {
-            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        }
-        G_DebugBatch.PostRender();
+        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        // for (auto node : TempPath)
+        // {
+        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+        // }
+        // G_DebugBatch.PostRender();
 
         if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
             if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
                 return NodeStatus::Success;
             FollowPath();
-            return NodeStatus::Failure;
         }
-        // else
-        //     return NodeStatus::Success;
     }
     return NodeStatus::Failure;
 }
@@ -281,11 +263,9 @@ void BT_BOSS::FollowPath()
     {
         mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
         PaStar->mPathIdx++;
-        // mIsPosUpdated = true;
     }
     else
     {
-        // mIsPosUpdated = false;
         FVector rotation = RotateTowards(direction, mOwnerActor->GetLocalRotation());
         mOwnerActor->SetLocalRotation(rotation);
 
@@ -295,7 +275,6 @@ void BT_BOSS::FollowPath()
         velocity += FVector(-sin(rotationRadians), direction.y / 10, -cos(rotationRadians));
         velocity *= PaStar->mSpeed * mDeltaTime;
         FVector resultPos = currentPos + velocity;
-        // resultPos.y = mFloorHeight;
         mOwnerActor->SetWorldLocation(resultPos);
 
         auto* cam = GetWorld.CameraManager->GetCurrentMainCam();

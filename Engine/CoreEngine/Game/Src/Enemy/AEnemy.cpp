@@ -1,5 +1,5 @@
 ﻿#include "AEnemy.h"
-#include "Core/Entity/Component/AI/BT_BOSS.h"
+#include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Animator/JKihyunAnimator.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
@@ -24,7 +24,6 @@ void AEnemy::Initialize()
 
 	mSkeletalMeshComponent = dynamic_cast<JSkeletalMeshComponent*>(GetChildComponentByType(
 		 NAME_OBJECT_SKELETAL_MESH_COMPONENT));
-
 	if (!mSkeletalMeshComponent)
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>("SkeletalMesh", this);
@@ -33,7 +32,7 @@ void AEnemy::Initialize()
 
 	if (!mBehaviorTree)
 	{
-		mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree", this);
+		mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
 	}
 
 	APawn::Initialize();

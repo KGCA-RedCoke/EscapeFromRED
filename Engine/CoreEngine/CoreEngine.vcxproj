@@ -114,7 +114,9 @@
     <ClInclude Include="Core\Entity\Audio\MSoundManager.h" />
     <ClInclude Include="Core\Entity\Camera\JCameraComponent.h" />
     <ClInclude Include="Core\Entity\Camera\MCameraManager.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BtBase.h" />
     <ClInclude Include="Core\Entity\Component\AI\BTBuilder.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_BigZombie.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
@@ -203,7 +205,7 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
-    <ClInclude Include="Game\Src\Boss\ABoss.h" />
+    <ClInclude Include="Game\Src\Boss\AKillerClown.h" />
     <ClInclude Include="Game\Src\Boss\Animator\JKillerClownAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
@@ -313,7 +315,9 @@
     <ClCompile Include="Core\Entity\Audio\MSoundManager.cpp" />
     <ClCompile Include="Core\Entity\Camera\JCameraComponent.cpp" />
     <ClCompile Include="Core\Entity\Camera\MCameraManager.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BtBase.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BTBuilder.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_BigZombie.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
@@ -389,7 +393,7 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
-    <ClCompile Include="Game\Src\Boss\ABoss.cpp" />
+    <ClCompile Include="Game\Src\Boss\AKillerClown.cpp" />
     <ClCompile Include="Game\Src\Boss\Animator\JKillerClownAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />

@@ -41,7 +41,9 @@ public:
 	void PostRender() override {};
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
-
+public:
+	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
+	
 public:
 	void ShowEditor() override;
 

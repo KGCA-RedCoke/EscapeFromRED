@@ -82,6 +82,8 @@ private:
 
 	void DrawTreeNode(class JSceneComponent* InSceneComponent);
 
+	void OnDragDropTarget();
+
 	/**
 	 * 액터의 렌더 정보를 표시할 뷰포트
 	 */

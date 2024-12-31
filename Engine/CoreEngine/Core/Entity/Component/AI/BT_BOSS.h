@@ -1,15 +1,11 @@
 ﻿#pragma once
-#include "Core/Entity/Component/JActorComponent.h"
-#include "BTBuilder.h"
-#include "Core/Utils/Math/Vector.h"
-#include "Core/Input/XKeyboardMouse.h"
-#include "enums.h"
-#include "Core/Entity/Navigation/Node.h"
+// #include "Core/Input/XKeyboardMouse.h"
+#include "BtBase.h"
 
 class AEnemy;
 class AStar;
 
-class BT_BOSS : public JActorComponent,
+class BT_BOSS : public BtBase,
 				public std::enable_shared_from_this<BT_BOSS>
 {
 public:
@@ -23,7 +19,6 @@ public:
 	void Tick(float DeltaTime) override;
 	void SetupTree();
 	void SetupTree2();
-	void BBTick();
 
 public:
 	// Action Function
@@ -48,33 +43,13 @@ public:
 
 public:
 	// BlackBoard BB;
-	Ptr<AStar>  PaStar;
-	float       mDeltaTime;
-	FVector     LastPlayerPos   = FVector(-201, 0, 201);
-	bool        mIsPosUpdated   = false;
-	float       mElapsedTime    = 0;
-	bool        mEventStartFlag = true;
 	FVector     mVelocity;
-	int         mPhase          = 1;
-	bool        NeedsPathReFind = true;
 	float       mFloorHeight    = 1.f;
-	int         mIdx;
-	bool        mHasPath    = false;
-	bool        runningFlag = false;
-	EFloorType  mFloorType  = EFloorType::FirstFloor;
-	static bool mIsPlayGame;
-	bool		isPendingKill = false;
 
 	AEnemy* mOwnerEnemy;
 
 private:
-	FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
-	FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
-	XKeyboardMouse mInputKeyboard;
-	template <typename TBuilder>
-	TBuilder&     AddPhaseSubtree(TBuilder& builder, int phase);
-	BTBuilder     builder;
-	Ptr<Bt::Node> BTRoot;
-
-	inline static int32_t g_Index = 0;
+	// FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
+	// FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
+	// XKeyboardMouse mInputKeyboard;
 };
