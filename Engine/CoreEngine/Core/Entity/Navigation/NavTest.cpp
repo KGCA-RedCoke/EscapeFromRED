@@ -15,7 +15,7 @@ void NavTest::Initialize()
     NodeRadius = 50.0f;
     NodeCenter = FVector(NodeRadius, 0, - NodeRadius);
     GridDivs = FVector2(200, 200);
-    GridCenter = FVector(0, 800, 0); // x, y, z
+    GridCenter = FVector(0, 710, 0); // x, y, z
     
     NodeDiameter = NodeRadius * 2.0f;
     GridWorldSize = FVector2(GridDivs.x * NodeDiameter, GridDivs.y * NodeDiameter);
@@ -29,8 +29,9 @@ void NavTest::Initialize()
     SetObstacle(mGridGraph, FirstFloorMap, FirstFloorObstacle);
     SetObstacle(m2ndFloor, SecondFloorMap, SecondFloorObstacle);
     Stair1_2 = mGridGraph[132][79];
+    Stair2_1 = mGridGraph[132][79];
     Stair1_2->Children.push_back(Stair2_1);
-    Stair1_2->Children.push_back(Stair1_2);
+    Stair2_1->Children.push_back(Stair1_2);
     // Stair1_2->Children.push_back(m2ndFloor[132][78]); 
     // Stair1_2->Children.push_back(m2ndFloor[133][78]); 
     // Stair1_2->Children.push_back(m2ndFloor[133][79]);

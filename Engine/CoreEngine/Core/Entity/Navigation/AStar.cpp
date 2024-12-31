@@ -8,8 +8,8 @@
 #include "Core/Interface/JWorld.h"
 
 #include "Core/Utils/Math/Vector2.h"
-#define MAX_GCOST 500
-#define MIN_GCOST 400
+#define MAX_GCOST 2500
+#define MIN_GCOST 2400
 
 AStar::AStar()
 {
@@ -108,9 +108,36 @@ void AStar::RetracePath(Ptr<Node> Start, Ptr<Node> Target)
         current = current->Parent.lock();
     }
     std::reverse(TempPath.begin(), TempPath.end());
-    mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
+    mPath = MakePtr<Path>(TempPath, Start->WorldPos, TurnDst);
     mPathIdx = 1;
 }
+
+// std::vector<Ptr<Node>> AStar::simplifyPath(const std::vector<Ptr<Node>>& path)
+// {
+//     if (path.empty())
+//         return path;
+//     std::vector<Ptr<Node>> simplifiedPath;
+//     simplifiedPath.push_back(path[0]); // 시작점
+//     for (size_t i = 1; i < path.size() - 1; ++i)
+//     {
+//         Node* prev = simplifiedPath.back().get();
+//         Node* next = path[i + 1].get();
+//         if (prev->OwnerFloor != next->OwnerFloor)
+//         {
+//             simplifiedPath.push_back(path[i + 1]);
+//             continue;
+//         }
+//         std::vector<std::vector<Ptr<Node>>>& graph = (path[i]->OwnerFloor == EFloorType::FirstFloor)
+//                                                 ? G_NAV_MAP.mGridGraph : G_NAV_MAP.m2ndFloor;
+//         if (prev->OwnerFloor == next->OwnerFloor &&
+//             !IsLineBlocked(prev->GridPos, next->GridPos, graph)) { // prev와 next 사이에 장애물이 없으면
+//             continue; // 중간 점 스킵
+//             }
+//         simplifiedPath.push_back(path[i]); // 필요하면 추가
+//     }
+//     simplifiedPath.push_back(path.back()); // 끝점
+//     return simplifiedPath;
+// }
 
 std::vector<Ptr<Node>> AStar::simplifyPath(const std::vector<Ptr<Node>>& path)
 {
@@ -122,22 +149,20 @@ std::vector<Ptr<Node>> AStar::simplifyPath(const std::vector<Ptr<Node>>& path)
     {
         Node* prev = simplifiedPath.back().get();
         Node* next = path[i + 1].get();
-        std::vector<std::vector<Ptr<Node>>>& graph = (path[i]->OwnerFloor == EFloorType::FirstFloor)
-                                                ? G_NAV_MAP.mGridGraph : G_NAV_MAP.m2ndFloor;
         if (prev->OwnerFloor != next->OwnerFloor)
         {
             simplifiedPath.push_back(path[i + 1]);
             continue;
         }
-        else if (!IsLineBlocked(prev->GridPos, next->GridPos, graph))
+        std::vector<std::vector<Ptr<Node>>>& graph = (path[i]->OwnerFloor == EFloorType::FirstFloor)
+                                                ? G_NAV_MAP.mGridGraph : G_NAV_MAP.m2ndFloor;
+        if (!IsLineBlocked(prev->GridPos, next->GridPos, graph))
         { // prev와 next 사이에 장애물이 없으면
             continue; // 중간 점 스킵
         }
-        if (simplifiedPath.back() != path[i])
-            simplifiedPath.push_back(path[i]); // 필요하면 추가
+        simplifiedPath.push_back(path[i]); // 필요하면 추가
     }
-    if (simplifiedPath.back() != path.back())
-        simplifiedPath.push_back(path.back()); // 끝점
+    simplifiedPath.push_back(path.back()); // 끝점
     return simplifiedPath;
 }
 
