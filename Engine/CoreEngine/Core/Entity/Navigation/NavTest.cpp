@@ -29,9 +29,16 @@ void NavTest::Initialize()
     SetObstacle(mGridGraph, FirstFloorMap, FirstFloorObstacle);
     SetObstacle(m2ndFloor, SecondFloorMap, SecondFloorObstacle);
     Stair1_2 = mGridGraph[132][79];
-    Stair2_1 = m2ndFloor[132][79];
-    Stair1_2->Children.push_back(Stair2_1); // stair
-    Stair2_1->Children.push_back(Stair1_2);
+    Stair1_2->Children.push_back(Stair2_1);
+    Stair1_2->Children.push_back(Stair1_2);
+    // Stair1_2->Children.push_back(m2ndFloor[132][78]); 
+    // Stair1_2->Children.push_back(m2ndFloor[133][78]); 
+    // Stair1_2->Children.push_back(m2ndFloor[133][79]);
+    // Stair2_1->Children.push_back(mGridGraph[131][78]);// stair
+    // Stair2_1->Children.push_back(mGridGraph[132][78]);
+    // Stair2_1->Children.push_back(mGridGraph[131][79]);// stair
+    // Stair2_1->Children.push_back(mGridGraph[131][80]);// stair
+    // Stair2_1->Children.push_back(mGridGraph[132][80]);
 }
 
 

@@ -137,7 +137,7 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	{
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return;
-	}
+	}	
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
 	// // 이전에 바인딩된 Delegate 해제

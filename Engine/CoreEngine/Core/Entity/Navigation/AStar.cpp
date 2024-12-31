@@ -8,8 +8,8 @@
 #include "Core/Interface/JWorld.h"
 
 #include "Core/Utils/Math/Vector2.h"
-#define MAX_GCOST 700
-#define MIN_GCOST 700
+#define MAX_GCOST 500
+#define MIN_GCOST 400
 
 AStar::AStar()
 {
@@ -124,13 +124,20 @@ std::vector<Ptr<Node>> AStar::simplifyPath(const std::vector<Ptr<Node>>& path)
         Node* next = path[i + 1].get();
         std::vector<std::vector<Ptr<Node>>>& graph = (path[i]->OwnerFloor == EFloorType::FirstFloor)
                                                 ? G_NAV_MAP.mGridGraph : G_NAV_MAP.m2ndFloor;
-        if (prev->OwnerFloor == next->OwnerFloor &&
-            !IsLineBlocked(prev->GridPos, next->GridPos, graph)) { // prev와 next 사이에 장애물이 없으면
+        if (prev->OwnerFloor != next->OwnerFloor)
+        {
+            simplifiedPath.push_back(path[i + 1]);
+            continue;
+        }
+        else if (!IsLineBlocked(prev->GridPos, next->GridPos, graph))
+        { // prev와 next 사이에 장애물이 없으면
             continue; // 중간 점 스킵
         }
-        simplifiedPath.push_back(path[i]); // 필요하면 추가
+        if (simplifiedPath.back() != path[i])
+            simplifiedPath.push_back(path[i]); // 필요하면 추가
     }
-    simplifiedPath.push_back(path.back()); // 끝점
+    if (simplifiedPath.back() != path.back())
+        simplifiedPath.push_back(path.back()); // 끝점
     return simplifiedPath;
 }
 

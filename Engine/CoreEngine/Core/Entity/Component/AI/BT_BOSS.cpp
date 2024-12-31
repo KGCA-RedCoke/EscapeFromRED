@@ -230,20 +230,22 @@ NodeStatus BT_BOSS::Dead()
 NodeStatus BT_BOSS::ChasePlayer(UINT N)
 {
     FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-
+    FVector NpcPos = mOwnerActor->GetWorldLocation();
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx)
     {
         FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
-        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
-
-        Ptr<Nav::Node>& PlayerNode = (G_NAV_MAP.PlayerHeight < 560.f)
+        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);
+        Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
                                          ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
                                          : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
+        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
                                       ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
                                       : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        if ((PlayerPos - LastPlayerPos).Length() >= 100 ||
+        bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
+        bool Temp2 = (PlayerPos.y < 600.f) ? false : true;
+        LOG_CORE_INFO("NPC  : {}   Player : {}", Temp, Temp2);
+        if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
         /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
         {
@@ -273,12 +275,14 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         }
         G_DebugBatch.PostRender();
 
-        if (TempPath.size() && (PlayerPos - mOwnerActor->GetWorldLocation()).Length() > 150)
+        if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
+            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
+                return NodeStatus::Success;
             FollowPath();
             return NodeStatus::Failure;
         }
-        else //if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
+        else
             return NodeStatus::Success;
     }
     return NodeStatus::Failure;
@@ -455,7 +459,7 @@ void BT_BOSS::SetupTree2()
              //     .AddActionNode(LAMBDA(JumpAttack))
              // .EndBranch()
                 .AddSequence("")
-             //     .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+                    // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
                      .AddActionNode(LAMBDA(ChasePlayer, 0))
                      .AddActionNode(LAMBDA(Attack2))
                  .EndBranch()
