@@ -8,7 +8,8 @@
 struct CompareNode
 {
     bool operator()(const std::shared_ptr<Nav::Node>& a, const std::shared_ptr<Nav::Node>& b) const
-    {        int aFCost = a->FCost();
+    {
+        int aFCost = a->FCost();
         int bFCost = b->FCost();
         return aFCost > bFCost || (aFCost == bFCost && a->HCost > b->HCost);
     }
