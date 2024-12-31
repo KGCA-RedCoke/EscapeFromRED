@@ -239,7 +239,7 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
                                          ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
                                          : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
+        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
                                       ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
                                       : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
         bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
@@ -282,8 +282,8 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
             FollowPath();
             return NodeStatus::Failure;
         }
-        else
-            return NodeStatus::Success;
+        // else
+        //     return NodeStatus::Success;
     }
     return NodeStatus::Failure;
 }
