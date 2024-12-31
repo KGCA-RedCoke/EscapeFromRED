@@ -79,9 +79,9 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal     = mul(normal, (float3x3)Instance.InvTransform);
-	output.Tangent    = mul(Input.Tangent, (float3x3)Instance.InvTransform);
-	output.Binormal   = cross(output.Normal, output.Tangent);
+	output.Normal      = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
+	output.Tangent     = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
+	output.Binormal    = normalize(cross(output.Normal, output.Tangent));
 
 	return output;
 }

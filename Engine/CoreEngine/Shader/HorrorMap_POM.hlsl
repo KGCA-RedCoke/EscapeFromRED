@@ -32,8 +32,8 @@ Texture2D aoMap : register(t2);
 Texture2D roughnessMap : register(t3);
 Texture2D metallicMap : register(t4);
 Texture2D emissiveMap : register(t5);
-Texture2D heightMap : register(t6);
-Texture2D opacityMap : register(t7);
+Texture2D opacityMap : register(t6);
+Texture2D heightMap : register(t7);
 Texture2D specularMap : register(t8);
 
 SamplerState Sampler_Linear : register(s0);
@@ -51,8 +51,8 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace   = mul(output.WorldSpace, View);
 	output.ClipSpace   = mul(output.ClipSpace, Projection);
 	output.TexCoord    = Input.TexCoord;
-	output.Normal      = normalize(mul(Input.Normal, (float3x3)Instance.InvTransform));
-	output.Tangent     = normalize(mul(Input.Tangent, (float3x3)Instance.InvTransform));
+	output.Normal      = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
+	output.Tangent     = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
 	output.Binormal    = normalize(cross(output.Normal, output.Tangent));
 
 	return output;
@@ -61,6 +61,7 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 
 float4 PS(PixelIn_Base Input) : SV_TARGET
 {
+
 	float3 albedo       = BaseColor.rgb;
 	float3 normal       = normalize(Input.Normal);
 	float  ambientColor = 1.0f;
@@ -77,15 +78,15 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	float4 height = heightMap.Sample(Sampler_Linear, Input.TexCoord);
 
-	const float2 texCoord = Input.TexCoord;/*ParallaxOcclusionMapping(
-																		Input.TexCoord,
-																		viewDirTangent,
-																		height,
-																		HeightRatio,
-																		MinStep,
-																		MaxStep,
-																		0
-																	   );*/
+	const float2 texCoord = ParallaxOcclusionMapping(
+													 Input.TexCoord,
+													 viewDirTangent,
+													 height,
+													 HeightRatio,
+													 MinStep,
+													 MaxStep,
+													 0
+													);
 
 	// Texture Map
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
@@ -134,6 +135,6 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + ambient + specular;
 
-	return float4(albedo, opacity);
+	return float4(finalColor, 1);
 
 }

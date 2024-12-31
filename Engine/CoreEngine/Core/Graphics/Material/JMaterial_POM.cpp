@@ -41,14 +41,15 @@ void JMaterial_POM::InitializeParams()
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("OpacityMap",
-												 EMaterialParamValue::Texture2D,
-												 &FVector::ZeroVector,
-												 true));
 		mMaterialParams.push_back(FMaterialParam("HeightMap",
 												 EMaterialParamValue::Texture2D,
 												 &FVector::ZeroVector,
 												 true));
+		mMaterialParams.push_back(FMaterialParam("OpacityMap",
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
+
 
 		mMaterialParams.push_back(FMaterialParam("BaseColor",
 												 EMaterialParamValue::Float3,
