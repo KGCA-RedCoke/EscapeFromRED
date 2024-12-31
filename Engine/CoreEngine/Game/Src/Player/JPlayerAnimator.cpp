@@ -90,17 +90,20 @@ void JPlayerAnimator::Initialize()
 	AddAnimLink("Combo1",
 				"Run_Free",
 				[&](){
-					return combo1Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
+					return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero()
+							&&
 							mOwnerCharacter->bShouldRun;
 				},
 				0.2f);
 	AddAnimLink("Combo1",
 				"Walk_Free",
-				[&](){ return combo1Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
+				[&](){
+					return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero();
+				},
 				0.2f);
 	AddAnimLink("Combo1",
 				"Idle_Free",
-				[combo1Anim](){ return combo1Anim->GetElapsedRatio() > 0.8; },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8; },
 				0.2f);
 
 
@@ -111,17 +114,17 @@ void JPlayerAnimator::Initialize()
 	AddAnimLink("Combo2",
 				"Run_Free",
 				[&](){
-					return combo2Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
+					return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
 							mOwnerCharacter->bShouldRun;
 				},
 				0.2f);
 	AddAnimLink("Combo2",
 				"Walk_Free",
-				[&](){ return combo2Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
 				0.2f);
 	AddAnimLink("Combo2",
 				"Idle_Free",
-				[&](){ return combo2Anim->GetElapsedRatio() > 0.8; },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8; },
 				0.2f);
 
 	AddAnimLink("Combo3",
@@ -131,34 +134,34 @@ void JPlayerAnimator::Initialize()
 	AddAnimLink("Combo3",
 				"Run_Free",
 				[&](){
-					return combo3Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
+					return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
 							mOwnerCharacter->bShouldRun;
 				},
 				0.2f);
 	AddAnimLink("Combo3",
 				"Walk_Free",
-				[&](){ return combo3Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
 				0.2f);
 	AddAnimLink("Combo3",
 				"Idle_Free",
-				[&](){ return combo3Anim->GetElapsedRatio() > 0.8; },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8; },
 				0.2f);
 
 
 	AddAnimLink("Combo4",
 				"Run_Free",
 				[&](){
-					return combo4Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
+					return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero() &&
 							mOwnerCharacter->bShouldRun;
 				},
 				0.2f);
 	AddAnimLink("Combo4",
 				"Walk_Free",
-				[&](){ return combo4Anim->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8 && !mMovementComponent->GetVelocity().IsNearlyZero(); },
 				0.2f);
 	AddAnimLink("Combo4",
 				"Idle_Free",
-				[&](){ return combo4Anim->GetElapsedRatio() > 0.8; },
+				[&](){ return mCurrentAnimation->GetElapsedRatio() > 0.8; },
 				0.2f);
 
 

@@ -16,7 +16,6 @@
 #include "GUI/MGUIManager.h"
 #include "inifile_cpp/inicpp.h"
 
-#define ENABLE_TEST_MODE
 
 extern ini::IniFile g_settings;
 

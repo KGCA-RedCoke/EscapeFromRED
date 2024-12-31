@@ -12,7 +12,7 @@ JLevel_Main::JLevel_Main()
 	OnLevelLoaded.Bind([&](){
 		// // Play 동작 처리
 		APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
-																			FVector::ZeroVector,
+																			{-850.f, 250, -10000.f},
 																			FVector::ZeroVector,
 																			nullptr,
 																			"Game/Mesh/SK_Hands_07.jasset");

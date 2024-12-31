@@ -14,6 +14,7 @@
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
+#define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -141,26 +142,33 @@ void GUI_Viewport_Scene::ShowTopMenu()
 	// Play 버튼
 	if (!GetWorld.bGameMode && ImGui::ImageButton("PlayBtn", mPlayIcon->GetSRV(), ImVec2(buttonWidth, buttonHeight)))
 	{
+
+
+#ifdef ENABLE_TEST_MODE
+		// Play 동작 처리
+		std::cout << "Game Playing" << std::endl;
+		APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
+																			FVector::ZeroVector,
+																			FVector::ZeroVector,
+																			nullptr,
+																			"Game/Mesh/SK_Hands_07.jasset");
+		character->BeginPlay();
+
+		// GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
+
+		// HideAndLockCursor(Window::GetWindow()->GetWindowHandle());
+		RECT rect{0, 0, (UINT)mCachedViewportHeight, (UINT)mCachedViewportWidth};
+		// ShowCursor(FALSE);
+		// ClipCursor(&rect);
+		// SetCursorPos(0, 0);
+
+		G_NAV_MAP.Initialize();
+
+#else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
 		GetWorld.LevelManager->SetActiveLevel(introScene);
-		// // Play 동작 처리
-		// std::cout << "Game Playing" << std::endl;
-		// APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
-		// 																	FVector::ZeroVector,
-		// 																	FVector::ZeroVector,
-		// 																	nullptr,
-		// 																	"Game/Mesh/SK_Hands_07.jasset");
-		// character->BeginPlay();
-		//
-		// // GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
-		//
-		// // HideAndLockCursor(Window::GetWindow()->GetWindowHandle());
-		// RECT rect{0, 0, (UINT)mCachedViewportHeight, (UINT)mCachedViewportWidth};
-		// // ShowCursor(FALSE);
-		// // ClipCursor(&rect);
-		// // SetCursorPos(0, 0);
-		//
-		// G_NAV_MAP.Initialize();
 		GetWorld.bGameMode = true;
+#endif
+
 	}
 }
