@@ -2,7 +2,6 @@
 #include "Core/Entity/Component/JActorComponent.h"
 #include "BTBuilder.h"
 #include "Core/Utils/Math/Vector.h"
-#include "Core/Utils/Timer.h"
 #include "Core/Input/XKeyboardMouse.h"
 #include "enums.h"
 #include "Core/Entity/Navigation/Node.h"
@@ -42,6 +41,7 @@ public:
 	NodeStatus Not(NodeStatus state);
 	NodeStatus RandP(float p);
 	NodeStatus IsPhase(int phase);
+	NodeStatus IsPressedKey(EKeyCode Key);
 
 	// Just Function
 	FVector RotateTowards(FVector direction, FVector rotation);
@@ -67,6 +67,9 @@ public:
 	AEnemy* mOwnerEnemy;
 
 private:
+	FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
+	FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
+	XKeyboardMouse mInputKeyboard;
 	template <typename TBuilder>
 	TBuilder&     AddPhaseSubtree(TBuilder& builder, int phase);
 	BTBuilder     builder;
