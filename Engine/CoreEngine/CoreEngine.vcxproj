@@ -203,6 +203,8 @@
     <ClInclude Include="Debug\Assert.h" />
     <ClInclude Include="Core\Utils\Graphics\DXUtils.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="Game\Src\Boss\ABoss.h" />
+    <ClInclude Include="Game\Src\Boss\Animator\JKillerClownAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
@@ -387,6 +389,8 @@
     <ClCompile Include="Core\Window\Window.cpp" />
     <ClCompile Include="Core\Utils\Graphics\DXUtils.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Game\Src\Boss\ABoss.cpp" />
+    <ClCompile Include="Game\Src\Boss\Animator\JKillerClownAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />

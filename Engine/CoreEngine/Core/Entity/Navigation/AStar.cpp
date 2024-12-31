@@ -8,8 +8,8 @@
 #include "Core/Interface/JWorld.h"
 
 #include "Core/Utils/Math/Vector2.h"
-#define MAX_GCOST 2500
-#define MIN_GCOST 2400
+#define MAX_GCOST 500
+#define MIN_GCOST 400
 
 AStar::AStar()
 {

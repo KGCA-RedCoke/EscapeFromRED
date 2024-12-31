@@ -223,7 +223,7 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
                                          ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
                                          : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
+        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
                                       ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
                                       : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
         // bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
@@ -234,7 +234,7 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
         {
             LastPlayerPos = PlayerPos;
-            if (G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
+            if (PlayerNode->Walkable)
             {
                 mHasPath = PaStar->FindPath(NpcNode,
                                             PlayerNode,
