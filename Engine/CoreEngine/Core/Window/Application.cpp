@@ -185,3 +185,8 @@ uint32_t Application::GetWindowHeight() const
 {
 	return mWindow->GetWindowHeight();
 }
+
+void Application::LockMouseToWindow() const
+{
+	mWindow->LockMouseToWindow();
+}

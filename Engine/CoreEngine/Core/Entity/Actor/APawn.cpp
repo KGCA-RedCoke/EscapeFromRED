@@ -48,7 +48,7 @@ void APawn::Initialize()
 
 	mMovementComponent = static_cast<JPawnMovementComponent*>(GetChildComponentByType(NAME_COMPONENT_PAWN_MOVEMENT));
 	mLineComponent     = static_cast<JLineComponent*>(GetChildComponentByType(NAME_COMPONENT_RAY));
-	mCollisionBox      = static_cast<JBoxComponent*>(GetChildComponentByType(NAME_COMPONENT_BOX));
+	mCollisionSphere   = static_cast<JSphereComponent*>(GetChildComponentByType(NAME_COMPONENT_SPHERE));
 
 	if (!mMovementComponent)
 	{
@@ -95,14 +95,14 @@ void APawn::Initialize()
 
 
 	}
-	if (!mCollisionBox)
+	if (!mCollisionSphere)
 	{
-		mCollisionBox = CreateDefaultSubObject<JBoxComponent>("CollisionBox", this);
-		mCollisionBox->SetupAttachment(this);
-		mCollisionBox->SetLocalLocation({0, 115, 0});
-		mCollisionBox->SetLocalScale({1, 2, 1});
+		mCollisionSphere = CreateDefaultSubObject<JSphereComponent>("CollisionSphere", this);
+		mCollisionSphere->SetupAttachment(this);
+		mCollisionSphere->SetLocalLocation({0, 115, 0});
+		mCollisionSphere->SetLocalScale({1, 2, 1});
 
-		mCollisionBox->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
+		mCollisionSphere->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
 
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
 			assert(sceneComponent);
@@ -144,11 +144,11 @@ void APawn::Initialize()
 			//     break;
 			}
 		});
-		
+
 	}
 
 	mLineComponent->SetLength(2000);
-	
+
 	AActor::Initialize();
 
 }
@@ -165,5 +165,5 @@ void APawn::Destroy()
 	AActor::Destroy();
 
 	mLineComponent->Destroy();
-	mCollisionBox->Destroy();
+	mCollisionSphere->Destroy();
 }

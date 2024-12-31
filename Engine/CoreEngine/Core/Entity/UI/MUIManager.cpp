@@ -326,7 +326,7 @@ bool JWidgetComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 void JWidgetComponent::Tick(float DeltaTime)
 {
 	assert(mRenderTarget);
-
+	
 	float x = mRenderTarget->GetSize().width;
 	float y = mRenderTarget->GetSize().height;
 	for (int32_t i = mUIComponents.size() - 1; i >= 0; --i)
@@ -526,7 +526,7 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
-	LoadingScreen = Load("Game/UI/LoadingScene.jasset");
+	LoadingScreen = Load("Game/UI/inthedark.jasset");
 }
 
 MUIManager::~MUIManager() {}

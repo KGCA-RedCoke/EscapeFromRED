@@ -113,7 +113,6 @@ float4x4 LerpAnimBoneMatrix(uint  BoneCount, uint Offset, uint NextOffset, uint 
 	float4x4 nextMatrix = FetchBoneTransform(nextFrameIndex);
 
 	// 현재 프레임과 다음 프레임 사이 보간
-	
 	float4x4 lerpedMatrix = lerp(currentMatrix, nextMatrix, (bSameAnimation ? DeltaTime : BlendWeight));
 
 	return lerpedMatrix;

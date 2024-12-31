@@ -8,6 +8,7 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
+#include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -63,7 +64,7 @@ void APlayerCharacter::BeginPlay()
 {
 	ACharacter::BeginPlay();
 	SetupInputComponent();
-	SetLocalLocation({0, 250, 0});
+	SetLocalLocation({-850.f, 250, -10000.f});
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -87,7 +88,6 @@ void APlayerCharacter::SetupInputComponent()
 {
 	mInput = MakeUPtr<XKeyboardMouse>();
 	mInput->Initialize();
-
 
 	mInput->AddInputBinding(EKeyCode::A,
 							EKeyState::Pressed,
@@ -113,6 +113,13 @@ void APlayerCharacter::SetupInputComponent()
 									  this,
 									  std::placeholders::_1,
 									  -FVector::ForwardVector));
+
+	mInput->AddInputBinding(EKeyCode::LShift,
+							EKeyState::Pressed,
+							[this](float DeltaTime){ bShouldRun = true; });
+	mInput->AddInputBinding(EKeyCode::LShift,
+							EKeyState::Up,
+							[this](float DeltaTime){ bShouldRun = false; });
 
 	mInput->AddInputBinding(EKeyCode::LButton,
 							EKeyState::Pressed,
@@ -165,7 +172,10 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 	directionVec.Normalize();
 
 	// 현재 위치 업데이트
-	AddLocalLocation(directionVec * 500.0f * DeltaTime);
+	AddLocalLocation(directionVec * (bShouldRun
+										 ? mMovementComponent->GetMaxJogSpeed()
+										 : mMovementComponent->GetMaxWalkSpeed()) * DeltaTime
+					);
 }
 
 void APlayerCharacter::CheckGround()

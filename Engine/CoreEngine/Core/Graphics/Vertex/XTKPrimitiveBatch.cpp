@@ -106,7 +106,6 @@ void XTKPrimitiveBatch::Draw()
 					  false,
 					  {0.f, 1.f, 0.f, 1.f}
 					 );
-
 }
 
 void XTKPrimitiveBatch::Draw(BoundingSphere& InSphere, FXMVECTOR InColor) const
@@ -255,6 +254,65 @@ void XTKPrimitiveBatch::DrawGrid_Implement(FXMVECTOR InXAxis, FXMVECTOR InYAxis,
 		const VertexPositionColor v2(XMVectorAdd(scale, InXAxis), InColor);
 		mBatch->DrawLine(v1, v2);
 	}
+}
+
+void XTKPrimitiveBatch::DrawSphere_Implement(CXMMATRIX matWorld, FXMVECTOR center, float radius, FXMVECTOR color) const
+{
+	constexpr int latitudeSegments  = 16; // 위도 세그먼트 개수
+	constexpr int longitudeSegments = 16; // 경도 세그먼트 개수
+
+	JArray<VertexPositionColor> verts;
+	JArray<WORD>                indices;
+
+	// 위도와 경도를 따라 점 생성
+	for (int lat = 0; lat <= latitudeSegments; ++lat)
+	{
+		float theta    = XM_PI * static_cast<float>(lat) / latitudeSegments;
+		float sinTheta = std::sin(theta);
+		float cosTheta = std::cos(theta);
+
+		for (int lon = 0; lon <= longitudeSegments; ++lon)
+		{
+			float phi    = XM_2PI * static_cast<float>(lon) / longitudeSegments;
+			float sinPhi = std::sin(phi);
+			float cosPhi = std::cos(phi);
+
+			XMVECTOR position = XMVectorSet(
+											radius * sinTheta * cosPhi,
+											radius * cosTheta,
+											radius * sinTheta * sinPhi,
+											0.0f);
+
+			position = XMVectorAdd(position, center);
+			// position = XMVector3Transform(position, matWorld);
+
+			VertexPositionColor vertex;
+			XMStoreFloat3(&vertex.position, position);
+			XMStoreFloat4(&vertex.color, color);
+			verts.push_back(vertex);
+
+			if (lat < latitudeSegments && lon < longitudeSegments)
+			{
+				int current = lat * (longitudeSegments + 1) + lon;
+				int next    = current + longitudeSegments + 1;
+
+				// 경도선 연결
+				indices.push_back(current);
+				indices.push_back(current + 1);
+
+				// 위도선 연결
+				indices.push_back(current);
+				indices.push_back(next);
+			}
+		}
+	}
+
+	// 인덱스와 정점 버퍼를 사용해 구 그리기
+	mBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+						indices.data(),
+						static_cast<UINT>(indices.size()),
+						verts.data(),
+						static_cast<UINT>(verts.size()));
 }
 
 void XTKPrimitiveBatch::DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis,

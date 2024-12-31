@@ -85,6 +85,4 @@ void JActorComponent::Destroy()
 }
 
 void JActorComponent::ShowEditor()
-{
-	
-}
+{}

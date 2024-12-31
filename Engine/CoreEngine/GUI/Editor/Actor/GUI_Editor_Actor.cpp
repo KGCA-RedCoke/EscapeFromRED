@@ -166,6 +166,12 @@ void GUI_Editor_Actor::DrawHierarchy()
 							newSceneComp->SetupAttachment(sceneComp);
 							newSceneComp->Initialize();
 							break;
+						case EComponentType::SphereComponent:
+							newSceneComp = mActorToEdit->CreateDefaultSubObject<JSphereComponent>(name,
+									 mActorToEdit.get());
+							newSceneComp->SetupAttachment(sceneComp);
+							newSceneComp->Initialize();
+							break;
 						}
 					}
 				}

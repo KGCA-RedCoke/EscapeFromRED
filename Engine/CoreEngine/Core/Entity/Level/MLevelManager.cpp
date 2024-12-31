@@ -83,6 +83,7 @@ JLevel* MLevelManager::CreateLevel(const JText& InSavePath)
 void MLevelManager::SetActiveLevel(JLevel* InLevel)
 {
 	mActiveLevel = InLevel;
+	MCollisionManager::Get().UnEnrollAllCollision();
 }
 
 MLevelManager::MLevelManager() {}

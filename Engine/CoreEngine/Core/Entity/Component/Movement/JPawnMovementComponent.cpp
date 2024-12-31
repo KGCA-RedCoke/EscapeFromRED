@@ -8,7 +8,8 @@ JPawnMovementComponent::JPawnMovementComponent(JTextView Name, APawn* OwnerPawn)
 	  bIsGrounded(false),
 	  bIsJumping(false),
 	  bIsFalling(false),
-	  mMaxWalkSpeed(350.f),
+	  mMaxWalkSpeed(300.f),
+	  mMaxJogSpeed(500.f),
 	  mGravityScale(0),
 	  mJumpPower(0)
 {}

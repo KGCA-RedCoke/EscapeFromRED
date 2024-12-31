@@ -544,6 +544,7 @@ void JCollisionComponent::Draw()
 		GetBox().DrawDebug(mColor);
 		break;
 	case ECollisionType::Sphere:
+		GetSphere().DrawDebug(mColor);
 		break;
 	case ECollisionType::Capsule:
 		break;
@@ -676,18 +677,12 @@ bool JLineComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) co
 		break;
 	case ECollisionType::Box:
 		return RayIntersectOBB(mRay, InOther->GetBox(), OutHitResult);
-		break;
 	case ECollisionType::Sphere:
-		break;
+		return RayIntersectSphere(mRay, InOther->GetSphere(), OutHitResult);
 	case ECollisionType::Capsule:
 		break;
 	}
 	return false;
-}
-
-ECollisionType JLineComponent::GetCollisionType() const
-{
-	return ECollisionType::Ray;
 }
 
 FRay JLineComponent::GetRay() const
@@ -749,7 +744,7 @@ bool JBoxComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) con
 	case ECollisionType::Box:
 		return BoxIntersectOBB(mBoundingBox, InOther->GetBox(), OutHitResult);
 	case ECollisionType::Sphere:
-		break;
+		return SphereIntersectOBB(InOther->GetSphere(), mBoundingBox, OutHitResult);
 	case ECollisionType::Capsule:
 		break;
 	}
@@ -757,12 +752,75 @@ bool JBoxComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) con
 	return false;
 }
 
-ECollisionType JBoxComponent::GetCollisionType() const
-{
-	return ECollisionType::Box;
-}
-
 FBoxShape JBoxComponent::GetBox() const
 {
 	return mBoundingBox;
+}
+
+JSphereComponent::JSphereComponent()
+{
+	mObjectType    = NAME_COMPONENT_SPHERE;
+	mCollisionType = ECollisionType::Sphere;
+}
+
+JSphereComponent::JSphereComponent(JTextView InName, AActor* InOwnerActor, JSceneComponent* InParentSceneComponent)
+	: JCollisionComponent(InName, InOwnerActor, InParentSceneComponent)
+{
+	mObjectType    = NAME_COMPONENT_SPHERE;
+	mCollisionType = ECollisionType::Sphere;
+}
+
+uint32_t JSphereComponent::GetType() const
+{
+	return StringHash(mObjectType.data());
+}
+
+void JSphereComponent::Initialize()
+{
+	JCollisionComponent::Initialize();
+}
+
+void JSphereComponent::Tick(float DeltaTime)
+{
+	JCollisionComponent::Tick(DeltaTime);
+
+	mSphere.Center = mWorldLocation;
+	mSphere.Radius = mWorldScale.x * 50.f;
+}
+
+void JSphereComponent::ShowEditor()
+{
+	JCollisionComponent::ShowEditor();
+
+	ImGui::DragFloat3(u8("크기"), &mLocalScale.x, 0.01f, 0.01f, 100.0f);
+}
+
+bool JSphereComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const
+{
+	const ECollisionType otherType = InOther->GetCollisionType();
+
+	switch (otherType)
+	{
+	case ECollisionType::None:
+		break;
+	case ECollisionType::Quad:
+		break;
+	case ECollisionType::Plane:
+		break;
+	case ECollisionType::Ray:
+		return RayIntersectSphere(InOther->GetRay(), mSphere, OutHitResult);
+	case ECollisionType::Box:
+		return SphereIntersectOBB(mSphere, InOther->GetBox(), OutHitResult);
+	case ECollisionType::Sphere:
+		return SphereIntersectSphere(mSphere, InOther->GetSphere(), OutHitResult);
+	case ECollisionType::Capsule:
+		break;
+	}
+
+	return false;
+}
+
+FSphere JSphereComponent::GetSphere() const
+{
+	return mSphere;
 }

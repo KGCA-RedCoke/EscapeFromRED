@@ -41,6 +41,7 @@ public:
 							size_t    InXdivs,
 							size_t    InYdivs,
 							GXMVECTOR InColor = Colors::White) const;
+	void DrawSphere_Implement(CXMMATRIX matWorld, FXMVECTOR center, float radius, FXMVECTOR color = Colors::White) const;
 	void DrawRing_Implement(FXMVECTOR InOrigin, FXMVECTOR InMajorAxis, FXMVECTOR InMinorAxis,
 							GXMVECTOR InColor = Colors::White) const;
 	void DrawRay_Implement(FXMVECTOR InOrigin, FXMVECTOR InDirection, float InLength,

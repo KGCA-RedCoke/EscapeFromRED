@@ -260,7 +260,11 @@ bool FSphere::ContainsPoint(const FVector& Point) const
 
 void FSphere::DrawDebug(DirectX::FXMVECTOR DebugColor) const
 {
-	// G_DebugBatch.Draw(DebugColor);
+	G_DebugBatch.DrawSphere_Implement(
+									  XMMatrixTranslation(Center.x, Center.y, Center.z),
+									  {Center.x, Center.y, Center.z, 1.0f},
+									  Radius,
+									  DebugColor);
 }
 
 bool FCapsule::Intersect(const FCapsule& Other) const
@@ -408,6 +412,49 @@ bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, FHitResult& OutH
 						   OutHitResult);
 }
 
+bool RayIntersectSphere(const FRay& InRay, const FSphere& InSphere, FHitResult& OutHitResult)
+{
+	// 벡터 L은 광선의 원점에서 구의 중심까지의 벡터입니다.
+	FVector L = InSphere.Center - InRay.Origin;
+
+	// tca는 광선 방향으로의 L의 투영 길이입니다.
+	float tca = L.Dot(InRay.Direction);
+
+	// tca가 음수라면 광선이 구체를 향하지 않으므로 교차하지 않습니다.
+	if (tca < 0)
+		return false;
+
+	// d^2 = |L|^2 - tca^2: 광선에서 구 중심까지의 최단 거리의 제곱을 계산합니다.
+	float d2 = L.Dot(L) - tca * tca;
+
+	// d^2가 반지름의 제곱보다 크면 광선이 구체를 지나지 않습니다.
+	float radius2 = InSphere.Radius * InSphere.Radius;
+	if (d2 > radius2)
+		return false;
+
+	// thc는 교차점에서 광선 방향으로의 반지름 길이입니다.
+	float thc = sqrt(radius2 - d2);
+
+	// 교차점 t0, t1 계산 (광선의 매개변수 형태)
+	float t0 = tca - thc;
+	float t1 = tca + thc;
+
+	// t0와 t1 중 작은 값을 선택하며, t0가 음수라면 t1을 선택합니다.
+	float t = (t0 < 0) ? t1 : t0;
+
+	// t가 여전히 음수라면 교차하지 않습니다.
+	if (t < 0)
+		return false;
+
+	// 교차점과 교차 정보를 FHitResult에 저장합니다.
+	OutHitResult.HitLocation = InRay.Origin + t * InRay.Direction;
+	OutHitResult.Distance    = t;
+	OutHitResult.HitNormal   = (OutHitResult.HitLocation - InSphere.Center);
+	OutHitResult.HitNormal.Normalize();
+
+	return true;
+}
+
 bool BoxIntersectOBB(const FBoxShape& InBox, const FBoxShape& Other, FHitResult& OutHitResult)
 {
 	FVector boxCenterDist = InBox.Box.Center - Other.Box.Center; // 두 OBB의 중심 거리 벡터
@@ -510,6 +557,64 @@ bool BoxIntersectOBB(const FBoxShape& InBox, const FBoxShape& Other, FHitResult&
 	OutHitResult.HitLocation = InBox.Box.Center + OutHitResult.HitNormal * (extentA.Length() - minOverlap * 0.5f);
 
 	return true;
+}
+
+bool SphereIntersectOBB(const FSphere& InSphere, const FBoxShape& InBox, FHitResult& OutHitResult)
+{
+	FVector LocalSphereCenter = InSphere.Center - InBox.Box.Center;
+
+	// 구의 중심을 박스의 각 축으로 투영하여 가장 가까운 점을 찾습니다.
+	FVector ClosestPoint = InBox.Box.Center;
+	for (int i = 0; i < 3; ++i)
+	{
+		float Projection = LocalSphereCenter.Dot(InBox.Box.LocalAxis[i]);
+		float HalfExtent = InBox.Box.Extent[i];
+		if (Projection > HalfExtent)
+			Projection = HalfExtent;
+		else if (Projection < -HalfExtent)
+			Projection = -HalfExtent;
+		ClosestPoint += (InBox.Box.LocalAxis[i] * Projection);
+	}
+
+	// 박스 표면의 ClosestPoint와 구 중심 사이의 거리 계산
+	FVector Difference      = ClosestPoint - InSphere.Center;
+	float   DistanceSquared = Difference.Dot(Difference);
+
+	Difference.Normalize();
+	// 거리 제곱이 구의 반지름 제곱보다 작으면 충돌 발생
+	if (DistanceSquared <= InSphere.Radius * InSphere.Radius)
+	{
+		OutHitResult.HitLocation = ClosestPoint;
+		OutHitResult.HitNormal   = Difference;
+		OutHitResult.Distance    = sqrt(DistanceSquared);
+		return true;
+	}
+
+	return false;
+}
+
+bool SphereIntersectSphere(const FSphere& InSphere, const FSphere& Other, FHitResult& OutHitResult)
+{
+	// 두 구체의 중심 사이의 거리 계산
+	FVector Difference      = Other.Center - InSphere.Center;
+	float   DistanceSquared = Difference.Dot(Difference);
+
+	// 두 구의 반지름 합의 제곱 계산
+	float RadiusSum        = InSphere.Radius + Other.Radius;
+	float RadiusSumSquared = RadiusSum * RadiusSum;
+
+	Difference.Normalize();
+	// 거리 제곱이 반지름 합의 제곱보다 작거나 같으면 충돌 발생
+	if (DistanceSquared <= RadiusSumSquared)
+	{
+		float Distance           = sqrt(DistanceSquared);
+		OutHitResult.HitLocation = InSphere.Center + (Difference * InSphere.Radius);
+		OutHitResult.HitNormal   = Difference;
+		OutHitResult.Distance    = Distance;
+		return true;
+	}
+
+	return false;
 }
 
 // Quad::FNode* JCollisionComponent::GetDivisionNode() const

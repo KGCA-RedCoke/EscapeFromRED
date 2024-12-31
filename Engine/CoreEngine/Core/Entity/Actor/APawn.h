@@ -22,7 +22,7 @@ public:
 
 protected:
 	JPawnMovementComponent* mMovementComponent;
-	JBoxComponent*          mCollisionBox;
+	JSphereComponent*       mCollisionSphere;
 	JLineComponent*         mLineComponent;
 
 	float mDeltaTime;

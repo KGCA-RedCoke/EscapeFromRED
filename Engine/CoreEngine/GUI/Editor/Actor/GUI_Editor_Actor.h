@@ -12,7 +12,7 @@ enum EComponentType : uint8_t
 	SpotLight,
 	BoxComponent,
 	LineComponent,
-	SphereCollider,
+	SphereComponent,
 	CapsuleCollider,
 	RigidBody,
 	CharacterController,

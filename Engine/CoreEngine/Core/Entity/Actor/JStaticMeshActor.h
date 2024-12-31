@@ -39,6 +39,7 @@ private:
 
 private:
 	JStaticMeshComponent* mStaticMeshComponent = nullptr;
+	bool                  bUseMeshCollision    = false;
 };
 
 REGISTER_CLASS_TYPE(JStaticMeshActor);
