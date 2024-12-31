@@ -44,7 +44,7 @@ void BT_BOSS::Tick(float DeltaTime)
     JActorComponent::Tick(DeltaTime);
     BBTick();
     mDeltaTime = DeltaTime;
-    if (GetWorld.bGameMode)
+    if (GetWorld.bGameMode && !isPendingKill)
         BTRoot->tick();
 }
 
@@ -87,6 +87,8 @@ NodeStatus BT_BOSS::Attack()
 
 NodeStatus BT_BOSS::Attack2()
 {
+    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+        return NodeStatus::Failure;
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
@@ -201,30 +203,12 @@ NodeStatus BT_BOSS::Hit()
 
 NodeStatus BT_BOSS::Dead()
 {
-    int frameIdx = GetWorld.currentFrame % g_Index;
-    if (frameIdx == mIdx || runningFlag)
+    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
     {
-        runningFlag = false;
-        FVector rotation = mOwnerActor->GetLocalRotation();
-        rotation.x = 90.f;
-        mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 1)
-        {
-            mElapsedTime = 0;
-            rotation.x = 0.f;
-            mOwnerActor->SetLocalRotation(rotation);
-            mPhase++;
-            return NodeStatus::Success;
-        }
-        else
-        {
-            mElapsedTime += mDeltaTime;
-            runningFlag = true;
-            return NodeStatus::Running;
-        }
+        isPendingKill = true;
+        return NodeStatus::Success;
     }
-    else
-        return NodeStatus::Failure;
+    return NodeStatus::Failure;
 }
 
 NodeStatus BT_BOSS::ChasePlayer(UINT N)
@@ -455,10 +439,8 @@ void BT_BOSS::SetupTree2()
 {
     BTRoot = builder
              .CreateRoot<Selector>()
-             // .AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-             //     .AddActionNode(LAMBDA(JumpAttack))
-             // .EndBranch()
-                .AddSequence("")
+                 .AddActionNode(LAMBDA(Dead))
+                 .AddSequence("")
                     // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
                      .AddActionNode(LAMBDA(ChasePlayer, 0))
                      .AddActionNode(LAMBDA(Attack2))
