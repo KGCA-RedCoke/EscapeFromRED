@@ -69,8 +69,6 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
-	bMove = false;
-
 	if (mInput)
 	{
 		mInput->Update(DeltaTime);
@@ -123,7 +121,9 @@ void APlayerCharacter::SetupInputComponent()
 
 	mInput->AddInputBinding(EKeyCode::LButton,
 							EKeyState::Pressed,
-							[this](float DeltaTime){ bShouldAttack = true; });
+							[this](float DeltaTime){
+								bShouldAttack = true;
+							});
 }
 
 void APlayerCharacter::UpdateRotation()
@@ -154,7 +154,7 @@ void APlayerCharacter::UpdateRotation()
 void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& InDirection)
 {
 	FVector directionVec = FVector::ZeroVector;
-	bMove                = true;
+
 	if (InDirection.z != 0)
 	{
 		directionVec = directionVec + (InDirection.z < 0.f
@@ -178,5 +178,36 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 					);
 }
 
-void APlayerCharacter::CheckGround()
-{}
+void APlayerCharacter::OnMeleeAttack()
+{
+	mWeaponCollision->EnableCollision(true);
+	bShouldAttack = false;
+}
+
+void APlayerCharacter::DisableMeleeCollision()
+{
+	mWeaponCollision->EnableCollision(false);
+}
+
+void APlayerCharacter::OnMeleeAttackFinished()
+{
+
+	switch (mAttackCombo)
+	{
+	case 0:
+		mAttackCombo = bShouldAttack ? 1 : 0;
+		break;
+	case 1:
+		mAttackCombo = bShouldAttack ? 2 : 0;
+		break;
+	case 2:
+		mAttackCombo = bShouldAttack ? 3 : 0;
+		break;
+	default:
+		mAttackCombo = 0;
+		break;
+	}
+	bShouldAttack = false;
+
+	LOG_CORE_INFO("Attack Combo: {0}", mAttackCombo);
+}

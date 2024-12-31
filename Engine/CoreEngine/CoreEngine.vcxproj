@@ -450,6 +450,7 @@
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
     <Content Include="Core\Interface\IGUIEditable.h" />
+    <Content Include="Game\Levels\Map.jasset" />
     <Content Include="Game\UI\First.jasset" />
     <Content Include="Game\UI\NewWidget.jasset" />
   </ItemGroup>

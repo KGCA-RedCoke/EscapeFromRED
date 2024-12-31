@@ -337,7 +337,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	{
 		UpdateInstanceData(mElapsedTime);
 	}
-	
+
 	mEvents[mInstanceData.CurrentAnimIndex].Execute();
 
 	if (CheckTransition())
@@ -562,6 +562,11 @@ void JAnimationClip::AddTransition(const JText& InState, const std::function<boo
 void JAnimationClip::SetSkeletalMesh(JSkeletalMesh* InSkeletalMesh)
 {
 	mSkeletalMesh = InSkeletalMesh;
+}
+
+float JAnimationClip::GetElapsedRatio() const
+{
+	return mElapsedTime / mEndTime;
 }
 
 uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureData)

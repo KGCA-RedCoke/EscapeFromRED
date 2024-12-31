@@ -21,7 +21,9 @@ private:
 	void SetupInputComponent() override;
 	void UpdateRotation();
 	void OnMovementInputPressed(float DeltaTime, const FVector& InDirection);
-	void CheckGround();
+	void OnMeleeAttack();
+	void DisableMeleeCollision();
+	void OnMeleeAttackFinished();
 
 private:
 	class JCameraComponent* mFPSCamera;
@@ -31,9 +33,9 @@ private:
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;
 
-	bool            bMove = false;
-	bool            bShouldAttack;
-	bool            bShouldRun = false;
+	bool            bShouldAttack = false;
+	bool            bShouldRun    = false;
+	uint32_t        mAttackCombo  = 0;
 	UPtr<JAnimator> mPlayerAnimator;
 
 	friend class JPlayerAnimator;

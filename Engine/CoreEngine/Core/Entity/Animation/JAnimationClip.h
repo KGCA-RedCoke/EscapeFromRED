@@ -180,6 +180,8 @@ public:
 
 	[[nodiscard]] JText GetNextState() const { return mNextState; }
 
+	[[nodiscard]] float GetElapsedRatio() const;
+
 	[[nodiscard]] FVector GetRMPosition() const {return mRootMotionValue.Position;}
 	[[nodiscard]] FQuaternion GetRMQuaternion() const {return mRootMotionValue.Rotation;}
 
