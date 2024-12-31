@@ -33,11 +33,17 @@ UPtr<IManagedInterface> JStaticMeshActor::Clone() const
 
 void JStaticMeshActor::Initialize()
 {
+	if (bUseMeshCollision)
+	{
+		// CreateDefaultSubObject<JBoxComponent>("BoxCollision", this, this);
+		// mStaticMeshComponent->SetCollisionType(ECollisionType::Box);
+		// mStaticMeshComponent->SetCollisionEnabled(true);
+	}
+	
 	AActor::Initialize();
 
 	AActor::Tick(0);
 	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
-
 }
 
 void JStaticMeshActor::Tick(float DeltaTime)
@@ -72,6 +78,8 @@ void JStaticMeshActor::ShowEditor()
 {
 	AActor::ShowEditor();
 
+	ImGui::Checkbox(u8("메시 그대로 콜리전 사용"), &bUseMeshCollision);
+	
 	AActor::Tick(0);
 	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
 }

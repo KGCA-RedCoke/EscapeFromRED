@@ -33,7 +33,7 @@ private:
 
 	bool            bMove = false;
 	bool            bShouldAttack;
-	bool            bShouldRun;
+	bool            bShouldRun = false;
 	UPtr<JAnimator> mPlayerAnimator;
 
 	friend class JPlayerAnimator;

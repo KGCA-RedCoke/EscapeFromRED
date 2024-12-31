@@ -12,6 +12,14 @@ void MCollisionManager::UnEnrollCollision(ICollision* InCollision)
 		std::erase(mLayerHash[traceType], InCollision);
 }
 
+void MCollisionManager::UnEnrollAllCollision()
+{
+	for (auto& layer : mLayerHash)
+	{
+		layer.second.clear();
+	}
+}
+
 void MCollisionManager::SetCollisionLayer(ETraceType InLeft, ETraceType InRight, bool bEnable)
 {
 	const uint8_t leftLayer  = EnumAsByte(InLeft);
@@ -65,7 +73,8 @@ void MCollisionManager::CheckCollision(ICollision* InLeft, ICollision* InRight)
 		return;
 	}
 
-	if (InLeft->GetNodeIndex() != InRight->GetNodeIndex() && !(InLeft->GetNodeIndex() == 0 || InRight->GetNodeIndex() == 0))
+	if (InLeft->GetNodeIndex() != InRight->GetNodeIndex() && !(InLeft->GetNodeIndex() == 0 || InRight->GetNodeIndex() ==
+		0))
 	{
 		return;
 	}

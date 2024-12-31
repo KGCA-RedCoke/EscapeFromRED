@@ -19,6 +19,11 @@ cbuffer ViewportScale : register(b0)
 	float2 ViewportScale;
 };
 
+cbuffer TimeBuffer : register(b1)
+{
+	float Time;
+};
+
 struct InstanceData_2D
 {
 	float2 InstancePos :INST_POSITION;
@@ -329,7 +334,15 @@ float4 PS(PixelInput_2D Input) : SV_TARGET
 {
 	float4 color = SampleFromTextureArray(Input.Instance.TextureIndex, Input.UV);
 
+	// float animAlpha = 1;
+	// if (Input.Instance.AnimPeriod > 0.f)
+	// {
+	// 	animAlpha = 0.5 + 0.5 * sin(6.28318 * Time / Input.Instance.AnimPeriod);
+	// }
+
 	color.rgb *= Input.Instance.InstanceColor.rgb;
+
+	// color.a *= Input.Instance.InstanceColor.a * animAlpha;
 
 	if (color.a < 0.5f)
 		discard;

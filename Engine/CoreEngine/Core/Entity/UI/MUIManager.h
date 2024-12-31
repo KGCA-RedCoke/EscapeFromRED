@@ -127,7 +127,7 @@ public:
 public:
 	void AddUIComponent(JTextView InName);
 
-private:
+protected:
 	ID2D1RenderTarget*         mRenderTarget;
 	JArray<UPtr<JUIComponent>> mUIComponents;
 	FVector2                   mMousePos;

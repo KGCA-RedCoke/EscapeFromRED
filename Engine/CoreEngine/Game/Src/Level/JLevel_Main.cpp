@@ -4,6 +4,7 @@
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Window/Application.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 
 JLevel_Main::JLevel_Main()
@@ -15,6 +16,7 @@ JLevel_Main::JLevel_Main()
 																			FVector::ZeroVector,
 																			nullptr,
 																			"Game/Mesh/SK_Hands_07.jasset");
+		Application::s_AppInstance->LockMouseToWindow();
 		character->BeginPlay();
 
 		bThreadLoaded = true;
@@ -24,9 +26,10 @@ JLevel_Main::JLevel_Main()
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::PlayerWeapon, true);
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Ground, true);
 
+
 	});
 	mWidgetComponents.reserve(1);
-	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/Crosshair.jasset"));
+	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/Cross.jasset"));
 
 	JLevel_Main::InitializeLevel();
 	G_NAV_MAP.Initialize();

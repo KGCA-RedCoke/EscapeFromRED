@@ -42,7 +42,7 @@ public:
 
 public:
 	void OnResize(UINT InWidth, UINT InHeight) const;
-
+	void LockMouseToWindow() const;
 private:
 	void Resize(UINT InWidth, UINT InHeight);
 

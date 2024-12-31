@@ -70,11 +70,18 @@ void Window::Initialize()
 		windowClass.lpszClassName = L"Jacob Window";
 		windowClass.hCursor       = LoadCursor(nullptr, IDC_ARROW);
 		windowClass.hIcon         = static_cast<HICON>(
-			LoadImage(nullptr, L"jacobengine.ico", IMAGE_ICON, GetSystemMetrics(SM_CXICON),
-					  GetSystemMetrics(SM_CYICON), LR_LOADFROMFILE));
-		windowClass.hIconSm = static_cast<HICON>(LoadImage(nullptr, L"jacobengine.ico", IMAGE_ICON,
+			LoadImage(nullptr,
+					  L"jacobengine.ico",
+					  IMAGE_ICON,
+					  GetSystemMetrics(SM_CXICON),
+					  GetSystemMetrics(SM_CYICON),
+					  LR_LOADFROMFILE));
+		windowClass.hIconSm = static_cast<HICON>(LoadImage(nullptr,
+														   L"jacobengine.ico",
+														   IMAGE_ICON,
 														   GetSystemMetrics(SM_CXSMICON),
-														   GetSystemMetrics(SM_CYSMICON), LR_LOADFROMFILE));
+														   GetSystemMetrics(SM_CYSMICON),
+														   LR_LOADFROMFILE));
 		windowClass.hbrBackground = GetSysColorBrush(COLOR_BTNFACE);
 
 	}
@@ -90,20 +97,20 @@ void Window::Initialize()
 	AdjustWindowRect(&size, style, false);
 
 	mWindowHandle = CreateWindowEx(
-		WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
-		windowClass.lpszClassName,
-		mWindowTitle,
-		WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		// GetSystemMetrics는 시스템 설정 정보를 반환 nIndex에는 SM_으로 시작하는 상수값을 넣는다. ex) 2560 x 1600 (정중앙에 생성됨)
-		GetSystemMetrics(SM_CXSCREEN) / 2 - mWindowData.Width / 2,       // 1280 - 450 = 830 (좌)
-		GetSystemMetrics(SM_CYSCREEN) / 2 - mWindowData.Height / 2, // 800 - 300 = 500 (상)
-		size.right + (-size.left),                                       // 윈도우 폭: 900
-		size.bottom + (-size.top),                                       // 윈도우 높이: 600
-		nullptr,
-		nullptr,
-		mInstanceHandle,
-		nullptr
-	);
+								   WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
+								   windowClass.lpszClassName,
+								   mWindowTitle,
+								   WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+								   // GetSystemMetrics는 시스템 설정 정보를 반환 nIndex에는 SM_으로 시작하는 상수값을 넣는다. ex) 2560 x 1600 (정중앙에 생성됨)
+								   GetSystemMetrics(SM_CXSCREEN) / 2 - mWindowData.Width / 2,       // 1280 - 450 = 830 (좌)
+								   GetSystemMetrics(SM_CYSCREEN) / 2 - mWindowData.Height / 2, // 800 - 300 = 500 (상)
+								   size.right + (-size.left),                                       // 윈도우 폭: 900
+								   size.bottom + (-size.top),                                       // 윈도우 높이: 600
+								   nullptr,
+								   nullptr,
+								   mInstanceHandle,
+								   nullptr
+								  );
 
 	if (!mWindowHandle)
 	{
@@ -148,6 +155,29 @@ void Window::OnResize(UINT InWidth, UINT InHeight) const
 	{
 		resizeFunc(InWidth, InHeight);
 	}
+}
+
+void Window::LockMouseToWindow() const
+{
+	RECT rect;
+	// 창의 클라이언트 영역 좌표 가져오기
+	GetClientRect(mWindowHandle, &rect);
+
+	// 클라이언트 좌표를 화면 좌표로 변환
+	POINT topLeft     = {rect.left, rect.top};
+	POINT bottomRight = {rect.right, rect.bottom};
+	ClientToScreen(mWindowHandle, &topLeft);
+	ClientToScreen(mWindowHandle, &bottomRight);
+
+	// 화면 좌표로 마우스를 가둘 영역 설정
+	rect.left   = topLeft.x;
+	rect.top    = topLeft.y;
+	rect.right  = bottomRight.x;
+	rect.bottom = bottomRight.y;
+	ShowCursor(FALSE);
+
+	// 마우스 가두기
+	ClipCursor(&rect);
 }
 
 void Window::Resize(UINT InWidth, UINT InHeight)

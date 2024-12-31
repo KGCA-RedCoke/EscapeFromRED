@@ -218,7 +218,7 @@ protected:
 	};
 
 	JText                                 mStateName;		// 현재 상태
-	JText                                 mNextState;	// 다음 상태
+	JText                                 mNextState = "";	// 다음 상태
 	JHash<JText, JArray<FTransitionData>> mTransitionMap;	// 전이 맵
 	JArray<Ptr<JAnimBoneTrack>>           mTracks;		// 본별로 트랙을 가지고 있는 배열
 	JHash<JText, JArray<FMatrix>>         mBoneMatrix;	// 본별로 행렬을 가지고 있는 해시맵

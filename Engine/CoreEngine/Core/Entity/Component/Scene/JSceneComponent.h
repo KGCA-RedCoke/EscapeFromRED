@@ -208,7 +208,6 @@ public:
 
 public:
 	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
-	ECollisionType GetCollisionType() const override;
 	FRay           GetRay() const override;
 
 protected:
@@ -253,10 +252,35 @@ public:
 
 public:
 	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
-	ECollisionType GetCollisionType() const override;
 	FBoxShape      GetBox() const override;
+};
+
+class JSphereComponent : public JCollisionComponent
+{
+public:
+	JSphereComponent();
+	JSphereComponent(JTextView InName, AActor* InOwnerActor = nullptr, JSceneComponent* InParentSceneComponent = nullptr);
+	~JSphereComponent() override = default;
+
+public:
+	uint32_t GetType() const override;
+	
+public:
+	void Initialize() override;
+	void Tick(float DeltaTime) override;
+
+public:
+	void ShowEditor() override;
+
+public:
+	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	FSphere        GetSphere() const override;
+
+protected:
+	FSphere mSphere;
 };
 
 REGISTER_CLASS_TYPE(JSceneComponent);
 REGISTER_CLASS_TYPE(JLineComponent);
 REGISTER_CLASS_TYPE(JBoxComponent);
+REGISTER_CLASS_TYPE(JSphereComponent);

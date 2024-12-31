@@ -131,31 +131,34 @@ constexpr const char* NAME_OBJECT_PAWN                    = "APawn";
 constexpr const char* NAME_OBJECT_ENEMY                   = "AEnemy";
 constexpr const char* NAME_OBJECT_CHARACTER               = "ACharacter";
 constexpr const char* NAME_OBJECT_PLAYER_CHARACTER        = "APlayerCharacter";
+constexpr const char* NAME_OBJECT_INTERACTIVE_OBJECT      = "AInteractiveObject";
 constexpr const char* NAME_OBJECT_LIGHT_COMPONENT         = "JLightComponent";
 constexpr const char* NAME_OBJECT_LIGHT_SPOT              = "JLight_Spot";
 constexpr const char* NAME_OBJECT_LIGHT_POINT             = "JLight_Point";
 constexpr const char* NAME_COMPONENT_RAY                  = "JLineComponent";
 constexpr const char* NAME_COMPONENT_BOX                  = "JBoxComponent";
+constexpr const char* NAME_COMPONENT_SPHERE               = "JSphereComponent";
 constexpr const char* NAME_COMPONENT_PAWN_MOVEMENT        = "JPawnMovementComponent";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 
 constexpr uint32_t JAssetHash = StringHash_CompileTime("JASSET\0");
 
-constexpr uint32_t HASH_ASSET_TYPE_LEVEL             = StringHash_CompileTime("JLevel");
-constexpr uint32_t HASH_ASSET_TYPE_Actor             = StringHash_CompileTime("JActor");
-constexpr uint32_t HASH_ASSET_TYPE_BoundingBox       = StringHash_CompileTime("ABoundingBox");
-constexpr uint32_t HASH_ASSET_TYPE_Pawn              = StringHash_CompileTime("APawn");
-constexpr uint32_t HASH_ASSET_TYPE_Enemy             = StringHash_CompileTime("AEnemy");
-constexpr uint32_t HASH_ASSET_TYPE_Character         = StringHash_CompileTime("ACharacter");
-constexpr uint32_t HASH_ASSET_TYPE_PLAYER_CHARACTER  = StringHash_CompileTime("APlayerCharacter");
-constexpr uint32_t HASH_ASSET_TYPE_STATIC_MESH       = StringHash_CompileTime("J3DObject");
-constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH     = StringHash_CompileTime("JSkeletalMesh");
-constexpr uint32_t HASH_ASSET_TYPE_MATERIAL          = StringHash_CompileTime("JMaterial");
-constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE = StringHash_CompileTime("JMaterialInstance");
-constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP    = StringHash_CompileTime("JAnimationClip");
-constexpr uint32_t HASH_ASSET_TYPE_ANIMATOR          = StringHash_CompileTime("JAnimator");
-constexpr uint32_t HASH_ASSET_TYPE_WIDGET            = StringHash_CompileTime("JWidget");
+constexpr uint32_t HASH_ASSET_TYPE_LEVEL              = StringHash_CompileTime("JLevel");
+constexpr uint32_t HASH_ASSET_TYPE_Actor              = StringHash_CompileTime("JActor");
+constexpr uint32_t HASH_ASSET_TYPE_BoundingBox        = StringHash_CompileTime("ABoundingBox");
+constexpr uint32_t HASH_ASSET_TYPE_Pawn               = StringHash_CompileTime("APawn");
+constexpr uint32_t HASH_ASSET_TYPE_Enemy              = StringHash_CompileTime("AEnemy");
+constexpr uint32_t HASH_ASSET_TYPE_Character          = StringHash_CompileTime("ACharacter");
+constexpr uint32_t HASH_ASSET_TYPE_PLAYER_CHARACTER   = StringHash_CompileTime("APlayerCharacter");
+constexpr uint32_t HASH_ASSET_TYPE_INTERACTIVE_OBJECT = StringHash_CompileTime("AInteractiveObject");
+constexpr uint32_t HASH_ASSET_TYPE_STATIC_MESH        = StringHash_CompileTime("J3DObject");
+constexpr uint32_t HASH_ASSET_TYPE_SKELETAL_MESH      = StringHash_CompileTime("JSkeletalMesh");
+constexpr uint32_t HASH_ASSET_TYPE_MATERIAL           = StringHash_CompileTime("JMaterial");
+constexpr uint32_t HASH_ASSET_TYPE_MATERIAL_INSTANCE  = StringHash_CompileTime("JMaterialInstance");
+constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP     = StringHash_CompileTime("JAnimationClip");
+constexpr uint32_t HASH_ASSET_TYPE_ANIMATOR           = StringHash_CompileTime("JAnimator");
+constexpr uint32_t HASH_ASSET_TYPE_WIDGET             = StringHash_CompileTime("JWidget");
 
 constexpr uint32_t HASH_COMPONENT_TYPE_COLLISION = StringHash_CompileTime("JCollisionComponent");
 

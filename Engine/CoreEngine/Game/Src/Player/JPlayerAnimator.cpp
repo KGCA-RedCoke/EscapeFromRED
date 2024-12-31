@@ -20,7 +20,7 @@ JPlayerAnimator::JPlayerAnimator(JTextView InName, AActor* InOwnerActor)
 void JPlayerAnimator::Initialize()
 {
 	JAnimator::Initialize();
-	
+
 	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Attack_D.jasset",
 													   mSkeletalMeshComponent);
 	attackAnim->OnAnimStart.Bind([this](){
@@ -39,16 +39,22 @@ void JPlayerAnimator::Initialize()
 					 "Game/Animation/FPP_Halb_Idle.jasset");
 	AddAnimationClip("Walk_Free",
 					 "Game/Animation/FPP_Halb_Walk.jasset");
+	AddAnimationClip("Run_Free",
+					 "Game/Animation/FPP_Halb_Run.jasset");
 	AddAnimationClip("Attack", attackAnim);
-	
+
 	AddAnimLink("Idle_Free", "Walk_Free", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 	AddAnimLink("Walk_Free", "Idle_Free", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
-	
+	AddAnimLink("Walk_Free", "Run_Free", [&](){ return mOwnerCharacter->bShouldRun; }, 0.2f);
+	AddAnimLink("Run_Free", "Walk_Free", [&](){ return !mOwnerCharacter->bShouldRun; }, 0.2f);
+	AddAnimLink("Run_Free", "Idle_Free", [&](){ return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
+
 	AddAnimLink("Idle_Free", "Attack", [&](){ return mOwnerCharacter->bShouldAttack; }, 0.2f);
 	AddAnimLink("Walk_Free", "Attack", [&](){ return mOwnerCharacter->bShouldAttack; }, 0.2f);
-	
+	AddAnimLink("Run_Free", "Attack", [&](){ return mOwnerCharacter->bShouldAttack; }, 0.2f);
+
 	AddAnimLink("Attack", "Idle_Free", [&](){ return !mOwnerCharacter->bShouldAttack; }, 0.2f);
-	
+
 	SetState("Idle_Free");
 	mCurrentAnimation->Play();
 }

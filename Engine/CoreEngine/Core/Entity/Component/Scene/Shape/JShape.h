@@ -137,5 +137,9 @@ bool RayIntersectOBB(const FVector& RayOrigin, const FVector& RayDir,
 					 FHitResult& OutHitResult // 충돌 지점
 );
 bool RayIntersectOBB(const FRay& InRay, const FBoxShape& InBox, struct FHitResult& OutHitResult);
+bool RayIntersectSphere(const FRay& InRay, const FSphere& InSphere, struct FHitResult& OutHitResult);
 
 bool BoxIntersectOBB(const FBoxShape& InBox, const FBoxShape& Other, struct FHitResult& OutHitResult);
+bool SphereIntersectOBB(const FSphere& InSphere, const FBoxShape& InBox, struct FHitResult& OutHitResult);
+
+bool SphereIntersectSphere(const FSphere& InSphere, const FSphere& Other, struct FHitResult& OutHitResult);

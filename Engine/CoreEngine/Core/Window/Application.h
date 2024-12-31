@@ -25,6 +25,8 @@ public:
 	[[nodiscard]] uint32_t GetWindowWidth() const;
 	[[nodiscard]] uint32_t GetWindowHeight() const;
 
+	void LockMouseToWindow() const;
+
 private:
 	void HandleFrame();
 	void HandleTick();

@@ -36,8 +36,6 @@ void AEnemy::Initialize()
 		mBehaviorTree = CreateDefaultSubObject<BT_BOSS>("BehaviorTree", this);
 	}
 
-
-	
 	APawn::Initialize();
 
 	if (mSkeletalMeshComponent)
@@ -46,12 +44,12 @@ void AEnemy::Initialize()
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
-	
-	assert(mCollisionBox);
-	mCollisionBox->OnComponentBeginOverlap.Bind(std::bind(&AEnemy::OnHit,
-														  this,
-														  std::placeholders::_1,
-														  std::placeholders::_2));
+
+	assert(mCollisionSphere);
+	mCollisionSphere->OnComponentBeginOverlap.Bind(std::bind(&AEnemy::OnHit,
+															 this,
+															 std::placeholders::_1,
+															 std::placeholders::_2));
 
 }
 
@@ -123,6 +121,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 	if (traceType == ETraceType::PlayerWeapon)
 	{
 		mEnemyState = EEnemyState::Death;
+		mCollisionSphere->Destroy();
+		// mBehaviorTree->Dead();
 	}
 }
-

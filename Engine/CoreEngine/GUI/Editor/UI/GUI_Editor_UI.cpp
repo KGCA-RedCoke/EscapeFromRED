@@ -17,17 +17,14 @@ GUI_Editor_UI::GUI_Editor_UI(const JText& InTitle)
 	mCamera->SetProjParams(M_PI / 4, 1280.f / 720.f, 0.01f, 1.f);
 
 	mViewport->OnViewportResized.UnBindAll();
+	mWidgetComponent   = MUIManager::Get().Load(InTitle);
+
 	mViewport->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		mCamera->SetProjParams(M_PI / 4, static_cast<float>(InWidth) / static_cast<float>(InHeight), 0.01f, 1.f);
+		mWidgetComponent->SetRenderTarget(mViewport->RTV_2D.Get());
+
 	});
 
-
-	mWidgetComponent   = MUIManager::Get().Load(InTitle);
-	auto* renderTarget = mWidgetComponent->GetRenderTarget();
-	if (!renderTarget)
-	{
-		mWidgetComponent->SetRenderTarget(mViewport->RTV_2D.Get());
-	}
 }
 
 void GUI_Editor_UI::ShowMenuBar()
@@ -56,7 +53,7 @@ void GUI_Editor_UI::ShowMenuBar()
 void GUI_Editor_UI::Update_Implementation(float DeltaTime)
 {
 	GUI_Editor_Base::Update_Implementation(DeltaTime);
-	
+
 	mWidgetComponent->Tick(DeltaTime);
 
 	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
@@ -69,7 +66,6 @@ void GUI_Editor_UI::Update_Implementation(float DeltaTime)
 
 	// LOG_CORE_INFO("Mouse Pos : {0}, {1}", mousePos.x, mousePos.y);
 	mWidgetComponent->AddInstance();
-
 
 	if (ImGui::IsItemClicked(0))
 	{

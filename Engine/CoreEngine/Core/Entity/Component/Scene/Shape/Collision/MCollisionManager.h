@@ -36,6 +36,7 @@ enum class ETraceType : uint8_t
 	Ground,
 	Projectile,
 	PlayerWeapon,
+	Interactive,
 	Max
 };
 
@@ -51,6 +52,10 @@ constexpr const char* TraceTypeToString(const ETraceType InType)
 		return "Ground";
 	case ETraceType::Projectile:
 		return "Projectile";
+	case ETraceType::PlayerWeapon:
+		return "PlayerWeapon";
+	case ETraceType::Interactive:
+		return "Interactive";
 	case ETraceType::Max:
 		return "Max";
 	}
@@ -132,6 +137,8 @@ public:
 	 * @param InCollision 충돌체 인터페이스
 	 */
 	void UnEnrollCollision(ICollision* InCollision);
+
+	void UnEnrollAllCollision();
 
 	/**
 	 * 충돌 레이어 설정 (레이어와 레이어간 충돌 여부 설정)
