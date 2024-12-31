@@ -28,6 +28,11 @@ void MCollisionManager::SetCollisionLayer(ETraceType InLeft, ETraceType InRight,
 	mCollisionLayer[leftLayer][rightLayer] = bEnable;
 }
 
+JArray<ICollision*>& MCollisionManager::GetLayer(ETraceType InType)
+{
+	return mLayerHash[InType];
+}
+
 void MCollisionManager::UpdateCollision()
 {
 	// 2차원 배열(각 레이어별로)을 순회하면서 충돌을 검사한다.

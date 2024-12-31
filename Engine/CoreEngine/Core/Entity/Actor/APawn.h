@@ -21,6 +21,9 @@ public:
 	void Destroy() override;
 
 protected:
+	void CheckGround();
+
+protected:
 	JPawnMovementComponent* mMovementComponent;
 	JSphereComponent*       mCollisionSphere;
 	JLineComponent*         mLineComponent;

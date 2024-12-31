@@ -127,6 +127,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	void Initialize();
 	void Play();
 	void Resume();
 	void Pause();

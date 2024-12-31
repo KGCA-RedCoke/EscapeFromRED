@@ -124,6 +124,7 @@ void JAnimator::Destroy()
 void JAnimator::AddAnimationClip(const JText& InState, const JAnimationClip* InClip)
 {
 	mStateMachine[InState] = UPtrCast<JAnimationClip>(InClip->Clone());
+	mStateMachine[InState]->Initialize();
 }
 
 void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
@@ -136,6 +137,7 @@ void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
 		}
 	}
 	mStateMachine[InState] = GetWorld.AnimationManager->Clone(InClipPath, mSkeletalMeshComponent);
+	mStateMachine[InState]->Initialize();
 }
 
 void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,

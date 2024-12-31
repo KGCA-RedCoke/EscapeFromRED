@@ -277,6 +277,12 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
+void JAnimationClip::Initialize()
+{
+	mEvents[0].Bind([this](){ OnAnimStart.Execute(); });
+	mEvents[mEndFrame - 1].Bind([this](){ OnAnimFinished.Execute(); });
+}
+
 void JAnimationClip::Play()
 {
 	mElapsedTime = mStartTime * mFramePerSecond * mTickPerFrame;
@@ -299,7 +305,7 @@ void JAnimationClip::Stop()
 {
 	bPlaying     = false;
 	mElapsedTime = 0.0f;
-	// mNextState.clear();
+	mNextState.clear();
 }
 
 bool JAnimationClip::TickAnim(const float DeltaSeconds)
@@ -307,20 +313,6 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	if (!bPlaying || !mSkeletalMesh)
 	{
 		return true;
-	}
-
-	if (mInstanceData.CurrentAnimIndex == 0)
-	{
-		OnAnimStart.Execute();
-	}
-	if (mInstanceData.CurrentAnimIndex >= mTracks.size() - 2)
-	{
-		OnAnimFinished.Execute();
-	}
-
-	if (CheckTransition())
-	{
-		return false;
 	}
 
 	// 경과 시간이 애니메이션의 시작 시간을 초과
@@ -336,14 +328,21 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		float loopOverflowTime = mElapsedTime - mEndTime;
 		mElapsedTime           = mStartTime + loopOverflowTime;
 
-		mInstanceData.DeltaTime        = 0.7;
-		mInstanceData.CurrentAnimIndex = mInstanceData.NextAnimIndex;
+		mInstanceData.DeltaTime        = 0;
+		mInstanceData.CurrentAnimIndex = 0;
 		mInstanceData.NextAnimIndex    = 0;
 		OnAnimBlendOut.Execute();
 	}
 	else
 	{
 		UpdateInstanceData(mElapsedTime);
+	}
+	
+	mEvents[mInstanceData.CurrentAnimIndex].Execute();
+
+	if (CheckTransition())
+	{
+		return false;
 	}
 
 	// 경과시간 계산
@@ -356,7 +355,8 @@ bool JAnimationClip::CheckTransition()
 {
 	for (auto& transition : mTransitionMap)
 	{
-		JText nextState = transition.first;
+		JText nextState      = transition.first;
+		float transitionTime = transition.second[0].TransitionTime;
 
 		if (transition.second[0].Condition())
 		{
@@ -544,13 +544,12 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 		mInstanceData.DeltaTime        = (InAnimElapsedTime - startTick) / (endTick - startTick);
 		mInstanceData.CurrentAnimIndex = startFrame;
 		mInstanceData.NextAnimIndex    = endFrame;
-
-		if (endFrame - startFrame > 1)
-		{
-			mInstanceData.DeltaTime = (0.33);
-			// mInstanceData.CurrentAnimIndex = startFrame;
-			// mInstanceData.NextAnimIndex    = endFrame;
-		}
+	}
+	if (startFrame >= mEndFrame)
+	{
+		mInstanceData.DeltaTime        = (0.33);
+		mInstanceData.CurrentAnimIndex = 0;
+		mInstanceData.NextAnimIndex    = 0;
 	}
 }
 

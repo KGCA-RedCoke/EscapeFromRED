@@ -30,7 +30,7 @@ void JMaterial_SkySphere::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 	float gameTime = GetWorld.GetGameTime();
 	// // Time버퍼를(상수) 넘겨줘야한다.
-	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
+	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME,  &gameTime);
 }
 
 void JMaterial_SkySphere::InitializeParams()

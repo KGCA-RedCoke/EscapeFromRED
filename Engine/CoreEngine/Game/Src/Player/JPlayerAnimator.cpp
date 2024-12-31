@@ -23,24 +23,21 @@ void JPlayerAnimator::Initialize()
 
 	auto* attackAnim = GetWorld.AnimationManager->Load("Game/Animation/FPP_Halb_Attack_D.jasset",
 													   mSkeletalMeshComponent);
-	attackAnim->OnAnimStart.Bind([this](){
+	
+	attackAnim->mEvents[attackAnim->GetEndFrame() * 0.3].Bind([this](){
 		mOwnerCharacter->mWeaponCollision->EnableCollision(true);
 	});
-	attackAnim->OnAnimBlendOut.Bind([this](){
-		mOwnerCharacter->bShouldAttack = false;
-		mOwnerCharacter->mWeaponCollision->EnableCollision(false);
-	});
-	attackAnim->OnAnimFinished.Bind([this](){
+	attackAnim->mEvents[attackAnim->GetEndFrame() * 0.7].Bind([this](){
 		mOwnerCharacter->bShouldAttack = false;
 		mOwnerCharacter->mWeaponCollision->EnableCollision(false);
 	});
 
 	AddAnimationClip("Idle_Free",
-					 "Game/Animation/FPP_Halb_Idle.jasset");
+					 "Game/Animation/Player/FPP_Halb_Idle.jasset");
 	AddAnimationClip("Walk_Free",
-					 "Game/Animation/FPP_Halb_Walk.jasset");
+					 "Game/Animation/Player/FPP_Halb_Walk.jasset");
 	AddAnimationClip("Run_Free",
-					 "Game/Animation/FPP_Halb_Run.jasset");
+					 "Game/Animation/Player/FPP_Halb_Run.jasset");
 	AddAnimationClip("Attack", attackAnim);
 
 	AddAnimLink("Idle_Free", "Walk_Free", [&](){ return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);

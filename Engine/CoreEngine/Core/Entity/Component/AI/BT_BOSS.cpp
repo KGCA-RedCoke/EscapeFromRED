@@ -242,9 +242,9 @@ NodeStatus BT_BOSS::ChasePlayer(UINT N)
         Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
                                       ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
                                       : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
-        bool Temp2 = (PlayerPos.y < 600.f) ? false : true;
-        LOG_CORE_INFO("NPC  : {}   Player : {}", Temp, Temp2);
+        // bool Temp = (mFloorType == EFloorType::FirstFloor) ? false : true;
+        // bool Temp2 = (PlayerPos.y < 600.f) ? false : true;
+        // LOG_CORE_INFO("NPC  : {}   Player : {}", Temp, Temp2);
         if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
         /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/

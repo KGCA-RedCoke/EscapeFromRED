@@ -119,49 +119,44 @@ bool JSkeletalMeshObject::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	return true;
 }
-
 void JSkeletalMeshObject::Tick(float DeltaTime)
 {
 	if (mCurrentAnimation)
 	{
-		if (bTransitAnimation)
-		{
-			auto& prevAnimData = mPreviewAnimationClip->GetInstanceData();
-			auto& nextAnimData = mCurrentAnimation->GetInstanceData();
-
-			mTransitionElapsedTime += DeltaTime;
-
-			float BlendWeight = std::clamp(mTransitionElapsedTime / .5f, 0.0f, 1.0f);
-
-			for (int32_t i = 0; i < mInstanceData.size(); ++i)
-			{
-				mInstanceData[i].SkeletalData.BlendWeight       = BlendWeight;
-				mInstanceData[i].SkeletalData.CurrentAnimOffset = prevAnimData.CurrentAnimOffset;
-				mInstanceData[i].SkeletalData.CurrentAnimIndex  = prevAnimData.NextAnimIndex;
-				mInstanceData[i].SkeletalData.NextAnimOffset    = nextAnimData.CurrentAnimOffset;
-				mInstanceData[i].SkeletalData.NextAnimIndex     = nextAnimData.NextAnimIndex;
-			}
-
-			// 블렌딩 완료 시
-			if (BlendWeight >= 1.0f)
-			{
-				bTransitAnimation      = false;
-				mTransitionElapsedTime = 0.0f;
-				mPreviewAnimationClip->Stop();
-				mPreviewAnimationClip = nullptr;
-			}
-		}
 		if (mCurrentAnimation->TickAnim(DeltaTime))
 		{
-			for (int32_t i = 0; i < mInstanceData.size(); ++i)
+			auto& animData = mCurrentAnimation->GetInstanceData();
+
+			if (bTransitAnimation)
 			{
-				mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
+				mTransitionElapsedTime += DeltaTime;
+
+				float BlendWeight = std::clamp(mTransitionElapsedTime / 0.2f, 0.0f, 1.0f);
+
+				for (int32_t i = 0; i < mInstanceData.size(); ++i)
+				{
+					mInstanceData[i].SkeletalData.BlendWeight    = BlendWeight;
+					mInstanceData[i].SkeletalData.NextAnimOffset = animData.CurrentAnimOffset;
+					mInstanceData[i].SkeletalData.NextAnimIndex  = animData.CurrentAnimIndex;
+				}
+
+				// 블렌딩 완료 시
+				if (BlendWeight >= 1.0f)
+				{
+					bTransitAnimation      = false;
+					mTransitionElapsedTime = 0.0f;
+				}
+			}
+			else
+			{
+				for (int32_t i = 0; i < mInstanceData.size(); ++i)
+				{
+					mInstanceData[i].SkeletalData = mCurrentAnimation->GetInstanceData();
+				}
 			}
 		}
-		if (mPreviewAnimationClip)
-		{
-			mPreviewAnimationClip->TickAnim(DeltaTime);
-		}
+
+	
 	}
 }
 

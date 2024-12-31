@@ -37,6 +37,7 @@ enum class ETraceType : uint8_t
 	Projectile,
 	PlayerWeapon,
 	Interactive,
+	None,
 	Max
 };
 
@@ -147,6 +148,8 @@ public:
 	 * @param bEnable 충돌 여부
 	 */
 	void SetCollisionLayer(ETraceType InLeft, ETraceType InRight, bool bEnable);
+
+	JArray<ICollision*>& GetLayer(ETraceType InType);
 
 	/**
 	 * 월드 충돌 업데이트 (매 프레임 호출)

@@ -1,6 +1,7 @@
 ﻿#include "APawn.h"
 
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
+#include "Core/Interface/JWorld.h"
 #define INIT_HEIGHT 0.f
 
 APawn::APawn()
@@ -58,8 +59,9 @@ void APawn::Initialize()
 	{
 		mLineComponent = CreateDefaultSubObject<JLineComponent>("LineComponent", this);
 		mLineComponent->SetupAttachment(this);
+		mLineComponent->SetTraceType(ETraceType::None);
 
-		mLineComponent->OnComponentOverlap.Bind([this](ICollision* InOther, const FHitResult& OutHitResult){
+		/*mLineComponent->OnComponentOverlap.Bind([this](ICollision* InOther, const FHitResult& OutHitResult){
 			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
 			assert(sceneComponent);
 			const ETraceType type = sceneComponent->GetTraceType();
@@ -83,7 +85,6 @@ void APawn::Initialize()
 					}
 					else if (currentLocation.y < MaxHeight - FLT_EPSILON)
 					{
-						// mLocalLocation.y = MaxHeight - FLT_EPSILON;
 						AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
 						mYVelocity = 0.f;
 					}
@@ -91,7 +92,7 @@ void APawn::Initialize()
 				}
 				break;
 			}
-		});
+		});*/
 
 
 	}
@@ -156,6 +157,7 @@ void APawn::Initialize()
 void APawn::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
+	CheckGround();
 	mDeltaTime = DeltaTime;
 	mMaxHeight = INIT_HEIGHT;
 }
@@ -166,4 +168,30 @@ void APawn::Destroy()
 
 	mLineComponent->Destroy();
 	mCollisionSphere->Destroy();
+}
+
+void APawn::CheckGround()
+{
+	for (ICollision* ground : GetWorld.ColliderManager->GetLayer(ETraceType::Ground))
+	{
+		FHitResult hitResult;
+		if (mLineComponent->Intersect(ground, hitResult))
+		{
+			float MaxHeight = FMath::Max(mMaxHeight, hitResult.HitLocation.y);
+
+			FVector currentLocation = GetLocalLocation();
+			mYVelocity += 980 * mDeltaTime;
+			// mLocalLocation.y = MaxHeight;	
+			if (currentLocation.y > MaxHeight + FLT_EPSILON)
+			{
+				AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
+			}
+			else if (currentLocation.y < MaxHeight - FLT_EPSILON)
+			{
+				AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
+				mYVelocity = 0.f;
+			}
+			mMaxHeight = MaxHeight;
+		}
+	}
 }

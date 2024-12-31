@@ -32,7 +32,6 @@ cbuffer LightConstantBuffer : register(b1)
 cbuffer TimeConstantBuffer : register(b2)
 {
 	float GameTime;
-	float DeltaTime;
 }
 
 struct FPointLight

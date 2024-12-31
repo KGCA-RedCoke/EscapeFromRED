@@ -586,7 +586,7 @@ bool SphereIntersectOBB(const FSphere& InSphere, const FBoxShape& InBox, FHitRes
 	{
 		OutHitResult.HitLocation = ClosestPoint;
 		OutHitResult.HitNormal   = Difference;
-		OutHitResult.Distance    = sqrt(DistanceSquared);
+		OutHitResult.Distance    = InSphere.Radius - sqrt(DistanceSquared);
 		return true;
 	}
 
