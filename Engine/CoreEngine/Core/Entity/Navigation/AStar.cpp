@@ -108,7 +108,7 @@ void AStar::RetracePath(Ptr<Node> Start, Ptr<Node> Target)
         current = current->Parent.lock();
     }
     std::reverse(TempPath.begin(), TempPath.end());
-    mPath = MakePtr<Path>(TempPath, Start->WorldPos, TurnDst);
+    mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
     mPathIdx = 1;
 }
 

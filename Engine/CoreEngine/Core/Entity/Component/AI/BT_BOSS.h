@@ -63,6 +63,7 @@ public:
 	bool        runningFlag = false;
 	EFloorType  mFloorType  = EFloorType::FirstFloor;
 	static bool mIsPlayGame;
+	bool		isPendingKill = false;
 
 	AEnemy* mOwnerEnemy;
 

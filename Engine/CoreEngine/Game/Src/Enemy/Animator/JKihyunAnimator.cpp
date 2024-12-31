@@ -38,7 +38,8 @@ void JKihyunAnimator::Initialize()
 
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
-    attackClip->OnAnimFinished.Bind([this, &attackClip]()
+    attackClip->SetAnimationSpeed(2.f);
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind([&]()
     {
         if (mEnemy)
         {
@@ -52,6 +53,7 @@ void JKihyunAnimator::Initialize()
 
     AddAnimLink("Idle", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
     AddAnimLink("Walk", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
+    AddAnimLink("Attack", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
 
     AddAnimLink("Idle", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
     AddAnimLink("Walk", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
