@@ -126,19 +126,6 @@ JSceneComponent* AActor::GetChildSceneComponentByName(JTextView InName) const
 	return nullptr;
 }
 
-JSceneComponent* AActor::GetChildSceneComponentByType(JTextView InType) const
-{
-	const uint32_t type = StringHash(InType.data());
-
-	for (auto& sceneComponent : mChildSceneComponents)
-	{
-		if (sceneComponent->GetType() == type)
-		{
-			return sceneComponent.get();
-		}
-	}
-	return nullptr;
-}
 
 JActorComponent* AActor::GetChildComponentByType(JTextView InType) const
 {

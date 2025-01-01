@@ -11,9 +11,11 @@
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Boss/AKillerClown.h"
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
+
 #define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
@@ -73,6 +75,14 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 			case HASH_ASSET_TYPE_Enemy:
 				{
 					AActor* newActor = activeLevel->CreateActor<AEnemy>(name);
+					Utils::Serialization::DeSerialize(assetPath, newActor);
+					newActor->SetName(name);
+					newActor->Initialize();
+				}
+				break;
+			case HASH_ASSET_TYPE_KillerClown:
+				{
+					AActor* newActor = activeLevel->CreateActor<AKillerClown>(name);
 					Utils::Serialization::DeSerialize(assetPath, newActor);
 					newActor->SetName(name);
 					newActor->Initialize();

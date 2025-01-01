@@ -30,7 +30,6 @@ public:
 
 public:
 	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
-	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
 	JActorComponent* GetChildComponentByType(JTextView InType) const;
 
 	template <class ObjectType, typename... Args>

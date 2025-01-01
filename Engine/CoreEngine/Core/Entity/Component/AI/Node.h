@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "common_include.h"
 
-class BT_BOSS;
+class BtBase;
 
 enum class NodeStatus
 {

@@ -176,6 +176,24 @@ void JSceneComponent::DrawID(uint32_t ID)
 	}
 }
 
+JSceneComponent* JSceneComponent::GetChildSceneComponentByType(JTextView InType) const
+{
+	const uint32_t type = StringHash(InType.data());
+
+	for (auto& sceneComponent : mChildSceneComponents)
+	{
+		if (sceneComponent->GetType() == type)
+		{
+			return sceneComponent.get();
+		}
+		if (JSceneComponent* child = sceneComponent->GetChildSceneComponentByType(InType))
+		{
+			return child;
+		}
+	}
+	return nullptr;
+}
+
 void JSceneComponent::ShowEditor()
 {
 	ImGui::InputText(u8("이름"),

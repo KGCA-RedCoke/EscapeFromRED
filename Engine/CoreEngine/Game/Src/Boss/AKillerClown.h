@@ -1,60 +1,40 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
+#include "Game/Src/Enemy/AEnemy.h"
 
+class JStaticMeshComponent;
 class JAnimator;
-
-enum class EBossType : uint8_t
-{
-    Kihyun,
-    Girl,
-    Clown,
-    Custom,
-    MAX // 이건 숫자 사용
-};
 
 enum class EBossState : uint8_t
 {
     Idle,
     Walk,
     Run,
-    Attack,
+    Attack1,
+    Attack2,
+    Attack3,
+    Hit,
     Death,
+    StandUp,
     MAX
 };
 
-constexpr const char* GetEnemyTypeString(EBossType InType)
-{
-    switch (InType)
-    {
-    case EBossType::Kihyun:
-        return "Kihyun";
-    case EBossType::Girl:
-        return "Girl";
-    case EBossType::Clown:
-        return "Clown";
-    case EBossType::Custom:
-        break;
-    case EBossType::MAX:
-        break;
-    }
-    return "Unknown";
-}
 
-class ABoss;
+class AKillerClown;
 DECLARE_DYNAMIC_DELEGATE(FOnBossHit, const FHitResult& HitResult);
 
-class ABoss : public APawn
+class AKillerClown : public AEnemy
 {
 public:
     FOnBossHit OnBossHit;
 
 public:
     // Constructor
-    ABoss();
+    AKillerClown();
     // Constructor
-    ABoss(JTextView InName);
+    AKillerClown(JTextView InName);
     // Destructor
-    ~ABoss() override = default;
+    ~AKillerClown() override = default;
 
 public:
     void Initialize() override;
@@ -75,13 +55,10 @@ public:
     EBossState GetBossState() { return mBossState; }
 
 protected:
-    EBossType mBossType;
     EBossState mBossState;
-    UPtr<JAnimator> mAnimator;
-    class JSkeletalMeshComponent* mSkeletalMeshComponent;
-    class BT_BOSS* mBehaviorTree;
-
+    JStaticMeshComponent* mHammerMesh;
+    JSphereComponent* mHammerRegion;
     friend class JKillerClownAnimator;
 };
 
-REGISTER_CLASS_TYPE(ABoss)
+REGISTER_CLASS_TYPE(AKillerClown)
