@@ -1,5 +1,5 @@
 ﻿#include "JAnimationClip.h"
-
+#include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
 
@@ -63,7 +63,7 @@ JAnimationClip::JAnimationClip(JTextView InName, JSkeletalMesh* InSkeletalMesh)
 	mSkeletalMesh = InSkeletalMesh;
 }
 
-JAnimationClip::JAnimationClip(JTextView InName, const JSkeletalMeshComponent* InSkeletalMesh)
+JAnimationClip::JAnimationClip(JTextView InName, JSkeletalMeshComponent* InSkeletalMesh)
 	: mName(InName),
 	  mStartTime(0),
 	  mEndTime(0),
@@ -75,7 +75,8 @@ JAnimationClip::JAnimationClip(JTextView InName, const JSkeletalMeshComponent* I
 	  bRootMotion(false),
 	  mElapsedTime(0)
 {
-	mSkeletalMesh = InSkeletalMesh->GetSkeletalMesh();
+	mSkeletalMeshComponent = InSkeletalMesh;
+	mSkeletalMesh          = InSkeletalMesh->GetSkeletalMesh();
 }
 
 JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
@@ -281,6 +282,12 @@ void JAnimationClip::Initialize()
 {
 	mEvents[0].Bind([this](){ OnAnimStart.Execute(); });
 	mEvents[mEndFrame - 1].Bind([this](){ OnAnimFinished.Execute(); });
+	OnAnimBlendOut.Bind([&](){
+		if (bRootMotion)
+		{
+			ApplyRootMotion();
+		}
+	});
 }
 
 void JAnimationClip::Play()
@@ -305,7 +312,11 @@ void JAnimationClip::Stop()
 {
 	bPlaying     = false;
 	mElapsedTime = 0.0f;
-	mNextState.clear();
+}
+
+void JAnimationClip::ApplyRootMotion() const
+{
+	mSkeletalMeshComponent->GetOwnerActor()->AddLocalLocation(mRootMotionValue.Position);
 }
 
 bool JAnimationClip::TickAnim(const float DeltaSeconds)
@@ -315,6 +326,9 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		return true;
 	}
 
+	// 경과시간 계산
+	mElapsedTime += DeltaSeconds * mAnimationSpeed;
+
 	// 경과 시간이 애니메이션의 시작 시간을 초과
 	if (mElapsedTime >= mEndTime)
 	{
@@ -323,20 +337,12 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 			Stop();
 			return true;
 		}
-
-		// 루프 시 경과 시간을 보존하여 다음 루프에 연결
-		float loopOverflowTime = mElapsedTime - mEndTime;
-		mElapsedTime           = mStartTime + loopOverflowTime;
-
-		mInstanceData.DeltaTime        = 0;
-		mInstanceData.CurrentAnimIndex = 0;
-		mInstanceData.NextAnimIndex    = 0;
+		
+		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 		OnAnimBlendOut.Execute();
 	}
-	else
-	{
-		UpdateInstanceData(mElapsedTime);
-	}
+
+	UpdateInstanceData(mElapsedTime);
 
 	mEvents[mInstanceData.CurrentAnimIndex].Execute();
 
@@ -345,8 +351,6 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		return false;
 	}
 
-	// 경과시간 계산
-	mElapsedTime += DeltaSeconds * mAnimationSpeed;
 
 	return true;
 }
@@ -582,9 +586,6 @@ uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureDa
 	const int32_t boneCount  = mSkeletalMesh->GetSkeletonData().Joints.size();
 	const int32_t frameCount = mEndFrame - mStartFrame;
 
-	FMatrix initialTransform;
-	FMatrix finalTransform;
-
 	JArray<FMatrix> boneWorldTransforms(boneCount); // 현재 프레임의 월드 변환 행렬
 
 	const uint32_t offset = OutTextureData.size();
@@ -626,12 +627,6 @@ uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureDa
 					*
 					boneWorldTransforms[boneIndex];
 
-			if (frameIndex == 0)
-				initialTransform = worldTransform;
-			if (frameIndex == boneCount - 1)
-				finalTransform = worldTransform;
-
-
 			OutTextureData.emplace_back(FVector4{worldTransform.m[0]});
 			OutTextureData.emplace_back(FVector4{worldTransform.m[1]});
 			OutTextureData.emplace_back(FVector4{worldTransform.m[2]});
@@ -648,14 +643,20 @@ uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureDa
 
 	mEvents.resize(mEndFrame);
 
+
+	FVector initialTransform;
+	FVector finalTransform;
+	initialTransform = mTracks[0]->TransformKeys.PositionKeys[0].Value;
+	finalTransform   = mTracks[0]->TransformKeys.PositionKeys[mEndFrame - 1].Value;
+
 	// 루트 모션 계산
-	FMatrix deltaTransform = finalTransform * XMMatrixInverse(nullptr, initialTransform);
+	FVector deltaTransform = finalTransform - initialTransform;
 
 	// deltaTransform에서 위치, 회전, 스케일을 분리하여 루트 모션 값으로 저장
-	FVector     deltaPosition(deltaTransform.m[3][0], deltaTransform.m[3][1], deltaTransform.m[3][2]);
+	// FVector     deltaPosition(deltaTransform.m[3][0], deltaTransform.m[3][1], deltaTransform.m[3][2]);
 	FQuaternion deltaRotation;
 	// 루트 모션 값 설정
-	mRootMotionValue = {deltaPosition, deltaRotation};
+	mRootMotionValue = {deltaTransform, deltaRotation};
 
 	return offset;
 }

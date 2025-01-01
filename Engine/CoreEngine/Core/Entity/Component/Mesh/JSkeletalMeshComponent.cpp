@@ -220,11 +220,15 @@ void JSkeletalMeshComponent::ShowEditor()
 
 		if (metaData.AssetType == HASH_ASSET_TYPE_ANIMATION_CLIP)
 		{
-			// mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str);
-
+			auto* anim = GetWorld.AnimationManager->Load(str, mSkeletalMeshObject->GetSkeletalMesh());
+			anim->Initialize();
+			anim->SetRootMotion(true);
+			anim->SetSkeletalMeshComp(this);
+			
 			mSkeletalMeshObject->
-					SetAnimation(GetWorld.AnimationManager->Load(str, mSkeletalMeshObject->GetSkeletalMesh()));
+					SetAnimation(anim);
 
+			
 			ImGui::EndDragDropTarget();
 		}
 	}

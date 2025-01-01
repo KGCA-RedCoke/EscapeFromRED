@@ -121,7 +121,7 @@ inline JText GenerateUniqueFileName(const JText& InDirectory, const JText& InBas
 constexpr const char* NAME_OBJECT_BASE                    = "JObject";
 constexpr const char* NAME_OBJECT_ACTOR_COMPONENT         = "JActorComponent";
 constexpr const char* NAME_OBJECT_SCENE_COMPONENT         = "JSceneComponent";
-constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT   = "StaticMeshComponent";
+constexpr const char* NAME_OBJECT_STATIC_MESH_COMPONENT   = "JStaticMeshComponent";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_COMPONENT = "JSkeletalMeshComponent";
 constexpr const char* NAME_OBJECT_ACTOR                   = "AActor";
 constexpr const char* NAME_OBJECT_BOUNDING_BOX            = "ABoundingBox";
@@ -129,7 +129,7 @@ constexpr const char* NAME_OBJECT_STATIC_MESH_ACTOR       = "JStaticMeshActor";
 constexpr const char* NAME_OBJECT_SKELETAL_MESH_ACTOR     = "JSkeletalMeshActor";
 constexpr const char* NAME_OBJECT_PAWN                    = "APawn";
 constexpr const char* NAME_OBJECT_ENEMY                   = "AEnemy";
-constexpr const char* NAME_OBJECT_KILLERCLOWN = "AKillerClown";
+constexpr const char* NAME_OBJECT_KILLERCLOWN             = "AKillerClown";
 constexpr const char* NAME_OBJECT_CHARACTER               = "ACharacter";
 constexpr const char* NAME_OBJECT_PLAYER_CHARACTER        = "APlayerCharacter";
 constexpr const char* NAME_OBJECT_INTERACTIVE_OBJECT      = "AInteractiveObject";

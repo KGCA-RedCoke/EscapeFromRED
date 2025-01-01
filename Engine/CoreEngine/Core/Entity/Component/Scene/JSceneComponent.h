@@ -41,8 +41,6 @@ public:
 	void PostRender() override {};
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
-public:
-	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
 	
 public:
 	void ShowEditor() override;
@@ -69,7 +67,9 @@ public:
 	void SetLocalScale(const FVector& InScale);
 
 	void             SetParentSceneComponent(JSceneComponent* Ptr) { mParentSceneComponent = Ptr; }
-	JSceneComponent* GetParentSceneComponent() { return mParentSceneComponent; }
+	JSceneComponent* GetParentSceneComponent() const { return mParentSceneComponent; }
+	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
+	JSceneComponent* GetChildSceneComponentByType(JTextView InType) const;
 	void             AddChildSceneComponent(JSceneComponent* Ptr);
 
 	/**

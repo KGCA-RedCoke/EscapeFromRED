@@ -107,12 +107,12 @@ public:
 	FOnAnimStart    OnAnimStart;
 	FOnAnimFinished OnAnimFinished;
 	FOnAnimBlendOut OnAnimBlendOut;
-	FOnAnimEvent	OnAnimEvent;
+	FOnAnimEvent    OnAnimEvent;
 
 public:
 	JAnimationClip() = default;
 	JAnimationClip(JTextView InName, JSkeletalMesh* InSkeletalMesh = nullptr);
-	JAnimationClip(JTextView InName, const JSkeletalMeshComponent* InSkeletalMesh);
+	JAnimationClip(JTextView InName, JSkeletalMeshComponent* InSkeletalMesh);
 	JAnimationClip(const JAnimationClip& InOther);
 	~JAnimationClip() override = default;
 
@@ -132,6 +132,7 @@ public:
 	void Resume();
 	void Pause();
 	void Stop();
+	void ApplyRootMotion() const;
 
 	bool TickAnim(const float DeltaSeconds);
 
@@ -158,12 +159,14 @@ public:
 public:
 	[[nodiscard]] FORCEINLINE float GetStartTime() const { return mStartTime; }
 	[[nodiscard]] FORCEINLINE float GetEndTime() const { return mEndTime; }
-	[[nodiscard]] FORCEINLINE uint32_t GetEndFrame() const {return mEndFrame;}
+	[[nodiscard]] FORCEINLINE uint32_t GetEndFrame() const { return mEndFrame; }
 	[[nodiscard]] FORCEINLINE float GetSourceSamplingInterval() const { return mSourceSamplingInterval; }
 	[[nodiscard]] FORCEINLINE float GetAnimationSpeed() const { return mAnimationSpeed; }
 	[[nodiscard]] FORCEINLINE JArray<Ptr<JAnimBoneTrack>>& GetTracks() { return mTracks; }
 
 	void AddTransition(const JText& InState, const std::function<bool()>& InFunc, float InTransitionTime);
+
+	void SetSkeletalMeshComp(JSkeletalMeshComponent* InSkeletalMesh) { mSkeletalMeshComponent = InSkeletalMesh; }
 
 	void SetSkeletalMesh(JSkeletalMesh* InSkeletalMesh);
 
@@ -182,8 +185,8 @@ public:
 
 	[[nodiscard]] float GetElapsedRatio() const;
 
-	[[nodiscard]] FVector GetRMPosition() const {return mRootMotionValue.Position;}
-	[[nodiscard]] FQuaternion GetRMQuaternion() const {return mRootMotionValue.Rotation;}
+	[[nodiscard]] FVector     GetRMPosition() const { return mRootMotionValue.Position; }
+	[[nodiscard]] FQuaternion GetRMQuaternion() const { return mRootMotionValue.Rotation; }
 
 	[[nodiscard]] const FSkeletalMeshInstanceData& GetInstanceData() const { return mInstanceData; }
 
@@ -211,7 +214,8 @@ protected:
 	float mElapsedTime;				// 경과 시간
 
 	// ------------ Skeletal Mesh Data ------------
-	JSkeletalMesh* mSkeletalMesh;	// 스켈레탈 메쉬
+	JSkeletalMesh*          mSkeletalMesh;	// 스켈레탈 메쉬
+	JSkeletalMeshComponent* mSkeletalMeshComponent = nullptr;
 
 	// ------------ Animation Data ------------
 	struct FTransitionData
@@ -221,7 +225,7 @@ protected:
 	};
 
 	JText                                 mStateName;		// 현재 상태
-	JText                                 mNextState = "";	// 다음 상태
+	JText                                 mNextState;	// 다음 상태
 	JHash<JText, JArray<FTransitionData>> mTransitionMap;	// 전이 맵
 	JArray<Ptr<JAnimBoneTrack>>           mTracks;		// 본별로 트랙을 가지고 있는 배열
 	JHash<JText, JArray<FMatrix>>         mBoneMatrix;	// 본별로 행렬을 가지고 있는 해시맵
@@ -229,10 +233,10 @@ protected:
 
 	struct FRootMotionValue
 	{
-		FVector Position;
+		FVector     Position;
 		FQuaternion Rotation;
 	} mRootMotionValue;
-	
+
 	uint32_t mAnimOffset = 0;	// 애니메이션 텍스쳐 오프셋
 
 	bool bInterpolate = false;
@@ -240,7 +244,7 @@ protected:
 	friend class Utils::Fbx::FbxFile;
 
 public:
-	JArray<FOnAnimEvent>                 mEvents;
+	JArray<FOnAnimEvent> mEvents;
 };
 
 template <typename T>

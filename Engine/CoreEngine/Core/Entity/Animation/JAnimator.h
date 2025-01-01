@@ -40,6 +40,12 @@ public:
 	FSkeletalMeshInstanceData GetAnimInstanceData() const { return mSkeletalMeshInstanceData; }
 
 protected:
+	/**
+	 * @return 애니메이션 경과 비율 반환
+	 */
+	float GetAnimElapsedRatio() const;
+
+protected:
 	JSkeletalMeshComponent* mSkeletalMeshComponent;
 
 	FSkeletalMeshInstanceData mSkeletalMeshInstanceData;

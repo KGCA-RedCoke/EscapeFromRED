@@ -32,6 +32,7 @@ constexpr const char* NAME_MAT_SKYSPHERE   = "Game/Materials/Engine/Material_Sky
 constexpr const char* NAME_MAT_WINDOW      = "Game/Materials/Engine/Material_Window.jasset";
 constexpr const char* NAME_MAT_POM         = "Game/Materials/Engine/Material_POM.jasset";
 constexpr const char* NAME_MAT_DETAIL      = "Game/Materials/Engine/Material_Detail.jasset";
+constexpr const char* NAME_MAT_MIRROR      = "Game/Materials/Engine/Material_Mirror.jasset";
 constexpr const char* NAME_MAT_2D          = "Game/Materials/Engine/Material_2D.jasset";
 constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
 

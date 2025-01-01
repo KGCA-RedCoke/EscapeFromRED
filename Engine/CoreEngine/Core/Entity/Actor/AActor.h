@@ -29,7 +29,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
-	JSceneComponent* GetChildSceneComponentByName(JTextView InName) const;
+
 	JActorComponent* GetChildComponentByType(JTextView InType) const;
 
 	template <class ObjectType, typename... Args>

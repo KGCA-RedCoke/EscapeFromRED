@@ -69,7 +69,7 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 		return false;
 	}
 
-	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("StaticMeshComponent"));
+	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("JStaticMeshComponent"));
 
 	return true;
 }

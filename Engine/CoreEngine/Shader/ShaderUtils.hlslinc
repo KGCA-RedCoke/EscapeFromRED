@@ -364,6 +364,23 @@ float3 SpecularGGX(float3 N, float3 V, float3 L, float roughness, float3 F0)
 	return (D * G * F) / (4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001);
 }
 
+/**
+ * 가장자리 빛 효과 계산
+ */
+float3 ComputeRimLight(float3 WorldNormal, float3 View, float3 lightColor, float Power, float Intensity)
+{
+	// 바라보는 방향과 노멀 벡터 사이의 내적 계산 (테두리일 수록 값이 높음)
+	float rim = 1.0 - saturate(dot(WorldNormal, View));
+
+	// 높은 값은 더 높은 빛 효과를 준다.
+	rim = smoothstep(0.0, 1.0, rim);
+
+	// 빛의 강도 계산
+	rim = pow(rim, Power) * Intensity;
+
+	return rim * lightColor;
+}
+
 
 float3 ComputePBR(float3     baseColor,    // Base Color
 				  float      metallic,      // Metallic

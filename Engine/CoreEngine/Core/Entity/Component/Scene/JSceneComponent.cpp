@@ -176,24 +176,6 @@ void JSceneComponent::DrawID(uint32_t ID)
 	}
 }
 
-JSceneComponent* JSceneComponent::GetChildSceneComponentByType(JTextView InType) const
-{
-	const uint32_t type = StringHash(InType.data());
-
-	for (auto& sceneComponent : mChildSceneComponents)
-	{
-		if (sceneComponent->GetType() == type)
-		{
-			return sceneComponent.get();
-		}
-		if (JSceneComponent* child = sceneComponent->GetChildSceneComponentByType(InType))
-		{
-			return child;
-		}
-	}
-	return nullptr;
-}
-
 void JSceneComponent::ShowEditor()
 {
 	ImGui::InputText(u8("이름"),
@@ -344,6 +326,41 @@ void JSceneComponent::SetLocalScale(const FVector& InScale)
 {
 	mLocalScale = InScale;
 	bLocalDirty = true;
+}
+
+JSceneComponent* JSceneComponent::GetChildSceneComponentByName(JTextView InName) const
+{
+	for (auto& sceneComponent : mChildSceneComponents)
+	{
+		if (sceneComponent->GetName() == InName)
+		{
+			return sceneComponent.get();
+		}
+		if (JSceneComponent* childScene = sceneComponent->GetChildSceneComponentByName(InName))
+		{
+			return childScene;
+		}
+	}
+
+	return nullptr;
+}
+
+JSceneComponent* JSceneComponent::GetChildSceneComponentByType(JTextView InType) const
+{
+	const uint32_t type = StringHash(InType.data());
+
+	for (auto& sceneComponent : mChildSceneComponents)
+	{
+		if (StringHash(sceneComponent->mObjectType.c_str()) == type)
+		{
+			return sceneComponent.get();
+		}
+		if (JSceneComponent* childScene = sceneComponent->GetChildSceneComponentByType(InType))
+		{
+			return childScene;
+		}
+	}
+	return nullptr;
 }
 
 void JSceneComponent::AddChildSceneComponent(JSceneComponent* Ptr)
