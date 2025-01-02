@@ -11,74 +11,60 @@
 // Shading Model : lit
 // ------------------------------------------------------------------
 
+
 // 창문 더럽히는 텍스처
 Texture2D    g_DirtyTexture : register(t0);
 SamplerState g_SamplerLinearWrap : register(s0);
 
+const float metallic      = 3.448048f;
 const float roughnessTile = 2.0f;
+const float roughness     = 0.682485f;
 const float opacity       = 0.6f;
 
 PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 {
 	PixelIn_Base output;
 
-	output.Material    = Instance.Material;
 	output.VertexColor = Input.VertexColor;
 	output.WorldSpace  = float4(Input.Pos, 1.f);	// 로컬 좌표계
-	float3 normal      = Input.Normal;
 
 	output.WorldSpace = mul(output.WorldSpace, Instance.Transform);
 	output.ViewDir    = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal     = mul(normal, (float3x3)Instance.Transform);
-	output.Tangent    = mul(Input.Tangent, (float3x3)Instance.Transform);
-	output.Binormal   = mul(Input.Binormal, (float3x3)Instance.Transform);
+	output.Normal     = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
+	output.Tangent    = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
+	output.Binormal   = normalize(cross(output.Normal, output.Tangent));
 
 	return output;
 }
 
 float4 PS(PixelIn_Base Input) : SV_TARGET
 {
-	float3 baseColor = 1.f/*Input.Material.BaseColor*/;
-	float  metallic  = 1.f/*Input.Material.Metallic*/;
-	float  opacity   = 0.6f;
+	// 정규화된 벡터
+	float3 normal   = normalize(Input.Normal);
+	float3 lightDir = normalize(DirectionalLightPos - Input.WorldSpace.xyz);
+	float3 viewDir  = normalize(Input.ViewDir);
 
-	float4 roughnessTex = g_DirtyTexture.Sample(g_SamplerLinearWrap, Input.TexCoord * roughnessTile);
-	float4 roughness    = roughnessTex * /*Input.Material.Roughness*/0.682485;
+	// **더러운 텍스처 샘플링**
+	float3 dirtyFactor    = g_DirtyTexture.Sample(g_SamplerLinearWrap, Input.TexCoord * roughnessTile);
+	float3 finalRoughness = roughness * dirtyFactor;
 
-	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
-	float3 lightDir = normalize(DirectionalLightPos.xyz);
-	float  NdotL    = saturate(dot(normalize(Input.Normal), lightDir));
-	float3 diffuse  = NdotL * baseColor.rgb * DirectionalLightColor.rgb;
-	float3 specular = 0;
+	// **PBR 반사율 계산**
+	float  NdotL     = saturate(dot(normal, lightDir));       // 법선과 빛 방향의 내적
+	float3 baseColor = float3(1.0, 1.0, 1.0);           // 기본 색상 (하얀 창문)
+	float3 f0        = lerp(0.04f, 0.5f, metallic);
+	float3 specular  = SpecularGGX(normal, viewDir, lightDir, finalRoughness, f0);
+	float  ao        = 1.0f;                                    // 고정 Ambient Occlusion
 
-	// 난반사광이 없으면 애초에 반사되는 색상이 없음
-	if (diffuse.x > 0)
-	{
-		// 노말과 라이트의 반사각
-		float3 reflection = reflect(lightDir, normalize(Input.Normal));
-		float3 viewDir    = normalize(Input.ViewDir);
+	// **Fresnel 효과**
+	float3 reflection = specular * pow(1.0 - saturate(dot(viewDir, normal)), finalRoughness * 5.0);
 
-		// Specular는 카메라뷰와 반사각의 내적값을 제곱(할수록 광 나는 부분이 줄어듦) 사용
-		specular = saturate(dot(reflection, -viewDir));
-		specular = pow(specular, 1 / roughness);
-	}
-
-	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = 0.1 * baseColor;
-
-	for (int i = 0; i < 1; ++i)
-	{
-		float3 pointLight = ComputePointLight(Input.WorldSpace,
-											  Input.Normal,
-											  PointLight[i]);
-		diffuse += pointLight;
-		specular += pointLight;
-	}
-	float3 finalColor = float3(diffuse + ambient + (specular * metallic));
-	finalColor.rgb    = lerp(finalColor.rgb, finalColor.rgb * metallic, metallic);
-	float4 finalColorWithOpacity = float4(finalColor, opacity);
-	return finalColorWithOpacity;
+	// **최종 조명 계산**
+	float3 diffuse    = baseColor * NdotL;                 // 확산광
+	// float3 finalColor = ao * (diffuse + specular);    // AO 반영
+	float3 finalColor = lerp(baseColor * diffuse, reflection, opacity);
+	// **최종 색상 + 알파**
+	return float4(dirtyFactor, opacity);  // 알파 채널에 opacity 적용
 }

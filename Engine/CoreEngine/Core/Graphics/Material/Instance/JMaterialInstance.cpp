@@ -202,7 +202,7 @@ void* JMaterialInstance::GetInstanceParam(const JText& InParamName, bool bTextur
 
 void* JMaterialInstance::GetInstanceParam(uint32_t InParamKey, bool bTextureParam)
 {
-	if (mMaterialRawData.empty())
+	if (mMaterialRawData.empty() && !bTextureParam)
 	{
 		return nullptr;
 	}
@@ -224,7 +224,7 @@ void* JMaterialInstance::GetInstanceParam(uint32_t InParamKey, bool bTexturePara
 
 void JMaterialInstance::EditInstanceParam(const JText& InParamName, const FMaterialParam& InParamValue)
 {
-	if (mMaterialRawData.empty())
+	if (mMaterialRawData.empty() && InParamValue.ParamValue != EMaterialParamValue::Texture2D)
 	{
 		return;
 	}

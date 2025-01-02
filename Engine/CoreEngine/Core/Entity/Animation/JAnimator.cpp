@@ -169,3 +169,8 @@ void JAnimator::SetState(const JText& InState)
 
 	mSkeletalMeshComponent->SetAnimation(mCurrentAnimation);
 }
+
+float JAnimator::GetAnimElapsedRatio() const
+{
+	return mCurrentAnimation->GetElapsedRatio();
+}

@@ -29,6 +29,7 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 	G_Device.SetSamplerState(ESamplerState::LinearWrap, &slots, 1);
 	G_Device.SetBlendState(EBlendState::Opaque);
 	G_Device.SetRasterState(ERasterState::CullNone);
+	G_Device.SetDepthStencilState(EDepthStencilState::DepthNone);
 
 	// ID3D11ShaderResourceView* textureArraySRV = CreateTextureArray(device, context, mTextures.data(), mTextures.size());
 

@@ -113,20 +113,6 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
-JSceneComponent* AActor::GetChildSceneComponentByName(JTextView InName) const
-{
-	for (auto& sceneComponent : mChildSceneComponents)
-	{
-		if (sceneComponent->GetName() == InName)
-		{
-			return sceneComponent.get();
-		}
-	}
-
-	return nullptr;
-}
-
-
 JActorComponent* AActor::GetChildComponentByType(JTextView InType) const
 {
 	const uint32_t type = StringHash(InType.data());

@@ -16,7 +16,7 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
 
-#define ENABLE_TEST_MODE
+// #define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -26,14 +26,11 @@ GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 
 void GUI_Viewport_Scene::Initialize()
 {
-	// mWindowFlags |= ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
-
 	mEditorCameraRef = GetWorld.CameraManager->FetchResource<JCamera_Debug>(L"EditorCamera");
 	assert(mEditorCameraRef);
 
 	mPauseIcon = GetWorld.TextureManager->Load(L"rsc/Icons/PauseButton On@2x.png");
 	mPlayIcon  = GetWorld.TextureManager->Load(L"rsc/Icons/PlayButton On@2x.png");
-
 }
 
 void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)

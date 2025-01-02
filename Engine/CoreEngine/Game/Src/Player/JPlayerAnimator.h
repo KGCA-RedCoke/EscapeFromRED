@@ -25,7 +25,15 @@ public:
 public:
 	void Initialize() override;
 	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
+
+private:
+	void BindEvents();
 
 private:
 	APlayerCharacter* mOwnerCharacter;
+
+	bool bIsMoving;
+	bool bIsSprinting;
+	bool bIsCrouching;
 };

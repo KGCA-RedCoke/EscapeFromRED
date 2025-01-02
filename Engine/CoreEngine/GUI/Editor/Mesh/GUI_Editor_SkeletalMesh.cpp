@@ -169,7 +169,7 @@ void GUI_Editor_SkeletalMesh::DrawAnimationPreview()
 			if (!mPreviewAnimationClip || str != mPreviewAnimationClip->GetName())
 			{
 				mPreviewAnimationClip = GetWorld.AnimationManager->Clone(str, mMeshObject->GetSkeletalMesh());
-
+			
 				mMeshObject->SetAnimation(mPreviewAnimationClip.get());
 
 				ImGui::EndDragDropTarget();

@@ -5,6 +5,8 @@
 #include "JMaterial_Detail.h"
 #include "JMaterial_POM.h"
 #include "JMaterial_SkySphere.h"
+#include "Core/Graphics/Shader/JMaterial_Mirror.h"
+#include "Core/Graphics/Shader/MShaderManager.h"
 
 void MMaterialManager::SaveEngineMaterials()
 {
@@ -36,6 +38,10 @@ void MMaterialManager::SaveEngineMaterials()
 	// Utils::Serialization::Serialize(NAME_MAT_POM, POM);
 	// Utils::Serialization::Serialize(NAME_MAT_DETAIL, detail);
 
+	auto mirror = Load<JMaterial_Mirror>(NAME_MAT_MIRROR);
+	mirror->SetShader(MShaderManager::Get().Load("Shader/Mirror.hlsl"));
+	Utils::Serialization::Serialize(NAME_MAT_MIRROR, mirror);
+
 }
 
 void MMaterialManager::LoadEngineMaterials()
@@ -45,6 +51,7 @@ void MMaterialManager::LoadEngineMaterials()
 	Load<JMaterial_2D>(NAME_MAT_2D);
 	Load<JMaterial_POM>(NAME_MAT_POM);
 	Load<JMaterial_Detail>(NAME_MAT_DETAIL);
+	Load<JMaterial_Mirror>(NAME_MAT_MIRROR);
 }
 
 MMaterialManager::MMaterialManager()

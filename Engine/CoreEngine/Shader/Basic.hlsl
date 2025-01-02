@@ -79,8 +79,8 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal     = mul(normal, (float3x3)Instance.InvTransform);
-	output.Tangent    = mul(Input.Tangent, (float3x3)Instance.InvTransform);
+	output.Normal     = mul((float3x3)Instance.InvTransform, normal);
+	output.Tangent    = mul((float3x3)Instance.InvTransform, Input.Tangent);
 	output.Binormal   = cross(output.Normal, output.Tangent);
 
 	return output;
@@ -109,11 +109,8 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
 
 	float4 normalColor = normalMap.Sample(Sampler_Linear, texCoord).rgba;
-	if (normalColor.r * normalColor.g * normalColor.b < 0.9f)
-	{
-		normal = normalColor * 2.0f - 1.0f;
-		normal = normalize(mul(normal, tbn));
-	}
+	normal = normalColor * 2.0f - 1.0f;
+	normal = normalize(mul(normal, tbn));
 
 	ambientColor = aoMap.Sample(Sampler_Linear, texCoord).r;
 	roughness    = roughnessMap.Sample(Sampler_Linear, texCoord).g * roughnessFactor;
@@ -155,6 +152,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	float3 finalColor = diffuse + ambient + specular;
 
 	finalColor += emissive;
+	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 5.f, 3.f);
 
 	return float4(finalColor, opacity);
 
