@@ -293,9 +293,9 @@
     <ClInclude Include="Vender\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="Vender\include\imgui\imstb_textedit.h" />
     <ClInclude Include="Vender\include\imgui\imstb_truetype.h" />
-    <None Include="Shader\Shadow.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+<!--    <None Include="Shader\Shadow.hlsl">-->
+<!--      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--    </None>-->
     <None Include="Shader\SimpleColor.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
