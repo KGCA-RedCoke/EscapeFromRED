@@ -98,8 +98,8 @@ namespace JMath
 		inline TVector2 operator*=(const TVector2& Other);
 		TVector2        operator/=(const TVector2& Other);
 
-		inline TVector2 operator*=(float Scale);
-		TVector2        operator/=(float V);
+		TVector2 operator*=(float Scale);
+		TVector2 operator/=(float V);
 
 	public:
 		inline static float Distance(const TVector2& A, const TVector2& B);

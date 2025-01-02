@@ -12,6 +12,9 @@ Texture2D opacityMap : register(t6);
 Texture2D heightMap : register(t7);
 Texture2D specularMap : register(t8);
 
+Texture2D directionLightShadowMap : register(t10);
+Texture2D pointLightShadowMap : register(t11);
+
 SamplerState Sampler_Linear : register(s0);
 SamplerState g_TextureSampler0 : register(s1);
 SamplerState g_TextureSampler1 : register(s2);
@@ -109,8 +112,8 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
 
 	float4 normalColor = normalMap.Sample(Sampler_Linear, texCoord).rgba;
-	normal = normalColor * 2.0f - 1.0f;
-	normal = normalize(mul(normal, tbn));
+	normal             = normalColor * 2.0f - 1.0f;
+	normal             = normalize(mul(normal, tbn));
 
 	ambientColor = aoMap.Sample(Sampler_Linear, texCoord).r;
 	roughness    = roughnessMap.Sample(Sampler_Linear, texCoord).g * roughnessFactor;
@@ -152,7 +155,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	float3 finalColor = diffuse + ambient + specular;
 
 	finalColor += emissive;
-	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 5.f, 3.f);
+	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 10.f, 10.f);
 
 	return float4(finalColor, opacity);
 

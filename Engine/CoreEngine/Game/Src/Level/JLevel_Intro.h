@@ -13,6 +13,7 @@ public:
 	void InitializeLevel() override;
 	void UpdateLevel(float DeltaTime) override;
 	void RenderLevel() override;
-	
-	
+
+private:
+	FVector2 mStartButtonSize;
 };

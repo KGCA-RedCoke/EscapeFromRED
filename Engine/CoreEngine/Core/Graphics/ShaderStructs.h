@@ -62,6 +62,11 @@ namespace CBuffer
 	{
 		FVector4 LightPos;
 		FVector4 LightColor;
+
+		bool operator==(const CBuffer::Light& Light) const
+		{
+			return LightPos == Light.LightPos && LightColor == Light.LightColor;
+		}
 	};
 
 	struct Time

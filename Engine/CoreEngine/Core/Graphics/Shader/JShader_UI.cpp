@@ -41,7 +41,9 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 	float    aspect = GetWorld.CameraManager->GetCurrentMainCam()->GetAspect();
 	FVector2 camera(1.0f, aspect);
+	float    time = GetWorld.GetGameTime();
 	UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_VIEWPORTSCALE, &camera);
+	UpdateConstantData(InDeviceContext, "TimeBuffer", &time);
 
 	UpdateGlobalConstantBuffer(InDeviceContext);
 }

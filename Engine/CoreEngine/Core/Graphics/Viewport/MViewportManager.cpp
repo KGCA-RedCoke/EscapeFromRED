@@ -46,6 +46,10 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 
 	texBuffer   = nullptr;
 	depthBuffer = nullptr;
+	
+	// OnViewportResized.Bind([&](uint32_t width, uint32_t height){
+	// 	Resize(device, width, height);
+	// });
 }
 
 FViewportData::FViewportData(const JText& InName, const FVector2& InSize)
@@ -54,11 +58,6 @@ FViewportData::FViewportData(const JText& InName, const FVector2& InSize)
 MViewportManager::MViewportManager()
 {
 	Initialize_Internal();
-}
-
-void FViewportData::Resize(uint32_t InWidth, uint32_t InHeight, float InOriginX, float InOriginY)
-{
-	
 }
 
 void FViewportData::Resize(ID3D11Device* InDevice, uint32_t InWidth, uint32_t InHeight)

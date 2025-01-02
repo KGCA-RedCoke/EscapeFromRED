@@ -41,7 +41,7 @@ public:
 	void PostRender() override {};
 	void Draw() override;
 	void DrawID(uint32_t ID) override;
-	
+
 public:
 	void ShowEditor() override;
 
@@ -135,6 +135,10 @@ protected:
 	FMatrix mLocalScaleMat    = FMatrix::Identity;
 	FMatrix mLocalMat         = FMatrix::Identity;
 
+	// ----------------------------- Shadow Data -----------------------------
+	FMatrix mShadowMat_DirLight   = FMatrix::Identity;
+	FMatrix mShadowMat_PointLight = FMatrix::Identity;
+
 	bool    bLocalDirty     = false;
 	FMatrix mCachedWorldMat = FMatrix::Identity;
 
@@ -209,8 +213,8 @@ public:
 	void ShowEditor() override;
 
 public:
-	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
-	FRay           GetRay() const override;
+	bool Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	FRay GetRay() const override;
 
 protected:
 	FRay mRay;
@@ -253,8 +257,8 @@ public:
 	void ShowEditor() override;
 
 public:
-	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
-	FBoxShape      GetBox() const override;
+	bool      Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	FBoxShape GetBox() const override;
 };
 
 class JSphereComponent : public JCollisionComponent
@@ -266,7 +270,7 @@ public:
 
 public:
 	uint32_t GetType() const override;
-	
+
 public:
 	void Initialize() override;
 	void Tick(float DeltaTime) override;
@@ -275,8 +279,8 @@ public:
 	void ShowEditor() override;
 
 public:
-	bool           Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
-	FSphere        GetSphere() const override;
+	bool    Intersect(ICollision* InOther, FHitResult& OutHitResult) const override;
+	FSphere GetSphere() const override;
 
 protected:
 	FSphere mSphere;

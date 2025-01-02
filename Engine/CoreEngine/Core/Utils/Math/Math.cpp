@@ -30,9 +30,17 @@ const JMath::TVector2 JMath::TVector2::UnitVector(1.f, 1.f);
 const JMath::TVector2 JMath::TVector2::Unit45Deg(M_INVERSE_SQRT_2, M_INVERSE_SQRT_2);
 
 const JMath::TMatrix JMath::TMatrix::Identity{
-    1.f, 0.f, 0.f, 0.f,
-    0.f, 1.f, 0.f, 0.f,
-    0.f, 0.f, 1.f, 0.f,
-    0.f, 0.f, 0.f, 1.f
+	1.f, 0.f, 0.f, 0.f,
+	0.f, 1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f, 0.f,
+	0.f, 0.f, 0.f, 1.f
 };
+
+const JMath::TMatrix JMath::TMatrix::TexCoordTransform{
+	0.5f, 0.0f, 0.0f, 0.0f,
+	0.0f, -0.5f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.0f, 1.0f
+};
+
 const JMath::TQuaternion JMath::TQuaternion::Identity(0, 0, 0, 1);
