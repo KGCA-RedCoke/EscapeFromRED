@@ -25,13 +25,18 @@ public:
     void FollowPath();
     
     // Decorator Function
-    NodeStatus IsPlayerClose(const UINT N);
+    NodeStatus IsPlayerClose();
     NodeStatus Not(NodeStatus state);
     NodeStatus RandP(float p);
     NodeStatus IsPhase(int phase);
+    NodeStatus SyncFrame();
 
     // Just Function
     FVector RotateTowards(FVector direction, FVector rotation);
+    FVector GetPlayerDirection();
+    float GetFloorHeight();
+    void SetYVelocity(float velocity);
+    float GetYVelocity();
     
 public:
     Ptr<AStar> PaStar;
@@ -48,6 +53,8 @@ public:
     EFloorType mFloorType = EFloorType::FirstFloor;
     static bool mIsPlayGame;
 	bool		isPendingKill = false;
+    bool bPlayerCloseEvent = false;
+    
 
 protected:
     template <typename TBuilder>
@@ -57,3 +64,5 @@ protected:
 
     inline static int32_t g_Index = 0;
 };
+
+

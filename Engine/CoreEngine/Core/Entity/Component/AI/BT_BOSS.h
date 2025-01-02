@@ -2,6 +2,7 @@
 // #include "Core/Input/XKeyboardMouse.h"
 #include "BtBase.h"
 
+class AKillerClown;
 class AEnemy;
 class AStar;
 
@@ -22,31 +23,24 @@ public:
 
 public:
 	// Action Function
-	NodeStatus Attack();
+	NodeStatus Attack1();
 	NodeStatus Attack2();
+	NodeStatus Attack3();
 	NodeStatus JumpAttack();
 	void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
 	NodeStatus Dead();
-	NodeStatus ChasePlayer(const UINT N);
-	void       FollowPath();
+	NodeStatus Resurrect();
 
-	// Decorator Function
-	NodeStatus IsPlayerClose(const UINT N);
-	NodeStatus Not(NodeStatus state);
-	NodeStatus RandP(float p);
-	NodeStatus IsPhase(int phase);
-	NodeStatus IsPressedKey(EKeyCode Key);
-
-	// Just Function
-	FVector RotateTowards(FVector direction, FVector rotation);
 
 public:
 	// BlackBoard BB;
+	bool		bIsSprinting = false;
 	FVector     mVelocity;
 	float       mFloorHeight    = 1.f;
+	bool		bBossBattleOn = false;
 
-	AEnemy* mOwnerEnemy;
+	AKillerClown* mOwnerEnemy;
 
 private:
 	// FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }

@@ -126,6 +126,7 @@ void AKillerClown::OnHit(ICollision* InActor, const FHitResult& HitResult)
     if (traceType == ETraceType::PlayerWeapon)
     {
         mBossState = EBossState::Death;
-        mCollisionSphere->Destroy();
+        // if (mBehaviorTree->mPhase > 2)
+            // mCollisionSphere->Destroy();
     }
 }

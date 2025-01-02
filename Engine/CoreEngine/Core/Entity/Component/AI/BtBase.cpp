@@ -2,11 +2,13 @@
 
 #include "GUI/GUI_Inspector.h"
 #include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Actor/APawn.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Entity/Navigation/AStar.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
+
 
 BtBase::BtBase(JTextView InName, AActor* InOwner)
     : JActorComponent(InName, InOwner),
@@ -37,56 +39,83 @@ void BtBase::Tick(float DeltaTime)
 
 NodeStatus BtBase::ChasePlayer(UINT N)
 {
-    FVector     PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-
-    int frameIdx = GetWorld.currentFrame % g_Index;    
+    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+    FVector NpcPos = mOwnerActor->GetWorldLocation();
+    int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx)
     {
         FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
-        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
-        
-        Ptr<Nav::Node>& PlayerNode = (G_NAV_MAP.PlayerHeight < 560.f) 
-                                    ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (mFloorType == EFloorType::FirstFloor)
-                                    ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x] 
-                                    : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        if ((PlayerPos - LastPlayerPos).Length() >= 100 ||
+        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);
+        Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
+                                         ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
+                                         : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
+        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
+                                      ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+                                      : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
+        if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
-            /*(PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->GridPos - G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation())).GetLength() >= 1.5)*/
         {
             LastPlayerPos = PlayerPos;
-            if (G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]->Walkable)
+            if (PlayerNode->Walkable)
             {
                 mHasPath = PaStar->FindPath(NpcNode,
-                PlayerNode, 2);
+                                            PlayerNode,
+                                            2);
                 NeedsPathReFind = false;
-                PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
+                // PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
                 // PaStar->mSpeed = 300.f;
             }
         }
-    }   
+    }
     if (PaStar->mPath)
     {
         std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
-        
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        for (auto node : TempPath)
+
+        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        // for (auto node : TempPath)
+        // {
+        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+        // }
+        // G_DebugBatch.PostRender();
+
+        if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
-            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        }
-        G_DebugBatch.PostRender();
-        
-        if (TempPath.size() && PaStar->mPathIdx < TempPath.size() - N)
-        {
+            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
+                return NodeStatus::Success;
             FollowPath();
-            return NodeStatus::Failure;
         }
-        else if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 400) // 플레이어와 거리가 가까울 때 success
-            return NodeStatus::Success;
     }
     return NodeStatus::Failure;
+}
+
+void BtBase::FollowPath()
+{
+    FVector NextPos = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->WorldPos;
+    FVector currentPos = mOwnerActor->GetWorldLocation();
+    FVector direction = FVector(NextPos.x - currentPos.x, 0.f, NextPos.z - currentPos.z);
+    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(Path::V3ToV2(currentPos)))
+    {
+        mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
+        PaStar->mPathIdx++;
+    }
+    else
+    {
+        FVector rotation = RotateTowards(direction, mOwnerActor->GetLocalRotation());
+        mOwnerActor->SetLocalRotation(rotation);
+
+        FVector velocity = FVector::ZeroVector;
+
+        float rotationRadians = rotation.y * M_PI / 180.0f;
+        velocity += FVector(-sin(rotationRadians), direction.y / 10, -cos(rotationRadians));
+        velocity *= PaStar->mSpeed * mDeltaTime;
+        mOwnerActor->AddLocalLocation(velocity);
+
+        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        // G_DebugBatch.DrawRay_Implement(currentPos, 100 * velocity, false, Colors::BlueViolet);
+        // G_DebugBatch.PostRender();
+    }
 }
 
 
@@ -98,42 +127,31 @@ NodeStatus BtBase::IsPhase(int phase)
         return NodeStatus::Failure;
 }
 
-void BtBase::FollowPath()
+NodeStatus BtBase::SyncFrame()
 {
-    FVector NextPos = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->WorldPos;
-    FVector currentPos = mOwnerActor->GetWorldLocation();
-    FVector direction = FVector(NextPos.x - currentPos.x, 0, NextPos.z - currentPos.z);
-    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(Path::V3ToV2(currentPos)))
-    {
-        mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
-        PaStar->mPathIdx++;
-    }
-    else
-    {
-        FVector rotation = RotateTowards(direction, mOwnerActor->GetLocalRotation());
-        mOwnerActor->SetLocalRotation(rotation);
-        
-        FVector velocity = FVector::ZeroVector;
-        
-        float rotationRadians = rotation.y * M_PI / 180.0f;
-        velocity += FVector(-sin(rotationRadians), direction.y / 10, -cos(rotationRadians));
-        velocity *= PaStar->mSpeed * mDeltaTime;
-        mOwnerActor->AddLocalLocation(velocity);
-        
-        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        // G_DebugBatch.DrawRay_Implement(currentPos, 100 * velocity
-        //     , false, Colors::BlueViolet);
-        // G_DebugBatch.PostRender();
-    }
-}
-
-NodeStatus BtBase::IsPlayerClose(const UINT N)
-{
-    if (PaStar->mPath && PaStar->mPathIdx < PaStar->mPath->lookPoints.size() - N)
+    int frameIdx = GetWorld.currentFrame % g_Index;
+    if (frameIdx == mIdx)
         return NodeStatus::Success;
     else
+        return NodeStatus::Running;
+}
+
+NodeStatus BtBase::IsPlayerClose()
+{
+    if (bPlayerCloseEvent)
+        return NodeStatus::Success;
+    else
+    {
+        
+        FVector playerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+        FVector npcPos = mOwnerActor->GetWorldLocation();
+        float length = (playerPos - npcPos).Length();
+        bPlayerCloseEvent = (playerPos == FVector::ZeroVector) ?
+                                false : (playerPos - npcPos).Length() < 500;
+        
+        
         return NodeStatus::Failure;
+    }
 }
 
 NodeStatus BtBase::Not(NodeStatus state)
@@ -184,4 +202,28 @@ FVector BtBase::RotateTowards(FVector direction, FVector rotation)
         rotation.y += 360.0f;
     
     return rotation;
+}
+
+FVector BtBase::GetPlayerDirection()
+{
+    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+    return PlayerPos - mOwnerActor->GetWorldLocation();
+}
+
+float BtBase::GetFloorHeight()
+{
+    return static_cast<APawn*>(mOwnerActor)->mLastHeight;
+}
+
+void BtBase::SetYVelocity(float velocity)
+{
+    APawn* owner = static_cast<APawn*>(mOwnerActor);
+    owner->SetYVelocity(velocity);
+    
+}
+
+float BtBase::GetYVelocity()
+{
+    APawn* pawn = dynamic_cast<APawn*>(mOwnerActor);
+    return pawn->mYVelocity;
 }

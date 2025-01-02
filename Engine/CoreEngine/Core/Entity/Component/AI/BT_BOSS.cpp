@@ -7,6 +7,7 @@
 #include "Core/Entity/Navigation/AStar.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
+#include "Game/Src/Boss/AKillerClown.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
 
@@ -28,7 +29,7 @@ BT_BOSS::~BT_BOSS()
 void BT_BOSS::Initialize()
 {
     assert(mOwnerActor);
-    mOwnerEnemy = dynamic_cast<AEnemy*>(mOwnerActor);
+    mOwnerEnemy = dynamic_cast<AKillerClown*>(mOwnerActor);
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
@@ -49,26 +50,29 @@ void BT_BOSS::Tick(float DeltaTime)
 // Action Function
 
 
-NodeStatus BT_BOSS::Attack()
+NodeStatus BT_BOSS::Attack1()
 {
+    if (mOwnerEnemy->GetBossState() == EBossState::Death)
+        return NodeStatus::Failure;
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
-        runningFlag = false;
-        FVector rotation = mOwnerActor->GetLocalRotation();
-        rotation.y += mDeltaTime * PaStar->mRotateSpeed * 100;
-        mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 0.5)
+        FVector rotation = RotateTowards(GetPlayerDirection(), mOwnerActor->GetLocalRotation());
+        mOwnerActor->SetWorldRotation(rotation);
+        if (mEventStartFlag)
         {
-            mElapsedTime = 0;
-            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            mOwnerEnemy->SetEnemyState(EBossState::Attack1);
+            mEventStartFlag = false;
+        }
+        runningFlag = false;
+        if (mOwnerEnemy->GetBossState() != EBossState::Attack1)
+        {
+            mEventStartFlag = true;
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
             runningFlag = true;
-            // mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             return NodeStatus::Running;
         }
     }
@@ -78,18 +82,20 @@ NodeStatus BT_BOSS::Attack()
 
 NodeStatus BT_BOSS::Attack2()
 {
-    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+    if (mOwnerEnemy->GetBossState() == EBossState::Death)
         return NodeStatus::Failure;
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
+        FVector rotation = RotateTowards(GetPlayerDirection(), mOwnerActor->GetLocalRotation());
+        mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
-            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            mOwnerEnemy->SetEnemyState(EBossState::Attack2);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        if (mOwnerEnemy->GetBossState() != EBossState::Attack2)
         {
             mEventStartFlag = true;
             return NodeStatus::Success;
@@ -108,38 +114,36 @@ NodeStatus BT_BOSS::JumpAttack()
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
     {
-        runningFlag = false;
+        // 플레이어 방향으로 회전
+        FVector rotation = RotateTowards(GetPlayerDirection(), mOwnerActor->GetLocalRotation());
+        mOwnerActor->SetWorldRotation(rotation);
+
+        runningFlag = false;  // running 상태 초기화
         NeedsPathReFind = true;
-        float speed = 2;
-        float GRAVITY = -500.f * speed * speed;
+
         if (mEventStartFlag)
         {
-            MoveNPCWithJump(500.f, 2.0f / speed);
-            mEventStartFlag = false;
+            // 점프 시작
+            MoveNPCWithJump(800.f, 1.0f);  // 점프 높이와 지속 시간
+            mOwnerEnemy->SetEnemyState(EBossState::JumpAttack);
+            mEventStartFlag = false;      // 이벤트 시작 플래그 리셋
         }
+        // NPC가 바닥에 도달했는지 확인
         FVector position = mOwnerActor->GetWorldLocation();
-        position.x += mVelocity.x * mDeltaTime;
-        position.z += mVelocity.z * mDeltaTime;
-
-        // y축 업데이트 (중력 적용)
-        mVelocity.y += GRAVITY * mDeltaTime;
-        position.y += mVelocity.y * mDeltaTime;
-
-        mOwnerActor->SetWorldLocation(position);
-
-        FVector rotation = RotateTowards(mVelocity, mOwnerActor->GetLocalRotation());
-        mOwnerActor->SetLocalRotation(rotation);
-
-        // 바닥 충돌 처리 (y축이 0 이하로 내려가지 않도록)
-        if (position.y < mFloorHeight)
+        float height = GetFloorHeight();
+        if (position.y <= height + 10.f)
         {
-            position.y = mFloorHeight;
-            mOwnerActor->SetWorldLocation(position);
-            mVelocity.y = 0.0f; // 점프 종료
-            mEventStartFlag = true;
-            return NodeStatus::Success;
+            if (mOwnerEnemy->GetBossState() != EBossState::JumpAttack)
+            {
+                mEventStartFlag = true;  // 점프를 다시 시작할 수 있도록 설정
+                return NodeStatus::Success;
+            }
         }
-        runningFlag = true;
+        if (GetYVelocity() > 700.f)
+            mVelocity = FVector::ZeroVector;
+        mOwnerActor->AddLocalLocation(mVelocity * mDeltaTime);
+
+        runningFlag = true;  // 점프가 아직 진행 중임을 표시
         return NodeStatus::Running;
     }
     else
@@ -148,21 +152,25 @@ NodeStatus BT_BOSS::JumpAttack()
 
 void BT_BOSS::MoveNPCWithJump(float jumpHeight, float duration)
 {
-    // NPC에서 플레이어까지의 거리 계산 (x, z 평면)
+    // 플레이어와 NPC의 거리 계산 (x, z 평면)
     FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
     FVector location = mOwnerActor->GetWorldLocation();
     float dx = PlayerPos.x - location.x;
     float dz = PlayerPos.z - location.z;
 
-    // 매 프레임 NPC의 이동 속도 계산
-    float vx = (dx / duration);
-    float vz = (dz / duration);
+    // 이동 속도 계산
+    float vx = dx / duration;
+    float vz = dz / duration;
 
-    // 초기 y축 속도 계산 (포물선 형태를 위한 수직 속도)
-    float initialVerticalVelocity = (2 * jumpHeight) / duration;
-
-    // NPC의 속도 설정
-    mVelocity = FVector(vx, initialVerticalVelocity, vz);
+    // 초기 y축 속도 설정 (점프 궤적을 위한 수직 속도)
+    float initialVerticalVelocity = (jumpHeight) / duration;
+    
+    // NPC의 초기 속도 설정
+    SetYVelocity(initialVerticalVelocity);
+    LOG_CORE_INFO("BTBOSS Jump set Y vel {}", initialVerticalVelocity);
+    mVelocity = FVector(vx, 0, vz);
+    // mOwnerActor->AddLocalLocation(mVelocity);
+    // 속도 초기화 후 호출부에서 위치 업데이트는 다른 함수가 처리
 }
 
 NodeStatus BT_BOSS::Hit()
@@ -194,7 +202,7 @@ NodeStatus BT_BOSS::Hit()
 
 NodeStatus BT_BOSS::Dead()
 {
-    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+    if (mOwnerEnemy->GetBossState() == EBossState::Death)
     {
         isPendingKill = true;
         return NodeStatus::Success;
@@ -202,227 +210,42 @@ NodeStatus BT_BOSS::Dead()
     return NodeStatus::Failure;
 }
 
-NodeStatus BT_BOSS::ChasePlayer(UINT N)
-{
-    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-    FVector NpcPos = mOwnerActor->GetWorldLocation();
-    int frameIdx = GetWorld.currentFrame % g_Index;
-    if (frameIdx == mIdx)
-    {
-        FVector2 playerGrid = G_NAV_MAP.GridFromWorldPoint(PlayerPos);
-        FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);
-        Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
-                                         ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
-                                         : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
-                                      ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
-                                      : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
-        if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
-            NeedsPathReFind)
-        {
-            LastPlayerPos = PlayerPos;
-            if (PlayerNode->Walkable)
-            {
-                mHasPath = PaStar->FindPath(NpcNode,
-                                            PlayerNode,
-                                            2);
-                NeedsPathReFind = false;
-                // PaStar->mSpeed = FMath::GenerateRandomFloat(300, 800);
-                PaStar->mSpeed = 300.f;
-            }
-        }
-    }
-    if (PaStar->mPath)
-    {
-        std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
-
-        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        // for (auto node : TempPath)
-        // {
-        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        // }
-        // G_DebugBatch.PostRender();
-
-        if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
-        {
-            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
-                return NodeStatus::Success;
-            FollowPath();
-        }
-    }
-    return NodeStatus::Failure;
-}
-
-void BT_BOSS::FollowPath()
-{
-    FVector NextPos = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->WorldPos;
-    FVector currentPos = mOwnerActor->GetWorldLocation();
-    FVector direction = FVector(NextPos.x - currentPos.x, mFloorHeight - currentPos.y, NextPos.z - currentPos.z);
-    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(Path::V3ToV2(currentPos)))
-    {
-        mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
-        PaStar->mPathIdx++;
-    }
-    else
-    {
-        FVector rotation = RotateTowards(direction, mOwnerActor->GetLocalRotation());
-        mOwnerActor->SetLocalRotation(rotation);
-
-        FVector velocity = FVector::ZeroVector;
-
-        float rotationRadians = rotation.y * M_PI / 180.0f;
-        velocity += FVector(-sin(rotationRadians), direction.y / 10, -cos(rotationRadians));
-        velocity *= PaStar->mSpeed * mDeltaTime;
-        FVector resultPos = currentPos + velocity;
-        mOwnerActor->SetWorldLocation(resultPos);
-
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        G_DebugBatch.DrawRay_Implement(currentPos, 100 * velocity, false, Colors::BlueViolet);
-        G_DebugBatch.PostRender();
-    }
-}
-
-NodeStatus BT_BOSS::IsPlayerClose(const UINT N)
-{
-    if (PaStar->mPath && PaStar->mPathIdx < PaStar->mPath->lookPoints.size() - N)
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
-}
-
-NodeStatus BT_BOSS::Not(NodeStatus state)
-{
-    if (state == NodeStatus::Success)
-        return NodeStatus::Failure;
-    else if (state == NodeStatus::Failure)
-        return NodeStatus::Success;
-    else
-        return state;
-}
-
-NodeStatus BT_BOSS::RandP(float p)
-{
-    float num = FMath::GenerateRandomFloat(0.f, 1.f);
-    if (num < p)
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
-}
-
-NodeStatus BT_BOSS::IsPhase(int phase)
-{
-    if (phase == mPhase)
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
-}
-
-FVector BT_BOSS::RotateTowards(FVector direction, FVector rotation)
-{
-    FVector NormalDirection;
-    direction.Normalize(NormalDirection);
-
-    float theta = atan2(NormalDirection.x, NormalDirection.z);
-    float degree = theta * (180.0f / M_PI);
-
-    float targetAngle = degree + 180.0f;
-    float angleDifference = targetAngle - rotation.y;
-
-    // 각도 차이를 -180도에서 180도 사이로 정규화
-    if (angleDifference > 180.0f)
-        angleDifference -= 360.0f;
-    else if (angleDifference < -180.0f)
-        angleDifference += 360.0f;
-
-    if (angleDifference > 0)
-        rotation.y += mDeltaTime * PaStar->mRotateSpeed * abs(angleDifference);
-    else
-        rotation.y -= mDeltaTime * PaStar->mRotateSpeed * abs(angleDifference); // 반시계 방향 회전
-
-    // 각도를 0도에서 360도 사이로 정규화
-    if (rotation.y >= 360.0f)
-        rotation.y -= 360.0f;
-    else if (rotation.y < 0.0f)
-        rotation.y += 360.0f;
-
-    return rotation;
-}
-
 
 // 보스 패턴
-void BT_BOSS::SetupTree()
-{
-    // 	BTRoot = builder
-    // 			.CreateRoot<Selector>()
-    // #pragma region Phase1
-    // 			.AddDecorator(LAMBDA(IsPhase, 1))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			// .AddDecorator(LAMBDA(RandP, 0.005f))
-    // 			//     .AddActionNode(LAMBDA(JumpAttack))
-    // 			// .EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 0))
-    // #pragma region              Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 1.0f))
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // #pragma region Phase2
-    // 			.AddDecorator(LAMBDA(IsPhase, 2))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(Hit))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 0.0005f))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 1))
-    // #pragma region Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.Build();
-}
 
-// 단순 추적, 공격
 void BT_BOSS::SetupTree2()
 {
     BTRoot = builder
-             .CreateRoot<Selector>()
-                 .AddActionNode(LAMBDA(Dead))
-                 .AddSequence("")
-                    // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-                     .AddActionNode(LAMBDA(ChasePlayer, 0))
-                     .AddActionNode(LAMBDA(Attack2))
-                 .EndBranch()
-             .Build();
+            .CreateRoot<Sequence>()
+                .AddActionNode(LAMBDA(IsPlayerClose))
+    #pragma region Phase1
+                .AddDecorator(LAMBDA(IsPhase, 1))
+                    .AddSelector("Phase1")
+                        .AddDecorator(LAMBDA(RandP, 0.006f))
+                            .AddActionNode(LAMBDA(JumpAttack))
+                        .EndBranch()
+                        .AddActionNode(LAMBDA(Dead))
+                        .AddSequence("")
+                            .AddActionNode(LAMBDA(ChasePlayer, 0))
+    #pragma region          .RandAttack
+                            .AddSelector("RandomSelector")
+                                .AddDecorator(LAMBDA(RandP, 0.5f))
+                                    .AddActionNode(LAMBDA(Attack1))
+                                .EndBranch()
+                                .AddDecorator(LAMBDA(RandP, 1.0f))
+                                    .AddActionNode(LAMBDA(Attack2))
+                                .EndBranch()
+                            .EndBranch()
+    #pragma endregion
+                        .EndBranch()
+                    .EndBranch()
+                .EndBranch()
+    #pragma endregion
+    #pragma region Phase2
+                .AddDecorator(LAMBDA(IsPhase, 2))
+                    // .AddActionNode(LAMBDA(Resurrect))
+    
+                .EndBranch()
+    #pragma endregion
+            .Build();
 }

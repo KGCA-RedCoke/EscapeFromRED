@@ -23,14 +23,19 @@ public:
 protected:
 	void CheckGround();
 
+public:
+	friend class BtBase;
 protected:
 	JPawnMovementComponent* mMovementComponent;
 	JSphereComponent*       mCollisionSphere;
 	JLineComponent*         mLineComponent;
 
+	void SetYVelocity(float velocity);
 	float mDeltaTime;
 	float mMaxHeight = -9999999.f;
+	float mLastHeight = 0.f;
 	float mYVelocity = 0.f;
+	bool bIsLanding = false;
 };
 
 REGISTER_CLASS_TYPE(APawn);
