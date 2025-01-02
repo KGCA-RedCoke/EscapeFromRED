@@ -35,6 +35,8 @@ constexpr const char* NAME_MAT_DETAIL      = "Game/Materials/Engine/Material_Det
 constexpr const char* NAME_MAT_MIRROR      = "Game/Materials/Engine/Material_Mirror.jasset";
 constexpr const char* NAME_MAT_2D          = "Game/Materials/Engine/Material_2D.jasset";
 constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
+constexpr const char* NAME_MAT_WIND        = "Game/Materials/Engine/Material_Wind.jasset";
+constexpr const char* NAME_MAT_CHARACTER   = "Game/Materials/Engine/Material_Character.jasset";
 
 /**
  * @brief Material parameter type
