@@ -274,6 +274,11 @@ void JUIComponent::Initialize()
 	OnReleased.Bind([](){ LOG_CORE_INFO("Released"); });
 }
 
+void JUIComponent::Tick(float DeltaTime)
+{
+	OnAnimationEvent.Execute(DeltaTime);
+}
+
 JWidgetComponent::JWidgetComponent(const JText& InName)
 	: JObject(InName) {}
 
@@ -325,8 +330,13 @@ bool JWidgetComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JWidgetComponent::Tick(float DeltaTime)
 {
-	assert(mRenderTarget);
+	for (auto& ui : mUIComponents)
+	{
+		ui->Tick(DeltaTime);
+	}
 	
+	/*assert(mRenderTarget);
+
 	float x = mRenderTarget->GetSize().width;
 	float y = mRenderTarget->GetSize().height;
 	for (int32_t i = mUIComponents.size() - 1; i >= 0; --i)
@@ -350,7 +360,7 @@ void JWidgetComponent::Tick(float DeltaTime)
 		{
 			ui->OnUnhovered.Execute();
 		}
-	}
+	}*/
 }
 
 void JWidgetComponent::AddInstance()

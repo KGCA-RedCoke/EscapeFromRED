@@ -12,7 +12,7 @@ namespace JMath
 	{
 		// Constants
 		static const TMatrix Identity;
-
+		static const TMatrix TexCoordTransform;
 	public:
 		TMatrix() noexcept;
 

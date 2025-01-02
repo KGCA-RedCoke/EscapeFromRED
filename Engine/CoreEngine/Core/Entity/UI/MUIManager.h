@@ -41,13 +41,16 @@ DECLARE_DYNAMIC_DELEGATE(FOnUIPressed);
 
 DECLARE_DYNAMIC_DELEGATE(FOnUIReleased);
 
+DECLARE_DYNAMIC_DELEGATE(FAnimationEvent, float DeltaTime);
+
 class JUIComponent : public JObject, public IRenderable, public IGUIEditable
 {
 public:
-	FOnUIHovered   OnHovered;
-	FOnUIUnhovered OnUnhovered;
-	FOnUIPressed   OnPressed;
-	FOnUIReleased  OnReleased;
+	FOnUIHovered    OnHovered;
+	FOnUIUnhovered  OnUnhovered;
+	FOnUIPressed    OnPressed;
+	FOnUIReleased   OnReleased;
+	FAnimationEvent OnAnimationEvent;
 
 public:
 	JUIComponent();
@@ -61,6 +64,7 @@ public:
 
 public:
 	void Initialize() override;
+	void Tick(float DeltaTime) override;
 
 public:
 	void PreRender() override;
@@ -92,7 +96,6 @@ protected:
 	int32_t           mLayer = 0;
 	class JTexture*   mTexture;
 	class JTexture*   mOpacityTexture;
-
 };
 
 REGISTER_CLASS_TYPE(JUIComponent)
@@ -127,7 +130,7 @@ public:
 public:
 	void AddUIComponent(JTextView InName);
 
-protected:
+public:
 	ID2D1RenderTarget*         mRenderTarget;
 	JArray<UPtr<JUIComponent>> mUIComponents;
 	FVector2                   mMousePos;

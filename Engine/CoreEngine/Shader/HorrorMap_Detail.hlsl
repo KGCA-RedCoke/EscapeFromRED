@@ -79,9 +79,9 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal      = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
-	output.Tangent     = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
-	output.Binormal    = normalize(cross(output.Normal, output.Tangent));
+	output.Normal     = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
+	output.Tangent    = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
+	output.Binormal   = normalize(cross(output.Normal, output.Tangent));
 
 	return output;
 }
@@ -160,6 +160,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 											 Input.Normal,
 											 PointLight[i]);
 	}
+	finalPointLight = smoothstep(0.0f, 1.0f, finalPointLight);
 
 	for (int i = 0; i < NumSpotLights; ++i)
 	{
@@ -167,6 +168,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 										   Input.Normal,
 										   SpotLight[i]);
 	}
+	finalSpotLight = smoothstep(0.0f, 1.0f, finalSpotLight);
 
 	diffuse += finalPointLight + finalSpotLight;
 

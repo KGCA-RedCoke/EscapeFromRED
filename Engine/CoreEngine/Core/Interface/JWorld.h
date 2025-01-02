@@ -46,6 +46,8 @@ public:
 	}
 
 private:
+	void UpdateWorldShadowMap();
+
 	static void SearchFiles_Recursive(const std::filesystem::path& InPath);
 	static void ParseFiles_Recursive(const std::filesystem::path& InPath);
 
@@ -66,6 +68,8 @@ public:
 	class MCollisionManager*        ColliderManager;		// 충돌체
 	class XD3DDevice*               D3D11API;				// 디바이스
 
+	struct FViewportData* DirectionalLightShadowMap = nullptr;
+
 public:
 	struct
 	{
@@ -84,6 +88,11 @@ public:
 		Buffer::FBuffer_Light_Spot Data[127];
 		uint32_t                   Count = 0;
 	} WorldSpotLightData;
+
+	CBuffer::Light DirectionalLightData;
+
+	FMatrix DirectionalLightView;
+	FMatrix DirectionalLightProj;
 
 	Thread::ThreadPool ThreadPool;		// 스레드
 

@@ -334,17 +334,9 @@ float4 PS(PixelInput_2D Input) : SV_TARGET
 {
 	float4 color = SampleFromTextureArray(Input.Instance.TextureIndex, Input.UV);
 
-	// float animAlpha = 1;
-	// if (Input.Instance.AnimPeriod > 0.f)
-	// {
-	// 	animAlpha = 0.5 + 0.5 * sin(6.28318 * Time / Input.Instance.AnimPeriod);
-	// }
+	color *= Input.Instance.InstanceColor;
 
-	color.rgb *= Input.Instance.InstanceColor.rgb;
-
-	// color.a *= Input.Instance.InstanceColor.a * animAlpha;
-
-	if (color.a < 0.5f)
+	if (color.a < 0.1f)
 		discard;
 	return color;
 }

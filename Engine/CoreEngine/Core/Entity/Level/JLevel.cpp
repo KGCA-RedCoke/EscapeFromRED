@@ -132,6 +132,8 @@ void JLevel::UpdateLevel(float DeltaTime)
 	std::erase_if(
 				  mWidgetComponents,
 				  [&](JWidgetComponent* widget){
+
+					  widget->Tick(DeltaTime);
 					  if (widget->IsPendingKill())
 					  {
 						  widget = nullptr;

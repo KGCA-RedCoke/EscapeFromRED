@@ -8,8 +8,10 @@
 #include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Entity/UI/MUIManager.h"
+#include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Game/Src/Boss/AKillerClown.h"
 #include "Game/Src/Enemy/AEnemy.h"
@@ -31,6 +33,11 @@ void GUI_Viewport_Scene::Initialize()
 
 	mPauseIcon = GetWorld.TextureManager->Load(L"rsc/Icons/PauseButton On@2x.png");
 	mPlayIcon  = GetWorld.TextureManager->Load(L"rsc/Icons/PlayButton On@2x.png");
+
+	// mViewportData->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
+	// 	
+	//
+	// });
 }
 
 void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
