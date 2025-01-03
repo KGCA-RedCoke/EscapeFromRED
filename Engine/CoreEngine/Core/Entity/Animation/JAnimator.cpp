@@ -127,7 +127,7 @@ void JAnimator::AddAnimationClip(const JText& InState, const JAnimationClip* InC
 	mStateMachine[InState]->Initialize();
 }
 
-void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
+void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath, const bool bEnableLoop)
 {
 	if (auto it = mStateMachine.find(InState); it != mStateMachine.end())
 	{
@@ -138,6 +138,7 @@ void JAnimator::AddAnimationClip(const JText& InState, const JText& InClipPath)
 	}
 	mStateMachine[InState] = GetWorld.AnimationManager->Clone(InClipPath, mSkeletalMeshComponent);
 	mStateMachine[InState]->Initialize();
+	mStateMachine[InState]->SetLoop(bEnableLoop);
 }
 
 void JAnimator::AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,

@@ -189,7 +189,7 @@ void APawn::CheckGround()
 	if (currentLocation.y > mMaxHeight + FLT_EPSILON)
 	{
 		AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
-		LOG_CORE_INFO("APawn CheckGround - gravity add Y : {}", -mYVelocity);
+		// LOG_CORE_INFO("APawn CheckGround - gravity add Y : {}", -mYVelocity);
 	}
 	else if (currentLocation.y < mMaxHeight - FLT_EPSILON)
 	{

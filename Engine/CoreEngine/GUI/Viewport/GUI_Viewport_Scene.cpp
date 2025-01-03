@@ -18,7 +18,7 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
 
-// #define ENABLE_TEST_MODE
+#define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -168,6 +168,8 @@ void GUI_Viewport_Scene::ShowTopMenu()
 																			"Game/Mesh/SK_Hands_07.jasset");
 		character->BeginPlay();
 
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::PlayerWeapon, ETraceType::Pawn, true);
+
 		// GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 
 		// HideAndLockCursor(Window::GetWindow()->GetWindowHandle());
@@ -175,9 +177,9 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// ShowCursor(FALSE);
 		// ClipCursor(&rect);
 		// SetCursorPos(0, 0);
-
+		
 		G_NAV_MAP.Initialize();
-
+		GetWorld.bGameMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
 		GetWorld.LevelManager->SetActiveLevel(introScene);

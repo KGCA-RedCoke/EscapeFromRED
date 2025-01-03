@@ -29,13 +29,13 @@ public:
 	NodeStatus JumpAttack();
 	void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
-	NodeStatus Dead();
+	NodeStatus IsDead();
 	NodeStatus Resurrect();
 
 
 public:
 	// BlackBoard BB;
-	bool		bIsSprinting = false;
+	bool		IsRun = false;
 	FVector     mVelocity;
 	float       mFloorHeight    = 1.f;
 	bool		bBossBattleOn = false;

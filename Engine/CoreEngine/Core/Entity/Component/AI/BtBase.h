@@ -28,6 +28,7 @@ public:
     NodeStatus IsPlayerClose();
     NodeStatus Not(NodeStatus state);
     NodeStatus RandP(float p);
+    NodeStatus RandTime(JText key, float t, float p);
     NodeStatus IsPhase(int phase);
     NodeStatus SyncFrame();
 
@@ -54,6 +55,7 @@ public:
     static bool mIsPlayGame;
 	bool		isPendingKill = false;
     bool bPlayerCloseEvent = false;
+    std::unordered_map<JText, float> BB_ElapsedTime;
     
 
 protected:

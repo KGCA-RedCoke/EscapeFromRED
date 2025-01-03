@@ -57,6 +57,7 @@ public:
 
 	FORCEINLINE [[nodiscard]] FBoxShape GetBoundingVolume() const { return mBoundingBox; }
 
+	void SetWorldTransform(const FMatrix& InMatrix);
 	void SetWorldLocation(const FVector& InTranslation);
 	void SetWorldRotation(const FVector& InRotation);
 	void SetWorldScale(const FVector& InScale);

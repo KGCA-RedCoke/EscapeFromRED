@@ -19,7 +19,7 @@ BT_BOSS::BT_BOSS(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
     // mInputKeyboard.Initialize();
-    SetupTree2();
+    SetupTree();
 }
 
 BT_BOSS::~BT_BOSS()
@@ -43,6 +43,12 @@ void BT_BOSS::Tick(float DeltaTime)
 {
     // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
+    // LOG_CORE_INFO("Phase : {}",mPhase);
+    if (mPhase == 2)
+    {
+        PaStar->mSpeed = 600;
+        IsRun = true;
+    }
 }
 
 ////////////////////////////////////////////////
@@ -200,11 +206,13 @@ NodeStatus BT_BOSS::Hit()
         return NodeStatus::Failure;
 }
 
-NodeStatus BT_BOSS::Dead()
+NodeStatus BT_BOSS::IsDead()
 {
-    if (mOwnerEnemy->GetBossState() == EBossState::Death)
+    
+    if (mOwnerEnemy->GetBossState() == EBossState::Death
+        || mOwnerEnemy->GetBossState() == EBossState::StandUp)
     {
-        isPendingKill = true;
+        // isPendingKill = true;
         return NodeStatus::Success;
     }
     return NodeStatus::Failure;
@@ -213,39 +221,79 @@ NodeStatus BT_BOSS::Dead()
 
 // 보스 패턴
 
+void BT_BOSS::SetupTree()
+{
+    BTRoot = builder
+            .CreateRoot<Sequence>()
+                .AddActionNode(LAMBDA(IsPlayerClose))
+                .AddSelector("phase")
+                    .AddActionNode(LAMBDA(IsDead))
+                    .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
+                        .AddActionNode(LAMBDA(JumpAttack))
+                    .EndBranch()
+                    .AddSequence("")
+                        .AddActionNode(LAMBDA(ChasePlayer, 0))
+                    .EndBranch()
+                .EndBranch()
+            .Build();
+}
+
+
 void BT_BOSS::SetupTree2()
 {
     BTRoot = builder
             .CreateRoot<Sequence>()
                 .AddActionNode(LAMBDA(IsPlayerClose))
+                .AddSelector("phase")
     #pragma region Phase1
-                .AddDecorator(LAMBDA(IsPhase, 1))
-                    .AddSelector("Phase1")
-                        .AddDecorator(LAMBDA(RandP, 0.006f))
-                            .AddActionNode(LAMBDA(JumpAttack))
-                        .EndBranch()
-                        .AddActionNode(LAMBDA(Dead))
-                        .AddSequence("")
-                            .AddActionNode(LAMBDA(ChasePlayer, 0))
-    #pragma region          .RandAttack
-                            .AddSelector("RandomSelector")
-                                .AddDecorator(LAMBDA(RandP, 0.5f))
-                                    .AddActionNode(LAMBDA(Attack1))
-                                .EndBranch()
-                                .AddDecorator(LAMBDA(RandP, 1.0f))
-                                    .AddActionNode(LAMBDA(Attack2))
-                                .EndBranch()
+                    .AddDecorator(LAMBDA(IsPhase, 1))
+                        .AddSelector("Action")
+                            .AddActionNode(LAMBDA(IsDead))
+                            .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
+                                .AddActionNode(LAMBDA(JumpAttack))
                             .EndBranch()
-    #pragma endregion
+                            .AddSequence("")
+                                .AddActionNode(LAMBDA(ChasePlayer, 0))
+        #pragma region          .RandAttack
+                                .AddSelector("RandomSelector")
+                                    .AddDecorator(LAMBDA(RandP, 0.5f))
+                                        .AddActionNode(LAMBDA(Attack1))
+                                    .EndBranch()
+                                    .AddDecorator(LAMBDA(RandP, 1.0f))
+                                        .AddActionNode(LAMBDA(Attack2))
+                                    .EndBranch()
+                                .EndBranch()
+        #pragma endregion
+                            .EndBranch()
                         .EndBranch()
                     .EndBranch()
+        #pragma endregion
+        #pragma region Phase2
+                    .AddDecorator(LAMBDA(IsPhase, 2))
+                        .AddSelector("Phase2")
+                            .AddActionNode(LAMBDA(IsDead))
+                            .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
+                                .AddActionNode(LAMBDA(JumpAttack))
+                            .EndBranch()
+                            .AddSequence("")
+                                .AddActionNode(LAMBDA(ChasePlayer, 0))
+                    #pragma region          .RandAttack
+                                .AddSelector("RandomSelector")
+                                    .AddDecorator(LAMBDA(RandP, 0.333f))
+                                        .AddActionNode(LAMBDA(Attack1))
+                                    .EndBranch()
+                                    .AddDecorator(LAMBDA(RandP, 0.667f))
+                                        .AddActionNode(LAMBDA(Attack2))
+                                    .EndBranch()
+                                    .AddDecorator(LAMBDA(RandP, 1.0f))
+                                        .AddActionNode(LAMBDA(JumpAttack))
+                                    .EndBranch()
+                                .EndBranch()
+                    #pragma endregion
+                            .EndBranch()
+                        .EndBranch()
+                    .EndBranch()
+        #pragma endregion
                 .EndBranch()
-    #pragma endregion
-    #pragma region Phase2
-                .AddDecorator(LAMBDA(IsPhase, 2))
-                    // .AddActionNode(LAMBDA(Resurrect))
-    
-                .EndBranch()
-    #pragma endregion
             .Build();
 }

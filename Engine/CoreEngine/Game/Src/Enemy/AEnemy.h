@@ -82,6 +82,8 @@ protected:
     class BtBase* mBehaviorTree;
 
     friend class JKihyunAnimator;
+    friend class JGirlAnimator;
+    // friend class JGirlAnimator;
 };
 
 REGISTER_CLASS_TYPE(AEnemy)

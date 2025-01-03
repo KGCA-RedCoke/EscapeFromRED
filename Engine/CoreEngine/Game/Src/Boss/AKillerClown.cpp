@@ -37,6 +37,7 @@ void AKillerClown::Initialize()
     }
     mHammerMesh->AttachToBoneSocket(mSkeletalMeshComponent, "Hammer_M");
     mHammerMesh->SetLocalRotation({0, 90, 0});
+    mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByType(NAME_COMPONENT_SPHERE));
 
     if (!mBehaviorTree)
     {
@@ -125,8 +126,9 @@ void AKillerClown::OnHit(ICollision* InActor, const FHitResult& HitResult)
     const ETraceType traceType = InActor->GetTraceType();
     if (traceType == ETraceType::PlayerWeapon)
     {
-        mBossState = EBossState::Death;
+        // mBossState = EBossState::Death;
+        mBossState = EBossState::Hit;
         // if (mBehaviorTree->mPhase > 2)
-            // mCollisionSphere->Destroy();
+        // mCollisionSphere->Destroy();
     }
 }

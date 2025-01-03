@@ -22,11 +22,11 @@ void JPlayerAnimator::Initialize()
 	JAnimator::Initialize();
 
 	AddAnimationClip("Idle_Free",
-					 "Game/Animation/Player/FPP_Halb_Idle.jasset");
+	                 "Game/Animation/Player/FPP_Halb_Idle.jasset", true);
 	AddAnimationClip("Walk_Free",
-					 "Game/Animation/Player/FPP_Halb_Walk.jasset");
+	                 "Game/Animation/Player/FPP_Halb_Walk.jasset", true);
 	AddAnimationClip("Run_Free",
-					 "Game/Animation/Player/FPP_Halb_Run.jasset");
+	                 "Game/Animation/Player/FPP_Halb_Run.jasset", true);
 	AddAnimationClip("Combo1", "Game/Animation/Player/FPP_Halb_Attack_R.jasset");
 	AddAnimationClip("Combo2", "Game/Animation/Player/FPP_Halb_Attack_LD.jasset");
 	AddAnimationClip("Combo3", "Game/Animation/Player/FPP_Halb_Attack_RU.jasset");
@@ -156,11 +156,11 @@ void JPlayerAnimator::BindEvents()
 	combo4Anim->SetAnimationSpeed(2.f);
 
 
-	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.27].
+	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.2].
 			Bind(std::bind(&APlayerCharacter::OnMeleeAttack, mOwnerCharacter));
-	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.4].Bind(std::bind(&APlayerCharacter::DisableMeleeCollision,
+	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.5].Bind(std::bind(&APlayerCharacter::DisableMeleeCollision,
 																		mOwnerCharacter));
-	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.6].Bind(std::bind(&APlayerCharacter::OnMeleeAttackFinished,
+	combo1Anim->mEvents[combo1Anim->GetEndFrame() * 0.75].Bind(std::bind(&APlayerCharacter::OnMeleeAttackFinished,
 																		mOwnerCharacter));
 
 	combo2Anim->mEvents[combo2Anim->GetEndFrame() * 0.24].

@@ -173,6 +173,21 @@ NodeStatus BtBase::RandP(float p)
         return NodeStatus::Failure;
 }
 
+NodeStatus BtBase::RandTime(JText key, float t, float p)
+{
+    if (BB_ElapsedTime[key] < t)
+    {
+        BB_ElapsedTime[key] += mDeltaTime;
+        return NodeStatus::Failure;
+    }
+    BB_ElapsedTime[key] = 0;
+    float num = FMath::GenerateRandomFloat(0.f, 1.f);
+    if (num < p)
+        return NodeStatus::Success;
+    else
+        return NodeStatus::Failure;
+}
+
 FVector BtBase::RotateTowards(FVector direction, FVector rotation)
 {
     FVector NormalDirection;

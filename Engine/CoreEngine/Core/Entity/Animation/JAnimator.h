@@ -31,7 +31,7 @@ public:
 
 public:
 	void AddAnimationClip(const JText& InState, const class JAnimationClip* InClip);
-	void AddAnimationClip(const JText& InState, const JText& InClipPath);
+	void AddAnimationClip(const JText& InState, const JText& InClipPath, bool bEnableLoop = false);
 	void AddAnimLink(const JText& SrcState, const JText& DstState, const std::function<bool()>& InFunc,
 					 const float  InTransitionTime);
 	void SetState(const JText& InState);

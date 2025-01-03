@@ -1,4 +1,6 @@
 ﻿#include "AEnemy.h"
+
+#include "Animator/JGirlAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Animator/JKihyunAnimator.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
@@ -37,9 +39,25 @@ void AEnemy::Initialize()
 
 	APawn::Initialize();
 
-	if (mSkeletalMeshComponent)
+	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
-		mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
+		switch (mEnemyType) {
+		case EEnemyType::Kihyun:
+			mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			break;
+		case EEnemyType::Girl:
+			mAnimator = MakeUPtr<JGirlAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			break;
+		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Custom:
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+		
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}

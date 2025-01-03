@@ -118,6 +118,7 @@
     <ClInclude Include="Core\Entity\Component\AI\BTBuilder.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_BigZombie.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_Girl.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
@@ -210,6 +211,7 @@
     <ClInclude Include="Game\Src\Boss\AKillerClown.h" />
     <ClInclude Include="Game\Src\Boss\Animator\JKillerClownAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
@@ -324,6 +326,7 @@
     <ClCompile Include="Core\Entity\Component\AI\BTBuilder.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_BigZombie.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_Girl.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
@@ -403,6 +406,7 @@
     <ClCompile Include="Game\Src\Boss\AKillerClown.cpp" />
     <ClCompile Include="Game\Src\Boss\Animator\JKillerClownAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />

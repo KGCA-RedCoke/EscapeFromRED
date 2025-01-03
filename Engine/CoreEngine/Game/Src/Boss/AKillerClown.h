@@ -59,7 +59,10 @@ protected:
     EBossState mBossState;
     JStaticMeshComponent* mHammerMesh;
     JSphereComponent* mHammerRegion;
+    JSphereComponent* mWeaponCollider;
     friend class JKillerClownAnimator;
+
+    float HP = 100;
 };
 
 REGISTER_CLASS_TYPE(AKillerClown)

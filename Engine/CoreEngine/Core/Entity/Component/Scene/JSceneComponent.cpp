@@ -229,6 +229,23 @@ void JSceneComponent::ShowEditor()
 	// Tick(Application::s_AppInstance->GetDeltaSeconds());
 }
 
+void JSceneComponent::SetWorldTransform(const FMatrix& InMatrix)
+{
+	mWorldMat = InMatrix;
+
+	XMVECTOR scl, rot, loc;
+	
+	XMMatrixDecompose(&scl, &rot, &loc, InMatrix);
+
+	XMStoreFloat3(&mWorldScale, rot);
+	XMStoreFloat3(&mLocalScale, loc);
+	XMStoreFloat3(&mWorldLocation, loc);
+
+	SetWorldScale(mWorldScale);
+	SetWorldRotation(mWorldRotation);
+	SetWorldLocation(mWorldLocation);
+}
+
 void JSceneComponent::SetWorldLocation(const FVector& InTranslation)
 {
 	mWorldLocation = InTranslation;
@@ -559,7 +576,7 @@ void JCollisionComponent::Destroy()
 
 void JCollisionComponent::Draw()
 {
-	if (!GetWorld.bDebugMode)
+	if (!GetWorld.bDebugMode || !bCollisionEnabled)
 	{
 		return;
 	}
