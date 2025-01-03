@@ -27,10 +27,13 @@ public:
 	ComPtr<ID2D1RenderTarget>        RTV_2D;					// DWrite Draw RTV (2D 텍스트를 그리기 위한 RTV)
 	ComPtr<ID3D11DepthStencilView>   DepthStencilView;			// 깊이 스텐실
 	ComPtr<ID3D11DepthStencilState>  DepthStencilState;			// 깊이 스텐실 상태
+	ComPtr<ID3D11ShaderResourceView> DepthSRV;					// 이미지
 	D3D11_VIEWPORT                   ViewportDesc;				// 뷰포트 정보
+	DXGI_FORMAT                      DepthStencilFormat;
 
 public:
-	explicit FViewportData(const JText& InName, uint32_t InWidth, uint32_t InHeight);
+	explicit FViewportData(const JText& InName, uint32_t InWidth, uint32_t InHeight,
+						   DXGI_FORMAT  InDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
 	explicit FViewportData(const JText& InName, const FVector2& InSize);
 	~FViewportData() = default;
 

@@ -15,9 +15,10 @@ Texture2D specularMap : register(t8);
 Texture2D directionLightShadowMap : register(t10);
 Texture2D pointLightShadowMap : register(t11);
 
-SamplerState Sampler_Linear : register(s0);
-SamplerState g_TextureSampler0 : register(s1);
-SamplerState g_TextureSampler1 : register(s2);
+SamplerState           Sampler_Linear : register(s0);
+SamplerState           SamplerShadowMap: register (s1);
+SamplerComparisonState SamplerComShadowMap: register (s2);
+
 
 cbuffer CMaterialBuffer : register(b9)
 {
@@ -82,9 +83,10 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal     = mul((float3x3)Instance.InvTransform, normal);
-	output.Tangent    = mul((float3x3)Instance.InvTransform, Input.Tangent);
+	output.Normal     = mul(float4(normal, 1), Instance.InvTransform);
+	output.Tangent    = mul(float4(Input.Tangent.xyz, 1), Instance.InvTransform);
 	output.Binormal   = cross(output.Normal, output.Tangent);
+	output.TexShadow  = mul(Input.Pos, Instance.ShadowTransform);
 
 	return output;
 }
@@ -157,6 +159,24 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	finalColor += emissive;
 	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 10.f, 10.f);
 
+	// float  fLightAmount   = 0.0f;
+	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
+	//
+	// const float fdelta = 1.0f / 1024;
+	// int         iHalf  = 1;
+	// for (int v = -iHalf; v <= iHalf; v++)
+	// {
+	// 	for (int u = -iHalf; u <= iHalf; u++)
+	// 	{
+	// 		float2 vOffset = float2(u * fdelta, v * fdelta);
+	// 		fLightAmount += directionLightShadowMap.SampleCmpLevelZero(SamplerComShadowMap,
+	// 																   ShadowTexColor.xy + vOffset,
+	// 																   ShadowTexColor.z).r;
+	// 	}
+	// }
+	// fLightAmount /= 3 * 3;
+	// finalColor = finalColor * max(0.2f, fLightAmount);
+	// finalColor = fLightAmount;
 	return float4(finalColor, opacity);
 
 }

@@ -2,6 +2,7 @@
 #include "JShader.h"
 #include "Core/Manager/Manager_Base.h"
 
+class JShader_Shadow;
 class JShader_UI;
 class JShader_Basic;
 
@@ -21,6 +22,7 @@ public:
 	JShader*          UIElementShader;	// UI 요소 셰이더
 	JShader*          ColorShader;	// 색상 셰이더
 	JShader_UI*       UIShader;	// UI 셰이더
+	JShader_Shadow*   ShadowMapShader;	// 그림자 맵 셰이더
 	JShader*          mCachedShader;	// 현재 설정된 셰이더
 	JCameraComponent* mCachedCamera;	// 현재 설정된 카메라
 

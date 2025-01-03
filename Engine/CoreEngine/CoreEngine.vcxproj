@@ -155,6 +155,7 @@
     <ClInclude Include="Core\Graphics\Shader\FConstantBuffer.h" />
     <ClInclude Include="Core\Graphics\Shader\JShader_Basic.h" />
     <ClInclude Include="Core\Graphics\Shader\JMaterial_Mirror.h" />
+    <ClInclude Include="Core\Graphics\Shader\JShader_Shadow.h" />
     <ClInclude Include="Core\Graphics\Shader\JShader_UI.h" />
     <ClInclude Include="Core\Graphics\XD3DDevice.h" />
     <ClInclude Include="Core\Graphics\graphics_common_include.h" />
@@ -261,6 +262,9 @@
     <None Include="Shader\CommonTextures.hlslinc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Shader\DepthMap.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Shader\FBMP.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -293,9 +297,6 @@
     <ClInclude Include="Vender\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="Vender\include\imgui\imstb_textedit.h" />
     <ClInclude Include="Vender\include\imgui\imstb_truetype.h" />
-<!--    <None Include="Shader\Shadow.hlsl">-->
-<!--      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
-<!--    </None>-->
     <None Include="Shader\SimpleColor.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -359,6 +360,7 @@
     <ClCompile Include="Core\Graphics\Shader\FConstantBuffer.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JShader_Basic.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JMaterial_Mirror.cpp" />
+    <ClCompile Include="Core\Graphics\Shader\JShader_Shadow.cpp" />
     <ClCompile Include="Core\Graphics\Shader\JShader_UI.cpp" />
     <ClCompile Include="Core\Graphics\XD3DDevice.cpp" />
     <ClCompile Include="Core\Graphics\Layer\XLayerBase.cpp" />

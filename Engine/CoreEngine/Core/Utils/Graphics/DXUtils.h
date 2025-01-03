@@ -26,7 +26,8 @@ namespace Utils::DX
 								uint32_t                       InWidth,
 								uint32_t                       InHeight,
 								_Out_ ID3D11DepthStencilView** OutDSV,
-								_Out_ ID3D11Texture2D**        OutTexture);
+								_Out_ ID3D11Texture2D**        OutTexture, ID3D11ShaderResourceView** OutSRV,
+								DXGI_FORMAT                    StencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	void CreateDepthStencilState(ID3D11Device*                   InDevice,
 								 bool                            InDepthEnable,
