@@ -184,6 +184,7 @@
     <ClInclude Include="Core\Manager\IManagedInterface.h" />
     <ClInclude Include="Core\Manager\MClassFactory.h" />
     <ClInclude Include="Core\Manager\Manager_Base.h" />
+    <ClInclude Include="Core\Manager\MPoolManager.h" />
     <ClInclude Include="Core\Thread\ThreadPool.h" />
     <ClInclude Include="Core\Thread\ThreadQueue.h" />
     <ClInclude Include="Core\Utils\Collision\CollisionUtils.h" />
@@ -213,6 +214,7 @@
     <ClInclude Include="Game\Src\Boss\Animator\JKillerClownAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
+    <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
@@ -386,6 +388,7 @@
     <ClCompile Include="Core\Manager\BaseManager.cpp" />
     <ClCompile Include="Core\Manager\IManagedInterface.cpp" />
     <ClCompile Include="Core\Manager\MClassFactory.cpp" />
+    <ClCompile Include="Core\Manager\MPoolManager.cpp" />
     <ClCompile Include="Core\Thread\ThreadPool.cpp" />
     <ClCompile Include="Core\Thread\ThreadQueue.cpp" />
     <ClCompile Include="Core\Utils\Collision\CollisionUtils.cpp" />
@@ -408,6 +411,7 @@
     <ClCompile Include="Game\Src\Boss\Animator\JKillerClownAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
+    <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />

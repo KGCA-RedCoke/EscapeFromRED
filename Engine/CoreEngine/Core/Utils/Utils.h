@@ -140,6 +140,7 @@ constexpr const char* NAME_COMPONENT_RAY                  = "JLineComponent";
 constexpr const char* NAME_COMPONENT_BOX                  = "JBoxComponent";
 constexpr const char* NAME_COMPONENT_SPHERE               = "JSphereComponent";
 constexpr const char* NAME_COMPONENT_PAWN_MOVEMENT        = "JPawnMovementComponent";
+constexpr const char* NAME_COMPONENT_SPAWNER              = "JSpawnerComponent";
 constexpr const char* NAME_OBJECT_LEVEL                   = "JLevel";
 
 
@@ -162,9 +163,9 @@ constexpr uint32_t HASH_ASSET_TYPE_ANIMATION_CLIP     = StringHash_CompileTime("
 constexpr uint32_t HASH_ASSET_TYPE_ANIMATOR           = StringHash_CompileTime("JAnimator");
 constexpr uint32_t HASH_ASSET_TYPE_WIDGET             = StringHash_CompileTime("JWidget");
 
-constexpr uint32_t HASH_COMPONENT_TYPE_COLLISION = StringHash_CompileTime("JCollisionComponent");
-
+constexpr uint32_t HASH_COMPONENT_TYPE_COLLISION    = StringHash_CompileTime("JCollisionComponent");
 constexpr uint32_t HASH_COMPONENT_TYPE_PawnMovement = StringHash_CompileTime("JPawnMovementComponent");
+constexpr uint32_t HASH_COMPONENT_TYPE_SPAWNER      = StringHash_CompileTime("JSpawnerComponent");
 
 constexpr uint32_t Hash_EXT_FBX    = StringHash_CompileTime(".fbx");
 constexpr uint32_t Hash_EXT_JASSET = StringHash_CompileTime(".jasset");
