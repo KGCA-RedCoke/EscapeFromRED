@@ -46,14 +46,15 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	PixelIn_Base output;
 
 	output.VertexColor = Input.VertexColor;
-	output.WorldSpace  = mul(Input.Pos, Instance.Transform);
+	output.WorldSpace  = float4(Input.Pos, 1.f);	// 로컬 좌표계
+	output.WorldSpace  = mul(output.WorldSpace, Instance.Transform);
 	output.ViewDir     = normalize(WorldCameraPos.xyz - output.WorldSpace.xyz);
 	output.ClipSpace   = mul(output.WorldSpace, View);
 	output.ClipSpace   = mul(output.ClipSpace, Projection);
 	output.TexCoord    = Input.TexCoord;
-	output.Normal      = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
-	output.Tangent     = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
-	output.Binormal    = normalize(cross(output.Normal, output.Tangent));
+	output.Normal      = mul(float4(Input.Normal, 1), Instance.InvTransform);
+	output.Tangent     = mul(float4(Input.Tangent.xyz, 1), Instance.InvTransform);
+	output.Binormal    = cross(output.Normal, output.Tangent);
 
 	return output;
 }
@@ -80,7 +81,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	const float2 texCoord = ParallaxOcclusionMapping(
 													 Input.TexCoord,
-													 viewDirTangent,
+													 viewDir,
 													 height,
 													 HeightRatio,
 													 MinStep,
@@ -134,7 +135,6 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + ambient + specular;
-
 	return float4(finalColor, 1);
 
 }

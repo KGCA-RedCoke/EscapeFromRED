@@ -316,6 +316,7 @@ struct FInstanceData
 {
 	alignas(16) FMatrix WorldMatrix           = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 행렬
 	alignas(16) FMatrix WorldInverseTranspose = FMatrix::Identity;	// 각 인스턴스 별로 다른 월드 역행렬
+	alignas(16) FMatrix ShadowMatrix          = FMatrix::Identity;	// 그림자 행렬
 };
 
 struct FSkeletalMeshInstanceData

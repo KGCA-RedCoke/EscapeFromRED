@@ -41,7 +41,7 @@ bool JSkeletalMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 		return false;
 	}
 
-	mSkeletalMeshComponent = static_cast<JSkeletalMeshComponent*>(GetChildSceneComponentByType("SkeletalMeshComponent"));
+	mSkeletalMeshComponent = static_cast<JSkeletalMeshComponent*>(GetChildSceneComponentByType("JSkeletalMeshComponent"));
 	mBoundingBox           = mSkeletalMeshComponent->GetBoundingVolume();
 	UpdateTransform();
 

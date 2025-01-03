@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "InputLayouts.h"
+#include "JShader_Shadow.h"
 #include "JShader_UI.h"
 #include "Core/Graphics/Shader/JShader_Basic.h"
 
@@ -41,6 +42,7 @@ void MShaderManager::Initialize_Initialize()
 	UIElementShader = Load(NAME_SHADER_ID_UI);
 	ColorShader     = Load(NAME_SHADER_SIMPLE_COLOR);
 	UIShader        = Load<JShader_UI>(NAME_SHADER_UI);
+	ShadowMapShader = Load<JShader_Shadow>(NAME_SHADER_SHADOW_MAP);
 
 	Load(NAME_SHADER_GNOMON);
 

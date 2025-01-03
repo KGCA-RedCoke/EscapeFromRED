@@ -67,11 +67,10 @@ void JWorld::Initialize()
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
 
-	DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
-													  1024,
-													  1024,
-													  DXGI_FORMAT_R32G32B32A32_FLOAT,
-													  DXGI_FORMAT_D32_FLOAT);
+	// DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
+	// 												  1024,
+	// 												  1024,
+	// 												  DXGI_FORMAT_R32_TYPELESS);
 
 	// std::uniform_real_distribution dist(-10000.0f, 10000.0f);
 	// for (int i = 0; i < 1000; ++i)
@@ -86,7 +85,6 @@ void JWorld::Initialize()
 	// 								 nullptr,
 	// 								 "Game/Mesh/SM_Couch_01.jasset");
 	// }
-	DirectionalLightData = g_LightData;
 }
 
 void JWorld::Update(float DeltaTime)
@@ -97,6 +95,7 @@ void JWorld::Update(float DeltaTime)
 
 	ColliderManager->UpdateCollision();
 
+	// UpdateWorldShadowMap();
 
 	LevelManager->Update(DeltaTime);
 
@@ -139,43 +138,33 @@ float JWorld::GetGameTime() const
 
 void JWorld::UpdateWorldShadowMap()
 {
-	if (DirectionalLightData != g_LightData)
-	{
-		DirectionalLightData = g_LightData;
+	// if (DirectionalLightData != g_LightData)
+	// {
+	DirectionalLightData = g_LightData;
+	FVector4 eye          = (DirectionalLightData.LightPos);
+	FVector lookAt = FVector::ZeroVector;
+	FVector up     = FVector(0, 1, 0);
 
-		
+	float mapSize     = 20000.0f;  // 맵의 전체 크기
+	float halfMapSize = mapSize / 2.0f;
 
-		FVector4 eye    = GetWorld.DirectionalLightData.LightPos;
-		FVector  lookAt = FVector::ZeroVector;
-		FVector  up     = M_UpVector;
+	XMMATRIX orthographicMatrix = XMMatrixOrthographicOffCenterLH(
+																  -halfMapSize,   // Left
+																  +halfMapSize,   // Right
+																  -halfMapSize,   // Bottom
+																  +halfMapSize,   // Top
+																  0.0f,           // Near
+																  10000.0f       // Far
+																 );
 
-		float FOV         = M_PI / 3.0f;                     // 60도
-		float AspectRatio = static_cast<float>(4096) / static_cast<float>(4096);
-		float NearZ       = 10.0f;
-		float FarZ        = 100000.0f;
+	XMStoreFloat4x4(&GetWorld.DirectionalLightView,
+					XMMatrixLookAtLH(XMLoadFloat4(&eye),
+									 XMLoadFloat3(&lookAt),
+									 XMLoadFloat3(&up)));
+	XMStoreFloat4x4(&GetWorld.DirectionalLightProj,
+					orthographicMatrix);
 
-		// 가로/세로 크기 계산
-		float halfHeight = tan(FOV / 2.0f) * NearZ; // NearZ에서의 절반 높이
-		float halfWidth  = halfHeight * AspectRatio; // NearZ에서의 절반 가로
-
-		// 직교 투영 행렬 계산
-		XMMATRIX orthographicMatrix = XMMatrixOrthographicOffCenterLH(
-																	  -halfWidth,   // ViewLeft
-																	  halfWidth,    // ViewRight
-																	  -halfHeight,  // ViewBottom
-																	  halfHeight,   // ViewTop
-																	  NearZ,        // NearZ
-																	  FarZ          // FarZ
-																	 );
-
-		XMStoreFloat4x4(&GetWorld.DirectionalLightView,
-						XMMatrixLookAtLH(XMLoadFloat4(&eye),
-										 XMLoadFloat3(&lookAt),
-										 XMLoadFloat3(&up)));
-		XMStoreFloat4x4(&GetWorld.DirectionalLightProj,
-						orthographicMatrix);
-		
-	}
+	// }
 }
 
 void JWorld::SearchFiles_Recursive(const std::filesystem::path& InPath)

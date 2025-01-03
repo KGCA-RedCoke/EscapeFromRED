@@ -30,17 +30,17 @@ void MMaterialManager::SaveEngineMaterials()
 	// ui->SetShader(MShaderManager::Get().UIShader);
 	// Utils::Serialization::Serialize(NAME_MAT_2D, ui);
 
-	// auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
-	// POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
-	// auto detail = Load<JMaterial_Detail>(NAME_MAT_DETAIL);
-	// detail->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_Detail.hlsl"));
+	auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
+	POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
+	auto detail = Load<JMaterial_Detail>(NAME_MAT_DETAIL);
+	detail->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_Detail.hlsl"));
 	//
 	// Utils::Serialization::Serialize(NAME_MAT_POM, POM);
 	// Utils::Serialization::Serialize(NAME_MAT_DETAIL, detail);
 
-	auto mirror = Load<JMaterial_Mirror>(NAME_MAT_MIRROR);
-	mirror->SetShader(MShaderManager::Get().Load("Shader/Mirror.hlsl"));
-	Utils::Serialization::Serialize(NAME_MAT_MIRROR, mirror);
+	// auto mirror = Load<JMaterial_Mirror>(NAME_MAT_MIRROR);
+	// mirror->SetShader(MShaderManager::Get().Load("Shader/Mirror.hlsl"));
+	// Utils::Serialization::Serialize(NAME_MAT_MIRROR, mirror);
 
 }
 

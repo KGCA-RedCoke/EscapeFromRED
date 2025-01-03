@@ -146,7 +146,8 @@ void GUI_Viewport::CreateMousePickingBuffer(ID3D11Device* InDevice)
 									  mCachedViewportWidth,
 									  mCachedViewportHeight,
 									  mMousePickingBuffer.DepthBuffer.GetAddressOf(),
-									  depthBuffer.GetAddressOf());
+									  depthBuffer.GetAddressOf(),
+									  nullptr);
 
 	// ------------------------- Depth Stencil State -------------------------
 	Utils::DX::CreateDepthStencilState(InDevice,

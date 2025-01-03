@@ -16,6 +16,8 @@ public:
 	void PushCommand(uint32_t NameHash, JMaterialInstance* InMaterialRef, FInstanceData_Mesh& InInstanceData,
 					 ID3D11ShaderResourceView** InAnimTexture = nullptr);
 
+	void FlushCommandList_Shadow(ID3D11DeviceContext* InContext);
+	
 	void FlushCommandList(ID3D11DeviceContext* InContext);
 
 private:

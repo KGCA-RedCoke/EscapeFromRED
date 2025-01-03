@@ -537,6 +537,8 @@ MUIManager::MUIManager()
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
 	LoadingScreen = Load("Game/UI/inthedark.jasset");
+	
+	
 }
 
 MUIManager::~MUIManager() {}

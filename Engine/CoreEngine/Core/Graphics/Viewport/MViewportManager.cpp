@@ -4,7 +4,8 @@
 #include "Core/Utils/Utils.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 
-FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InHeight)
+FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InHeight, DXGI_FORMAT InDepthStencilFormat)
+	: DepthStencilFormat(InDepthStencilFormat)
 {
 	Hash = StringHash(InName.c_str());
 
@@ -15,9 +16,9 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 	Utils::DX::CreateRenderTarget(device,
 								  InWidth,
 								  InHeight,
-								  RTV.GetAddressOf(),
-								  SRV.GetAddressOf(),
-								  texBuffer.GetAddressOf());
+								  RTV.ReleaseAndGetAddressOf(),
+								  SRV.ReleaseAndGetAddressOf(),
+								  texBuffer.ReleaseAndGetAddressOf());
 
 	// ------------------------- Viewport -------------------------
 	Utils::DX::CreateViewport(InWidth, InHeight, &ViewportDesc);
@@ -28,15 +29,17 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 									  device,
 									  InWidth,
 									  InHeight,
-									  DepthStencilView.GetAddressOf(),
-									  depthBuffer.GetAddressOf());
+									  DepthStencilView.ReleaseAndGetAddressOf(),
+									  depthBuffer.GetAddressOf(),
+									  DepthSRV.ReleaseAndGetAddressOf(),
+									  DepthStencilFormat);
 
 	// ------------------------- Depth Stencil State -------------------------
 	Utils::DX::CreateDepthStencilState(device,
 									   true,
 									   D3D11_DEPTH_WRITE_MASK_ALL,
 									   D3D11_COMPARISON_LESS_EQUAL,
-									   DepthStencilState.GetAddressOf());
+									   DepthStencilState.ReleaseAndGetAddressOf());
 
 
 	// 2D Side RenderTarget (DWrite)
@@ -46,7 +49,7 @@ FViewportData::FViewportData(const JText& InName, uint32_t InWidth, uint32_t InH
 
 	texBuffer   = nullptr;
 	depthBuffer = nullptr;
-	
+
 	// OnViewportResized.Bind([&](uint32_t width, uint32_t height){
 	// 	Resize(device, width, height);
 	// });
@@ -81,9 +84,9 @@ void FViewportData::Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t In
 	Utils::DX::CreateRenderTarget(InDevice,
 								  InWidth,
 								  InHeight,
-								  RTV.GetAddressOf(),
-								  SRV.GetAddressOf(),
-								  texBuffer.GetAddressOf());
+								  RTV.ReleaseAndGetAddressOf(),
+								  SRV.ReleaseAndGetAddressOf(),
+								  texBuffer.ReleaseAndGetAddressOf());
 
 	// ------------------------- Viewport -------------------------
 	Utils::DX::CreateViewport(InWidth, InHeight, &ViewportDesc);
@@ -94,21 +97,23 @@ void FViewportData::Create(ID3D11Device* InDevice, uint32_t InWidth, uint32_t In
 									  InDevice,
 									  InWidth,
 									  InHeight,
-									  DepthStencilView.GetAddressOf(),
-									  depthBuffer.GetAddressOf());
+									  DepthStencilView.ReleaseAndGetAddressOf(),
+									  depthBuffer.GetAddressOf(),
+									  DepthSRV.ReleaseAndGetAddressOf(),
+									  DepthStencilFormat);
 
 	// ------------------------- Depth Stencil State -------------------------
 	Utils::DX::CreateDepthStencilState(InDevice,
 									   true,
 									   D3D11_DEPTH_WRITE_MASK_ALL,
 									   D3D11_COMPARISON_LESS_EQUAL,
-									   DepthStencilState.GetAddressOf());
+									   DepthStencilState.ReleaseAndGetAddressOf());
 
 
 	// 2D Side RenderTarget (DWrite)
 	Utils::DX::CreateD2DRenderTarget(GetWorld.D3D11API->Get2DFactory(),
 									 texBuffer.Get(),
-									 RTV_2D.GetAddressOf());
+									 RTV_2D.ReleaseAndGetAddressOf());
 
 	texBuffer   = nullptr;
 	depthBuffer = nullptr;
@@ -140,14 +145,20 @@ void MViewportManager::SetRenderTarget(JTextView InViewportName, const FLinearCo
 
 	assert(mManagedList.contains(stringHash), "Invalid viewport ID");
 
-	// ID3D11ShaderResourceView* nullSRV = nullptr;
-	// G_Device.GetImmediateDeviceContext()->
-	// 		  PSSetShaderResources(0, 1, &nullSRV);
+	ID3D11ShaderResourceView* nullSRV[16]{nullptr};
+	GetWorld.D3D11API->GetImmediateDeviceContext()->
+			 PSSetShaderResources(0, 16, nullSRV);
+
+	// 새 화면으로 Clear
+	GetWorld.D3D11API->GetImmediateDeviceContext()->
+			 ClearRenderTargetView(
+								   mManagedList[stringHash]->RTV.Get(),
+								   InClearColor.RGBA);
 
 	GetWorld.D3D11API->GetImmediateDeviceContext()->
 			 ClearDepthStencilView(mManagedList[stringHash]->DepthStencilView.Get(),
 								   D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-								   1.0f,
+								   1.f,
 								   0);
 
 	// RenderTarget 영역 설정 
@@ -156,12 +167,6 @@ void MViewportManager::SetRenderTarget(JTextView InViewportName, const FLinearCo
 								1,
 								mManagedList[stringHash]->RTV.GetAddressOf(),
 								mManagedList[stringHash]->DepthStencilView.Get());
-
-	// 새 화면으로 Clear
-	GetWorld.D3D11API->GetImmediateDeviceContext()->
-			 ClearRenderTargetView(
-								   mManagedList[stringHash]->RTV.Get(),
-								   InClearColor.RGBA);
 
 	// 각 뷰표트의 영역에 맞게 조절
 	G_Device.GetImmediateDeviceContext()->

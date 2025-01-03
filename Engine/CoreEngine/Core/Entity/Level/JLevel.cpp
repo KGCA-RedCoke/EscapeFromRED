@@ -172,7 +172,6 @@ void JLevel::RenderLevel()
 		// }
 	}
 	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
-
 }
 
 // void JLevel::AddActor(const Ptr<AActor>& InActor)

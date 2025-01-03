@@ -160,11 +160,11 @@ bool JMaterialInstance::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JMaterialInstance::BindMaterial(ID3D11DeviceContext* InDeviceContext) const
 {
-	mParentMaterial->BindShader(InDeviceContext);
-
 	mShader->UpdateConstantData(InDeviceContext,
 								"CMaterialBuffer",
 								GetMaterialData());
+	
+	mParentMaterial->BindShader(InDeviceContext);
 
 	for (auto& textureMap : mTextureMap)
 	{

@@ -43,6 +43,59 @@ void XD3DDevice::Initialize_Internal()
 	Window::GetWindow()->ResizeCallbacks.emplace_back([this](UINT InWidth, UINT InHeight){
 		OnResize(InWidth, InHeight);
 	});
+
+	D3D11_RASTERIZER_DESC rsDesc;
+	rsDesc.DepthClipEnable      = TRUE;
+	rsDesc.ScissorEnable        = TRUE;
+	rsDesc.FillMode             = D3D11_FILL_SOLID;
+	rsDesc.CullMode             = D3D11_CULL_BACK;
+	rsDesc.DepthBias            = 20000;
+	rsDesc.DepthBiasClamp       = 0.0f;
+	rsDesc.SlopeScaledDepthBias = 1.0f;
+	CheckResult(mDevice->CreateRasterizerState(&rsDesc, mRasterizerState_SlopeScaledDepthBias.GetAddressOf()));
+
+	D3D11_SAMPLER_DESC SamDescShad =
+	{
+		D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,// D3D11_FILTER Filter;
+		D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressU;
+		D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressV;
+		D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressW;
+		0,//FLOAT MipLODBias;
+		0,//UINT MaxAnisotropy;
+		D3D11_COMPARISON_LESS, //D3D11_COMPARISON_FUNC ComparisonFunc;
+		0.0, 0.0, 0.0, 0.0,//FLOAT BorderColor[ 4 ];
+		0,//FLOAT MinLOD;
+		0//FLOAT MaxLOD;   
+	};
+
+	CheckResult(mDevice->CreateSamplerState(&SamDescShad, mShadowSamplerState.GetAddressOf()));
+
+
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+	blendDesc.AlphaToCoverageEnable       = FALSE;
+	blendDesc.IndependentBlendEnable      = TRUE;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].BlendOp     = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend    = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend   = D3D11_BLEND_INV_SRC_ALPHA;
+
+	blendDesc.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.RenderTarget[1].BlendEnable           = FALSE;
+	blendDesc.RenderTarget[1].BlendOp               = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[1].SrcBlend              = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[1].DestBlend             = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[1].BlendOpAlpha          = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[1].SrcBlendAlpha         = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[1].DestBlendAlpha        = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[1].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	CheckResult(mDevice->CreateBlendState(&blendDesc, mCustomAlphaBlendState.GetAddressOf()));
+
 }
 
 
@@ -63,10 +116,10 @@ void XD3DDevice::Release()
 
 void XD3DDevice::ClearColor(const FLinearColor& InColor) const
 {
+	mImmediateContext->ClearRenderTargetView(mRenderTargetView.Get(), InColor.RGBA);
+
 	mImmediateContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), nullptr);
 	mImmediateContext->RSSetViewports(1, &mViewport);
-
-	// mImmediateContext->ClearRenderTargetView(mRenderTargetView.Get(), InColor.RGBA);
 }
 
 void XD3DDevice::Draw()
@@ -102,6 +155,9 @@ void XD3DDevice::SetBlendState(EBlendState InState) const
 		break;
 	case EBlendState::NonPremultiplied:
 		newBlendState = mToolKitStates->NonPremultiplied();
+		break;
+	case EBlendState::CustomAlphaBlend:
+		newBlendState = mCustomAlphaBlendState.Get();
 		break;
 	}
 
@@ -157,6 +213,8 @@ void XD3DDevice::SetSamplerState(const ESamplerState InState, int32_t* InSlots, 
 	case ESamplerState::AnisotropicClamp:
 		newSamplerState = mToolKitStates->AnisotropicClamp();
 		break;
+	case ESamplerState::Shadow:
+		newSamplerState = mShadowSamplerState.Get();
 	}
 
 	for (int32_t i = 0; i < InSize; ++i)
@@ -185,6 +243,9 @@ void XD3DDevice::SetRasterState(const ERasterState InState) const
 		break;
 	case ERasterState::WireFrame:
 		newRasterState = mToolKitStates->Wireframe();
+		break;
+	case ERasterState::SlopeScaledDepthBias:
+		newRasterState = mRasterizerState_SlopeScaledDepthBias.Get();
 		break;
 	}
 

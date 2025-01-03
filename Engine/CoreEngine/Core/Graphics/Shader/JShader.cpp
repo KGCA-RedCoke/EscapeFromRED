@@ -46,8 +46,12 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	int32_t slots[2] = {0, 1};
-	G_Device.SetSamplerState(ESamplerState::LinearWrap, slots, 2);
+	int32_t slot0 = 0;
+	int32_t slot1 = 1;
+	int32_t slot2 = 2;
+	G_Device.SetSamplerState(ESamplerState::LinearWrap, &slot0, 1);
+	G_Device.SetSamplerState(ESamplerState::LinearClamp, &slot1, 1);
+	G_Device.SetSamplerState(ESamplerState::Shadow, &slot2, 1);
 
 	G_Device.SetBlendState(EBlendState::Opaque);
 	G_Device.SetDepthStencilState(EDepthStencilState::DepthDefault);

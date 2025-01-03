@@ -10,7 +10,8 @@ enum class EBlendState : uint8_t
 	Opaque,
 	AlphaBlend,
 	Additive,
-	NonPremultiplied
+	NonPremultiplied,
+	CustomAlphaBlend
 };
 
 enum class EDepthStencilState : uint8_t
@@ -27,17 +28,19 @@ enum class ERasterState : uint8_t
 	CullNone,
 	CW,
 	CCW,
-	WireFrame
+	WireFrame,
+	SlopeScaledDepthBias
 };
 
 enum class ESamplerState : uint8_t
 {
 	PointWrap,
-	PointClamp,	
+	PointClamp,
 	LinearWrap,
 	LinearClamp,
 	AnisotropicWrap,
-	AnisotropicClamp
+	AnisotropicClamp,
+	Shadow
 };
 
 
@@ -113,6 +116,9 @@ private:
 	ComPtr<ID2D1RenderTarget>      mRenderTarget_2D;			/** DWrite Draw RTV */
 	ComPtr<ID3D11RenderTargetView> mRenderTargetView;           /** 화면에 보여지는 버퍼 개체 (RTV) */
 	ComPtr<ID3D11RasterizerState>  mRasterizerState;			/** 래스터라이저 상태 관리 개체 인터페이스 */
+	ComPtr<ID3D11RasterizerState>  mRasterizerState_SlopeScaledDepthBias;
+	ComPtr<ID3D11SamplerState>     mShadowSamplerState;
+	ComPtr<ID3D11BlendState>       mCustomAlphaBlendState;
 
 	UPtr<CommonStates> mToolKitStates;
 

@@ -2,7 +2,10 @@
 
 #include "JSkeletalMeshObject.h"
 #include "Core/Graphics/XD3DDevice.h"
+#include "Core/Graphics/Shader/JShader_Shadow.h"
 #include "Core/Graphics/Shader/MShaderManager.h"
+#include "Core/Graphics/Viewport/MViewportManager.h"
+#include "Core/Interface/JWorld.h"
 
 MMeshManager::MMeshManager()
 {}
@@ -128,12 +131,69 @@ void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialIns
 {
 	assert(mBufferList.contains(NameHash));
 
+	// InInstanceData.Transform.ShadowMatrix = XMMatrixTranspose(InInstanceData.Transform.WorldMatrix * GetWorld.
+	// 														  DirectionalLightView * GetWorld
+	// 														  .DirectionalLightProj * FMatrix(0.5f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   -0.5f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   0.0f,
+	// 																   1.0f,
+	// 																   0.0f,
+	// 																   0.5f,
+	// 																   0.5f,
+	// 																   0.0f,
+	// 																   1.0f));
+
 	mInstanceData_Mesh[NameHash][InMaterialRef].emplace_back(InInstanceData);
 
 	if (InAnimTexture)
 	{
 		mInstanceData_Skeletal[NameHash] = InAnimTexture;
 	}
+}
+
+void MMeshManager::FlushCommandList_Shadow(ID3D11DeviceContext* InContext)
+{
+
+	for (auto& [nameHash, instanceByMaterial] : mInstanceData_Mesh)
+	{
+		auto it = mBufferList.find(nameHash);
+		// 인스턴스 갯수 만큼 버퍼 업데이트
+		if (it == mBufferList.end())
+		{
+			return;
+		}
+
+		Buffer::FBufferMesh bufferMesh     = it->second;
+		auto&               instanceBuffer = bufferMesh.Instance.Buffer_Instance;
+
+		for (auto& [material, instanceData] : instanceByMaterial)
+		{
+			GetWorld.ShaderManager->ShadowMapShader->BindShaderPipeline(InContext);
+
+			Utils::DX::UpdateDynamicBuffer(InContext,
+										   instanceBuffer.Get(),
+										   instanceData.data(),
+										   sizeof(FInstanceData_Mesh) * instanceData.size());
+
+			ID3D11Buffer*      buffers[2] = {bufferMesh.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
+			constexpr uint32_t stride[2]  = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
+			constexpr uint32_t offset[2]  = {0, 0};
+
+			InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);
+			InContext->IASetIndexBuffer(bufferMesh.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+			InContext->DrawIndexedInstanced(bufferMesh.IndexCount, instanceData.size(), 0, 0, 0);
+		}
+	}
+
+	mInstanceData_Mesh.clear();
+	mInstanceData_Skeletal.clear();
 }
 
 void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
@@ -164,6 +224,9 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 			{
 				InContext->VSSetShaderResources(SLOT_SKINNING, 1, mInstanceData_Skeletal[nameHash]);
 			}
+
+			// InContext->PSSetShaderResources(10, 1, GetWorld.DirectionalLightShadowMap->DepthSRV.GetAddressOf());
+
 
 			ID3D11Buffer*      buffers[2] = {bufferMesh.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
 			constexpr uint32_t stride[2]  = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};

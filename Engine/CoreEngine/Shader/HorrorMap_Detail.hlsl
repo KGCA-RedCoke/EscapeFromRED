@@ -79,9 +79,9 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 	output.ClipSpace  = mul(output.WorldSpace, View);
 	output.ClipSpace  = mul(output.ClipSpace, Projection);
 	output.TexCoord   = Input.TexCoord;
-	output.Normal     = normalize(mul((float3x3)Instance.InvTransform, Input.Normal));
-	output.Tangent    = normalize(mul((float3x3)Instance.InvTransform, Input.Tangent));
-	output.Binormal   = normalize(cross(output.Normal, output.Tangent));
+	output.Normal     = mul(float4(normal, 1), Instance.InvTransform);
+	output.Tangent    = mul(float4(Input.Tangent.xyz, 1), Instance.InvTransform);
+	output.Binormal   = cross(output.Normal, output.Tangent);
 
 	return output;
 }
@@ -116,12 +116,8 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
 	albedo *= pow(detailMask.rgb, MaskPower);
 
-	float4 normalColor = normalMap.Sample(Sampler_Linear, texCoord).rgba;
-	if (normalColor.r * normalColor.g * normalColor.b < 0.9f)
-	{
-		normal = normalColor * 2.0f - 1.0f;
-		normal = normalize(mul(normal, tbn));
-	}
+	float4 normalColor = 2 * normalMap.Sample(Sampler_Linear, texCoord).rgba - 1;
+	normal             = normalize(mul(normalColor, tbn));
 
 	float3 detailNormal = WorldAlignedTexture(normalMap,
 											  Sampler_Linear,
