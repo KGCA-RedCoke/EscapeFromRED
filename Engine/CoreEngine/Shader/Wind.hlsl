@@ -12,10 +12,10 @@
 // ------------------------------------------------------------------
 
 // Wind parameters
-float3 g_WindDirection = float3(10.0f, 0.0f, 0.0f); // 바람의 방향 (단위 벡터)
-float g_WindStrength = 10.5f;   // 바람 강도
-float g_WindFrequency = 0.2f;  // 바람 주파수
-float g_WindSpeed = 1.5f;      // 바람 속도
+float3 g_WindDirection = normalize(float3(1.0f, 0.0f, 0.3f)); // 바람의 방향 정규화
+float g_WindStrength = 5.5f;   // 바람 강도 (너무 크면 왜곡될 수 있음)
+float g_WindFrequency = 0.4f;  // 바람 주파수 증가
+float g_WindSpeed = 2.5f;      // 바람 속도 증가
 
 cbuffer CMaterialBuffer : register(b9)
 {
@@ -89,7 +89,7 @@ PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
 
 	// Z축과 X축에도 바람 효과를 일부 적용해 더 자연스러운 움직임 구현
 	output.WorldSpace.x += windEffect * 0.3f;
-	output.WorldSpace.y += windEffect; // Y축 중심으로 큰 흔들림 효과
+	output.WorldSpace.y += windEffect;
 	output.WorldSpace.z += windEffect * 0.25f;
 
 	output.WorldSpace = mul(output.WorldSpace, Instance.Transform);
@@ -159,9 +159,9 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Opacity;
 
-	if (opacity < 0.3f)
+	if (opacity < 0.7f )
 	{
-		albedo *= opacity; // 밝기를 감소시키는 대신 텍스처 조정만 수행
+		discard;
 	}
 
 	float normDotLight = saturate(dot(normal, lightDir));

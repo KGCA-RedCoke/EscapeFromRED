@@ -16,19 +16,19 @@ void JMaterial_Wind::BindShader(ID3D11DeviceContext* InDeviceContext)
 	// 상수버퍼, 셰이더 세팅
 	JMaterial::BindShader(InDeviceContext);
 
-	// G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//
-	// int32_t slots = 0;
-	// G_Device.SetSamplerState(ESamplerState::LinearWrap, &slots, 1);
-	//
-	// // // 컬링 모드는 논컬링
-	// G_Device.SetRasterState(ERasterState::CullNone);
-	// // // 깊이 버퍼 읽기 쓰기 비활성화
-	// // G_Device.SetDepthStencilState(EDepthStencilState::DepthNone);
-	//
-	// float gameTime = GetWorld.GetGameTime();
-	// // // Time버퍼를(상수) 넘겨줘야한다.
-	// mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
+	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
+	int32_t slots = 0;
+	G_Device.SetSamplerState(ESamplerState::LinearWrap, &slots, 1);
+	
+	// // 컬링 모드는 논컬링
+	G_Device.SetRasterState(ERasterState::CullNone);
+	// // 깊이 버퍼 읽기 쓰기 비활성화
+	// G_Device.SetDepthStencilState(EDepthStencilState::DepthNone);
+	
+	float gameTime = GetWorld.GetGameTime();
+	// // Time버퍼를(상수) 넘겨줘야한다.
+	mShader->UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, "GameTime", &gameTime);
 }
 
 void JMaterial_Wind::InitializeParams()

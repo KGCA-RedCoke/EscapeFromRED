@@ -52,14 +52,6 @@ void MMaterialManager::SaveEngineMaterials()
 	character->SetShader(MShaderManager::Get().Load("Shader/Character.hlsl"));
 	Utils::Serialization::Serialize(NAME_MAT_CHARACTER, character);
 
-	auto wind = Load<JMaterial_Wind>(NAME_MAT_WIND);
-	wind->SetShader(MShaderManager::Get().Load("Shader/Wind.hlsl"));
-	Utils::Serialization::Serialize(NAME_MAT_WIND, wind);
-	
-	auto character = Load<JMaterial_Character>(NAME_MAT_CHARACTER);
-	character->SetShader(MShaderManager::Get().Load("Shader/Character.hlsl"));
-	Utils::Serialization::Serialize(NAME_MAT_CHARACTER, character);
-
 }
 
 void MMaterialManager::LoadEngineMaterials()
