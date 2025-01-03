@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include "Core/Entity/JObject.h"
+#include "Core/Manager/MPoolManager.h"
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
 
+class AEnemy;
 class JWidgetComponent;
 namespace Quad
 {
@@ -55,11 +57,11 @@ public:
 	UPtr<Quad::JTree> mOcTree;
 
 	JArray<UPtr<class AActor>>      mActors;	// 레벨에 속한 액터들
+	JArray<UPtr<class AActor>>      mReservedActors;	// 예약된 액터들
 	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
 
-	// TODO : 레벨과 관련된 변수들 추가
-	// Time, Mission, States ... etc
+	// MPoolManager<AEnemy> mEnemyPool;
 
 
 	friend class GUI_Inspector;
@@ -77,8 +79,7 @@ T* JLevel::CreateActor(JTextView InName, Args&&... InArgs)
 
 	T* ptr = newActor.get();
 
-	mOcTree->Insert(ptr);
-	mActors.push_back(std::move(newActor));
+	mReservedActors.push_back(std::move(newActor));
 
 	return ptr;
 }

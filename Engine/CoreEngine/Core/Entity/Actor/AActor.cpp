@@ -99,6 +99,14 @@ bool AActor::Serialize_Implement(std::ofstream& FileStream)
 		return false;
 	}
 
+	uint32_t numComponents = mActorComponents.size();
+	Utils::Serialization::Serialize_Primitive(&numComponents, sizeof(uint32_t), FileStream);
+	for (auto& component : mActorComponents)
+	{
+		JText objectType = component->GetObjectType();
+		Utils::Serialization::Serialize_Text(objectType, FileStream);
+		component->Serialize_Implement(FileStream);
+	}
 
 	return true;
 }
@@ -108,6 +116,29 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	if (!JSceneComponent::DeSerialize_Implement(InFileStream))
 	{
 		return false;
+	}
+
+	const int32_t currentFilePos = InFileStream.tellg();
+
+	JAssetHeader header;
+	Utils::Serialization::DeserializeHeader(InFileStream, header);
+	InFileStream.seekg(currentFilePos);
+
+
+	if (header.Version == 2)
+	{
+		uint32_t numComponents = 0;
+		Utils::Serialization::DeSerialize_Primitive(&numComponents, sizeof(uint32_t), InFileStream);
+		mActorComponents.reserve(numComponents);
+		for (uint32_t i = 0; i < numComponents; ++i)
+		{
+			JText objectType;
+			Utils::Serialization::DeSerialize_Text(objectType, InFileStream);
+			auto newComp = UPtrCast<JActorComponent>(MClassFactory::Get().Create(objectType));
+			newComp->DeSerialize_Implement(InFileStream);
+			newComp->SetOwnerActor(this);
+			mActorComponents.push_back(std::move(newComp));
+		}
 	}
 
 	return true;
