@@ -29,7 +29,7 @@ JLevel_Main::JLevel_Main()
 
 	});
 	mWidgetComponents.reserve(1);
-	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/Cross.jasset"));
+	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
 
 	JLevel_Main::InitializeLevel();
 	G_NAV_MAP.Initialize();

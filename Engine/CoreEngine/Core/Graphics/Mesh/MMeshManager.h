@@ -17,13 +17,20 @@ public:
 					 ID3D11ShaderResourceView** InAnimTexture = nullptr);
 
 	void FlushCommandList_Shadow(ID3D11DeviceContext* InContext);
-	
+
 	void FlushCommandList(ID3D11DeviceContext* InContext);
+
+	void GenChunkMeshes(JMeshObject* MeshObject, uint32_t InstanceCount, const FVector& Position, const FVector& Scale);
+	void FlushChunkMeshes(ID3D11DeviceContext* InContext);
 
 private:
 	JHash<uint32_t, Buffer::FBufferMesh>                                   mBufferList;
 	JHash<uint32_t, JHash<JMaterialInstance*, JArray<FInstanceData_Mesh>>> mInstanceData_Mesh;
 	JHash<uint32_t, ID3D11ShaderResourceView**>                            mInstanceData_Skeletal;
+
+	JArray<FInstanceData_Mesh>  mCornMeshes;
+	JMaterialInstance*          mCornMaterial = nullptr;
+	JArray<Buffer::FBufferMesh> mCornBuffer;
 
 
 #pragma region Singleton Boilerplate

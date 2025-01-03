@@ -145,9 +145,11 @@
     <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_2D.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Character.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Detail.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_POM.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_SkySphere.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Wind.h" />
     <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
@@ -350,9 +352,11 @@
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_2D.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Character.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Detail.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_POM.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_SkySphere.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Wind.cpp" />
     <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />

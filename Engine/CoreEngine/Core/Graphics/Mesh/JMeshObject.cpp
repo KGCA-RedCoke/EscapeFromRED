@@ -137,7 +137,7 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	{
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return;
-	}	
+	}
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
 	// // 이전에 바인딩된 Delegate 해제
@@ -195,6 +195,13 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(uint32_t InIndex) const
 
 void JMeshObject::AddInstance(float InCameraDistance)
 {
+	if (bChunkMesh)
+	{
+		MMeshManager::Get().GenChunkMeshes(this, 1000, FVector::ZeroVector, FVector::OneVector);
+		MMeshManager::Get().FlushChunkMeshes(G_Device.GetImmediateDeviceContext());
+		return;
+	}
+
 	const int32_t lodCount = mPrimitiveMeshData.size();
 	int32_t       lod      = static_cast<int32_t>(InCameraDistance / 3000.f);
 	lod                    = FMath::Clamp<int32_t>(lod, 0, lodCount - 1);

@@ -39,7 +39,7 @@ void JStaticMeshActor::Initialize()
 		// mStaticMeshComponent->SetCollisionType(ECollisionType::Box);
 		// mStaticMeshComponent->SetCollisionEnabled(true);
 	}
-	
+
 	AActor::Initialize();
 
 	AActor::Tick(0);
@@ -79,9 +79,16 @@ void JStaticMeshActor::ShowEditor()
 	AActor::ShowEditor();
 
 	ImGui::Checkbox(u8("메시 그대로 콜리전 사용"), &bUseMeshCollision);
-	
+
 	AActor::Tick(0);
 	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
+
+	const bool prevState = bChunkMesh;
+	ImGui::Checkbox(u8("대량 메시 렌더"), &bChunkMesh);
+	if (prevState != bChunkMesh && bChunkMesh)
+	{
+		mStaticMeshComponent->GetMeshObject()->bChunkMesh = true;
+	}
 }
 
 int32_t JStaticMeshActor::GetMaterialCount() const

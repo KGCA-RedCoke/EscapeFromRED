@@ -30,13 +30,15 @@ public:
 	void SetMaterialInstance(class JMaterialInstance* InMaterialInstance, uint32_t InSlot = 0);
 	void SetMeshObject(JTextView InMeshObject);
 
-	int32_t GetMaterialCount() const;
+	int32_t      GetMaterialCount() const;
+	JMeshObject* GetMeshObject() const { return mMeshObject.get(); }
 
 public:
 	void ShowEditor() override;
 
 private:
 	UPtr<JMeshObject> mMeshObject = nullptr;
+
 };
 
 REGISTER_CLASS_TYPE(JStaticMeshComponent);

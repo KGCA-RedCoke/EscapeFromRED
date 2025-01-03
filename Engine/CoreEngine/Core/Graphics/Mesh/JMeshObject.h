@@ -71,6 +71,9 @@ protected:
 
 	JArray<FInstanceData_Mesh> mInstanceData;
 
+public:
+	bool bChunkMesh = false;
+
 private:
 	friend class Utils::Fbx::FbxFile;
 	friend class GUI_Editor_Mesh;

@@ -131,7 +131,7 @@ void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialIns
 {
 	assert(mBufferList.contains(NameHash));
 
-	// InInstanceData.Transform.ShadowMatrix = XMMatrixTranspose(InInstanceData.Transform.WorldMatrix * GetWorld.
+	/*// InInstanceData.Transform.ShadowMatrix = XMMatrixTranspose(InInstanceData.Transform.WorldMatrix * GetWorld.
 	// 														  DirectionalLightView * GetWorld
 	// 														  .DirectionalLightProj * FMatrix(0.5f,
 	// 																   0.0f,
@@ -148,7 +148,7 @@ void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialIns
 	// 																   0.5f,
 	// 																   0.5f,
 	// 																   0.0f,
-	// 																   1.0f));
+	// 																   1.0f));*/
 
 	mInstanceData_Mesh[NameHash][InMaterialRef].emplace_back(InInstanceData);
 
@@ -242,5 +242,119 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 	mInstanceData_Skeletal.clear();
 
 	MShaderManager::Get().mCachedShader = nullptr;
+
+}
+
+void MMeshManager::GenChunkMeshes(JMeshObject*   MeshObject, uint32_t InstanceCount, const FVector& Position,
+								  const FVector& Scale)
+{
+	if (!mCornBuffer.empty())
+	{
+		return;
+	}
+
+	mCornMaterial = MMaterialInstanceManager::Get().Load("DefaultMaterial");
+	
+	// 메시가 여러개인 경우(파싱을 했는데 메시가 여러개로 나뉜)는 거의 LOD일 것임 (언리얼에서 가져올 경우)
+	const int32_t lodCount = MeshObject->mPrimitiveMeshData.size();
+	int32_t       lodIndex = 1;
+	if (lodCount < 1)
+	{
+		lodIndex = 0;
+	}
+
+	const Ptr<JMeshData>&         mesh         = MeshObject->mPrimitiveMeshData[lodIndex];	// 현재 LOD메시
+	const JArray<Ptr<JMeshData>>& subMeshes    = mesh->GetSubMesh();					// 현재 LOD메시의 서브메시
+	const bool                    bHasSubMesh  = !subMeshes.empty();
+	const int32_t                 subMeshCount = bHasSubMesh ? subMeshes.size() : 1;
+	mCornBuffer.resize(subMeshCount);
+
+	// 1. 메시 데이터 하나마다 따로 버퍼를 생성한다. (서브메시가 오브젝트에서 떨어져 따로 분리 될 가능성이 있음)
+	for (int32_t j = 0; j < subMeshCount; ++j)
+	{
+		Buffer::FBufferGeometry geometryBuffer;
+		Buffer::FBufferInstance instanceBuffer;
+
+		const auto& currentMesh     = bHasSubMesh ? subMeshes[j] : mesh;
+		const auto& currentMeshData = currentMesh->GetVertexData();
+
+
+
+		// Vertex 버퍼 생성
+		Utils::DX::CreateBuffer(G_Device.GetDevice(),
+								D3D11_BIND_VERTEX_BUFFER,
+								reinterpret_cast<void**>(currentMeshData->VertexArray.data()),
+								sizeof(Vertex::FVertexInfo_Base),
+								currentMeshData->VertexArray.size(),
+								geometryBuffer.Buffer_Vertex.GetAddressOf());
+
+		// Instance 버퍼 생성
+		Utils::DX::CreateBuffer(G_Device.GetDevice(),
+								D3D11_BIND_VERTEX_BUFFER,
+								nullptr,
+								sizeof(FInstanceData_Mesh),
+								MAX_INSTANCE,
+								instanceBuffer.Buffer_Instance.GetAddressOf(),
+								D3D11_USAGE_DYNAMIC,
+								D3D11_CPU_ACCESS_WRITE);
+
+		// Index 버퍼 생성
+		Utils::DX::CreateBuffer(G_Device.GetDevice(),
+								D3D11_BIND_INDEX_BUFFER,
+								reinterpret_cast<void**>(currentMeshData->IndexArray.data()),
+								SIZE_INDEX_BUFFER,
+								currentMeshData->IndexArray.size(),
+								geometryBuffer.Buffer_Index.GetAddressOf());
+
+		// 이미 존재하면 덮어쓰기
+		mCornBuffer[j].Geometry   = geometryBuffer;
+		mCornBuffer[j].Instance   = instanceBuffer;
+		mCornBuffer[j].IndexCount = currentMeshData->IndexArray.size();
+
+	}
+
+	for (int32_t i = 0; i < InstanceCount; ++i)
+	{
+		std::uniform_real_distribution dist(-3000.0f, 3000.0f);
+		std::mt19937                   gen(i);
+		float                          x = Position.x + dist(gen);
+		float                          z = Position.z + dist(gen);
+
+		auto worldLoc = XMMatrixTranslation(x, 0.f, z);
+		auto worldScl = XMMatrixScaling(Scale.x, Scale.y, Scale.z);
+
+		auto worldMat      = worldScl * worldLoc;
+		auto worldInvTrans = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMat));
+
+		mCornMeshes.emplace_back(
+								 FInstanceData_Mesh{
+									 worldMat,
+									 worldInvTrans
+								 });
+	}
+}
+
+void MMeshManager::FlushChunkMeshes(ID3D11DeviceContext* InContext)
+{
+	mCornMaterial->BindMaterial(InContext);
+
+	for (auto& corn : mCornBuffer)
+	{
+		auto& instanceBuffer = corn.Instance.Buffer_Instance;
+
+		Utils::DX::UpdateDynamicBuffer(InContext,
+									   instanceBuffer.Get(),
+									   mCornMeshes.data(),
+									   sizeof(FInstanceData_Mesh) * mCornMeshes.size());
+
+		ID3D11Buffer*      buffers[2] = {corn.Geometry.Buffer_Vertex.Get(), instanceBuffer.Get()};
+		constexpr uint32_t stride[2]  = {sizeof(Vertex::FVertexInfo_Base), sizeof(FInstanceData_Mesh)};
+		constexpr uint32_t offset[2]  = {0, 0};
+
+		InContext->IASetVertexBuffers(0, 2, buffers, stride, offset);
+		InContext->IASetIndexBuffer(corn.Geometry.Buffer_Index.Get(), DXGI_FORMAT_R32_UINT, 0);
+		InContext->DrawIndexedInstanced(corn.IndexCount, mCornMeshes.size(), 0, 0, 0);
+	}
+
 
 }

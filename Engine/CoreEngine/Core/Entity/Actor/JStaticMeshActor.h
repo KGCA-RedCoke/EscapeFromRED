@@ -40,6 +40,7 @@ private:
 private:
 	JStaticMeshComponent* mStaticMeshComponent = nullptr;
 	bool                  bUseMeshCollision    = false;
+	bool                  bChunkMesh           = false;
 };
 
 REGISTER_CLASS_TYPE(JStaticMeshActor);
