@@ -18,9 +18,7 @@ class NavTest : public TSingleton<NavTest>
 {
 public:
     void Initialize();
-    void Update(float DeltaTime);
     void Render();
-    void Release();
 
 public:
     void DrawNode(FVector2 grid, FXMVECTOR InColor);

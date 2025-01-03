@@ -75,10 +75,6 @@ void NavTest::Render()
     // G_DebugBatch.PostRender();
 }
 
-void NavTest::Release()
-{
-}
-
 void NavTest::DrawNode(FVector2 grid, FXMVECTOR InColor)
 {
     G_DebugBatch.DrawQuad_Implement(

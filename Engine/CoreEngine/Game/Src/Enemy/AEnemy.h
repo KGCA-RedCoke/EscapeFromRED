@@ -74,12 +74,16 @@ public:
     void SetEnemyState(EEnemyState InNewState) { mEnemyState = InNewState; }
     EEnemyState GetEnemyState() { return mEnemyState; }
 
+    void EnableAttackCollision();
+    void DisableAttackCollision();
+
 protected:
     EEnemyType mEnemyType;
     EEnemyState mEnemyState;
     UPtr<JAnimator> mAnimator;
     class JSkeletalMeshComponent* mSkeletalMeshComponent;
     class BtBase* mBehaviorTree;
+    JSphereComponent* mWeaponCollider;
 
     friend class JKihyunAnimator;
     friend class JGirlAnimator;

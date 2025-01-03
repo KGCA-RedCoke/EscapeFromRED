@@ -99,6 +99,29 @@ void JKillerClownAnimator::Initialize()
 
     auto& attackClip4 = mStateMachine["JumpAttack"];
     attackClip4->SetAnimationSpeed(1.5f);
+    attackClip4->OnAnimStart.Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
+
+    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss));
+    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.7].Bind([&]()
+    {
+        if (mBoss)
+        {
+            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
+            mBoss->mWeaponCollider->SetLocalScale(FVector(2.0f, 2.0f, 2.0f ));
+            mBoss->EnableAttackCollision();
+        }
+    });
+    
+    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.5].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
+    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.9].Bind([&]()
+    {
+        if (mBoss)
+        {
+            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
+            // mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
+            mBoss->DisableAttackCollision();
+        }
+    });
     attackClip4->OnAnimFinished.Bind([&]()
     {
         if (mBoss)
@@ -107,6 +130,42 @@ void JKillerClownAnimator::Initialize()
             mBoss->SetEnemyState(EBossState::Idle);
         }
     });
+
+    /*void APlayerCharacter::OnMeleeAttack()
+    {
+        mWeaponCollision->EnableCollision(true);
+        bShouldAttack = false;
+    }
+
+    void APlayerCharacter::DisableMeleeCollision()
+    {
+        mWeaponCollision->EnableCollision(false);
+    }
+
+    void APlayerCharacter::OnMeleeAttackFinished()
+    {
+
+        switch (mAttackCombo)
+        {
+        case 0:
+            mAttackCombo = bShouldAttack ? 1 : 0;
+            break;
+        case 1:
+            mAttackCombo = bShouldAttack ? 2 : 0;
+            break;
+        case 2:
+            mAttackCombo = bShouldAttack ? 3 : 0;
+            break;
+        default:
+            mAttackCombo = 0;
+            break;
+        }
+        bShouldAttack = false;
+
+        LOG_CORE_INFO("Attack Combo: {0}", mAttackCombo);
+    }*/
+
+    
 
     auto& DeathClip = mStateMachine["Death"];
     // DeathClip->SetAnimationSpeed(1.5f);

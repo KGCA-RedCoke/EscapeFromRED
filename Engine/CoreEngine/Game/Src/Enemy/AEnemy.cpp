@@ -142,3 +142,13 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		// mBehaviorTree->Dead();
 	}
 }
+
+void AEnemy::EnableAttackCollision()
+{
+	mWeaponCollider->EnableCollision(true);
+}
+
+void AEnemy::DisableAttackCollision()
+{
+	mWeaponCollider->EnableCollision(false);
+}
