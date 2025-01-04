@@ -31,6 +31,8 @@ public:
     NodeStatus RandTime(JText key, float t, float p);
     NodeStatus IsPhase(int phase);
     NodeStatus SyncFrame();
+    
+    
 
     // Just Function
     FVector RotateTowards(FVector direction, FVector rotation);
@@ -38,6 +40,8 @@ public:
     float GetFloorHeight();
     void SetYVelocity(float velocity);
     float GetYVelocity();
+    bool IsPlayerClose(float length);
+    bool IsPlayerLookingAway();
     
 public:
     Ptr<AStar> PaStar;

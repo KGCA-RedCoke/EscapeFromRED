@@ -81,7 +81,7 @@ NodeStatus BtBase::ChasePlayer(UINT N)
 
         if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
-            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 200) // 플레이어와 거리가 가까울 때 success
+            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 300) // 플레이어와 거리가 가까울 때 success
                 return NodeStatus::Success;
             FollowPath();
         }
@@ -142,14 +142,9 @@ NodeStatus BtBase::IsPlayerClose()
         return NodeStatus::Success;
     else
     {
-        
         FVector playerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-        FVector npcPos = mOwnerActor->GetWorldLocation();
-        float length = (playerPos - npcPos).Length();
         bPlayerCloseEvent = (playerPos == FVector::ZeroVector) ?
-                                false : (playerPos - npcPos).Length() < 500;
-        
-        
+                                false : IsPlayerClose(1500);
         return NodeStatus::Failure;
     }
 }
@@ -241,4 +236,30 @@ float BtBase::GetYVelocity()
 {
     APawn* pawn = dynamic_cast<APawn*>(mOwnerActor);
     return pawn->mYVelocity;
+}
+
+bool BtBase::IsPlayerClose(float length)
+{
+    FVector playerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
+    FVector npcPos = mOwnerActor->GetWorldLocation();
+    float distance = (playerPos - npcPos).Length();
+    return distance < length;
+}
+
+bool BtBase::IsPlayerLookingAway()
+{
+    FVector2 PlayerPos;
+    FVector2 NpcPos;
+    FVector2 PlayerLookAt;
+    
+    PlayerPos.x = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation().x;
+    PlayerPos.y = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation().z;
+    NpcPos.x = mOwnerActor->GetWorldLocation().x;
+    NpcPos.y = mOwnerActor->GetWorldLocation().z;
+    FVector2 Direction = PlayerPos - NpcPos;
+
+    PlayerLookAt.x = GetWorld.CameraManager->GetCurrentMainCam()->GetForwardVector().x;
+    PlayerLookAt.y = GetWorld.CameraManager->GetCurrentMainCam()->GetForwardVector().z;
+    
+    return (Direction | PlayerLookAt) > 0.0f;
 }

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "common_include.h"
 #include "Core/Manager/Manager_Base.h"
 #include "Core/Utils/Math/MathFwd.h"
@@ -9,9 +10,9 @@
 using namespace DirectX;
 using namespace Nav;
 
-#define G_NAV_MAP NavTest::Get()
+#define G_BIG_MAP BigGrid::Get()
 
-class NavTest : public TSingleton<NavTest>
+class BigGrid : public TSingleton<BigGrid>
 {
 public:
     void Initialize();
@@ -27,12 +28,10 @@ public:
         std::vector<FVector2>& Obstacles);
     void SetChildNode(std::vector<std::vector<Ptr<Node>>>& graph, int i, int j);
     void DrawUnWalkable(std::vector<FVector2>& Obstacles);
-    
-    float PlayerHeight = 0.0f;
+
     FVector NewPPos;
     FVector NpcPos;
     std::vector<FVector2> FirstFloorObstacle;
-    std::vector<FVector2> SecondFloorObstacle;
     
     FVector2 GridWorldSize;
     float NodeRadius;
@@ -45,12 +44,7 @@ public:
     bool firstRun = true;
     int ObstacleScale  = 1;
     JTexture* FirstFloorMap;
-    JTexture* SecondFloorMap;
-    Ptr<Nav::Node> Stair1_2;
-    Ptr<Nav::Node> Stair2_1;
     
     std::vector<std::vector<Ptr<Node>>> mGridGraph;
-    std::vector<std::vector<Ptr<Node>>> m2ndFloor;
-    
-    std::vector<Ptr<Nav::Node>> tempPath;
+
 };

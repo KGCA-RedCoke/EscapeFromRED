@@ -135,6 +135,7 @@
     <ClInclude Include="Core\Entity\Light\JLight_Point.h" />
     <ClInclude Include="Core\Entity\Light\JLight_Spot.h" />
     <ClInclude Include="Core\Entity\Navigation\AStar.h" />
+    <ClInclude Include="Core\Entity\Navigation\BigGrid.h" />
     <ClInclude Include="Core\Entity\Navigation\NavTest.h" />
     <ClInclude Include="Core\Entity\Navigation\Node.h" />
     <ClInclude Include="Core\Entity\Navigation\Path.h" />
@@ -211,6 +212,7 @@
     <ClInclude Include="Game\Src\Boss\AKillerClown.h" />
     <ClInclude Include="Game\Src\Boss\Animator\JKillerClownAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\AEnemy.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JButcherAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
@@ -343,6 +345,7 @@
     <ClCompile Include="Core\Entity\Light\JLight_Point.cpp" />
     <ClCompile Include="Core\Entity\Light\JLight_Spot.cpp" />
     <ClCompile Include="Core\Entity\Navigation\AStar.cpp" />
+    <ClCompile Include="Core\Entity\Navigation\BigGrid.cpp" />
     <ClCompile Include="Core\Entity\Navigation\NavTest.cpp" />
     <ClCompile Include="Core\Entity\Navigation\Node.cpp" />
     <ClCompile Include="Core\Entity\Navigation\Path.cpp" />
@@ -406,6 +409,7 @@
     <ClCompile Include="Game\Src\Boss\AKillerClown.cpp" />
     <ClCompile Include="Game\Src\Boss\Animator\JKillerClownAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\AEnemy.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JButcherAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />

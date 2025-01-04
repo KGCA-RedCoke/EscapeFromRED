@@ -6,7 +6,9 @@
 #include "Core/Interface/JWorld.h"
 #include "Game/Src/Boss/AKillerClown.h"
 #include "Core/Entity/Component/AI/BT_BOSS.h"
+#include "Core/Entity/Navigation/BigGrid.h"
 
+#define RADIUS 8.f
 JKillerClownAnimator::JKillerClownAnimator()
 {
 }
@@ -51,15 +53,18 @@ void JKillerClownAnimator::Initialize()
             // mBoss->AddLocalLocation(attackClip->GetRMPosition());
             mBoss->HP -= 34;
             if (mBoss->HP <= 0)
-                mBoss->SetEnemyState(EBossState::Death);
+            {
+                mBoss->SetBossState(EBossState::Death);
+                bt->mPhase++;
+            }
         }
     });//            
     
-    hitClip->mEvents[hitClip->GetEndFrame() * 0.9].Bind([&]()
+    hitClip->mEvents[hitClip->GetEndFrame() * 0.8].Bind([&]()
     {
         if (mBoss)
         {
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
     
@@ -70,7 +75,7 @@ void JKillerClownAnimator::Initialize()
         if (mBoss)
         {
             // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
 
@@ -82,7 +87,7 @@ void JKillerClownAnimator::Initialize()
         if (mBoss)
         {
             // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
 
@@ -93,7 +98,7 @@ void JKillerClownAnimator::Initialize()
         if (mBoss)
         {
             // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
 
@@ -101,82 +106,49 @@ void JKillerClownAnimator::Initialize()
     attackClip4->SetAnimationSpeed(1.5f);
     attackClip4->OnAnimStart.Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
 
-    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss));
-    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.7].Bind([&]()
-    {
-        if (mBoss)
-        {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            mBoss->mWeaponCollider->SetLocalScale(FVector(2.0f, 2.0f, 2.0f ));
-            mBoss->EnableAttackCollision();
-        }
-    });
+    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, RADIUS));
+    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.7].Bind([&]()
+    // {
+    //     if (mBoss)
+    //     {
+    //         mBoss->EnableAttackCollision(RADIUS);
+    //     }
+    // });
     
-    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.5].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
-    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.9].Bind([&]()
-    {
-        if (mBoss)
-        {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            // mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
-            mBoss->DisableAttackCollision();
-        }
-    });
+    attackClip4->mEvents[attackClip4->GetEndFrame() * 0.9].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
+    // attackClip4->mEvents[attackClip4->GetEndFrame() * 0.9].Bind([&]()
+    // {
+    //     if (mBoss)
+    //     {
+    //         // mBoss->AddLocalLocation(attackClip->GetRMPosition());
+    //         mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
+    //         mBoss->DisableAttackCollision();
+    //     }
+    // });
     attackClip4->OnAnimFinished.Bind([&]()
     {
         if (mBoss)
         {
             // mBoss->AddLocalLocation(attackClip->GetRMPosition());
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
-
-    /*void APlayerCharacter::OnMeleeAttack()
-    {
-        mWeaponCollision->EnableCollision(true);
-        bShouldAttack = false;
-    }
-
-    void APlayerCharacter::DisableMeleeCollision()
-    {
-        mWeaponCollision->EnableCollision(false);
-    }
-
-    void APlayerCharacter::OnMeleeAttackFinished()
-    {
-
-        switch (mAttackCombo)
-        {
-        case 0:
-            mAttackCombo = bShouldAttack ? 1 : 0;
-            break;
-        case 1:
-            mAttackCombo = bShouldAttack ? 2 : 0;
-            break;
-        case 2:
-            mAttackCombo = bShouldAttack ? 3 : 0;
-            break;
-        default:
-            mAttackCombo = 0;
-            break;
-        }
-        bShouldAttack = false;
-
-        LOG_CORE_INFO("Attack Combo: {0}", mAttackCombo);
-    }*/
-
     
-
     auto& DeathClip = mStateMachine["Death"];
-    // DeathClip->SetAnimationSpeed(1.5f);
+    DeathClip->mEvents[DeathClip->GetEndFrame() * 0.9].Bind([&]()
+    {
+        if (mBoss)
+        {
+            if (bt->mPhase == 3)
+                mBoss->Destroy();
+            DeathClip->Pause();
+        }
+    });
     DeathClip->OnAnimFinished.Bind([&]()
     {
-        if (mBoss && bt->mPhase > 2)
-            mBoss->Destroy();
-        else if (mBoss)
+        if (mBoss)
         {
-            bt->mPhase++;
-            mBoss->SetEnemyState(EBossState::StandUp);
+            mBoss->SetBossState(EBossState::StandUp);
         }
     });
 
@@ -196,7 +168,7 @@ void JKillerClownAnimator::Initialize()
     {
         if (mBoss)
         {
-            mBoss->SetEnemyState(EBossState::Idle);
+            mBoss->SetBossState(EBossState::Idle);
         }
     });
     AddAnimLink("Idle", "Walk", [&]() { return !bt->IsRun && !mMovementComponent->GetVelocity().IsNearlyZero() ; }, 0.2f);
@@ -283,4 +255,6 @@ void JKillerClownAnimator::BeginPlay()
 void JKillerClownAnimator::Tick(float DeltaTime)
 {
     JAnimator::Tick(DeltaTime);
+    if (bt->bIsStandUpReady)
+        mStateMachine["Death"]->Resume();
 }

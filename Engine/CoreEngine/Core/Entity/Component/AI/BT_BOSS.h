@@ -2,9 +2,11 @@
 // #include "Core/Input/XKeyboardMouse.h"
 #include "BtBase.h"
 
+
 class AKillerClown;
 class AEnemy;
 class AStar;
+class JAnimationClip;
 
 class BT_BOSS : public BtBase,
 				public std::enable_shared_from_this<BT_BOSS>
@@ -29,8 +31,8 @@ public:
 	NodeStatus JumpAttack();
 	void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
-	NodeStatus IsDead();
-	NodeStatus Resurrect();
+	NodeStatus IsEventAnim();
+	NodeStatus ResurrectPhase();
 
 
 public:
@@ -39,8 +41,10 @@ public:
 	FVector     mVelocity;
 	float       mFloorHeight    = 1.f;
 	bool		bBossBattleOn = false;
-
+	bool		bResurrectCondition = false;
+	bool		bIsStandUpReady = false;
 	AKillerClown* mOwnerEnemy;
+	
 
 private:
 	// FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }

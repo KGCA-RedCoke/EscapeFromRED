@@ -5,6 +5,7 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Entity/Navigation/AStar.h"
+#include "Core/Entity/Navigation/BigGrid.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Game/Src/Boss/AKillerClown.h"
@@ -19,7 +20,7 @@ BT_BOSS::BT_BOSS(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
     // mInputKeyboard.Initialize();
-    SetupTree();
+    SetupTree2();
 }
 
 BT_BOSS::~BT_BOSS()
@@ -44,6 +45,7 @@ void BT_BOSS::Tick(float DeltaTime)
     // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
     // LOG_CORE_INFO("Phase : {}",mPhase);
+    G_BIG_MAP.Render();
     if (mPhase == 2)
     {
         PaStar->mSpeed = 600;
@@ -58,7 +60,7 @@ void BT_BOSS::Tick(float DeltaTime)
 
 NodeStatus BT_BOSS::Attack1()
 {
-    if (mOwnerEnemy->GetBossState() == EBossState::Death)
+    if (mOwnerEnemy->GetBossState() == EBossState::Death || mOwnerEnemy->GetBossState() == EBossState::Hit)
         return NodeStatus::Failure;
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
@@ -67,7 +69,7 @@ NodeStatus BT_BOSS::Attack1()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
-            mOwnerEnemy->SetEnemyState(EBossState::Attack1);
+            mOwnerEnemy->SetBossState(EBossState::Attack1);
             mEventStartFlag = false;
         }
         runningFlag = false;
@@ -88,7 +90,7 @@ NodeStatus BT_BOSS::Attack1()
 
 NodeStatus BT_BOSS::Attack2()
 {
-    if (mOwnerEnemy->GetBossState() == EBossState::Death)
+    if (mOwnerEnemy->GetBossState() == EBossState::Death || mOwnerEnemy->GetBossState() == EBossState::Hit)
         return NodeStatus::Failure;
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
@@ -97,7 +99,7 @@ NodeStatus BT_BOSS::Attack2()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
-            mOwnerEnemy->SetEnemyState(EBossState::Attack2);
+            mOwnerEnemy->SetBossState(EBossState::Attack2);
             mEventStartFlag = false;
         }
         runningFlag = false;
@@ -131,7 +133,7 @@ NodeStatus BT_BOSS::JumpAttack()
         {
             // 점프 시작
             MoveNPCWithJump(800.f, 1.0f);  // 점프 높이와 지속 시간
-            mOwnerEnemy->SetEnemyState(EBossState::JumpAttack);
+            mOwnerEnemy->SetBossState(EBossState::JumpAttack);
             mEventStartFlag = false;      // 이벤트 시작 플래그 리셋
         }
         // NPC가 바닥에 도달했는지 확인
@@ -206,16 +208,31 @@ NodeStatus BT_BOSS::Hit()
         return NodeStatus::Failure;
 }
 
-NodeStatus BT_BOSS::IsDead()
+NodeStatus BT_BOSS::IsEventAnim()
 {
-    
-    if (mOwnerEnemy->GetBossState() == EBossState::Death
-        || mOwnerEnemy->GetBossState() == EBossState::StandUp)
+    if (mOwnerEnemy->GetBossState() == EBossState::Death)
     {
-        // isPendingKill = true;
+        bResurrectCondition = true;
         return NodeStatus::Success;
     }
+    else if (mOwnerEnemy->GetBossState() == EBossState::StandUp ||
+            mOwnerEnemy->GetBossState() == EBossState::Hit)
+        return NodeStatus::Success;
     return NodeStatus::Failure;
+}
+
+NodeStatus BT_BOSS::ResurrectPhase()
+{
+    if (bResurrectCondition == false)
+        return NodeStatus::Failure;
+    if (IsPlayerLookingAway() == false || IsPlayerClose(300))
+    {
+        LOG_CORE_INFO("im looking at you");
+        return NodeStatus::Running;
+    }
+    bResurrectCondition = false;
+    bIsStandUpReady = true;
+    return NodeStatus::Success;
 }
 
 
@@ -225,16 +242,16 @@ void BT_BOSS::SetupTree()
 {
     BTRoot = builder
             .CreateRoot<Sequence>()
-                .AddActionNode(LAMBDA(IsPlayerClose))
-                .AddSelector("phase")
-                    .AddActionNode(LAMBDA(IsDead))
-                    .AddDecorator(LAMBDA(RandTime, "JumpAttack", 1.f, 0.9f))
-                        .AddActionNode(LAMBDA(JumpAttack))
-                    .EndBranch()
-                    .AddSequence("")
-                        .AddActionNode(LAMBDA(ChasePlayer, 0))
-                    .EndBranch()
-                .EndBranch()
+                // .AddActionNode(LAMBDA(IsPlayerClose))
+                // .AddSelector("phase")
+                //     .AddActionNode(LAMBDA(IsEventAnim))
+                //     .AddDecorator(LAMBDA(RandTime, "JumpAttack", 1.f, 0.9f))
+                //         .AddActionNode(LAMBDA(JumpAttack))
+                //     .EndBranch()
+                //     .AddSequence("")
+                //         .AddActionNode(LAMBDA(ChasePlayer, 0))
+                //     .EndBranch()
+                // .EndBranch()
             .Build();
 }
 
@@ -245,13 +262,14 @@ void BT_BOSS::SetupTree2()
             .CreateRoot<Sequence>()
                 .AddActionNode(LAMBDA(IsPlayerClose))
                 .AddSelector("phase")
+                    .AddActionNode(LAMBDA(ResurrectPhase))
     #pragma region Phase1
                     .AddDecorator(LAMBDA(IsPhase, 1))
                         .AddSelector("Action")
-                            .AddActionNode(LAMBDA(IsDead))
-                            .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
-                                .AddActionNode(LAMBDA(JumpAttack))
-                            .EndBranch()
+                            .AddActionNode(LAMBDA(IsEventAnim))
+                            // .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
+                            //     .AddActionNode(LAMBDA(JumpAttack))
+                            // .EndBranch()
                             .AddSequence("")
                                 .AddActionNode(LAMBDA(ChasePlayer, 0))
         #pragma region          .RandAttack
@@ -268,16 +286,16 @@ void BT_BOSS::SetupTree2()
                         .EndBranch()
                     .EndBranch()
         #pragma endregion
-        #pragma region Phase2
+    #pragma region Phase2
                     .AddDecorator(LAMBDA(IsPhase, 2))
                         .AddSelector("Phase2")
-                            .AddActionNode(LAMBDA(IsDead))
-                            .AddDecorator(LAMBDA(RandTime, "JumpAttack", 2.f, 0.5f))
+                            .AddActionNode(LAMBDA(IsEventAnim))
+                            .AddDecorator(LAMBDA(RandTime, "JumpAttack", 1.f, 0.5f))
                                 .AddActionNode(LAMBDA(JumpAttack))
                             .EndBranch()
                             .AddSequence("")
                                 .AddActionNode(LAMBDA(ChasePlayer, 0))
-                    #pragma region          .RandAttack
+        #pragma region          .RandAttack
                                 .AddSelector("RandomSelector")
                                     .AddDecorator(LAMBDA(RandP, 0.333f))
                                         .AddActionNode(LAMBDA(Attack1))
@@ -289,11 +307,10 @@ void BT_BOSS::SetupTree2()
                                         .AddActionNode(LAMBDA(JumpAttack))
                                     .EndBranch()
                                 .EndBranch()
-                    #pragma endregion
+        #pragma endregion
                             .EndBranch()
                         .EndBranch()
                     .EndBranch()
-        #pragma endregion
-                .EndBranch()
+    #pragma endregion
             .Build();
 }

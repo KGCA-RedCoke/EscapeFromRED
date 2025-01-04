@@ -52,7 +52,7 @@ public:
 
 public:
     virtual void OnHit(ICollision* InActor, const FHitResult& HitResult);
-    void SetEnemyState(EBossState InNewState) { mBossState = InNewState; }
+    void SetBossState(EBossState InNewState) { mBossState = InNewState; }
     EBossState GetBossState() { return mBossState; }
 
 protected:

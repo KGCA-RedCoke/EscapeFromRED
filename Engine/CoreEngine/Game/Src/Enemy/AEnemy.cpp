@@ -1,8 +1,9 @@
 ﻿#include "AEnemy.h"
 
-#include "Animator/JGirlAnimator.h"
-#include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Animator/JKihyunAnimator.h"
+#include "Animator/JGirlAnimator.h"
+#include "Animator/JButcherAnimator.h"
+#include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
 AEnemy::AEnemy()
@@ -52,7 +53,11 @@ void AEnemy::Initialize()
 			break;
 		case EEnemyType::Clown:
 			break;
-		case EEnemyType::Custom:
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			mAnimator = MakeUPtr<JButcherAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
 			break;
 		case EEnemyType::MAX:
 			break;
@@ -143,12 +148,14 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 	}
 }
 
-void AEnemy::EnableAttackCollision()
+void AEnemy::EnableAttackCollision(float radius)
 {
 	mWeaponCollider->EnableCollision(true);
+	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
+	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
 	mWeaponCollider->EnableCollision(false);
 }

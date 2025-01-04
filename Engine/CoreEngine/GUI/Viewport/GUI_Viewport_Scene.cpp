@@ -6,6 +6,7 @@
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Level/MLevelManager.h"
+#include "Core/Entity/Navigation/BigGrid.h"
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -169,6 +170,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		character->BeginPlay();
 
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::PlayerWeapon, ETraceType::Pawn, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Projectile, true);
 
 		// GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 
@@ -179,7 +181,9 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// SetCursorPos(0, 0);
 		
 		G_NAV_MAP.Initialize();
+		// G_BIG_MAP.Initialize();
 		GetWorld.bGameMode = true;
+		GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
 		GetWorld.LevelManager->SetActiveLevel(introScene);
