@@ -159,6 +159,7 @@ void APawn::Tick(float DeltaTime)
 	AActor::Tick(DeltaTime);
 	CheckGround();
 	mDeltaTime = DeltaTime;
+	mLastHeight = mMaxHeight;
 	mMaxHeight = INIT_HEIGHT;
 }
 
@@ -178,20 +179,33 @@ void APawn::CheckGround()
 		if (mLineComponent->Intersect(ground, hitResult))
 		{
 			float MaxHeight = FMath::Max(mMaxHeight, hitResult.HitLocation.y);
-
-			FVector currentLocation = GetLocalLocation();
-			mYVelocity += 980 * mDeltaTime;
-			// mLocalLocation.y = MaxHeight;	
-			if (currentLocation.y > MaxHeight + FLT_EPSILON)
-			{
-				AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
-			}
-			else if (currentLocation.y < MaxHeight - FLT_EPSILON)
-			{
-				AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
-				mYVelocity = 0.f;
-			}
 			mMaxHeight = MaxHeight;
 		}
 	}
+	// 중력
+	FVector currentLocation = GetLocalLocation();
+	mYVelocity += 980 * mDeltaTime;
+	// mLocalLocation.y = MaxHeight;	
+	if (currentLocation.y > mMaxHeight + FLT_EPSILON)
+	{
+		AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
+		// LOG_CORE_INFO("APawn CheckGround - gravity add Y : {}", -mYVelocity);
+	}
+	else if (currentLocation.y < mMaxHeight - FLT_EPSILON)
+	{
+		AddLocalLocation(FVector(0, mMaxHeight - currentLocation.y, 0));
+		mYVelocity = 0.f;
+	}
+	else
+		mYVelocity = 0.f;
+}
+
+void APawn::SetYVelocity(float velocity)
+{
+	FVector currentPos = GetWorldLocation();
+	// SetWorldLocation(FVector(currentPos.x, mLastHeight + 2 * FLT_EPSILON, currentPos.y));
+	AddLocalLocation(FVector(0, 10, 0));
+	LOG_CORE_INFO("APawn AddYVelocity : {}", mLastHeight + 4 * FLT_EPSILON);
+	mYVelocity = - velocity;
+	LOG_CORE_INFO("APawn mYVel : {}", mYVelocity);
 }

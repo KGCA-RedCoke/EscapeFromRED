@@ -3,6 +3,7 @@
 #include <fbxsdk/core/fbxsystemunit.h>
 
 #include "NavTest.h"
+#include "Path.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
@@ -10,11 +11,6 @@
 #include "Core/Utils/Math/Vector2.h"
 #define MAX_GCOST 500
 #define MIN_GCOST 400
-
-AStar::AStar()
-{
-    
-}
 
 AStar::~AStar()
 {

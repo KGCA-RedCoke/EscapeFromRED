@@ -2,8 +2,11 @@
 // #include "Core/Input/XKeyboardMouse.h"
 #include "BtBase.h"
 
+
+class AKillerClown;
 class AEnemy;
 class AStar;
+class JAnimationClip;
 
 class BT_BOSS : public BtBase,
 				public std::enable_shared_from_this<BT_BOSS>
@@ -22,31 +25,26 @@ public:
 
 public:
 	// Action Function
-	NodeStatus Attack();
+	NodeStatus Attack1();
 	NodeStatus Attack2();
+	NodeStatus Attack3();
 	NodeStatus JumpAttack();
 	void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
-	NodeStatus Dead();
-	NodeStatus ChasePlayer(const UINT N);
-	void       FollowPath();
+	NodeStatus IsEventAnim();
+	NodeStatus ResurrectPhase();
 
-	// Decorator Function
-	NodeStatus IsPlayerClose(const UINT N);
-	NodeStatus Not(NodeStatus state);
-	NodeStatus RandP(float p);
-	NodeStatus IsPhase(int phase);
-	NodeStatus IsPressedKey(EKeyCode Key);
-
-	// Just Function
-	FVector RotateTowards(FVector direction, FVector rotation);
 
 public:
 	// BlackBoard BB;
+	bool		IsRun = false;
 	FVector     mVelocity;
 	float       mFloorHeight    = 1.f;
-
-	AEnemy* mOwnerEnemy;
+	bool		bBossBattleOn = false;
+	bool		bResurrectCondition = false;
+	bool		bIsStandUpReady = false;
+	AKillerClown* mOwnerEnemy;
+	
 
 private:
 	// FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }

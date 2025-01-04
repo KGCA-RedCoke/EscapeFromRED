@@ -1,6 +1,9 @@
 ﻿#include "AEnemy.h"
-#include "Core/Entity/Component/AI/BT_BigZombie.h"
+
 #include "Animator/JKihyunAnimator.h"
+#include "Animator/JGirlAnimator.h"
+#include "Animator/JButcherAnimator.h"
+#include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
 AEnemy::AEnemy()
@@ -37,9 +40,29 @@ void AEnemy::Initialize()
 
 	APawn::Initialize();
 
-	if (mSkeletalMeshComponent)
+	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
-		mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
+		switch (mEnemyType) {
+		case EEnemyType::Kihyun:
+			mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			break;
+		case EEnemyType::Girl:
+			mAnimator = MakeUPtr<JGirlAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			break;
+		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			mAnimator = MakeUPtr<JButcherAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+		
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
@@ -123,4 +146,16 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mCollisionSphere->Destroy();
 		// mBehaviorTree->Dead();
 	}
+}
+
+void AEnemy::EnableAttackCollision(float radius)
+{
+	mWeaponCollider->EnableCollision(true);
+	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+}
+
+void AEnemy::DisableAttackCollision()
+{
+	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	mWeaponCollider->EnableCollision(false);
 }

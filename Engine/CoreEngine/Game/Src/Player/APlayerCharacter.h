@@ -28,7 +28,7 @@ private:
 private:
 	class JCameraComponent* mFPSCamera;
 	JStaticMeshComponent*   mWeaponMesh;
-	JBoxComponent*          mWeaponCollision;
+	JSphereComponent*          mWeaponCollision;
 
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;

@@ -8,7 +8,8 @@ enum class EEnemyType : uint8_t
     Kihyun,
     Girl,
     Clown,
-    Custom,
+    Pig,
+    Butcher,
     MAX // 이건 숫자 사용
 };
 
@@ -32,8 +33,10 @@ constexpr const char* GetEnemyTypeString(EEnemyType InType)
         return "Girl";
     case EEnemyType::Clown:
         return "Clown";
-    case EEnemyType::Custom:
-        break;
+    case EEnemyType::Pig:
+        return "Pig";
+    case EEnemyType::Butcher:
+        return "Butcher";
     case EEnemyType::MAX:
         break;
     }
@@ -74,14 +77,20 @@ public:
     void SetEnemyState(EEnemyState InNewState) { mEnemyState = InNewState; }
     EEnemyState GetEnemyState() { return mEnemyState; }
 
+    void EnableAttackCollision(float radius);
+    void DisableAttackCollision();
+
 protected:
     EEnemyType mEnemyType;
     EEnemyState mEnemyState;
     UPtr<JAnimator> mAnimator;
     class JSkeletalMeshComponent* mSkeletalMeshComponent;
     class BtBase* mBehaviorTree;
+    JSphereComponent* mWeaponCollider;
 
     friend class JKihyunAnimator;
+    friend class JGirlAnimator;
+    friend class JButcherAnimator;
 };
 
 REGISTER_CLASS_TYPE(AEnemy)

@@ -24,22 +24,16 @@ public:
     // Action Function
     NodeStatus Attack();
     NodeStatus Attack2();
-    NodeStatus JumpAttack();
-    void       MoveNPCWithJump(float jumpHeight, float duration);
+    // NodeStatus JumpAttack();
+    // void       MoveNPCWithJump(float jumpHeight, float duration);
     NodeStatus Hit();
     NodeStatus Dead();
-    NodeStatus ChasePlayer(const UINT N);
-    void       FollowPath();
 
     // Decorator Function
-    NodeStatus IsPlayerClose(const UINT N);
-    NodeStatus Not(NodeStatus state);
-    NodeStatus RandP(float p);
-    NodeStatus IsPhase(int phase);
-    NodeStatus IsPressedKey(EKeyCode Key);
+
 
     // Just Function
-    FVector RotateTowards(FVector direction, FVector rotation);
+
 
 public:
     // BlackBoard BB;

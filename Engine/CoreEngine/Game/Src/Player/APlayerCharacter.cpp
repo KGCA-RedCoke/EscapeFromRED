@@ -38,7 +38,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mWeaponMesh->SetLocalRotation({-127, 89, -82});
 
 	// 무기 콜라이더 부착
-	mWeaponCollision = CreateDefaultSubObject<JBoxComponent>("WeaponCollision", this);
+	mWeaponCollision = CreateDefaultSubObject<JSphereComponent>("WeaponCollision", this);
 	mWeaponCollision->SetTraceType(ETraceType::PlayerWeapon);
 	mWeaponCollision->SetupAttachment(mWeaponMesh);
 	mWeaponCollision->SetLocalLocation({0, 100, 0});

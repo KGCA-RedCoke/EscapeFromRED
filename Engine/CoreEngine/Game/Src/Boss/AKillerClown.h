@@ -13,6 +13,7 @@ enum class EBossState : uint8_t
     Attack1,
     Attack2,
     Attack3,
+    JumpAttack,
     Hit,
     Death,
     StandUp,
@@ -51,14 +52,17 @@ public:
 
 public:
     virtual void OnHit(ICollision* InActor, const FHitResult& HitResult);
-    void SetEnemyState(EBossState InNewState) { mBossState = InNewState; }
+    void SetBossState(EBossState InNewState) { mBossState = InNewState; }
     EBossState GetBossState() { return mBossState; }
 
 protected:
     EBossState mBossState;
     JStaticMeshComponent* mHammerMesh;
     JSphereComponent* mHammerRegion;
+    // JSphereComponent* mWeaponCollider;
     friend class JKillerClownAnimator;
+
+    float HP = 100;
 };
 
 REGISTER_CLASS_TYPE(AKillerClown)

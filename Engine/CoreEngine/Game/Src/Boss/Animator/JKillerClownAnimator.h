@@ -2,7 +2,7 @@
 #include "Core/Entity/Animation/JAnimator.h"
 
 class AKillerClown;
-
+class BT_BOSS;
 class JKillerClownAnimator : public JAnimator
 {
 public:
@@ -13,7 +13,9 @@ public:
 public:
     void Initialize() override;
     void BeginPlay() override;
+	void Tick(float DeltaTime) override;
 
 private:
     AKillerClown* mBoss = nullptr; // 소유 액터
+    BT_BOSS* bt = nullptr;
 };

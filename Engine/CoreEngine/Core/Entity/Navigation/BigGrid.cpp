@@ -1,21 +1,18 @@
-#include "NavTest.h"
+#include "BigGrid.h"
 
-#include "Core/Entity/Actor/AActor.h"
-#include "Core/Entity/Level/MLevelManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Entity/Component/AI/BtBase.h"
 
-void NavTest::Initialize()
+void BigGrid::Initialize()
 {
-    FirstFloorMap = new JTexture("rsc\\GameResource\\GridMap\\GridMap.png", true);
-    SecondFloorMap = new JTexture("rsc\\GameResource\\GridMap\\GridMap2.png", true);
-    NodeRadius = 50.0f;
+    FirstFloorMap = new JTexture("rsc\\GameResource\\GridMap\\BigGrid.png", true);
+    NodeRadius = 900.0f;
     NodeCenter = FVector(NodeRadius, 0, - NodeRadius);
-    GridDivs = FVector2(200, 200);
-    GridCenter = FVector(0, 710, 0); // x, y, z
+    GridDivs = FVector2(11, 11);
+    GridCenter = FVector(0, 110, 0); // x, y, z
     
     NodeDiameter = NodeRadius * 2.0f;
     GridWorldSize = FVector2(GridDivs.x * NodeDiameter, GridDivs.y * NodeDiameter);
@@ -25,17 +22,11 @@ void NavTest::Initialize()
                             GridCenter.z + GridWorldSize.y/2);
     
     SetGraph(mGridGraph, EFloorType::FirstFloor);
-    SetGraph(m2ndFloor, EFloorType::SecondFloor);
     SetObstacle(mGridGraph, FirstFloorMap, FirstFloorObstacle);
-    SetObstacle(m2ndFloor, SecondFloorMap, SecondFloorObstacle);
-    Stair1_2 = mGridGraph[132][79];
-    Stair2_1 = m2ndFloor[132][79];
-    Stair1_2->Children.push_back(Stair2_1);
-    Stair2_1->Children.push_back(Stair1_2);
 }
 
 
-void NavTest::Render()
+void BigGrid::Render()
 {
     auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
     G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
@@ -66,7 +57,7 @@ void NavTest::Render()
     G_DebugBatch.PostRender();
 }
 
-void NavTest::DrawNode(FVector2 grid, FXMVECTOR InColor)
+void BigGrid::DrawNode(FVector2 grid, FXMVECTOR InColor)
 {
     G_DebugBatch.DrawQuad_Implement(
         // tl - tr - br - bl
@@ -78,21 +69,21 @@ void NavTest::DrawNode(FVector2 grid, FXMVECTOR InColor)
     );
 }
 
-FVector NavTest::WorldPosFromGridPos(int col, int row)
+FVector BigGrid::WorldPosFromGridPos(int col, int row)
 {
     float x = GridTopLeft.x + col * NodeDiameter + NodeCenter.x;
     float z = (GridTopLeft.z - row * NodeDiameter + NodeCenter.z);
     return FVector(x, GridTopLeft.y, z);
 }
 
-FVector NavTest::WorldPosFromGridPos(FVector2 GridPos)
+FVector BigGrid::WorldPosFromGridPos(FVector2 GridPos)
 {
     int col = static_cast<int>(GridPos.x);
     int row = static_cast<int>(GridPos.y);
     return WorldPosFromGridPos(col, row);
 }
 
-FVector2 NavTest::GridFromWorldPoint(FVector worldPos)
+FVector2 BigGrid::GridFromWorldPoint(FVector worldPos)
 {
     int gridX = floor((worldPos.x - GridTopLeft.x) / NodeDiameter);
     int gridY = -ceil((worldPos.z - GridTopLeft.z) / NodeDiameter);
@@ -103,7 +94,7 @@ FVector2 NavTest::GridFromWorldPoint(FVector worldPos)
     return FVector2(gridX, gridY);
 }
 
-void NavTest::SetGraph(std::vector<std::vector<Ptr<Node>>>& graph, EFloorType FloorType)
+void BigGrid::SetGraph(std::vector<std::vector<Ptr<Node>>>& graph, EFloorType FloorType)
 {
     graph.resize(GridDivs.y);
     for (int row = 0; row < GridDivs.y; row++)
@@ -117,7 +108,7 @@ void NavTest::SetGraph(std::vector<std::vector<Ptr<Node>>>& graph, EFloorType Fl
     }
 }
 
-void NavTest::SetObstacle(std::vector<std::vector<Ptr<Node>>>& graph, JTexture* MapFile,
+void BigGrid::SetObstacle(std::vector<std::vector<Ptr<Node>>>& graph, JTexture* MapFile,
     std::vector<FVector2>& Obstacles)
 {
     for (int row = 0; row < GridDivs.y; row++)
@@ -143,7 +134,7 @@ void NavTest::SetObstacle(std::vector<std::vector<Ptr<Node>>>& graph, JTexture* 
     }
 }
 
-void NavTest::SetChildNode(std::vector<std::vector<Ptr<Node>>>& graph, int row, int col)
+void BigGrid::SetChildNode(std::vector<std::vector<Ptr<Node>>>& graph, int row, int col)
 {
     // if (mGridGraph[row][col]->Walkable == false)
     //     return;
@@ -162,7 +153,7 @@ void NavTest::SetChildNode(std::vector<std::vector<Ptr<Node>>>& graph, int row, 
     }
 }
 
-void NavTest::DrawUnWalkable(std::vector<FVector2>& Obstacles)
+void BigGrid::DrawUnWalkable(std::vector<FVector2>& Obstacles)
 {
     for (auto location : Obstacles)
     {

@@ -280,7 +280,6 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JAnimationClip::Initialize()
 {
-	mEvents[0].Bind([this](){ OnAnimStart.Execute(); });
 	mEvents[mEndFrame - 1].Bind([this](){ OnAnimFinished.Execute(); });
 	OnAnimBlendOut.Bind([&](){
 		if (bRootMotion)
@@ -294,8 +293,8 @@ void JAnimationClip::Play()
 {
 	mElapsedTime = mStartTime * mFramePerSecond * mTickPerFrame;
 	bPlaying     = true;
-	bLooping     = true;
 	mNextState   = "";
+	OnAnimStart.Execute();
 }
 
 void JAnimationClip::Resume()
@@ -325,10 +324,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	{
 		return true;
 	}
-
-	// 경과시간 계산
-	mElapsedTime += DeltaSeconds * mAnimationSpeed;
-
+	
 	// 경과 시간이 애니메이션의 시작 시간을 초과
 	if (mElapsedTime >= mEndTime)
 	{
@@ -342,6 +338,9 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		OnAnimBlendOut.Execute();
 	}
 
+	// 경과시간 계산
+	mElapsedTime += DeltaSeconds * mAnimationSpeed;
+	
 	UpdateInstanceData(mElapsedTime);
 
 	mEvents[mInstanceData.CurrentAnimIndex].Execute();

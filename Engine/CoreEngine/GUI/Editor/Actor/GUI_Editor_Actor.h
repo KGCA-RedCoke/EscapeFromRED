@@ -24,7 +24,6 @@ enum EComponentType : uint8_t
 	Particle,
 	Decal,
 	Billboard,
-	Text,
 	Widget,
 	Script,
 	Custom
@@ -50,7 +49,6 @@ constexpr const char* g_ComponentList[] = {
 	"Particle",
 	"Decal",
 	"Billboard",
-	"Text",
 	"Widget",
 	"Script",
 	"Custom"
