@@ -2,8 +2,9 @@
 #include <queue>
 #include "common_include.h"
 #include "Node.h"
-#include "Core/Input/XKeyboardMouse.h"
-#include "Path.h"
+
+class Path;
+class AActor;
 
 struct CompareNode
 {
@@ -21,7 +22,7 @@ using UnOrdSet = std::unordered_set<Ptr<Nav::Node>>;
 class AStar
 {
 public:
-    AStar();
+    AStar() = default;
     ~AStar();
     
     bool FindPath(Ptr<Nav::Node> Start, Ptr<Nav::Node> Target, float Weight);
@@ -36,7 +37,6 @@ public:
     float TurnDst = 1;
     bool IsPosUpdated = false;
     FVector NewPlayerPos = FVector::ZeroVector;
-    // std::vector<Ptr<NAV::Node>> mPath;
     Ptr<Path> mPath;
     int mPathIdx = 1;
     AActor* mOwnerActor = nullptr;

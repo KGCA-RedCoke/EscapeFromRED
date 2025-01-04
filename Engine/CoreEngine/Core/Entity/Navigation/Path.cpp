@@ -1,5 +1,6 @@
 ﻿#include "Path.h"
 
+#include "Node.h"
 #include "Core/Utils/Math/Vector2.h"
 
 Path::Path(std::vector<Ptr<Nav::Node>> wayPoints, FVector startPos, float turnDst)

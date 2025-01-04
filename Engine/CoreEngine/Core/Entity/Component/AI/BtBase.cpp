@@ -8,6 +8,8 @@
 #include "Core/Entity/Navigation/AStar.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
+#include "Core/Entity/Navigation/Path.h"
+#include "Core/Entity/Navigation/TempLine.h"
 
 
 BtBase::BtBase(JTextView InName, AActor* InOwner)
