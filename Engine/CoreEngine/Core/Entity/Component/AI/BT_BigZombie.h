@@ -41,7 +41,7 @@ public:
     float       mFloorHeight    = 1.f;
 
     AEnemy* mOwnerEnemy;
-
+///ㅁㄴㅇㄻㄴㅇㄹ
 private:
     // FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
     // FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
