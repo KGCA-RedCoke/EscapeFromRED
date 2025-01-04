@@ -22,11 +22,11 @@ AEnemy::AEnemy(JTextView InName)
 
 void AEnemy::Initialize()
 {
-
+	mActorComponents.clear();
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
 	mSkeletalMeshComponent = dynamic_cast<JSkeletalMeshComponent*>(GetChildComponentByType(
-		 NAME_OBJECT_SKELETAL_MESH_COMPONENT));
+	 NAME_OBJECT_SKELETAL_MESH_COMPONENT));
 	if (!mSkeletalMeshComponent)
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>("SkeletalMesh", this);
@@ -42,7 +42,8 @@ void AEnemy::Initialize()
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
-		switch (mEnemyType) {
+		switch (mEnemyType)
+		{
 		case EEnemyType::Kihyun:
 			mAnimator = MakeUPtr<JKihyunAnimator>("Animator", mSkeletalMeshComponent);
 			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
@@ -62,7 +63,7 @@ void AEnemy::Initialize()
 		case EEnemyType::MAX:
 			break;
 		}
-		
+
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
