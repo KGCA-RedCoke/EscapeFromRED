@@ -50,6 +50,8 @@ bool JLevel::Serialize_Implement(std::ofstream& FileStream)
 		mActors[i]->Serialize_Implement(FileStream);
 	}
 
+	LOG_CORE_INFO("Current File Pos: {}", (int)FileStream.tellp());
+
 	size_t widgetSize = mWidgetComponents.size();
 	Utils::Serialization::Serialize_Primitive(&widgetSize, sizeof(widgetSize), FileStream);
 	for (auto& widget : mWidgetComponents)
@@ -81,24 +83,28 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 		JText objType;
 		Utils::Serialization::DeSerialize_Text(objType, InFileStream);
 		UPtr<AActor> loadActor = UPtrCast<AActor>(MClassFactory::Get().Create(objType));
-		if (loadActor->DeSerialize_Implement(InFileStream))
-		{
-			int32_t currentFilePos = InFileStream.tellg();
-			loadActor->Initialize();
-			mOcTree->Insert(loadActor.get());
-			mActors.push_back(std::move(loadActor));
-			InFileStream.seekg(currentFilePos);
-		}
+		loadActor->DeSerialize_Implement(InFileStream);
+		mActors.push_back(std::move(loadActor));
 	}
 
-	// size_t widgetSize;
-	// Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
-	// for (int32_t i = 0; i < widgetSize; ++i)
-	// {
-	// 	JText path;
-	// 	Utils::Serialization::DeSerialize_Text(path, InFileStream);
-	// 	mWidgetComponents.push_back(MUIManager::Get().Load(path));
-	// }
+	LOG_CORE_INFO("Current File Pos: {}", (int)InFileStream.tellg());
+
+
+	size_t widgetSize;
+	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	for (int32_t i = 0; i < widgetSize; ++i)
+	{
+		JText path;
+		Utils::Serialization::DeSerialize_Text(path, InFileStream);
+		mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	}
+
+	for (auto& actor : mActors)
+	{
+		actor->Initialize();
+		mOcTree->Insert(actor.get());
+	}
+
 	OnLevelLoaded.Execute();
 	return true;
 }
