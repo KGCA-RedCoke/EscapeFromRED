@@ -480,6 +480,9 @@
     <Content Include="Game\Levels\Map.jasset" />
     <Content Include="Game\UI\First.jasset" />
     <Content Include="Game\UI\NewWidget.jasset" />
+    <Content Include="rsc\GameResource\GridMap\BigGrid.png" />
+    <Content Include="rsc\GameResource\GridMap\GridMap.png" />
+    <Content Include="rsc\GameResource\GridMap\GridMap2.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
