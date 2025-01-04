@@ -67,10 +67,9 @@ void JWorld::Initialize()
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
 
-	// DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
-	// 												  1024,
-	// 												  1024,
-	// 												  DXGI_FORMAT_R32_TYPELESS);
+	DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
+													  1024,
+													  1024);
 
 	// std::uniform_real_distribution dist(-10000.0f, 10000.0f);
 	// for (int i = 0; i < 1000; ++i)
@@ -95,7 +94,7 @@ void JWorld::Update(float DeltaTime)
 
 	ColliderManager->UpdateCollision();
 
-	// UpdateWorldShadowMap();
+	UpdateWorldShadowMap();
 
 	LevelManager->Update(DeltaTime);
 

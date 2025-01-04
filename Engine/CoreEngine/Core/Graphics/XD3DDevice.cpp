@@ -187,7 +187,7 @@ void XD3DDevice::SetDepthStencilState(const EDepthStencilState InState) const
 		break;
 	}
 
-	mImmediateContext->OMSetDepthStencilState(newDepthStencilState, 0);
+	mImmediateContext->OMSetDepthStencilState(newDepthStencilState, 0X01);
 }
 
 void XD3DDevice::SetSamplerState(const ESamplerState InState, int32_t* InSlots, int32_t InSize) const

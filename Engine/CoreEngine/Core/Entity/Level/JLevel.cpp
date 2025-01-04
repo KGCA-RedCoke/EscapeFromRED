@@ -80,25 +80,25 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		JText objType;
 		Utils::Serialization::DeSerialize_Text(objType, InFileStream);
-
 		UPtr<AActor> loadActor = UPtrCast<AActor>(MClassFactory::Get().Create(objType));
 		if (loadActor->DeSerialize_Implement(InFileStream))
 		{
+			int32_t currentFilePos = InFileStream.tellg();
 			loadActor->Initialize();
 			mOcTree->Insert(loadActor.get());
 			mActors.push_back(std::move(loadActor));
-
+			InFileStream.seekg(currentFilePos);
 		}
 	}
 
-	size_t widgetSize;
-	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
-	for (int32_t i = 0; i < widgetSize; ++i)
-	{
-		JText path;
-		Utils::Serialization::DeSerialize_Text(path, InFileStream);
-		mWidgetComponents.push_back(MUIManager::Get().Load(path));
-	}
+	// size_t widgetSize;
+	// Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	// for (int32_t i = 0; i < widgetSize; ++i)
+	// {
+	// 	JText path;
+	// 	Utils::Serialization::DeSerialize_Text(path, InFileStream);
+	// 	mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	// }
 	OnLevelLoaded.Execute();
 	return true;
 }
@@ -156,6 +156,8 @@ void JLevel::UpdateLevel(float DeltaTime)
 
 void JLevel::RenderLevel()
 {
+
+
 	auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
 	GetWorld.ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
@@ -181,6 +183,13 @@ void JLevel::RenderLevel()
 		// }
 	}
 	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
+
+	GetWorld.ViewportManager->SetRenderTarget("DirectionalLightShadowMap", FLinearColor::Alpha);
+	for (auto& actor : mActors)
+	{
+		actor->Draw();
+	}
+	MMeshManager::Get().FlushCommandList_Shadow(G_Device.GetImmediateDeviceContext());
 }
 
 // void JLevel::AddActor(const Ptr<AActor>& InActor)
