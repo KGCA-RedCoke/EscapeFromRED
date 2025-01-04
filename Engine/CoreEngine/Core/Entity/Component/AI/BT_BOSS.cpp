@@ -226,10 +226,7 @@ NodeStatus BT_BOSS::ResurrectPhase()
     if (bResurrectCondition == false)
         return NodeStatus::Failure;
     if (IsPlayerLookingAway() == false || IsPlayerClose(300))
-    {
-        LOG_CORE_INFO("im looking at you");
         return NodeStatus::Running;
-    }
     bResurrectCondition = false;
     bIsStandUpReady = true;
     return NodeStatus::Success;

@@ -118,6 +118,7 @@
     <ClInclude Include="Core\Entity\Component\AI\BTBuilder.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_BigZombie.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_Butcher.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Girl.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
@@ -328,6 +329,7 @@
     <ClCompile Include="Core\Entity\Component\AI\BTBuilder.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_BigZombie.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_Butcher.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Girl.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
