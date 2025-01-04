@@ -468,8 +468,8 @@ void JSceneComponent::UpdateTransform()
 	// 이전 프레임 월드 행렬과 현재 프레임 월드 행렬이 같다면, 업데이트를 하지 않음 (Decompose는 연산비용이 비싸기 때문)
 	if (mCachedWorldMat == mWorldMat)
 	{
-		return;
 		mObjectFlags &= ~EObjectFlags::MarkAsDirty;
+		return;
 	}
 
 	XMVECTOR scale, rot, loc;
@@ -827,7 +827,7 @@ void JSphereComponent::ShowEditor()
 {
 	JCollisionComponent::ShowEditor();
 
-	ImGui::DragFloat3(u8("크기"), &mLocalScale.x, 0.01f, 0.01f, 100.0f);
+	ImGui::DragFloat(u8("크기"), &mLocalScale.x, 0.01f, 0.01f, 100.0f);
 }
 
 bool JSphereComponent::Intersect(ICollision* InOther, FHitResult& OutHitResult) const

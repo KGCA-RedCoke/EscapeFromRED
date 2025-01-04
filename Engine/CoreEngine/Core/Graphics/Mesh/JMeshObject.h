@@ -47,8 +47,12 @@ public:
 
 public:
 	virtual void UpdateInstance_Transform(const FMatrix& InWorldMatrix = FMatrix::Identity);
+	virtual void SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
 
-	virtual void       SetMaterialInstance(JMaterialInstance* InMaterialInstance, uint32_t InIndex = 0);
+	void GenerateRandomInstanceData(uint32_t InCount, const FMatrix& InWorldMatrix = FMatrix::Identity,
+									float    AreaSize                              = 10,
+									float    NoiseStrength                         = 0.1f);
+
 	int32_t            GetMaterialCount() const;
 	JMaterialInstance* GetMaterialInstance(uint32_t InIndex = 0) const;
 	FBoxShape          GetBoundingBox() const { return mBoundingBox; }
@@ -69,7 +73,8 @@ protected:
 	JArray<JMaterialInstance*> mMaterialInstances;
 	JHash<uint32_t, size_t>    mDelegateIDs;
 
-	JArray<FInstanceData_Mesh> mInstanceData;
+	JArray<FInstanceData_Mesh>         mInstanceData;
+	JArray<JArray<FInstanceData_Mesh>> mInstanceData_Chunk;
 
 public:
 	bool bChunkMesh = false;

@@ -10,10 +10,9 @@ void Quad::FNode::Update()
 	std::erase_if(
 				  Actors,
 				  [&](AActor* Actor){
-
 					  if (Actor->IsMarkedAsDirty())
 					  {
-						  if (!BoundArea.Contains(Actor->GetBoundingVolume().Box.Center))
+						  if (!BoundBox.Intersect(Actor->GetBoundingVolume()))
 						  {
 							  actorsToSort.emplace_back(Actor);
 							  return true;
@@ -44,7 +43,7 @@ void Quad::FNode::Render(JCameraComponent* InCamera)
 	{
 		if (GetWorld.bDebugMode)
 		{
-			BoundArea.DrawDebug();
+			BoundBox.DrawDebug();
 		}
 		for (const auto& actor : Actors)
 		{
@@ -105,7 +104,7 @@ void Quad::FNode::Insert(AActor* InActor)
 	if (bIsLeaf)
 	{
 		// 최대 깊이 또는 자식 노드로 더 이상 분리할 수 없는 경우, 직접 저장
-		if (Depth >= MAX_DEPTH || Children[0] == nullptr)
+		if (Depth >= MAX_DEPTH)
 		{
 			Actors.emplace_back(InActor);
 			InActor->SetNodeIndex(Index);
@@ -113,7 +112,18 @@ void Quad::FNode::Insert(AActor* InActor)
 			return;
 		}
 	}
+	else
+	{
+		const FBoxShape& actorBounds = InActor->GetBoundingVolume();
 
+		// 자식 노드가 있고, 액터가 모든 자식 노드에 포함되는 경우 현재 노드에 저장
+		if (IsContainedOverlapping(actorBounds))
+		{
+			Actors.emplace_back(InActor);
+			InActor->SetNodeIndex(Index);
+			return;
+		}
+	}
 	// 자식 노드 중 하나에 삽입
 	InsertIntoChildren(InActor);
 }
@@ -161,6 +171,19 @@ bool Quad::FNode::Remove(AActor* InActor)
 	}
 
 	return false; // 액터를 찾지 못함
+}
+
+bool Quad::FNode::IsContainedOverlapping(const FBoxShape& InBox) const
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!Children[i] || !Children[i]->BoundBox.Intersect(InBox))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void Quad::FNode::Clear()

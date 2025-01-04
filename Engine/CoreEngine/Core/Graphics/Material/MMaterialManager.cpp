@@ -32,8 +32,8 @@ void MMaterialManager::SaveEngineMaterials()
 	// ui->SetShader(MShaderManager::Get().UIShader);
 	// Utils::Serialization::Serialize(NAME_MAT_2D, ui);
 
-	// auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
-	// POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
+	auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
+	POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
 	// auto detail = Load<JMaterial_Detail>(NAME_MAT_DETAIL);
 	// detail->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_Detail.hlsl"));
 	//
@@ -44,13 +44,13 @@ void MMaterialManager::SaveEngineMaterials()
 	// mirror->SetShader(MShaderManager::Get().Load("Shader/Mirror.hlsl"));
 	// Utils::Serialization::Serialize(NAME_MAT_MIRROR, mirror);
 
-	auto wind = Load<JMaterial_Wind>(NAME_MAT_WIND);
-	wind->SetShader(MShaderManager::Get().Load("Shader/Wind.hlsl"));
-	Utils::Serialization::Serialize(NAME_MAT_WIND, wind);
-	
-	auto character = Load<JMaterial_Character>(NAME_MAT_CHARACTER);
-	character->SetShader(MShaderManager::Get().Load("Shader/Character.hlsl"));
-	Utils::Serialization::Serialize(NAME_MAT_CHARACTER, character);
+	// auto wind = Load<JMaterial_Wind>(NAME_MAT_WIND);
+	// wind->SetShader(MShaderManager::Get().Load("Shader/Wind.hlsl"));
+	// Utils::Serialization::Serialize(NAME_MAT_WIND, wind);
+	//
+	// auto character = Load<JMaterial_Character>(NAME_MAT_CHARACTER);
+	// character->SetShader(MShaderManager::Get().Load("Shader/Character.hlsl"));
+	// Utils::Serialization::Serialize(NAME_MAT_CHARACTER, character);
 
 }
 

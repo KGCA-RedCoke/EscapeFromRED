@@ -58,6 +58,9 @@ bool JStaticMeshActor::Serialize_Implement(std::ofstream& FileStream)
 		return false;
 	}
 
+	// Chunk Data
+	Utils::Serialization::Serialize_Primitive(&mMeshChunkData, sizeof(mMeshChunkData), FileStream);
+
 
 	return true;
 }
@@ -71,6 +74,27 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 
 	mStaticMeshComponent = static_cast<JStaticMeshComponent*>(GetChildSceneComponentByType("JStaticMeshComponent"));
 
+	int32_t      currentFilePos = InFileStream.tellg();
+	JAssetHeader header;
+	Utils::Serialization::DeserializeHeader(InFileStream, header);
+
+	// 원래 위치로 이동
+	InFileStream.seekg(currentFilePos);
+
+	if (header.Version == 2)
+	{
+		// Chunk Data
+		Utils::Serialization::DeSerialize_Primitive(&mMeshChunkData, sizeof(mMeshChunkData), InFileStream);
+		if (mMeshChunkData.bChunkMesh && mStaticMeshComponent)
+		{
+			FMatrix startMat = XMMatrixTranslation(mWorldLocation.x, mWorldLocation.y, mWorldLocation.z);
+			mStaticMeshComponent->GetMeshObject()->GenerateRandomInstanceData(mMeshChunkData.mChunkSize,
+																			  startMat,
+																			  mMeshChunkData.AreaSize,
+																			  mMeshChunkData.NoiseStrength);
+		}
+	}
+
 	return true;
 }
 
@@ -83,11 +107,32 @@ void JStaticMeshActor::ShowEditor()
 	AActor::Tick(0);
 	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
 
-	const bool prevState = bChunkMesh;
-	ImGui::Checkbox(u8("대량 메시 렌더"), &bChunkMesh);
-	if (prevState != bChunkMesh && bChunkMesh)
+	const bool prevState = mMeshChunkData.bChunkMesh;
+	ImGui::Checkbox(u8("대량 메시 렌더"), &mMeshChunkData.bChunkMesh);
+	if (prevState != mMeshChunkData.bChunkMesh)
 	{
-		mStaticMeshComponent->GetMeshObject()->bChunkMesh = true;
+		mStaticMeshComponent->GetMeshObject()->bChunkMesh = mMeshChunkData.bChunkMesh;
+	}
+
+	if (mMeshChunkData.bChunkMesh)
+	{
+		// 인스턴스 크기
+		ImGui::DragInt(u8("갯수"), &mMeshChunkData.mChunkSize, 1, 1, 5000);
+
+		// 영역 크기
+		ImGui::DragFloat(u8("영역 크기"), &mMeshChunkData.AreaSize, 1.f, 100.f, 10000.f);
+
+		// 노이즈 강도
+		ImGui::DragFloat(u8("노이즈 강도"), &mMeshChunkData.NoiseStrength, 1.f, 0.01f, 1000.f);
+
+		// 새로고침 버튼
+		if (ImGui::Button(u8("새로고침")) || prevState != mMeshChunkData.bChunkMesh)
+		{
+			mStaticMeshComponent->GetMeshObject()->GenerateRandomInstanceData(mMeshChunkData.mChunkSize,
+																			  mWorldMat,
+																			  mMeshChunkData.AreaSize,
+																			  mMeshChunkData.NoiseStrength);
+		}
 	}
 }
 

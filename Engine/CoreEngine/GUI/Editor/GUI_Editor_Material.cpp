@@ -156,7 +156,6 @@ void GUI_Editor_Material::HandleFloatType(const FMaterialParam& Param)
 		if (cachedValue != *instanceValue)
 		{
 			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
-			// mMaterialToEdit->EditInstanceParam(Param.Name, Param);
 		}
 	}
 }
@@ -254,16 +253,11 @@ void GUI_Editor_Material::HandleTextureType(const FMaterialParam& Param) const
 		const ImGuiPayload* payload = ImGui::GetDragDropPayload();
 
 		const char* assetPath = static_cast<const char*>(payload->Data);
-		if (instanceValue)
-		{
-			instanceValue = GetWorld.TextureManager->Load(assetPath);
-		}
-		else
-		{
-			textureParam.StringValue  = assetPath;
-			textureParam.TextureValue = GetWorld.TextureManager->Load(assetPath);
-			mMaterialToEdit->EditInstanceParam(Param.Name, textureParam);
-		}
+
+		textureParam.StringValue  = assetPath;
+		textureParam.TextureValue = GetWorld.TextureManager->Load(assetPath);
+		mMaterialToEdit->EditInstanceParam(Param.Name, textureParam);
+
 	}
 }
 

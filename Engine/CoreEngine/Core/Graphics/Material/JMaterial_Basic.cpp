@@ -19,7 +19,7 @@ void JMaterial_Basic::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 void JMaterial_Basic::InitializeParams()
 {
-	if (mMaterialParams.empty() || mMaterialParams.size() == 9 || mMaterialParams.size() == 6)
+	if (!mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 
@@ -78,6 +78,10 @@ void JMaterial_Basic::InitializeParams()
 												 true));
 		mMaterialParams.push_back(FMaterialParam("Opacity",
 												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Flags",
+												 EMaterialParamValue::Integer,
 												 &FVector::ZeroVector,
 												 true));
 		mMaterialName = "Basic";

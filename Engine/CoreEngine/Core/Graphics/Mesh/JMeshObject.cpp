@@ -177,6 +177,40 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	// }
 }
 
+void JMeshObject::GenerateRandomInstanceData(uint32_t InCount, const FMatrix& InWorldMatrix, float AreaSize,
+											 float    NoiseStrength)
+{
+	mInstanceData_Chunk.clear();
+	bChunkMesh = true;
+
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+	std::mt19937                          rng(std::random_device{}());
+	std::uniform_real_distribution<float> dist(-AreaSize / 2.0f, AreaSize / 2.0f);
+	std::uniform_real_distribution<float> noise(-NoiseStrength, NoiseStrength);
+
+	mInstanceData_Chunk.reserve(subMeshCount);
+	for (int32_t j = 0; j < subMeshCount; ++j)
+	{
+		JArray<FInstanceData_Mesh> instanceData;
+		instanceData.reserve(InCount);
+
+		for (int32_t i = 0; i < InCount; ++i)
+		{
+			float x = dist(rng) + noise(rng);
+			float z = dist(rng) + noise(rng);
+
+			FInstanceData_Mesh data    = mInstanceData[0];
+			data.Transform.WorldMatrix = XMMatrixTranslation(x, InWorldMatrix.m[3][1], z) * InWorldMatrix;
+
+			instanceData.push_back(data);
+		}
+		mInstanceData_Chunk.push_back(instanceData);
+	}
+}
+
 int32_t JMeshObject::GetMaterialCount() const
 {
 	return mMaterialInstances.size();
@@ -195,13 +229,6 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(uint32_t InIndex) const
 
 void JMeshObject::AddInstance(float InCameraDistance)
 {
-	if (bChunkMesh)
-	{
-		MMeshManager::Get().GenChunkMeshes(this, 1000, FVector::ZeroVector, FVector::OneVector);
-		MMeshManager::Get().FlushChunkMeshes(G_Device.GetImmediateDeviceContext());
-		return;
-	}
-
 	const int32_t lodCount = mPrimitiveMeshData.size();
 	int32_t       lod      = static_cast<int32_t>(InCameraDistance / 3000.f);
 	lod                    = FMath::Clamp<int32_t>(lod, 0, lodCount - 1);
@@ -213,7 +240,15 @@ void JMeshObject::AddInstance(float InCameraDistance)
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+
+		if (bChunkMesh)
+		{
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData_Chunk[j]);
+		}
+		else
+		{
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+		}
 	}
 }
 

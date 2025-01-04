@@ -207,6 +207,4 @@ void APlayerCharacter::OnMeleeAttackFinished()
 		break;
 	}
 	bShouldAttack = false;
-
-	LOG_CORE_INFO("Attack Combo: {0}", mAttackCombo);
 }
