@@ -40,6 +40,14 @@ private:
 private:
 	JStaticMeshComponent* mStaticMeshComponent = nullptr;
 	bool                  bUseMeshCollision    = false;
+
+	struct
+	{
+		bool    bChunkMesh    = false;
+		int32_t mChunkSize    = 1000;
+		float   AreaSize      = 3000;
+		float   NoiseStrength = 100.f;
+	} mMeshChunkData;
 };
 
 REGISTER_CLASS_TYPE(JStaticMeshActor);

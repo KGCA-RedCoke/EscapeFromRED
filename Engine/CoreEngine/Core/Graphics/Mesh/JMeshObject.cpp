@@ -137,7 +137,7 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	{
 		LOG_CORE_WARN("머티리얼 슬롯 인덱스가 범위를 벗어남.");
 		return;
-	}	
+	}
 	mMaterialInstances[InIndex] = InMaterialInstance;
 
 	// // 이전에 바인딩된 Delegate 해제
@@ -177,6 +177,40 @@ void JMeshObject::SetMaterialInstance(JMaterialInstance* InMaterialInstance, uin
 	// }
 }
 
+void JMeshObject::GenerateRandomInstanceData(uint32_t InCount, const FMatrix& InWorldMatrix, float AreaSize,
+											 float    NoiseStrength)
+{
+	mInstanceData_Chunk.clear();
+	bChunkMesh = true;
+
+	auto&         meshData     = mPrimitiveMeshData[0];
+	auto&         subMeshes    = meshData->GetSubMesh();
+	const int32_t subMeshCount = subMeshes.empty() ? 1 : subMeshes.size();
+
+	std::mt19937                          rng(std::random_device{}());
+	std::uniform_real_distribution<float> dist(-AreaSize / 2.0f, AreaSize / 2.0f);
+	std::uniform_real_distribution<float> noise(-NoiseStrength, NoiseStrength);
+
+	mInstanceData_Chunk.reserve(subMeshCount);
+	for (int32_t j = 0; j < subMeshCount; ++j)
+	{
+		JArray<FInstanceData_Mesh> instanceData;
+		instanceData.reserve(InCount);
+
+		for (int32_t i = 0; i < InCount; ++i)
+		{
+			float x = dist(rng) + noise(rng);
+			float z = dist(rng) + noise(rng);
+
+			FInstanceData_Mesh data    = mInstanceData[0];
+			data.Transform.WorldMatrix = XMMatrixTranslation(x, InWorldMatrix.m[3][1], z) * InWorldMatrix;
+
+			instanceData.push_back(data);
+		}
+		mInstanceData_Chunk.push_back(instanceData);
+	}
+}
+
 int32_t JMeshObject::GetMaterialCount() const
 {
 	return mMaterialInstances.size();
@@ -206,7 +240,15 @@ void JMeshObject::AddInstance(float InCameraDistance)
 	for (int32_t j = 0; j < subMeshCount; ++j)
 	{
 		auto& currMesh = subMeshes.empty() ? meshData : subMeshes[j];
-		GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+
+		if (bChunkMesh)
+		{
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData_Chunk[j]);
+		}
+		else
+		{
+			GetWorld.MeshManager->PushCommand(currMesh->GetHash(), mMaterialInstances[j], mInstanceData[j]);
+		}
 	}
 }
 

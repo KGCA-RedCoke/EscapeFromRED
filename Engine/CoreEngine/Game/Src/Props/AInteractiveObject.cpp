@@ -56,6 +56,24 @@ void AInteractiveObject::Initialize()
 void AInteractiveObject::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
+
+	switch (mInteractiveType) {
+	case EInteractiveType::Cookie:
+		
+		break;
+	case EInteractiveType::Chocolate:
+		break;
+	case EInteractiveType::Chicken:
+		break;
+	case EInteractiveType::Coke:
+		break;
+	case EInteractiveType::BossEnter_Clown:
+		break;
+	case EInteractiveType::BossEnter_Doll:
+		break;
+	case EInteractiveType::Max:
+		break;
+	}
 }
 
 void AInteractiveObject::Destroy()

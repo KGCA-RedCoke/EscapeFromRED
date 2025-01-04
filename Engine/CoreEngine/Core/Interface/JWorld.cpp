@@ -141,9 +141,9 @@ void JWorld::UpdateWorldShadowMap()
 	// if (DirectionalLightData != g_LightData)
 	// {
 	DirectionalLightData = g_LightData;
-	FVector4 eye          = (DirectionalLightData.LightPos);
-	FVector lookAt = FVector::ZeroVector;
-	FVector up     = FVector(0, 1, 0);
+	FVector4 eye         = (DirectionalLightData.LightPos);
+	FVector  lookAt      = FVector::ZeroVector;
+	FVector  up          = FVector(0, 1, 0);
 
 	float mapSize     = 20000.0f;  // 맵의 전체 크기
 	float halfMapSize = mapSize / 2.0f;

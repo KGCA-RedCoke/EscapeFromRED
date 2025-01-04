@@ -142,6 +142,15 @@ void JLevel::UpdateLevel(float DeltaTime)
 					  return false;
 				  });
 
+	// 예약된 액터들을 추가
+	for (auto& actor : mReservedActors)
+	{
+		mOcTree->Insert(actor.get());
+		mActors.push_back(std::move(actor));
+	}
+
+	mReservedActors.clear();
+
 	mOcTree->Update();
 }
 

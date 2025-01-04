@@ -333,7 +333,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 			Stop();
 			return true;
 		}
-		
+
 		mElapsedTime = mStartTime + DeltaSeconds * mAnimationSpeed;
 		OnAnimBlendOut.Execute();
 	}
@@ -643,17 +643,17 @@ uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureDa
 	mEvents.resize(mEndFrame);
 
 
-	FVector initialTransform;
-	FVector finalTransform;
-	initialTransform = mTracks[0]->TransformKeys.PositionKeys[0].Value;
-	finalTransform   = mTracks[0]->TransformKeys.PositionKeys[mEndFrame - 1].Value;
+	FAnimKeyDataTransform& initialTransform = mTracks[0]->TransformKeys;
+	FAnimKeyDataTransform& finalTransform   = mTracks[0]->TransformKeys;
+
 
 	// 루트 모션 계산
-	FVector deltaTransform = finalTransform - initialTransform;
+	FVector deltaTransform = finalTransform.PositionKeys[mEndFrame - 1].Value - initialTransform.PositionKeys[0].Value;
 
 	// deltaTransform에서 위치, 회전, 스케일을 분리하여 루트 모션 값으로 저장
 	// FVector     deltaPosition(deltaTransform.m[3][0], deltaTransform.m[3][1], deltaTransform.m[3][2]);
-	FQuaternion deltaRotation;
+	FQuaternion deltaRotation = FQuaternion(finalTransform.RotationKeys[mEndFrame - 1].Value) -
+			FQuaternion(initialTransform.RotationKeys[0].Value);
 	// 루트 모션 값 설정
 	mRootMotionValue = {deltaTransform, deltaRotation};
 

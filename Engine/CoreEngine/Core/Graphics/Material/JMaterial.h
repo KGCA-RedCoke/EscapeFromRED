@@ -35,6 +35,8 @@ constexpr const char* NAME_MAT_DETAIL      = "Game/Materials/Engine/Material_Det
 constexpr const char* NAME_MAT_MIRROR      = "Game/Materials/Engine/Material_Mirror.jasset";
 constexpr const char* NAME_MAT_2D          = "Game/Materials/Engine/Material_2D.jasset";
 constexpr const char* NAME_MAT_LANDSCAPE   = "Game/Materials/Engine/Material_Landscape.jasset";
+constexpr const char* NAME_MAT_CHARACTER   = "Game/Materials/Engine/Material_Character.jasset";
+constexpr const char* NAME_MAT_WIND        = "Game/Materials/Engine/Material_Wind.jasset";
 
 /**
  * @brief Material parameter type
@@ -64,8 +66,11 @@ constexpr const char* HASH_MATERIAL_PARAM_VALUE_TYPE[] = {
 	"Float4",
 	"String",
 	"Texture2D",
-	/*"TextureCube",
-	"TextureVolume"*/
+};
+
+enum class EMaterialFlags : uint32_t
+{
+	UseRimLight = 1 << 30,
 };
 
 /**
@@ -137,7 +142,7 @@ public:
 	 * 머티리얼을 GPU에 바인딩
 	 */
 	virtual void BindShader(ID3D11DeviceContext* InDeviceContext);
-	void UpdateMaterialParams(ID3D11DeviceContext* InDeviceContext, const void* InData, uint32_t InSize);
+	void         UpdateMaterialParams(ID3D11DeviceContext* InDeviceContext, const void* InData, uint32_t InSize);
 
 	void EditMaterialParam(const JText& InParamName, const FMaterialParam& InMaterialParam);
 

@@ -27,6 +27,9 @@ UPtr<IManagedInterface> JSkeletalMeshActor::Clone() const
 void JSkeletalMeshActor::Initialize()
 {
 	AActor::Initialize();
+
+	AActor::Tick(0);
+	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 }
 
 bool JSkeletalMeshActor::Serialize_Implement(std::ofstream& FileStream)

@@ -147,9 +147,11 @@
     <ClInclude Include="Core\Graphics\Material\Instance\JMaterialInstance.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_2D.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Basic.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Character.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_Detail.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_POM.h" />
     <ClInclude Include="Core\Graphics\Material\JMaterial_SkySphere.h" />
+    <ClInclude Include="Core\Graphics\Material\JMaterial_Wind.h" />
     <ClInclude Include="Core\Graphics\Material\MMaterialInstanceManager.h" />
     <ClInclude Include="Core\Graphics\Mesh\JMeshObject.h" />
     <ClInclude Include="Core\Graphics\Mesh\JSkeletalMeshObject.h" />
@@ -184,6 +186,7 @@
     <ClInclude Include="Core\Manager\IManagedInterface.h" />
     <ClInclude Include="Core\Manager\MClassFactory.h" />
     <ClInclude Include="Core\Manager\Manager_Base.h" />
+    <ClInclude Include="Core\Manager\MPoolManager.h" />
     <ClInclude Include="Core\Thread\ThreadPool.h" />
     <ClInclude Include="Core\Thread\ThreadQueue.h" />
     <ClInclude Include="Core\Utils\Collision\CollisionUtils.h" />
@@ -215,6 +218,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JButcherAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
+    <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
@@ -356,9 +360,11 @@
     <ClCompile Include="Core\Graphics\Material\Instance\JMaterialInstance.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_2D.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Basic.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Character.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_Detail.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_POM.cpp" />
     <ClCompile Include="Core\Graphics\Material\JMaterial_SkySphere.cpp" />
+    <ClCompile Include="Core\Graphics\Material\JMaterial_Wind.cpp" />
     <ClCompile Include="Core\Graphics\Material\MMaterialInstanceManager.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JMeshObject.cpp" />
     <ClCompile Include="Core\Graphics\Mesh\JSkeletalMeshObject.cpp" />
@@ -388,6 +394,7 @@
     <ClCompile Include="Core\Manager\BaseManager.cpp" />
     <ClCompile Include="Core\Manager\IManagedInterface.cpp" />
     <ClCompile Include="Core\Manager\MClassFactory.cpp" />
+    <ClCompile Include="Core\Manager\MPoolManager.cpp" />
     <ClCompile Include="Core\Thread\ThreadPool.cpp" />
     <ClCompile Include="Core\Thread\ThreadQueue.cpp" />
     <ClCompile Include="Core\Utils\Collision\CollisionUtils.cpp" />
@@ -412,6 +419,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JButcherAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
+    <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />

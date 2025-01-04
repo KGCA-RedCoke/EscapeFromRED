@@ -45,6 +45,24 @@ public:
 		return newActor;
 	}
 
+	template <class T, typename... Args>
+	T* SpawnPoolActor(const JText&   InName,
+					  const FVector& InLocation = FVector::ZeroVector,
+					  const FVector& InRotation = FVector::ZeroVector,
+					  AActor*        InOwner    = nullptr,
+					  Args&&...      InArgs)
+	{
+		// T* newActor = LevelManager->GetActiveLevel()->CreatePoolActor<T>(InName, std::forward<Args>(InArgs)...);
+		// newActor->SetWorldLocation(InLocation);
+		// newActor->SetWorldRotation(InRotation);
+		// newActor->SetOwnerActor(InOwner);
+		//
+		// newActor->Initialize();
+		//
+		// return newActor;
+		return nullptr;
+	}	
+
 private:
 	void UpdateWorldShadowMap();
 

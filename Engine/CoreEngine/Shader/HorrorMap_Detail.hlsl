@@ -100,8 +100,10 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	const float roughnessFactor = Roughness;
 
 	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
-	const float3 lightDir       = normalize(DirectionalLightPos.xyz);
-	const float3 viewDir        = normalize(Input.ViewDir);
+	const float3 lightDir       = DirectionalLightPos.xyz;
+	const float3 viewDir        = Input.ViewDir;
+	const float3 halfDir        = normalize(lightDir + viewDir);
+	const float3 reflection     = -normalize(reflect(-viewDir, normal));
 	const float3 viewDirTangent = mul(viewDir, tbn);
 
 	const float2 texCoord = Input.TexCoord * Tiling;
@@ -168,11 +170,11 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	diffuse += finalPointLight + finalSpotLight;
 
-	// 주변광 (없으면 반사광이 없는곳은 아무것도 보이지 않음)
-	float3 ambient = albedo * 0.1f * ambientColor; // ambientColor 반영
-
 	// Final Color Calculation: Diffuse + Ambient + Specular
-	float3 finalColor = diffuse + ambient + specular;
+	float3 finalColor = diffuse  + specular;
+
+	finalColor = lerp(finalColor, finalColor * ambientColor, 1);
+
 
 
 	return float4(finalColor, opacity);
