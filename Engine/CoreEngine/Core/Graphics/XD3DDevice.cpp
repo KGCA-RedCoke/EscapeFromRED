@@ -45,13 +45,16 @@ void XD3DDevice::Initialize_Internal()
 	});
 
 	D3D11_RASTERIZER_DESC rsDesc;
-	rsDesc.DepthClipEnable      = TRUE;
-	rsDesc.ScissorEnable        = TRUE;
-	rsDesc.FillMode             = D3D11_FILL_SOLID;
-	rsDesc.CullMode             = D3D11_CULL_BACK;
-	rsDesc.DepthBias            = 20000;
-	rsDesc.DepthBiasClamp       = 0.0f;
-	rsDesc.SlopeScaledDepthBias = 1.0f;
+	rsDesc.FillMode              = D3D11_FILL_SOLID;
+	rsDesc.CullMode              = D3D11_CULL_BACK;
+	rsDesc.FrontCounterClockwise = FALSE;
+	rsDesc.DepthBias             = 1000.f;
+	rsDesc.DepthBiasClamp        = 0.0f;
+	rsDesc.SlopeScaledDepthBias  = 1.f;
+	rsDesc.DepthClipEnable       = TRUE;
+	rsDesc.ScissorEnable         = FALSE;
+	rsDesc.MultisampleEnable     = TRUE;
+	rsDesc.AntialiasedLineEnable = FALSE;
 	CheckResult(mDevice->CreateRasterizerState(&rsDesc, mRasterizerState_SlopeScaledDepthBias.GetAddressOf()));
 
 	D3D11_SAMPLER_DESC SamDescShad =

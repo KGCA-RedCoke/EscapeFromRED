@@ -61,40 +61,6 @@ void APawn::Initialize()
 		mLineComponent->SetupAttachment(this);
 		mLineComponent->SetTraceType(ETraceType::None);
 
-		/*mLineComponent->OnComponentOverlap.Bind([this](ICollision* InOther, const FHitResult& OutHitResult){
-			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
-			assert(sceneComponent);
-			const ETraceType type = sceneComponent->GetTraceType();
-
-			switch (type)
-			{
-			case ETraceType::Pawn:
-				break;
-			case ETraceType::BlockingVolume:
-				break;
-			case ETraceType::Ground:
-				{
-					float MaxHeight = FMath::Max(mMaxHeight, OutHitResult.HitLocation.y);
-
-					FVector currentLocation = GetLocalLocation();
-					mYVelocity += 980 * mDeltaTime;
-					// mLocalLocation.y = MaxHeight;	
-					if (currentLocation.y > MaxHeight + FLT_EPSILON)
-					{
-						AddLocalLocation(FVector(0, -mYVelocity * mDeltaTime, 0));
-					}
-					else if (currentLocation.y < MaxHeight - FLT_EPSILON)
-					{
-						AddLocalLocation(FVector(0, MaxHeight - currentLocation.y, 0));
-						mYVelocity = 0.f;
-					}
-					mMaxHeight = MaxHeight;
-				}
-				break;
-			}
-		});*/
-
-
 	}
 	if (!mCollisionSphere)
 	{

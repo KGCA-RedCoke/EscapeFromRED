@@ -61,7 +61,25 @@ void JSpawnerComponent::ShowEditor()
 	JActorComponent::ShowEditor();
 
 	ImGui::Checkbox(u8("스폰 시작"), &bStartSpawn);
+
+	ImGui::InputInt(u8("최대 스폰 개수"), &mMaxSpawn);
+
 	ImGui::InputFloat(u8("스폰 간격"), &mInterval);
+
+	ImGui::TextColored(ImColor(1, 0, 0, 1),u8("몬스터 타입"));
+
+	if (ImGui::BeginCombo("##Enemy Type", GetEnemyTypeString(static_cast<EEnemyType>(mEnemyType))))
+	{
+		for (uint8_t i = 0; i < EnumAsByte(EEnemyType::MAX); ++i)
+		{
+			if (ImGui::Selectable(GetEnemyTypeString(static_cast<EEnemyType>(i))))
+			{
+				mEnemyType = i;
+				break;
+			}
+		}
+		ImGui::EndCombo();
+	}
 }
 
 void JSpawnerComponent::Initialize()
@@ -89,8 +107,26 @@ void JSpawnerComponent::Tick(float DeltaTime)
 
 void JSpawnerComponent::Spawn()
 {
-	AActor* newActor = GetWorld.LevelManager->GetActiveLevel()->CreateActor<AEnemy>("enemy");
-	Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", newActor);
-	newActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());
-	newActor->Initialize();
+	if (mMaxSpawn <= mSpawnCount)
+	{
+		bStartSpawn = false;
+		return;
+	}
+
+	mSpawnCount++;
+
+	JLevel*    level        = GetWorld.LevelManager->GetActiveLevel();
+	EEnemyType enemyType    = static_cast<EEnemyType>(mEnemyType);
+	JText      enemyTypeStr = GetEnemyTypeString(enemyType);
+	JText      enemyName    = std::format("{}_{}", enemyTypeStr, mSpawnCount);
+	auto       spawnedActor = level->mEnemyPool.Spawn(enemyName);
+	switch (enemyType)
+	{
+	case EEnemyType::Kihyun:
+		Utils::Serialization::DeSerialize("Game/Enemy/NewActor6.jasset", spawnedActor.get());
+		break;
+	}
+	spawnedActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());
+	spawnedActor->Initialize();
+	level->mReservedActors.push_back(std::move(spawnedActor));
 }

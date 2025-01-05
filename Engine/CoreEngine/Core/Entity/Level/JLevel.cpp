@@ -121,15 +121,26 @@ void JLevel::UpdateLevel(float DeltaTime)
 	{
 		return;
 	}
+
 	std::erase_if(
 				  mActors,
 				  [&](UPtr<AActor>& actor){
+					  if (actor->IsValid())
+					  {
+						  actor->Tick(DeltaTime);
+					  }
 					  actor->Tick(DeltaTime);
 
 					  if (actor->IsPendingKill())
 					  {
 						  mOcTree->Remove(actor.get());
-						  actor = nullptr;
+
+						  if (actor->IsPoolObject())
+						  {
+							  // 일단 따로 빼놓고 나중에 처리
+							  mEnemyPool.DeSpawn(std::move(UPtrCast<AEnemy>(std::move(actor))));
+						  }
+
 						  return true;
 					  }
 					  return false;
@@ -162,7 +173,12 @@ void JLevel::UpdateLevel(float DeltaTime)
 
 void JLevel::RenderLevel()
 {
-
+	// GetWorld.ViewportManager->SetRenderTarget("DirectionalLightShadowMap", FLinearColor::Alpha);
+	// for (auto& actor : mActors)
+	// {
+	// 	actor->Draw();
+	// }
+	// MMeshManager::Get().FlushCommandList_Shadow(G_Device.GetImmediateDeviceContext());
 
 	auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
@@ -189,13 +205,6 @@ void JLevel::RenderLevel()
 		// }
 	}
 	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
-
-	GetWorld.ViewportManager->SetRenderTarget("DirectionalLightShadowMap", FLinearColor::Alpha);
-	for (auto& actor : mActors)
-	{
-		actor->Draw();
-	}
-	MMeshManager::Get().FlushCommandList_Shadow(G_Device.GetImmediateDeviceContext());
 }
 
 // void JLevel::AddActor(const Ptr<AActor>& InActor)

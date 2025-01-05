@@ -1,5 +1,11 @@
 ﻿#pragma once
-#include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Component/JActorComponent.h"
+#include "Core/Manager/MPoolManager.h"
+
+class PoolManager_Enemy : MPoolManager<class AEnemy>
+{
+	
+};
 
 class JSpawnerComponent : public JActorComponent
 {
@@ -25,13 +31,15 @@ public:
 	void         SetInterval(float InInterval) { mInterval = InInterval; }
 
 protected:
-	bool bStartSpawn = false;
+	bool     bStartSpawn = false;
+	uint32_t mEnemyType  = 0;
+	int32_t  mMaxSpawn   = 100;
+	int32_t  mSpawnCount = 0;
 
 	float mInterval = 0.f;
 	float mTime     = 0.f;
 };
 
-REGISTER_CLASS_TYPE(JSpawnerComponent)
 
-class AEnermySpawner : public JSpawnerComponent
-{};
+
+REGISTER_CLASS_TYPE(JSpawnerComponent)

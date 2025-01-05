@@ -41,10 +41,13 @@ Texture2D emissiveMap : register(t5);
 Texture2D maskMap : register(t6);
 Texture2D opacityMap : register(t7);
 
+Texture2D directionLightShadowMap : register(t10);
+Texture2D pointLightShadowMap : register(t11);
 
-SamplerState Sampler_Linear : register(s0);
-SamplerState g_TextureSampler0 : register(s1);
-SamplerState g_TextureSampler1 : register(s2);
+
+SamplerState           Sampler_Linear : register(s0);
+SamplerState           SamplerShadowMap: register (s1);
+SamplerComparisonState SamplerComShadowMap: register (s2);
 
 
 PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
@@ -142,8 +145,39 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	{
 		discard;
 	}
+	float  fLightAmount   = 1.0f;
+	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
+	//
+	// // 그림자 맵 해상도에 따른 샘플링 간격 계산
+	// const float fdelta = 1.0f / 4096;
+	//
+	// // 가중치 및 커널 크기 설정
+	// float kernel[3][3] = {
+	// 	{ 0.075f, 0.125f, 0.075f },
+	// 	{ 0.125f, 0.200f, 0.125f },
+	// 	{ 0.075f, 0.125f, 0.075f }
+	// };
+	// int iHalf = 1;
+	//
+	// // 3x3 PCF 필터링 수행
+	// for (int v = -iHalf; v <= iHalf; v++)
+	// {
+	// 	for (int u = -iHalf; u <= iHalf; u++)
+	// 	{
+	// 		float2 vOffset = float2(u * fdelta, v * fdelta);
+	// 		fLightAmount += kernel[v + iHalf][u + iHalf] * directionLightShadowMap.SampleCmpLevelZero(
+	// 			SamplerComShadowMap,
+	// 			ShadowTexColor.xy + vOffset,
+	// 			ShadowTexColor.z
+	// 		).r;
+	// 	}
+	// }
+	// fLightAmount /= 3*3;	
+	//
+	// // 결과값 정규화
+	// fLightAmount = saturate(fLightAmount);
 
-	float normDotLight = saturate(dot(normal, lightDir));
+	float normDotLight = saturate(dot(normal, lightDir)) * fLightAmount;
 
 	float3 diffuse  = albedo * normDotLight;
 	float3 f0       = lerp(0.04f, Specular, metallic);
@@ -174,8 +208,6 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	float3 finalColor = diffuse  + specular;
 
 	finalColor = lerp(finalColor, finalColor * ambientColor, 1);
-
-
 
 	return float4(finalColor, opacity);
 

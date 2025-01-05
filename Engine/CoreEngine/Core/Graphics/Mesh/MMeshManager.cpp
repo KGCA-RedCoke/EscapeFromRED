@@ -140,8 +140,28 @@ void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialIns
 							   ID3D11ShaderResourceView** InAnimTexture)
 {
 	assert(mBufferList.contains(NameHash));
+	
+	InInstanceData.Transform.ShadowMatrix = InInstanceData.Transform.WorldMatrix * GetWorld.
+														  DirectionalLightView * GetWorld
+														  .DirectionalLightProj * FMatrix(0.5f,
+																   0.0f,
+																   0.0f,
+																   0.0f,
+																   0.0f,
+																   -0.5f,
+																   0.0f,
+																   0.0f,
+																   0.0f,
+																   0.0f,
+																   1.0f,
+																   0.0f,
+																   0.5f,
+																   0.5f,
+																   0.0f,
+																   1.0f);
 
 	mInstanceData_Mesh[NameHash][InMaterialRef].emplace_back(InInstanceData);
+
 
 	if (InAnimTexture)
 	{
