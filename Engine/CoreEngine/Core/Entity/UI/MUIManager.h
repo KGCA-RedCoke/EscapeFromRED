@@ -80,6 +80,7 @@ public:
 	void SetPosition(const FVector2& InPosition) { mInstanceData.Position = InPosition; }
 	void SetSize(const FVector2& InSize) { mInstanceData.Size = InSize; }
 	void SetColor(const FVector4& InColor) { mInstanceData.Color = InColor; }
+	void SetTexture(class JTexture* InTexture) { mTexture = InTexture; }
 	void AddText(JWTextView          InText, const FVector2& InPosition, const FVector2& InRectSize, const float InSize,
 				 const FLinearColor& InColor);
 

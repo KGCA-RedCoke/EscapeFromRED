@@ -16,9 +16,6 @@ void JPlayerCamera::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 
-	UpdateRotation(DeltaTime);
-	UpdateVelocity(DeltaTime);
-
 	XMMATRIX mCameraRot = XMMatrixRotationRollPitchYaw(mOwnerCharacter->GetPitch(), mOwnerCharacter->GetYaw(), 0);
 	mCameraUp           = XMVector3TransformCoord(M_UpVector, mCameraRot);
 	mCameraAhead        = XMVector3TransformCoord(M_ForwardVector, mCameraRot);

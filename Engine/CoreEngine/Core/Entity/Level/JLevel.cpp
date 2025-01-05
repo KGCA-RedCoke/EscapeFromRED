@@ -16,6 +16,8 @@ JLevel::JLevel(const JText& InPath, bool bUseTree)
 {
 	OnLevelLoaded.Bind([&](){
 		bThreadLoaded = true;
+
+
 	});
 	if (bUseTree)
 	{
@@ -103,6 +105,7 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		actor->Initialize();
 		mOcTree->Insert(actor.get());
+		// actor->BeginPlay();
 	}
 
 	OnLevelLoaded.Execute();
@@ -125,11 +128,10 @@ void JLevel::UpdateLevel(float DeltaTime)
 	std::erase_if(
 				  mActors,
 				  [&](UPtr<AActor>& actor){
-					  if (actor->IsValid())
-					  {
-						  actor->Tick(DeltaTime);
-					  }
-					  // actor->Tick(DeltaTime);
+					  // if (actor->IsValid())
+					  // {
+					  actor->Tick(DeltaTime);
+					  // }
 
 					  if (actor->IsPendingKill())
 					  {
@@ -198,11 +200,8 @@ void JLevel::RenderLevel()
 
 	for (auto& widget : mWidgetComponents)
 	{
-		// if (widget->IsVisible())
-		// {
 		widget->AddInstance();
 		// MUIManager::Get().Load("Game/UI/NewWidget.jasset")->AddInstance();
-		// }
 	}
 	MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 }

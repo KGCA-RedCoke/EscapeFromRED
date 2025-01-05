@@ -30,6 +30,8 @@ protected:
 	virtual void SetupInputComponent() {};
 
 public:
+	void LockInput(bool bInLock) { bLockInput = bInLock; }
+
 	float    GetYaw() const { return mYaw; }
 	float    GetPitch() const { return mPitch; }
 	FVector2 GetMouseDelta() const;
@@ -38,9 +40,10 @@ protected:
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
 	UPtr<XKeyboardMouse>          mInput;
 
-	float   mLastYaw = 0;
-	float   mYaw     = 0;
-	float   mPitch   = 0;
+	bool    bLockInput = false;
+	float   mLastYaw   = 0;
+	float   mYaw       = 0;
+	float   mPitch     = 0;
 	FVector mForward;
 
 };

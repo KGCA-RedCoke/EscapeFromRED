@@ -87,6 +87,12 @@ void JSpawnerComponent::Initialize()
 	JActorComponent::Initialize();
 }
 
+void JSpawnerComponent::BeginPlay()
+{
+	JActorComponent::BeginPlay();
+	bStartSpawn = true;
+}
+
 void JSpawnerComponent::Tick(float DeltaTime)
 {
 	JActorComponent::Tick(DeltaTime);

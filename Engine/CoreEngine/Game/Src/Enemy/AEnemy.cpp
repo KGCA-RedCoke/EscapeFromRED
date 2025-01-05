@@ -12,7 +12,6 @@ AEnemy::AEnemy()
 	  mSkeletalMeshComponent(nullptr)
 {
 	mObjectType = NAME_OBJECT_ENEMY;
-	mObjectFlags |= EObjectFlags::IsPoolObject;
 }
 
 AEnemy::AEnemy(JTextView InName)
@@ -20,12 +19,14 @@ AEnemy::AEnemy(JTextView InName)
 	  mSkeletalMeshComponent(nullptr)
 {
 	mObjectType = NAME_OBJECT_ENEMY;
-	mObjectFlags |= EObjectFlags::IsPoolObject;
 }
 
 void AEnemy::Initialize()
 {
+	mChildActorComponentIndices.clear();
 	mActorComponents.clear();
+
+
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
 	mSkeletalMeshComponent = dynamic_cast<JSkeletalMeshComponent*>(GetChildComponentByType(
@@ -36,12 +37,11 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
 
-	if (!mBehaviorTree)
-	{
-		mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
-	}
+	// if (!mBehaviorTree)
+	// {
+	// 	mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+	// }
 
-	APawn::Initialize();
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -66,6 +66,7 @@ void AEnemy::Initialize()
 		case EEnemyType::MAX:
 			break;
 		}
+		APawn::Initialize();
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
@@ -86,11 +87,6 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::Destroy()
 {
 	APawn::Destroy();
-}
-
-void AEnemy::Despawn()
-{
-	
 }
 
 uint32_t AEnemy::GetType() const

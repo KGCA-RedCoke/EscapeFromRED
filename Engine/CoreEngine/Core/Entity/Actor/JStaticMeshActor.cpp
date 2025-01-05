@@ -81,7 +81,7 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	// 원래 위치로 이동
 	InFileStream.seekg(currentFilePos);
 
-	if (header.Version == 2)
+	if (header.Version >= 2)
 	{
 		// Chunk Data
 		Utils::Serialization::DeSerialize_Primitive(&mMeshChunkData, sizeof(mMeshChunkData), InFileStream);

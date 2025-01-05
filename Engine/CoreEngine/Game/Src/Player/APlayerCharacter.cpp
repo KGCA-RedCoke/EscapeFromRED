@@ -68,7 +68,7 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
-	if (mInput)
+	if (mInput && !bLockInput)
 	{
 		mInput->Update(DeltaTime);
 	}

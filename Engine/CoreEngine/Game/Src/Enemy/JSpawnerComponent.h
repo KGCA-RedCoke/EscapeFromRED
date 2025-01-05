@@ -22,6 +22,7 @@ public:
 
 public:
 	void Initialize() override;
+	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 
 public:
