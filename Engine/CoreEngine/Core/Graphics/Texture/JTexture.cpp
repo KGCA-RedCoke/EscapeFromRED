@@ -76,7 +76,7 @@ void JTexture::LoadFromFile()
 	{
 		JText errorText = WString2String(std::format(L"텍스처 생성 실패 (경로 확인): {}", mTextureName));
 		LOG_CORE_ERROR("{}",errorText);
-		assert(false, errorText);
+		// assert(false, errorText);
 		return;
 	}
 

@@ -3,7 +3,7 @@
 #include "Node.h"
 #include "Core/Utils/Math/Vector2.h"
 
-Path::Path(std::vector<Ptr<Nav::Node>> wayPoints, FVector startPos, float turnDst)
+NavPath::NavPath(std::vector<Ptr<Nav::Node>> wayPoints, FVector startPos, float turnDst)
 {
     lookPoints = wayPoints;
     turnBoundaries.clear();
@@ -26,7 +26,7 @@ Path::Path(std::vector<Ptr<Nav::Node>> wayPoints, FVector startPos, float turnDs
     }
 }
 
-FVector2 Path::V3ToV2(FVector v3)
+FVector2 NavPath::V3ToV2(FVector v3)
 {
     return FVector2(v3.x, v3.z);
 }

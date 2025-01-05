@@ -22,38 +22,39 @@ void JGirlAnimator::Initialize()
     JAnimator::Initialize();
 
     AddAnimationClip("Idle",
-                     "Game/Animation/Butcher/AS_NAAT_Zombie_BL_Idle.jasset", true);
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Idle.jasset", true);
     AddAnimationClip("Walk",
-                     "Game/Animation/Butcher/ThirdPersonWalk.jasset", true);
-    // AddAnimationClip("Death",
-    //                  "Game/Animation/Butcher/BZ_Death_Spinning.jasset", false);
-    // AddAnimationClip("Attack",
-    //                  "Game/Animation/Butcher/Zombie_Attack_4.jasset", false); //Zombie_Attack_01
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Walk.jasset", true);
+    AddAnimationClip("Run",
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Scary_Run.jasset", true);
+    AddAnimationClip("Death",
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Death01.jasset", false);
+    AddAnimationClip("Attack",
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Attack02.jasset", false); 
 
-    // mStateMachine["Death"]->OnAnimFinished.Bind([this]()
-    // {
-    //     if (mEnemy)
-    //         mEnemy->Destroy();
-    // });
-    //
-    // auto& attackClip = mStateMachine["Attack"];
-    // attackClip->SetLoop(false);
-    // attackClip->SetAnimationSpeed(2.f);
-    // attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind([&]()
-    // {
-    //     if (mEnemy)
-    //     {
-    //         // mEnemy->AddLocalLocation(attackClip->GetRMPosition());
-    //         mEnemy->SetEnemyState(EEnemyState::Idle);
-    //     }
-    // });
+    mStateMachine["Death"]->OnAnimFinished.Bind([this]()
+    {
+        if (mEnemy)
+            mEnemy->Destroy();
+    });
+    
+    auto& attackClip = mStateMachine["Attack"];
+    attackClip->SetLoop(false);
+    attackClip->SetAnimationSpeed(1.5f);
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.5].Bind([&]()
+    {
+        if (mEnemy)
+        {
+            mEnemy->SetEnemyState(EEnemyState::Idle);
+        }
+    });
 
     AddAnimLink("Idle", "Walk", [&]() { return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
     AddAnimLink("Walk", "Idle", [&]() { return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 
     AddAnimLink("Idle", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
     AddAnimLink("Walk", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
-    // AddAnimLink("Attack", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
+    AddAnimLink("Attack", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);
 
     AddAnimLink("Idle", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
     AddAnimLink("Walk", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);

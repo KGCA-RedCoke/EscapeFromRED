@@ -35,6 +35,22 @@ void BtBase::Tick(float DeltaTime)
         BTRoot->tick();
 }
 
+void BtBase::ResetBT()
+{
+    PaStar->resetAstar();
+    mIsPosUpdated = false;
+    mElapsedTime = 0.0f;
+    mEventStartFlag = true;
+    NeedsPathReFind = true;
+    mPhase = 1;
+    mHasPath = false;
+    runningFlag = false;
+    mFloorType = EFloorType::FirstFloor;
+    isPendingKill = false;
+    bPlayerCloseEvent = false;
+    BB_ElapsedTime.clear();
+}
+
 ////////////////////////////////////////////////
 
 // Action Function
@@ -51,9 +67,16 @@ NodeStatus BtBase::ChasePlayer(UINT N)
         Ptr<Nav::Node>& PlayerNode = (PlayerPos.y < 600.f)
                                          ? G_NAV_MAP.mGridGraph[playerGrid.y][playerGrid.x]
                                          : G_NAV_MAP.m2ndFloor[playerGrid.y][playerGrid.x];
-        Ptr<Nav::Node>& NpcNode = (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
-                                      ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
-                                      : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x];
+        
+        Ptr<Nav::Node>& NpcNode = 
+                                (NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
+                                    ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+                                    : (NpcPos.y > 800 
+                                        ? G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x]
+                                        : (mFloorType == EFloorType::FirstFloor
+                                            ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+                                            : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x]));
+        
         if ((PlayerPos - LastPlayerPos).Length() >= 50 ||
             NeedsPathReFind)
         {
@@ -83,7 +106,7 @@ NodeStatus BtBase::ChasePlayer(UINT N)
 
         if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
-            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < 300) // 플레이어와 거리가 가까울 때 success
+            if ((PlayerPos - mOwnerActor->GetWorldLocation()).Length() < mAttackDistance) // 플레이어와 거리가 가까울 때 success
                 return NodeStatus::Success;
             FollowPath();
         }
@@ -96,7 +119,7 @@ void BtBase::FollowPath()
     FVector NextPos = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->WorldPos;
     FVector currentPos = mOwnerActor->GetWorldLocation();
     FVector direction = FVector(NextPos.x - currentPos.x, 0.f, NextPos.z - currentPos.z);
-    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(Path::V3ToV2(currentPos)))
+    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(NavPath::V3ToV2(currentPos)))
     {
         mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
         PaStar->mPathIdx++;

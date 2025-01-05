@@ -18,6 +18,8 @@ public:
     void BeginPlay() override;
     void Destroy() override;
     void Tick(float DeltaTime) override;
+    void ResetBT();
+
 
 public:
     // Action Function
@@ -56,10 +58,10 @@ public:
     bool mHasPath = false;
     bool runningFlag = false;
     EFloorType mFloorType = EFloorType::FirstFloor;
-    static bool mIsPlayGame;
-	bool		isPendingKill = false;
+	bool isPendingKill = false;
     bool bPlayerCloseEvent = false;
     std::unordered_map<JText, float> BB_ElapsedTime;
+    int mAttackDistance = 300;
     
 
 protected:

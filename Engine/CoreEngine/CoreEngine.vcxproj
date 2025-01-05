@@ -70,6 +70,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +121,7 @@
     <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Butcher.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Girl.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_Pig.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
@@ -219,6 +221,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JButcherAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JPigAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
@@ -335,6 +338,7 @@
     <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Butcher.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Girl.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_Pig.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
@@ -421,6 +425,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JButcherAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JPigAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />
@@ -479,6 +484,13 @@
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
     <Content Include="Core\Interface\IGUIEditable.h" />
+    <Content Include="Game\Enemy\Boss_KC.jasset" />
+    <Content Include="Game\Enemy\Enemy_CD.jasset" />
+    <Content Include="Game\Enemy\Enemy_KH.jasset" />
+    <Content Include="Game\Enemy\Landscape.jasset" />
+    <Content Include="Game\Enemy\NewLevel1.jasset" />
+    <Content Include="Game\Enemy\NPC_Butcher.jasset" />
+    <Content Include="Game\Enemy\Spawner.jasset" />
     <Content Include="Game\Levels\Map.jasset" />
     <Content Include="Game\Materials\Horror_Map\Big_Zombie\Clothes.jasset" />
     <Content Include="Game\Materials\Horror_Map\Big_Zombie\Skin.jasset" />

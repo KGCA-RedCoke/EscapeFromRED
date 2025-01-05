@@ -45,6 +45,15 @@ void JKillerClownAnimator::Initialize()
     AddAnimationClip("StandUp",
                      "Game/Animation/KillerClown/KC_Standup.jasset");
 
+    mStateMachine["Idle"]->OnAnimStart.Bind([&]()
+    {
+        if (mBoss)
+        {
+            mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
+            mBoss->DisableAttackCollision();
+        }
+    });
+    
     auto& hitClip = mStateMachine["Hit"];
     hitClip->OnAnimStart.Bind([&]()
     {
@@ -70,29 +79,32 @@ void JKillerClownAnimator::Initialize()
     
     auto& attackClip1 = mStateMachine["Attack1"];
     attackClip1->SetAnimationSpeed(2.f);
+    attackClip1->mEvents[attackClip1->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
+    attackClip1->mEvents[attackClip1->GetEndFrame() * 0.6].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
     attackClip1->mEvents[attackClip1->GetEndFrame() * 0.7].Bind([&]()
     {
         if (mBoss)
         {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
             mBoss->SetBossState(EBossState::Idle);
         }
     });
 
     auto& attackClip2 = mStateMachine["Attack2"];
     attackClip2->SetAnimationSpeed(1.5f);
-    // attackClip2->mEvents[attackClip2->GetEndFrame()].Bind([&]()
+    attackClip2->mEvents[attackClip2->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
+    attackClip2->mEvents[attackClip2->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
     attackClip2->OnAnimFinished.Bind([&]()
     {
         if (mBoss)
         {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
             mBoss->SetBossState(EBossState::Idle);
         }
     });
 
     auto& attackClip3 = mStateMachine["Attack3"];
     attackClip3->SetAnimationSpeed(2.f);
+    attackClip3->mEvents[attackClip3->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
+    attackClip3->mEvents[attackClip3->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
     attackClip3->mEvents[attackClip3->GetEndFrame() * 0.7].Bind([&]()
     {
         if (mBoss)
@@ -140,7 +152,12 @@ void JKillerClownAnimator::Initialize()
         if (mBoss)
         {
             if (bt->mPhase == 3)
+            {
                 mBoss->Destroy();
+                mBoss->DisableAttackCollision();
+                mBoss->mCollisionSphere->Destroy();
+                mBoss->mWeaponCollider->Destroy();
+            }
             DeathClip->Pause();
         }
     });

@@ -104,7 +104,7 @@ void AStar::RetracePath(Ptr<Node> Start, Ptr<Node> Target)
         current = current->Parent.lock();
     }
     std::reverse(TempPath.begin(), TempPath.end());
-    mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
+    mPath = MakePtr<NavPath>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
     mPathIdx = 1;
 }
 
@@ -185,4 +185,14 @@ bool AStar::IsLineBlocked(FVector2 prevGrid, FVector2 nextGrid, std::vector<std:
         if (e2 < dx) { err += dx; y0 += sy; }
     }
     return false; // 직선 경로에 장애물 없음
+}
+
+void AStar::resetAstar()
+{
+    mSpeed = 300;
+    mRotateSpeed = 10;
+    TurnDst = 1;
+    IsPosUpdated = false;
+    mPath = nullptr;
+    mLimitGCost = MAX_GCOST;
 }

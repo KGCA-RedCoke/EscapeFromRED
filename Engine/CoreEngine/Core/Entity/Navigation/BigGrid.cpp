@@ -12,7 +12,7 @@ void BigGrid::Initialize()
     NodeRadius = 900.0f;
     NodeCenter = FVector(NodeRadius, 0, - NodeRadius);
     GridDivs = FVector2(11, 11);
-    GridCenter = FVector(0, 110, 0); // x, y, z
+    GridCenter = FVector(0, 120, 0); // x, y, z
     
     NodeDiameter = NodeRadius * 2.0f;
     GridWorldSize = FVector2(GridDivs.x * NodeDiameter, GridDivs.y * NodeDiameter);

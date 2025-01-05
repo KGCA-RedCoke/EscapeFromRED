@@ -30,6 +30,7 @@ void BT_Girl::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
+    mAttackDistance = 150;
 }
 
 void BT_Girl::BeginPlay() { JActorComponent::BeginPlay(); }
@@ -121,40 +122,6 @@ NodeStatus BT_Girl::Dead()
         return NodeStatus::Success;
     }
     return NodeStatus::Failure;
-}
-// 보스 패턴
-
-
-
-NodeStatus BT_Girl::conversation(int idx)
-{
-    switch (idx)
-    {
-    case 0:
-        {
-            // LOG_CORE_INFO("어서오시게 낯선 이여");
-            return NodeStatus::Success;
-        }
-        break;
-    case 1:
-        {
-            // LOG_CORE_INFO("돼지를 10마리 잡아와야 하네");
-            return NodeStatus::Success;
-        }
-        break;
-    case 2:
-        {
-            // LOG_CORE_INFO("그래야 이 저주를 풀 수 있어");
-            return NodeStatus::Success;
-        }
-        break;
-    case 3:
-        {
-            // LOG_CORE_INFO("행운을 빌겠네");
-            return NodeStatus::Success;
-        }
-        break;
-    }
 }
 
 // 단순 추적, 공격

@@ -17,8 +17,7 @@
 BT_BigZombie::BT_BigZombie(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
-    // mInputKeyboard.Initialize();
-    SetupTree2();
+    SetupTree();
 }
 
 BT_BigZombie::~BT_BigZombie()
@@ -32,6 +31,7 @@ void BT_BigZombie::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
+    mAttackDistance = 200;
 }
 
 void BT_BigZombie::BeginPlay() { JActorComponent::BeginPlay(); }
@@ -40,7 +40,6 @@ void BT_BigZombie::Destroy() { JActorComponent::Destroy(); }
 
 void BT_BigZombie::Tick(float DeltaTime)
 {
-    // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
 }
 
@@ -110,67 +109,6 @@ NodeStatus BT_BigZombie::Attack2()
     else
         return NodeStatus::Failure;
 }
-// NodeStatus BT_BigZombie::JumpAttack()
-// {
-//     int frameIdx = GetWorld.currentFrame % g_Index;
-//     if (frameIdx == mIdx || runningFlag)
-//     {
-//         runningFlag = false;
-//         NeedsPathReFind = true;
-//         float speed = 2;
-//         float GRAVITY = -500.f * speed * speed;
-//         if (mEventStartFlag)
-//         {
-//             MoveNPCWithJump(500.f, 2.0f / speed);
-//             mEventStartFlag = false;
-//         }
-//         FVector position = mOwnerActor->GetWorldLocation();
-//         position.x += mVelocity.x * mDeltaTime;
-//         position.z += mVelocity.z * mDeltaTime;
-//
-//         // y축 업데이트 (중력 적용)
-//         mVelocity.y += GRAVITY * mDeltaTime;
-//         position.y += mVelocity.y * mDeltaTime;
-//
-//         mOwnerActor->SetWorldLocation(position);
-//
-//         FVector rotation = RotateTowards(mVelocity, mOwnerActor->GetLocalRotation());
-//         mOwnerActor->SetLocalRotation(rotation);
-//
-//         // 바닥 충돌 처리 (y축이 0 이하로 내려가지 않도록)
-//         if (position.y < mFloorHeight)
-//         {
-//             position.y = mFloorHeight;
-//             mOwnerActor->SetWorldLocation(position);
-//             mVelocity.y = 0.0f; // 점프 종료
-//             mEventStartFlag = true;
-//             return NodeStatus::Success;
-//         }
-//         runningFlag = true;
-//         return NodeStatus::Running;
-//     }
-//     else
-//         return NodeStatus::Failure;
-// }
-//
-// void BT_BigZombie::MoveNPCWithJump(float jumpHeight, float duration)
-// {
-//     // NPC에서 플레이어까지의 거리 계산 (x, z 평면)
-//     FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-//     FVector location = mOwnerActor->GetWorldLocation();
-//     float dx = PlayerPos.x - location.x;
-//     float dz = PlayerPos.z - location.z;
-//
-//     // 매 프레임 NPC의 이동 속도 계산
-//     float vx = (dx / duration);
-//     float vz = (dz / duration);
-//
-//     // 초기 y축 속도 계산 (포물선 형태를 위한 수직 속도)
-//     float initialVerticalVelocity = (2 * jumpHeight) / duration;
-//
-//     // NPC의 속도 설정
-//     mVelocity = FVector(vx, initialVerticalVelocity, vz);
-// }
 
 NodeStatus BT_BigZombie::Hit()
 {
@@ -209,78 +147,13 @@ NodeStatus BT_BigZombie::Dead()
     return NodeStatus::Failure;
 }
 
-
-
-// 보스 패턴
-void BT_BigZombie::SetupTree()
-{
-    // 	BTRoot = builder
-    // 			.CreateRoot<Selector>()
-    // #pragma region Phase1
-    // 			.AddDecorator(LAMBDA(IsPhase, 1))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			// .AddDecorator(LAMBDA(RandP, 0.005f))
-    // 			//     .AddActionNode(LAMBDA(JumpAttack))
-    // 			// .EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 0))
-    // #pragma region              Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 1.0f))
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // #pragma region Phase2
-    // 			.AddDecorator(LAMBDA(IsPhase, 2))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(Hit))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 0.0005f))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 1))
-    // #pragma region Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.Build();
-}
-
 // 단순 추적, 공격
-void BT_BigZombie::SetupTree2()
+void BT_BigZombie::SetupTree()
 {
     BTRoot = builder
              .CreateRoot<Selector>()
                  .AddActionNode(LAMBDA(Dead))
                  .AddSequence("")
-                    // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
                      .AddActionNode(LAMBDA(ChasePlayer, 0))
                      .AddActionNode(LAMBDA(Attack2))
                  .EndBranch()
