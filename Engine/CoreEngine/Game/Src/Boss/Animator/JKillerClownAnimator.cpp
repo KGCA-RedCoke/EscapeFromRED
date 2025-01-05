@@ -74,7 +74,6 @@ void JKillerClownAnimator::Initialize()
     {
         if (mBoss)
         {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
             mBoss->SetBossState(EBossState::Idle);
         }
     });
@@ -86,7 +85,6 @@ void JKillerClownAnimator::Initialize()
     {
         if (mBoss)
         {
-            // mBoss->AddLocalLocation(attackClip->GetRMPosition());
             mBoss->SetBossState(EBossState::Idle);
         }
     });

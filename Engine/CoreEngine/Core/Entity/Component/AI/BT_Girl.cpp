@@ -30,6 +30,7 @@ void BT_Girl::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
+    mAttackDistance = 150;
 }
 
 void BT_Girl::BeginPlay() { JActorComponent::BeginPlay(); }

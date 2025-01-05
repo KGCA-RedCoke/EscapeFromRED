@@ -6,7 +6,6 @@
 #include "Core/Interface/JWorld.h"
 #include "Core/Entity/Navigation/AStar.h"
 #include "imgui/imgui_internal.h"
-#include "Core/Entity/Navigation/NavTest.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
@@ -15,7 +14,6 @@
 BT_Butcher::BT_Butcher(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
-    mInputKeyboard.Initialize();
     SetupTree();
 }
 
@@ -38,7 +36,6 @@ void BT_Butcher::Destroy() { JActorComponent::Destroy(); }
 
 void BT_Butcher::Tick(float DeltaTime)
 {
-    mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
 }
 
@@ -46,16 +43,15 @@ void BT_Butcher::Tick(float DeltaTime)
 
 // Action Function
 
-NodeStatus BT_Butcher::IsPressedKey(EKeyCode Key)
+NodeStatus BT_Butcher::IsPressedKey(int Key)
 {
     static bool wasKeyDown = false; // 이전 프레임에서의 상태 저장
-        
-    if (IsKeyDown(Key))
+    if (GetAsyncKeyState(Key) & 0x8000)
     {
         if (!wasKeyDown)
             wasKeyDown = true;
     }
-    else if (wasKeyDown && IsKeyUp(Key))
+    else if (wasKeyDown)
     {
         wasKeyDown = false;
         return NodeStatus::Success;
@@ -189,12 +185,12 @@ void BT_Butcher::SetupTree()
             .CreateRoot<Selector>()
                 .AddDecorator(LAMBDA(IsIdle))
                     .AddActionNode(LAMBDA(TalkTo))
-                    .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+                    .AddActionNode(LAMBDA(IsPressedKey, 'E'))
                     .AddActionNode(LAMBDA(StateIdleToConvers))
                 .EndBranch()
                 .AddDecorator(LAMBDA(IsConvers))
                     .AddActionNode(LAMBDA(conversation, conversIdx))
-                    .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+                    .AddActionNode(LAMBDA(IsPressedKey, VK_SPACE))
                     .AddActionNode(LAMBDA(GetNextConvers))
                     .AddActionNode(LAMBDA(StateConversToTrace, 4))
                     .EndBranch()

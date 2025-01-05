@@ -31,6 +31,7 @@ public:
     void RetracePath(Ptr<Nav::Node> Start, Ptr<Nav::Node> Target);
     std::vector<Ptr<Nav::Node>> simplifyPath(const std::vector<Ptr<Nav::Node>> &path);
     bool IsLineBlocked(FVector2 prevGrid, FVector2 nextGrid, std::vector<std::vector<Ptr<Nav::Node>>>& graph);
+    void resetAstar();
 
     float mSpeed = 300;
     float mRotateSpeed = 10;

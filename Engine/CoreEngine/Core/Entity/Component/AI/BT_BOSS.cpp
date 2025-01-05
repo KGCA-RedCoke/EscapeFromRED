@@ -45,7 +45,7 @@ void BT_BOSS::Tick(float DeltaTime)
     // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
     // LOG_CORE_INFO("Phase : {}",mPhase);
-    G_BIG_MAP.Render();
+    // G_BIG_MAP.Render();
     if (mPhase == 2)
     {
         PaStar->mSpeed = 600;

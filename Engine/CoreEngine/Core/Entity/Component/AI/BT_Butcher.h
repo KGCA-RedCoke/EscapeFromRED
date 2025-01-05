@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Input/XKeyboardMouse.h"
+
 #include "BtBase.h"
 
 class AEnemy;
@@ -35,7 +35,7 @@ public:
     NodeStatus IsIdle();
     NodeStatus IsConvers();
     NodeStatus IsTrace();
-    NodeStatus IsPressedKey(EKeyCode Key);
+    NodeStatus IsPressedKey(int Key);
     
 
     // Just Function
@@ -52,9 +52,4 @@ public:
     AEnemy* mOwnerEnemy;
 
 private:
-    FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
-    FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }
-    FORCEINLINE bool IsKeyUp(EKeyCode InKey) const { return mInputKeyboard.IsKeyUp(InKey); }
-
-    XKeyboardMouse mInputKeyboard;
 };

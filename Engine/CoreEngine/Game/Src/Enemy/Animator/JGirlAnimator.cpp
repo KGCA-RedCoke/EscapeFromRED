@@ -22,15 +22,15 @@ void JGirlAnimator::Initialize()
     JAnimator::Initialize();
 
     AddAnimationClip("Idle",
-                     "Game/Animation/Anim_CruelDoll/AS_CruelDoll_Idle.jasset", true);
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Idle.jasset", true);
     AddAnimationClip("Walk",
-                     "Game/Animation/Anim_CruelDoll/AS_CruelDoll_Walk.jasset", true);
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Walk.jasset", true);
     AddAnimationClip("Run",
-                     "Game/Animation/Anim_CruelDoll/AS_CruelDoll_Scary_Run.jasset", true);
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Scary_Run.jasset", true);
     AddAnimationClip("Death",
-                     "Game/Animation/Anim_CruelDoll/AS_CruelDoll_Death01.jasset", false);
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Death01.jasset", false);
     AddAnimationClip("Attack",
-                     "Game/Animation/Anim_CruelDoll/AS_CruelDoll_Attack02.jasset", false); 
+                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Attack02.jasset", false); 
 
     mStateMachine["Death"]->OnAnimFinished.Bind([this]()
     {
@@ -40,12 +40,11 @@ void JGirlAnimator::Initialize()
     
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
-    attackClip->SetAnimationSpeed(2.f);
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind([&]()
+    attackClip->SetAnimationSpeed(1.5f);
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.5].Bind([&]()
     {
         if (mEnemy)
         {
-            // mEnemy->AddLocalLocation(attackClip->GetRMPosition());
             mEnemy->SetEnemyState(EEnemyState::Idle);
         }
     });

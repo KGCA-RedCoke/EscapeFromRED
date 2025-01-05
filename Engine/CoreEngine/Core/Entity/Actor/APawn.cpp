@@ -85,7 +85,7 @@ void APawn::Initialize()
 				{
 					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * 0.05;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * 0.5;
 
 					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
 					AddLocalLocation(correction);
@@ -95,7 +95,7 @@ void APawn::Initialize()
 				{
 					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 
-					FVector correction = HitResult.HitNormal * HitResult.Distance * 0.1;
+					FVector correction = HitResult.HitNormal * HitResult.Distance * 1;
 
 					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
 					AddLocalLocation(correction);

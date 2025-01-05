@@ -129,7 +129,7 @@ void JLevel::UpdateLevel(float DeltaTime)
 					  {
 						  actor->Tick(DeltaTime);
 					  }
-					  actor->Tick(DeltaTime);
+					  // actor->Tick(DeltaTime);
 
 					  if (actor->IsPendingKill())
 					  {

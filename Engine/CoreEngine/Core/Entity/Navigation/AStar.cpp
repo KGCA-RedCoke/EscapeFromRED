@@ -186,3 +186,13 @@ bool AStar::IsLineBlocked(FVector2 prevGrid, FVector2 nextGrid, std::vector<std:
     }
     return false; // 직선 경로에 장애물 없음
 }
+
+void AStar::resetAstar()
+{
+    mSpeed = 300;
+    mRotateSpeed = 10;
+    TurnDst = 1;
+    IsPosUpdated = false;
+    mPath = nullptr;
+    mLimitGCost = MAX_GCOST;
+}

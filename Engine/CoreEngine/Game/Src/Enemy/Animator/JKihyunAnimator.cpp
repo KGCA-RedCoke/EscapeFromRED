@@ -39,7 +39,7 @@ void JKihyunAnimator::Initialize()
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
     attackClip->SetAnimationSpeed(2.f);
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind([&]()
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.5].Bind([&]()
     {
         if (mEnemy)
         {
