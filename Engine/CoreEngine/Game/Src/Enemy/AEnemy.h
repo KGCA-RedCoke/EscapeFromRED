@@ -25,6 +25,8 @@ enum class EEnemyState : uint8_t
     Convers3,
     Convers4,
     ConversSad,
+    CrawlRun,
+    Sit2StandUp,
     MAX
 };
 

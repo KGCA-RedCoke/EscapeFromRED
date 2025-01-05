@@ -18,7 +18,7 @@ BT_BigZombie::BT_BigZombie(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
     // mInputKeyboard.Initialize();
-    SetupTree2();
+    SetupTree();
 }
 
 BT_BigZombie::~BT_BigZombie()
@@ -209,78 +209,13 @@ NodeStatus BT_BigZombie::Dead()
     return NodeStatus::Failure;
 }
 
-
-
-// 보스 패턴
-void BT_BigZombie::SetupTree()
-{
-    // 	BTRoot = builder
-    // 			.CreateRoot<Selector>()
-    // #pragma region Phase1
-    // 			.AddDecorator(LAMBDA(IsPhase, 1))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			// .AddDecorator(LAMBDA(RandP, 0.005f))
-    // 			//     .AddActionNode(LAMBDA(JumpAttack))
-    // 			// .EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 0))
-    // #pragma region              Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 1.0f))
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // #pragma region Phase2
-    // 			.AddDecorator(LAMBDA(IsPhase, 2))
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::Space))
-    // 			.AddActionNode(LAMBDA(Hit))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(IsPressedKey, EKeyCode::V))
-    // 			.AddActionNode(LAMBDA(Dead))
-    // 			.EndBranch()
-    // 			.AddDecorator(LAMBDA(RandP, 0.0005f))
-    // 			.AddActionNode(LAMBDA(JumpAttack))
-    // 			.EndBranch()
-    // 			.AddSequence("")
-    // 			.AddActionNode(LAMBDA(ChasePlayer, 1))
-    // #pragma region Attak
-    // 			.AddSelector("")
-    // 			.AddDecorator(LAMBDA(RandP, 0.5f))
-    // 			.AddActionNode(LAMBDA(Attack))
-    // 			.EndBranch()
-    // 			.AddActionNode(LAMBDA(Attack2))
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // 			.EndBranch()
-    // #pragma endregion
-    // 			.Build();
-}
-
 // 단순 추적, 공격
-void BT_BigZombie::SetupTree2()
+void BT_BigZombie::SetupTree()
 {
     BTRoot = builder
              .CreateRoot<Selector>()
                  .AddActionNode(LAMBDA(Dead))
                  .AddSequence("")
-                    // .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
                      .AddActionNode(LAMBDA(ChasePlayer, 0))
                      .AddActionNode(LAMBDA(Attack2))
                  .EndBranch()

@@ -479,6 +479,13 @@
   <ItemGroup>
     <Content Include="Configs\engine.ini" />
     <Content Include="Core\Interface\IGUIEditable.h" />
+    <Content Include="Game\Enemy\Boss_KC.jasset" />
+    <Content Include="Game\Enemy\Enemy_CD.jasset" />
+    <Content Include="Game\Enemy\Enemy_KH.jasset" />
+    <Content Include="Game\Enemy\Landscape.jasset" />
+    <Content Include="Game\Enemy\NewLevel1.jasset" />
+    <Content Include="Game\Enemy\NPC_Butcher.jasset" />
+    <Content Include="Game\Enemy\Spawner.jasset" />
     <Content Include="Game\Levels\Map.jasset" />
     <Content Include="Game\UI\First.jasset" />
     <Content Include="Game\UI\NewWidget.jasset" />
