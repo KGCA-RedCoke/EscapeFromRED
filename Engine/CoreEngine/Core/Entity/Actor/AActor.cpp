@@ -36,6 +36,11 @@ void AActor::Initialize()
 void AActor::BeginPlay()
 {
 	JSceneComponent::BeginPlay();
+
+	for (const auto& actorComponent : mActorComponents)
+	{
+		actorComponent->BeginPlay();
+	}
 }
 
 void AActor::Tick(float DeltaTime)
@@ -64,9 +69,7 @@ void AActor::Destroy()
 }
 
 void AActor::Despawn()
-{
-	
-}
+{}
 
 void AActor::Draw()
 {
@@ -133,7 +136,7 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	auto         currentPos = InFileStream.tellg();
 	JAssetHeader header;
 	Utils::Serialization::DeserializeHeader(InFileStream, header);
-	InFileStream.seekg(currentPos);
+	InFileStream.seekg(currentPos, std::ios::beg);
 
 	if (header.Version == 3)
 	{

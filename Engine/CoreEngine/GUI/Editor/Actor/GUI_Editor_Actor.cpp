@@ -78,7 +78,6 @@ void GUI_Editor_Actor::Update_Implementation(float DeltaTime)
 		Utils::Serialization::Serialize(mTitle.c_str(), mActorToEdit.get());
 	}
 
-	mActorToEdit->Tick(DeltaTime);
 
 	DrawHierarchy();
 
@@ -87,6 +86,8 @@ void GUI_Editor_Actor::Update_Implementation(float DeltaTime)
 	DrawViewport();
 
 	DrawDetails();
+
+	mActorToEdit->Tick(DeltaTime);
 }
 
 void GUI_Editor_Actor::Render()

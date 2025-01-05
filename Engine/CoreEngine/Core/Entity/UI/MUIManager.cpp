@@ -322,6 +322,7 @@ bool JWidgetComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		auto ui = MakeUPtr<JUIComponent>();
 		ui->DeSerialize_Implement(InFileStream);
 		ui->SetWidgetComponent(this);
+		ui->SetVisible(true);
 		mUIComponents.push_back(std::move(ui));
 	}
 
@@ -334,7 +335,7 @@ void JWidgetComponent::Tick(float DeltaTime)
 	{
 		ui->Tick(DeltaTime);
 	}
-	
+
 	/*assert(mRenderTarget);
 
 	float x = mRenderTarget->GetSize().width;
@@ -367,7 +368,8 @@ void JWidgetComponent::AddInstance()
 {
 	for (int32_t i = 0; i < mUIComponents.size(); ++i)
 	{
-		mUIComponents[i]->AddInstance(0);
+		if (mUIComponents[i]->IsVisible())
+			mUIComponents[i]->AddInstance(0);
 	}
 }
 
@@ -537,8 +539,8 @@ MUIManager::MUIManager()
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
 	LoadingScreen = Load("Game/UI/inthedark.jasset");
-	
-	
+
+
 }
 
 MUIManager::~MUIManager() {}
