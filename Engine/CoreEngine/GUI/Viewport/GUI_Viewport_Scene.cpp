@@ -19,7 +19,7 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
 
-#define ENABLE_TEST_MODE
+// #define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -183,7 +183,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		G_NAV_MAP.Initialize();
 		// G_BIG_MAP.Initialize();
 		GetWorld.bGameMode = true;
-		GetWorld.bDebugMode = true;
+		// GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
 		GetWorld.LevelManager->SetActiveLevel(introScene);

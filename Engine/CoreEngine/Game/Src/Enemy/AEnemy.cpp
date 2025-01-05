@@ -4,6 +4,7 @@
 #include "Animator/JGirlAnimator.h"
 #include "Animator/JButcherAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
+#include "Core/Entity/Component/AI/BT_Butcher.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
 AEnemy::AEnemy()
@@ -33,12 +34,12 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
 
-	if (!mBehaviorTree)
-	{
-		mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
-	}
+	// if (!mBehaviorTree)
+	// {
+	// 	mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+	// }
 
-	APawn::Initialize();
+	
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -58,12 +59,12 @@ void AEnemy::Initialize()
 			break;
 		case EEnemyType::Butcher:
 			mAnimator = MakeUPtr<JButcherAnimator>("Animator", mSkeletalMeshComponent);
-			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
+			mBehaviorTree = CreateDefaultSubObject<BT_Butcher>("BehaviorTree", this);
 			break;
 		case EEnemyType::MAX:
 			break;
 		}
-
+		APawn::Initialize();
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
