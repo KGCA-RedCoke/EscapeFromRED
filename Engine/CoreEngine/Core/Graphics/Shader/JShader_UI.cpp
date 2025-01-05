@@ -26,9 +26,9 @@ void JShader_UI::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 
 	G_Device.SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	int32_t slots = {0};
-	G_Device.SetSamplerState(ESamplerState::LinearWrap, &slots, 1);
-	G_Device.SetBlendState(EBlendState::Opaque);
-	G_Device.SetRasterState(ERasterState::CullNone);
+	G_Device.SetSamplerState(ESamplerState::LinearClamp, &slots, 1);
+	G_Device.SetBlendState(EBlendState::CustomAlphaBlend);
+	G_Device.SetRasterState(ERasterState::CW);
 	G_Device.SetDepthStencilState(EDepthStencilState::DepthNone);
 
 	// ID3D11ShaderResourceView* textureArraySRV = CreateTextureArray(device, context, mTextures.data(), mTextures.size());

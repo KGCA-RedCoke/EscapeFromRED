@@ -74,8 +74,9 @@ void JTexture::LoadFromFile()
 	// 			   textureResource.GetAddressOf(),
 	// 			   mShaderResourceView.GetAddressOf())))
 	{
-		JText errorText = WString2String(std::format(L"Texture Load Failed: {}", mTextureName));
-		// ShowErrorPopup(errorText);
+		JText errorText = WString2String(std::format(L"텍스처 생성 실패 (경로 확인): {}", mTextureName));
+		LOG_CORE_ERROR("{}",errorText);
+		assert(false, errorText);
 		return;
 	}
 

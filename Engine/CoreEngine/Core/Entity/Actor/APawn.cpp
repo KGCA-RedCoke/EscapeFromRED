@@ -124,9 +124,9 @@ void APawn::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
 	CheckGround();
-	mDeltaTime = DeltaTime;
+	mDeltaTime  = DeltaTime;
 	mLastHeight = mMaxHeight;
-	mMaxHeight = INIT_HEIGHT;
+	mMaxHeight  = INIT_HEIGHT;
 }
 
 void APawn::Destroy()
@@ -137,6 +137,19 @@ void APawn::Destroy()
 	mCollisionSphere->Destroy();
 }
 
+void APawn::ReSpawn(const FVector& Location)
+{
+	SetLocalLocation(Location);
+
+	// 여기에서 상태 초기화
+	RemoveFlag(EObjectFlags::IsPendingKill);
+	SetFlag(EObjectFlags::IsValid);
+	SetFlag(EObjectFlags::IsVisible);
+	SetFlag(EObjectFlags::ShouldTick);
+
+	// 몬스터는 BT 초기화
+}
+
 void APawn::CheckGround()
 {
 	for (ICollision* ground : GetWorld.ColliderManager->GetLayer(ETraceType::Ground))
@@ -145,7 +158,7 @@ void APawn::CheckGround()
 		if (mLineComponent->Intersect(ground, hitResult))
 		{
 			float MaxHeight = FMath::Max(mMaxHeight, hitResult.HitLocation.y);
-			mMaxHeight = MaxHeight;
+			mMaxHeight      = MaxHeight;
 		}
 	}
 	// 중력
@@ -172,6 +185,6 @@ void APawn::SetYVelocity(float velocity)
 	// SetWorldLocation(FVector(currentPos.x, mLastHeight + 2 * FLT_EPSILON, currentPos.y));
 	AddLocalLocation(FVector(0, 10, 0));
 	LOG_CORE_INFO("APawn AddYVelocity : {}", mLastHeight + 4 * FLT_EPSILON);
-	mYVelocity = - velocity;
+	mYVelocity = -velocity;
 	LOG_CORE_INFO("APawn mYVel : {}", mYVelocity);
 }

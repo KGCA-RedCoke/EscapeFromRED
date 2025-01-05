@@ -62,18 +62,18 @@ bool FFrustum::Check(const FVector& InCenter, float InRadius) const
 
 bool FFrustum::Check(const FBoxShape& InBox) const
 {
+	// 상자가 모든 평면에 대해 완전히 벗어난 경우를 확인
 	for (const auto& plane : FrustumPlanes)
 	{
 		// 박스의 중심에서 평면까지의 거리
 		const float planeToCenter =
-				plane.A * InBox.Box.Center.x +
-				plane.B * InBox.Box.Center.y +
-				plane.C * InBox.Box.Center.z +
-				plane.D;
+			plane.A * InBox.Box.Center.x +
+			plane.B * InBox.Box.Center.y +
+			plane.C * InBox.Box.Center.z +
+			plane.D;
 
 		// 박스의 최대 거리 계산
 		FVector direction = InBox.Box.LocalAxis[0] * InBox.Box.Extent.x;
-
 		float distance = fabs(plane.A * direction.x + plane.B * direction.y + plane.C * direction.z);
 
 		direction = InBox.Box.LocalAxis[1] * InBox.Box.Extent.y;
@@ -82,12 +82,14 @@ bool FFrustum::Check(const FBoxShape& InBox) const
 		direction = InBox.Box.LocalAxis[2] * InBox.Box.Extent.z;
 		distance += fabs(plane.A * direction.x + plane.B * direction.y + plane.C * direction.z);
 
+		// 상자가 이 평면에서 완전히 벗어난 경우
 		if (planeToCenter <= -distance)
 		{
-			return false;
+			return false; // 프러스텀 바깥
 		}
 	}
 
+	// 모든 평면에 대해 벗어나지 않으면 프러스텀 안
 	return true;
 }
 
@@ -103,8 +105,8 @@ JCameraComponent::JCameraComponent()
 	  mPitch(0.f),
 	  mFOV(0),
 	  mAspect(0),
-	  mNearPlane(10.f),
-	  mFarPlane(100000.f),
+	  mNearPlane(1.f),
+	  mFarPlane(10000.f),
 	  mRotationValue(XM_PI / 180.0f),
 	  mTranslationValue(500.f)
 {

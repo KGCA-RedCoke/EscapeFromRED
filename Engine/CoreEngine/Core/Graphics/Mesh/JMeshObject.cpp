@@ -227,11 +227,12 @@ JMaterialInstance* JMeshObject::GetMaterialInstance(uint32_t InIndex) const
 	return mMaterialInstances[InIndex];
 }
 
-void JMeshObject::AddInstance(float InCameraDistance)
+void JMeshObject::AddInstance(float InCameraDistanceSquared)
 {
-	const int32_t lodCount = mPrimitiveMeshData.size();
-	int32_t       lod      = static_cast<int32_t>(InCameraDistance / 3000.f);
-	lod                    = FMath::Clamp<int32_t>(lod, 0, lodCount - 1);
+	const int32_t   lodCount    = mPrimitiveMeshData.size();
+	constexpr float lodDistance = 3000.0f * 3000.0f;
+	int32_t         lod         = static_cast<int32_t>(InCameraDistanceSquared / lodDistance);
+	lod                         = FMath::Clamp<int32_t>(lod, 0, lodCount - 1);
 
 	auto&         meshData     = mPrimitiveMeshData[lod];
 	auto&         subMeshes    = meshData->GetSubMesh();

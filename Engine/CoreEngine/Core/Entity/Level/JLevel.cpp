@@ -105,7 +105,6 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		actor->Initialize();
 		mOcTree->Insert(actor.get());
-		// actor->BeginPlay();
 	}
 
 	OnLevelLoaded.Execute();
@@ -152,7 +151,9 @@ void JLevel::UpdateLevel(float DeltaTime)
 				  mWidgetComponents,
 				  [&](JWidgetComponent* widget){
 
-					  widget->Tick(DeltaTime);
+					
+						  widget->Tick(DeltaTime);
+					  
 					  if (widget->IsPendingKill())
 					  {
 						  widget = nullptr;
@@ -175,13 +176,6 @@ void JLevel::UpdateLevel(float DeltaTime)
 
 void JLevel::RenderLevel()
 {
-	// GetWorld.ViewportManager->SetRenderTarget("DirectionalLightShadowMap", FLinearColor::Alpha);
-	// for (auto& actor : mActors)
-	// {
-	// 	actor->Draw();
-	// }
-	// MMeshManager::Get().FlushCommandList_Shadow(G_Device.GetImmediateDeviceContext());
-
 	auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
 
 	GetWorld.ViewportManager->SetRenderTarget("Editor Viewport", FLinearColor::Alpha);
@@ -190,6 +184,7 @@ void JLevel::RenderLevel()
 
 	// 옥트리 내부의 포함되는 액터들만 렌더링
 	// OcTree의 노드가 카메라의 Frustum과 교차하는지 체크
+
 	mOcTree->Render(GetWorld.CameraManager->GetCurrentMainCam());
 \
 	G_DebugBatch.Draw();

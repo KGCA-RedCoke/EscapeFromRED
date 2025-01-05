@@ -19,7 +19,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	: ACharacter(InName)
 {
 	// 프러스텀 무시
-	// SetFlag(IgnoreFrustum);
+	SetFlag(IgnoreFrustum);
 
 	// 스켈레탈 부착
 	mSkeletalMeshComponent = CreateDefaultSubObject<

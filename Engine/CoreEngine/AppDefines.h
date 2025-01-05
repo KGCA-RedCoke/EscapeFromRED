@@ -16,7 +16,7 @@ constexpr wchar_t Name_Engine_Version[] = L"J.01";
 #if defined(_DEBUG)
 	#define RUN(Engine_V, Resolution_X, Resolution_Y)\
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);\
-	FBasicWindowData g_initialWinData{Resolution_X, Resolution_Y, false, false};\
+	FBasicWindowData g_initialWinData{Resolution_X, Resolution_Y, false, true};\
 	Application App(Engine_V, g_initialWinData);\
 	App.Run();
 #else

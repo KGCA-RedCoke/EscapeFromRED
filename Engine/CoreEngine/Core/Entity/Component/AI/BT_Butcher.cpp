@@ -121,13 +121,15 @@ NodeStatus BT_Butcher::TalkTo()
 {
 	if (IsPlayerClose(300))
 	{
+		mWorld->OnInteractionStart.Execute();
+
 		if (mEventStartFlag)
 		{
 			mEventStartFlag = false;
-			LOG_CORE_INFO("Press E");
 		}
 		return NodeStatus::Success;
 	}
+	mWorld->OnInteractionEnd.Execute();
 	mEventStartFlag = true;
 	return NodeStatus::Failure;
 }
