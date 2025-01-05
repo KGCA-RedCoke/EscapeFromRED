@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Manager_Base.h"
-#include "Core/Entity/Actor/AActor.h"
+
 
 template <class ClassType>
 class MPoolManager : public TSingleton<MPoolManager<ClassType>>

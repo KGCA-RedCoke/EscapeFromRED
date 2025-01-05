@@ -16,7 +16,7 @@
 
 // ---------------------------- Default Settings -------------------------
 ini::IniFile   g_settings;
-CBuffer::Light g_LightData = {FVector4(10000, 20000, -10000, 0), FVector4::OneVector};
+CBuffer::Light g_LightData = {FVector4(1000, 5000, -1000, 0), FVector4::OneVector};
 
 Application* Application::s_AppInstance = nullptr;
 

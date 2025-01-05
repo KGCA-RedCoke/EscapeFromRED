@@ -106,12 +106,6 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	const float metallicFactor  = Metallic;
 	const float emissiveFactor  = Emissive;
 
-	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
-	const float3 lightDir   = DirectionalLightPos.xyz;
-	const float3 viewDir    = Input.ViewDir;
-	const float3 halfDir    = normalize(lightDir + viewDir);
-	const float3 reflection = -normalize(reflect(-viewDir, normal));
-
 	const float2 texCoord = Input.TexCoord;
 
 	albedo *= baseColorMap.Sample(Sampler_Linear, texCoord);
@@ -126,12 +120,54 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	const float3 emissive = emissiveMap.Sample(Sampler_Linear, texCoord).rgb * emissiveFactor;
 	const float  opacity  = opacityMap.Sample(Sampler_Linear, texCoord).r * Opacity;
 
+
+	// 아래 값들은 이미 VS에서 정규화 되었지만 보간기에서 보간(선형 보간)된 값들이므로 다시 정규화
+	// float3 lightVec  = DirectionalLightPos.xyz - Input.WorldSpace.xyz;
+	// float  lightDist = length(lightVec);
+	// lightVec /= lightDist;
+	// float3       halfway = normalize(Input.ViewDir + lightVec);
+	// const float3 viewDir = Input.ViewDir;
+	// float fLightAmount = 1.0f;
+	// float NdotI        = max(0.0, dot(normal, lightVec));
+	// float NdotH        = max(0.0, dot(normal, halfway));
+	// float NdotO        = max(0.0, dot(normal, Input.ViewDir));
+	//
+	// const float3 Fdielectric = 0.04; // 비금속(Dielectric) 재질의 F0
+	// float3       F0          = lerp(Fdielectric, albedo, metallic);
+	// float3       F           = SchlickFresnel(F0, max(0.0, dot(halfway, viewDir)));
+	// float3       kd          = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metallic);
+	// float3       diffuseBRDF = kd * albedo;
+	//
+	// float  D            = NdfGGX(NdotH, roughness);
+	// float3 G            = SchlickGGX(NdotI, NdotO, roughness);
+	// float3 specularBRDF = (F * D * G) / max(1e-5, 4.0 * NdotI * NdotO);
+	//
+	// float3 radiance = 1.0f;
+	// /*radiance        = LightRadiance(DirectionalLightPos);*/
+	//
+	// float shadow = 1.0f;
+	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
+	// float depth = directionLightShadowMap.SampleCmpLevelZero(SamplerComShadowMap, ShadowTexColor.xy, ShadowTexColor.z).r;
+	//
+	// if (depth + 0.001 < ShadowTexColor.z)
+	// {
+	// 	shadow = .5f;
+	// }
+	//
+	//
+	// float3 diffuse = (diffuseBRDF + specularBRDF) * radiance * NdotI * shadow;
+
+	const float3 lightDir   = DirectionalLightPos.xyz;
+	const float3 viewDir    = Input.ViewDir;
+	const float3 halfDir    = normalize(lightDir + viewDir);
+	const float3 reflection = -normalize(reflect(-viewDir, normal));
+
 	float normDotLight = saturate(dot(normal, lightDir));
 
 	float3 diffuse  = albedo * normDotLight;
 	float3 f0       = lerp(0.04f, Specular, metallic);
 	float3 specular = SpecularGGX(normal, viewDir, lightDir, roughness, f0);
-
+	
 	// Point Lights and Spot Lights
 	float3 finalPointLight = 0.0f;
 	float3 finalSpotLight  = 0.0f;
@@ -165,24 +201,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 10.f, 10.f);
 
-	// float  fLightAmount   = 0.0f;
-	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
-	//
-	// const float fdelta = 1.0f / 1024;
-	// int         iHalf  = 1;
-	// for (int v = -iHalf; v <= iHalf; v++)
-	// {
-	// 	for (int u = -iHalf; u <= iHalf; u++)
-	// 	{
-	// 		float2 vOffset = float2(u * fdelta, v * fdelta);
-	// 		fLightAmount += directionLightShadowMap.SampleCmpLevelZero(SamplerComShadowMap,
-	// 																   ShadowTexColor.xy + vOffset,
-	// 																   ShadowTexColor.z).r;
-	// 	}
-	// }
-	// fLightAmount /= 3 * 3;
-	// finalColor = finalColor * max(0.2f, fLightAmount);
-	// finalColor = fLightAmount;
+	// return float4(fLightAmount, fLightAmount, fLightAmount, 1.0f);
 	return float4(finalColor, opacity);
 
 }

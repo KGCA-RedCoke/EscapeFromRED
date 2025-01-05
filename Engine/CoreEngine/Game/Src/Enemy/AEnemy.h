@@ -70,6 +70,7 @@ public:
     void Initialize() override;
     void Tick(float DeltaTime) override;
     void Destroy() override;
+    void Despawn() override;
 
 public:
     uint32_t GetType() const override;

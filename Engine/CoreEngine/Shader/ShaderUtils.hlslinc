@@ -354,6 +354,61 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
 	return G1_V * G1_L;
 }
 
+float3 SchlickFresnel(float3 F0, float NdotH)
+{
+	return F0 + (1.0 - F0) * pow(2.0, (-5.55473 * NdotH - 6.98316) * NdotH);
+	//return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float NdfGGX(float NdotH, float roughness)
+{
+	float alpha   = roughness * roughness;
+	float alphaSq = alpha * alpha;
+	float denom   = (NdotH * NdotH) * (alphaSq - 1.0) + 1.0;
+
+	return alphaSq / (3.141592 * denom * denom);
+}
+
+
+float3 LightRadiance(float3 lightDir)
+{
+	// Directional light
+	float3 lightVec = -lightDir;
+
+
+	float lightDist = length(lightVec);
+	lightVec /= lightDist;
+
+	// Distance attenuation
+	float att = saturate((10000 - lightDist)
+						 / (10000));
+
+	// Shadow map
+	float shadowFactor = 1.0;
+
+	// if (light.type & LIGHT_SHADOW)
+	// {
+	// 	const float nearZ = 0.01; // 카메라 설정과 동일
+	// }
+
+	float3 radiance = att * shadowFactor;
+
+	return radiance;
+}
+
+float SchlickG1(float NdotV, float k)
+{
+	return NdotV / (NdotV * (1.0 - k) + k);
+}
+
+float SchlickGGX(float NdotI, float NdotO, float roughness)
+{
+	float r = roughness + 1.0;
+	float k = (r * r) / 8.0;
+	return SchlickG1(NdotI, k) * SchlickG1(NdotO, k);
+}
+
+
 float3 SpecularGGX(float3 N, float3 V, float3 L, float roughness, float3 F0)
 {
 	float3 H = normalize(V + L);

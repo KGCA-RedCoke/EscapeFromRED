@@ -80,7 +80,7 @@ const uint32_t SignatureHash = StringHash("JASSET");
 struct JAssetHeader
 {
 	char     Signature[8] = "JASSET\0";	// 파일 식별자		
-	uint32_t Version      = 2;			// 엔진 버전
+	uint32_t Version      = 3;			// 엔진 버전
 };
 
 /**

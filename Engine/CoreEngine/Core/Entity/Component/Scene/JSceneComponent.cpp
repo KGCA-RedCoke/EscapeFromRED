@@ -216,7 +216,7 @@ void JSceneComponent::ShowEditor()
 	}
 
 	ImGui::SeparatorText(u8("오브젝트 플래그"));
-	for (int32_t i = 0; i < 6; i++)
+	for (int32_t i = 0; i < 7; i++)
 	{
 		uint32_t value = (i == 0) ? 1 : 1 << i;
 		bool     bFlag = (mObjectFlags & value);

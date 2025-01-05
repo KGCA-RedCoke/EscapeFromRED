@@ -13,7 +13,8 @@ enum EObjectFlags : uint32_t
 	IsPendingKill = 1 << 3, // 소멸 대기 상태
 	DontDestroy   = 1 << 4, // 소멸하지 않는 상태 (레벨 전환 시 소멸되지 않음)
 	IgnoreFrustum = 1 << 5, // 카메라 프러스텀 체크 무시
-	ShouldTick    = 1 << 6  // Tick 함수 호출 여부
+	ShouldTick    = 1 << 6,  // Tick 함수 호출 여부
+	IsPoolObject  = 1 << 7,  // 풀매니저에서 관리되는 오브젝트
 };
 
 constexpr const char* NAME_OBJECT_FLAGS[] =
@@ -24,7 +25,8 @@ constexpr const char* NAME_OBJECT_FLAGS[] =
 	"PendingKill",
 	"DontDestroy",
 	"IgnoreFrustum",
-	"ShouldTick"
+	"ShouldTick",
+	"IsPoolObject"
 };
 
 class JObject : public JAsset,
@@ -64,10 +66,16 @@ public:
 	[[nodiscard]] bool IsDontDestroy() const { return mObjectFlags & EObjectFlags::DontDestroy; }
 	[[nodiscard]] bool IsIgnoreFrustum() const { return mObjectFlags & EObjectFlags::IgnoreFrustum; }
 	[[nodiscard]] bool ShouldTick() const { return mObjectFlags & EObjectFlags::ShouldTick; }
+	[[nodiscard]] bool IsPoolObject() const { return mObjectFlags & EObjectFlags::IsPoolObject; }
 
 	void SetName(JTextView InName) { mName = InName; }
 
 	void MarkAsDirty() { mObjectFlags |= EObjectFlags::MarkAsDirty; }
+
+	void SetActive(bool bActive)
+	{
+		bActive ? mObjectFlags |= EObjectFlags::IsValid : mObjectFlags &= ~EObjectFlags::IsValid;
+	}
 
 	void SetVisible(bool bVisible)
 	{
@@ -89,7 +97,7 @@ public:
 protected:
 	JText    mName;
 	JText    mObjectType  = NAME_OBJECT_BASE;
-	uint32_t mObjectFlags = 0;
+	uint32_t mObjectFlags = EObjectFlags::IsValid;
 
 protected:
 	static uint32_t g_DefaultObjectNum;

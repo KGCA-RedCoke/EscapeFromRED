@@ -67,9 +67,10 @@ void JWorld::Initialize()
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
 
-	DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
-													  1024,
-													  1024);
+	// DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
+	// 												  4096,
+	// 												  4096,
+	// 												  DXGI_FORMAT_R32_TYPELESS);
 
 	// std::uniform_real_distribution dist(-10000.0f, 10000.0f);
 	// for (int i = 0; i < 1000; ++i)
@@ -94,7 +95,7 @@ void JWorld::Update(float DeltaTime)
 
 	ColliderManager->UpdateCollision();
 
-	UpdateWorldShadowMap();
+	// UpdateWorldShadowMap();
 
 	LevelManager->Update(DeltaTime);
 
@@ -144,7 +145,7 @@ void JWorld::UpdateWorldShadowMap()
 	FVector  lookAt      = FVector::ZeroVector;
 	FVector  up          = FVector(0, 1, 0);
 
-	float mapSize     = 20000.0f;  // 맵의 전체 크기
+	float mapSize     = 20000;  // 맵의 전체 크기
 	float halfMapSize = mapSize / 2.0f;
 
 	XMMATRIX orthographicMatrix = XMMatrixOrthographicOffCenterLH(

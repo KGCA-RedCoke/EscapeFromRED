@@ -25,8 +25,7 @@ PCT_VS_OUTPUT_SHADOW VS(VertexIn_Base Input, InstanceData Instance)
 //--------------------------------------------------------------------------------------
 float4 PS(PCT_VS_OUTPUT_SHADOW input) : SV_Target
 {
-	// float shadow = clamp(input.d.x, 0.5, 1);
-	// return float4(shadow, shadow, shadow, 1.0f);
-
-	return float4(0, 0, 1, 1);
+	float shadow = input.d.x / input.d.y;
+	shadow = smoothstep(0.0f, 1.0f, shadow);
+	return float4(shadow, shadow, shadow, 1.0f);
 }

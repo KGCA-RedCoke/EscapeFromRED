@@ -18,40 +18,14 @@ GUI_Camera_Debug_Frustum::GUI_Camera_Debug_Frustum(const JText& InTitle)
 
 void GUI_Camera_Debug_Frustum::Update_Implementation(float DeltaTime)
 {
-	auto EditorViewport = GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport);
-	assert(EditorViewport);
 
-	auto mainCam = MCameraManager::Get().GetCurrentMainCam();
-
-	FVector topViewPos = mainCam->GetEyePositionVector();
-	topViewPos.y += 1000.f;
-
-	// FVector lookAt = FVector{topViewPos.x, 0, topViewPos.z};
-
-	FVector downVector = {0, -1, 0};
-
-	mCamera->SetViewParams(FVector(0, 1500.f, -1500.f), {0, 0, 1});
-	mCamera->Tick(DeltaTime);
-
-	// mSampleTexture = EditorViewport->SRV;
-	// assert(mSampleTexture);
-	ImGui::Image(mViewport->SRV.Get(), ImGui::GetContentRegionAvail());
+	ImGui::Image(GetWorld.DirectionalLightShadowMap->SRV.Get(), ImGui::GetContentRegionAvail());
 }
 
 void GUI_Camera_Debug_Frustum::Render()
 {
 	// 렌더 타겟을 현재 뷰포트로 설정
-	GetWorld.ViewportManager->SetRenderTarget(mTitle.c_str());
 
-	GetWorld.ShaderManager->UpdateCamera(mCamera);
-
-	for (auto& actor : GetWorld.LevelManager->GetActiveLevel()->mActors)
-	{
-		actor.get()->Draw();
-	}
-
-	GetWorld.MeshManager->FlushCommandList(GetWorld.D3D11API->GetImmediateDeviceContext());
-	// GetWorld.CameraManager->GetCurrentMainCam()->PreRender(GetWorld.D3D11API->GetImmediateDeviceContext());
 }
 
 void GUI_Camera_Debug_Frustum::Initialize()

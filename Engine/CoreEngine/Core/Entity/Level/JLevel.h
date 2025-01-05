@@ -2,6 +2,7 @@
 #include "Core/Entity/JObject.h"
 #include "Core/Manager/MPoolManager.h"
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
+#include "Game/Src/Enemy/AEnemy.h"
 
 class AEnemy;
 class JWidgetComponent;
@@ -60,9 +61,7 @@ public:
 	JArray<UPtr<class AActor>>      mReservedActors;	// 예약된 액터들
 	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
-
-	// MPoolManager<AEnemy> mEnemyPool;
-
+	MPoolManager<AEnemy>            mEnemyPool;
 
 	friend class GUI_Inspector;
 	friend class GUI_Viewport;

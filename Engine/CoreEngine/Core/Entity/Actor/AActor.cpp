@@ -63,6 +63,11 @@ void AActor::Destroy()
 	}
 }
 
+void AActor::Despawn()
+{
+	
+}
+
 void AActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
@@ -78,6 +83,8 @@ void AActor::Draw()
 void AActor::ShowEditor()
 {
 	JSceneComponent::ShowEditor();
+
+	ImGui::Checkbox("Save Actor Component", &bSaveActorComponent);
 
 	for (auto& actorComponent : mActorComponents)
 	{
@@ -99,6 +106,20 @@ bool AActor::Serialize_Implement(std::ofstream& FileStream)
 		return false;
 	}
 
+	// save actor components?
+	Utils::Serialization::Serialize_Primitive(&bSaveActorComponent, sizeof(bool), FileStream);
+	if (bSaveActorComponent)
+	{
+		uint32_t actorComponentSize = mActorComponents.size();
+		Utils::Serialization::Serialize_Primitive(&actorComponentSize, sizeof(uint32_t), FileStream);
+		for (auto& actorComponent : mActorComponents)
+		{
+			JText actorComponentType = actorComponent->GetObjectType();
+			Utils::Serialization::Serialize_Text(actorComponentType, FileStream);
+			actorComponent->Serialize_Implement(FileStream);
+		}
+	}
+
 	return true;
 }
 
@@ -108,6 +129,33 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	{
 		return false;
 	}
+
+	auto         currentPos = InFileStream.tellg();
+	JAssetHeader header;
+	Utils::Serialization::DeserializeHeader(InFileStream, header);
+	InFileStream.seekg(currentPos);
+
+	if (header.Version == 3)
+	{
+		Utils::Serialization::DeSerialize_Primitive(&bSaveActorComponent, sizeof(bool), InFileStream);
+		if (bSaveActorComponent)
+		{
+			uint32_t actorComponentSize;
+			Utils::Serialization::DeSerialize_Primitive(&actorComponentSize, sizeof(uint32_t), InFileStream);
+			for (uint32_t i = 0; i < actorComponentSize; ++i)
+			{
+				JText actorComponentType;
+				Utils::Serialization::DeSerialize_Text(actorComponentType, InFileStream);
+
+				auto actorComponent = UPtrCast<JActorComponent>(MClassFactory::Get().Create(actorComponentType));
+				actorComponent->DeSerialize_Implement(InFileStream);
+				actorComponent->SetOwnerActor(this);
+				mActorComponents.push_back(std::move(actorComponent));
+			}
+		}
+	}
+
+
 	return true;
 }
 
