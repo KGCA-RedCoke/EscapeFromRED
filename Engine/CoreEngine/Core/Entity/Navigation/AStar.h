@@ -3,7 +3,7 @@
 #include "common_include.h"
 #include "Node.h"
 
-class Path;
+class NavPath;
 class AActor;
 
 struct CompareNode
@@ -38,7 +38,7 @@ public:
     float TurnDst = 1;
     bool IsPosUpdated = false;
     FVector NewPlayerPos = FVector::ZeroVector;
-    Ptr<Path> mPath;
+    Ptr<NavPath> mPath;
     int mPathIdx = 1;
     AActor* mOwnerActor = nullptr;
     FVector2 obstacle = FVector2::ZeroVector;

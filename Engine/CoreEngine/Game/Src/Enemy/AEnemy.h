@@ -98,6 +98,7 @@ protected:
     friend class JKihyunAnimator;
     friend class JGirlAnimator;
     friend class JButcherAnimator;
+    friend class JPigAnimator;
 };
 
 REGISTER_CLASS_TYPE(AEnemy)

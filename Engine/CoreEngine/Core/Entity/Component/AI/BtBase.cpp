@@ -119,7 +119,7 @@ void BtBase::FollowPath()
     FVector NextPos = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->WorldPos;
     FVector currentPos = mOwnerActor->GetWorldLocation();
     FVector direction = FVector(NextPos.x - currentPos.x, 0.f, NextPos.z - currentPos.z);
-    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(Path::V3ToV2(currentPos)))
+    if (PaStar->mPath->turnBoundaries.at(PaStar->mPathIdx)->HasCrossedLine(NavPath::V3ToV2(currentPos)))
     {
         mFloorType = PaStar->mPath->lookPoints.at(PaStar->mPathIdx)->OwnerFloor;
         PaStar->mPathIdx++;

@@ -70,6 +70,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -220,7 +221,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JButcherAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
-    <ClInclude Include="Game\Src\Enemy\Animator\JPig.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JPigAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
@@ -424,7 +425,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JButcherAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
-    <ClCompile Include="Game\Src\Enemy\Animator\JPig.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JPigAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />

@@ -31,6 +31,7 @@ void BT_BigZombie::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
+    mAttackDistance = 200;
 }
 
 void BT_BigZombie::BeginPlay() { JActorComponent::BeginPlay(); }

@@ -181,9 +181,9 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// SetCursorPos(0, 0);
 		
 		G_NAV_MAP.Initialize();
-		// G_BIG_MAP.Initialize();
+		G_BIG_MAP.Initialize();
 		GetWorld.bGameMode = true;
-		// GetWorld.bDebugMode = true;
+		GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
 		GetWorld.LevelManager->SetActiveLevel(introScene);

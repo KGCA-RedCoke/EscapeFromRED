@@ -1,4 +1,4 @@
-﻿#include "JKihyunAnimator.h"
+#include "JPigAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
@@ -6,18 +6,18 @@
 #include "Core/Interface/JWorld.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
-JKihyunAnimator::JKihyunAnimator()
+JPigAnimator::JPigAnimator()
 {
 }
 
-JKihyunAnimator::JKihyunAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
+JPigAnimator::JPigAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
     : JAnimator(InName, InSkeletalComp)
 {
     mEnemy = dynamic_cast<AEnemy*>(InSkeletalComp->GetOwnerActor());
     assert(mEnemy);
 }
 
-void JKihyunAnimator::Initialize()
+void JPigAnimator::Initialize()
 {
     JAnimator::Initialize();
 
@@ -30,16 +30,6 @@ void JKihyunAnimator::Initialize()
     AddAnimationClip("Attack",
                      "Game/Animation/BigZombie/Zombie_Attack_4.jasset", false); //Zombie_Attack_01
 
-    
-    mStateMachine["Idle"]->OnAnimStart.Bind([&]()
-    {
-        if (mEnemy)
-        {
-            mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
-            mEnemy->DisableAttackCollision();
-        }
-    });
-    
     mStateMachine["Death"]->OnAnimFinished.Bind([this]()
     {
         if (mEnemy)
@@ -49,9 +39,7 @@ void JKihyunAnimator::Initialize()
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
     attackClip->SetAnimationSpeed(2.f);
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.8].Bind([&]()
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.5].Bind([&]()
     {
         if (mEnemy)
         {
@@ -78,7 +66,7 @@ void JKihyunAnimator::Initialize()
     mCurrentAnimation->Play();
 }
 
-void JKihyunAnimator::BeginPlay()
+void JPigAnimator::BeginPlay()
 {
     JAnimator::BeginPlay();
 }

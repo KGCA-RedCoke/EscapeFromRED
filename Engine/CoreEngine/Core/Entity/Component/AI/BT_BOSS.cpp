@@ -8,6 +8,7 @@
 #include "Core/Entity/Navigation/BigGrid.h"
 #include "imgui/imgui_internal.h"
 #include "Core/Entity/Navigation/NavTest.h"
+#include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Game/Src/Boss/AKillerClown.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
@@ -45,7 +46,13 @@ void BT_BOSS::Tick(float DeltaTime)
     // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
     // LOG_CORE_INFO("Phase : {}",mPhase);
-    // G_BIG_MAP.Render();
+    // FVector npcPos = mOwnerActor->GetWorldLocation(); 
+    // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+    // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+    // {
+    //     G_BIG_MAP.DrawNode(G_BIG_MAP.GridFromWorldPoint(npcPos), Colors::Cyan);
+    // }
+    // G_DebugBatch.PostRender();
     if (mPhase == 2)
     {
         PaStar->mSpeed = 600;

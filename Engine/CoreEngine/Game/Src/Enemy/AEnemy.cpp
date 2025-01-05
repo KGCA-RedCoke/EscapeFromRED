@@ -3,8 +3,10 @@
 #include "Animator/JKihyunAnimator.h"
 #include "Animator/JGirlAnimator.h"
 #include "Animator/JButcherAnimator.h"
+#include "Animator/JPigAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/AI/BT_Butcher.h"
+#include "Core/Entity/Component/AI/BT_Pig.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
 AEnemy::AEnemy()
@@ -36,6 +38,8 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>("SkeletalMesh", this);
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
+	
+	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	// if (!mBehaviorTree)
 	// {
@@ -58,6 +62,8 @@ void AEnemy::Initialize()
 		case EEnemyType::Clown:
 			break;
 		case EEnemyType::Pig:
+			mAnimator = MakeUPtr<JPigAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_Pig>("BehaviorTree", this);
 			break;
 		case EEnemyType::Butcher:
 			mAnimator = MakeUPtr<JButcherAnimator>("Animator", mSkeletalMeshComponent);
@@ -147,8 +153,9 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 	if (traceType == ETraceType::PlayerWeapon)
 	{
 		mEnemyState = EEnemyState::Death;
+		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-		// mBehaviorTree->Dead();
+		mWeaponCollider->Destroy();
 	}
 }
 
