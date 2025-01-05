@@ -14,7 +14,7 @@ void NavTest::Initialize()
 	NodeRadius     = 50.0f;
 	NodeCenter     = FVector(NodeRadius, 0, -NodeRadius);
 	GridDivs       = FVector2(200, 200);
-	GridCenter     = FVector(0, 710, 0); // x, y, z
+	GridCenter     = FVector(0, 130, 0); // x, y, z
 
 	NodeDiameter  = NodeRadius * 2.0f;
 	GridWorldSize = FVector2(GridDivs.x * NodeDiameter, GridDivs.y * NodeDiameter);

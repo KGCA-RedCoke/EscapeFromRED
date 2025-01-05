@@ -39,7 +39,7 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
 	
-	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
+	// mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	// if (!mBehaviorTree)
 	// {
@@ -161,12 +161,12 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 
 void AEnemy::EnableAttackCollision(float radius)
 {
-	mWeaponCollider->EnableCollision(true);
-	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+	// mWeaponCollider->EnableCollision(true);
+	// mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
-	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
-	mWeaponCollider->EnableCollision(false);
+	// mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	// mWeaponCollider->EnableCollision(false);
 }

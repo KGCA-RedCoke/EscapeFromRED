@@ -35,7 +35,7 @@ void JKihyunAnimator::Initialize()
     {
         if (mEnemy)
         {
-            mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
+            // mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
             mEnemy->DisableAttackCollision();
         }
     });

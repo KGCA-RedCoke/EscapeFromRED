@@ -45,32 +45,32 @@ void BT_Pig::Destroy() { JActorComponent::Destroy(); }
 void BT_Pig::Tick(float DeltaTime)
 {
     BtBase::Tick(DeltaTime);
-    G_BIG_MAP.Render();
-    FVector npcPos = mOwnerActor->GetWorldLocation(); 
-    auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-    SetGoal();
-    G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-    {
-        G_BIG_MAP.DrawNode(BigGoalGrid, Colors::Cyan);
-        G_NAV_MAP.DrawNode(GoalGrid, Colors::Pink);
-    }
-    G_DebugBatch.PostRender();
+    // G_BIG_MAP.Render();
+    // FVector npcPos = mOwnerActor->GetWorldLocation();
+    G_NAV_MAP.Render();
+    // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+    // SetGoal();
+    // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+    // {
+    //     G_BIG_MAP.DrawNode(BigGoalGrid, Colors::Cyan);
+    //     G_NAV_MAP.DrawNode(GoalGrid, Colors::Pink);
+    // }
+    // G_DebugBatch.PostRender();
 }
 
 // Action Function
 
-FVector2 BT_Pig::FindGoal()
+void BT_Pig::FindGoal()
 {
+    Goals.clear();
     FVector2 LastChildGrid = FVector2(0.0f, 0.0f);
     FVector2 NpcGrid = G_BIG_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
     Ptr<Nav::Node> NpcNode = G_BIG_MAP.mGridGraph[NpcGrid.y][NpcGrid.x];
     for (auto child : NpcNode->Children)
     {
         if (IsNonPlayerDirection(child.lock()->WorldPos))
-            return child.lock()->GridPos;
-        LastChildGrid = child.lock()->GridPos;
+            Goals.push_back(child.lock()->GridPos);
     }
-    return LastChildGrid;
 }
 
 bool BT_Pig::IsNonPlayerDirection(FVector goal)
@@ -103,12 +103,13 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
         Ptr<Nav::Node>& GoalNode = G_NAV_MAP.mGridGraph[GoalGrid.y][GoalGrid.x];
         
         FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);   
-        Ptr<Nav::Node>& NpcNode = G_NAV_MAP.mGridGraph[GoalGrid.y][GoalGrid.x];
+        Ptr<Nav::Node>& NpcNode = G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x];
         
         if ((PlayerPos - LastPlayerPos).Length() >= 50 || NeedsPathReFind)
         {
             LastPlayerPos = PlayerPos;
             mHasPath = PaStar->FindPath(NpcNode, GoalNode, 2);
+            PaStar->mSpeed = FMath::GenerateRandomFloat(500, 1000);
             NeedsPathReFind = false;
         }
     }
@@ -116,13 +117,13 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
     {
         std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
 
-        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        // for (auto node : TempPath)
-        // {
-        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        // }
-        // G_DebugBatch.PostRender();
+        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        for (auto node : TempPath)
+        {
+            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+        }
+        G_DebugBatch.PostRender();
 
         if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
@@ -136,9 +137,11 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
 
 NodeStatus BT_Pig::SetGoal()
 {
-    if (mElapsedTime > 3.f && IsPlayerClose(1000))
+    if (mElapsedTime > 2.f && IsPlayerClose(2000))
     {
-        BigGoalGrid = FindGoal();
+        FindGoal();
+        if (!Goals.empty())
+            BigGoalGrid = Goals[FMath::GenerateNum(0, Goals.size() - 1)];
         FVector TempPos = G_BIG_MAP.WorldPosFromGridPos(BigGoalGrid);
         GoalGrid = G_NAV_MAP.GridFromWorldPoint(TempPos);
         mElapsedTime = 0.f;
@@ -147,68 +150,32 @@ NodeStatus BT_Pig::SetGoal()
     return NodeStatus::Success;
 }
 
-NodeStatus BT_Pig::Dead()
+NodeStatus BT_Pig::IsPlayerNearAndPressE()
 {
-    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+    if (GetAsyncKeyState('E') & 0x8000 && IsPlayerClose(180))
     {
-        isPendingKill = true;
+        mOwnerEnemy->Destroy();   
         return NodeStatus::Success;
     }
     return NodeStatus::Failure;
 }
 
-NodeStatus BT_Pig::IsIdle()
+NodeStatus BT_Pig::CountPig()
 {
-    if (bIsIdle)
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
-}
-
-NodeStatus BT_Pig::IsRun()
-{
-    if (bIsRun)
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
-}
-
-NodeStatus BT_Pig::IsPlayerInSameNode()
-{
-    // if(mOwnerActor->GetNodeIndex())
-    //     return NodeStatus::Success;
-    // return NodeStatus::Failure;
-    if (IsPlayerClose(1500))
-        return NodeStatus::Success;
-    return NodeStatus::Failure;
-}
-
-NodeStatus BT_Pig::IsPlayerSoFar()
-{
-    FVector PlayerPos = GetWorld.CameraManager->GetCurrentMainCam()->GetWorldLocation();
-    FVector NpcPos = mOwnerActor->GetWorldLocation();
-    FVector Direction = NpcPos - PlayerPos;
-    return Direction.Length() > 3000 ? NodeStatus::Success : NodeStatus::Failure;
-}
-
-NodeStatus BT_Pig::StateIdleToRun()
-{
-    if(IsPlayerClose(1500))
-    {
-        bIsIdle = false;
-        bIsRun = true;
-        return NodeStatus::Success;
-    }
+    g_Count++;
+    LOG_CORE_INFO("Caught PIG : {}", g_Count);
     return NodeStatus::Success;
 }
 
-// 단순 추적, 공격
+// 단순 추적
 void BT_Pig::SetupTree()
 {
     BTRoot = builder
             .CreateRoot<Selector>()
-                .AddActionNode(LAMBDA(IsPlayerSoFar))
-                .AddDecorator(LAMBDA(StateIdleToRun))
+                .AddDecorator(LAMBDA(IsPlayerNearAndPressE))
+                    .AddActionNode(LAMBDA(CountPig))
+                .EndBranch()
+                .AddSequence("Run")
                     .AddActionNode(LAMBDA(SetGoal))
                     .AddActionNode(LAMBDA(RunFromPlayer, 1000))
                 .EndBranch()
