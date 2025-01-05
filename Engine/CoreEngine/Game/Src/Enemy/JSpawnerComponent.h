@@ -3,9 +3,7 @@
 #include "Core/Manager/MPoolManager.h"
 
 class PoolManager_Enemy : MPoolManager<class AEnemy>
-{
-	
-};
+{};
 
 class JSpawnerComponent : public JActorComponent
 {
@@ -34,13 +32,12 @@ public:
 protected:
 	bool     bStartSpawn = false;
 	uint32_t mEnemyType  = 0;
-	int32_t  mMaxSpawn   = 100;
+	int32_t  mMaxSpawn   = 10;
 	int32_t  mSpawnCount = 0;
 
 	float mInterval = 0.f;
 	float mTime     = 0.f;
 };
-
 
 
 REGISTER_CLASS_TYPE(JSpawnerComponent)

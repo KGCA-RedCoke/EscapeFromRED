@@ -31,7 +31,7 @@ JKihyunDialog::JKihyunDialog()
 		component->SetColor({1, 1, 1, 1});
 		component->SetSize({10, 5});
 		component->SetVisible(false);
-		component->SetPosition({0, -0.3});
+		component->SetPosition({0, -0.6});
 	}
 }
 
@@ -70,6 +70,28 @@ JLevel_Main::JLevel_Main()
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
 	mWidgetComponents.push_back(mKihyunDialog.get());
 
+	// for (int32_t i = 7; i < 10; ++i)
+	// {
+	// 	mHPBar[i - 7] = mWidgetComponents[0]->mUIComponents[i].get();
+	// 	mHPBar[i - 7]->OnAnimationEvent.Bind([&](float DeltaTime){
+	// 		auto& data  = mHPBar[i - 7]->GetInstanceData();
+	// 		float alpha = data.Color.w;
+	// 		alpha       = FMath::Lerp(alpha, 0.f, DeltaTime / 1.f);
+	// 	});
+	// }
+
+	auto widget = MakeUPtr<JUIComponent>("PressE");
+	mPressEKey  = widget.get();
+	mPressEKey->SetPosition({0, -0.65});
+	mPressEKey->SetColor({1, 1, 1, 1});
+	mPressEKey->SetTexture(GetWorld.TextureManager->Load("Game/Textures/UI/Keyboard_E.PNG"));
+	mPressEKey->OnAnimationEvent.Bind([&](float DeltaTime){
+		auto& data = mPressEKey->GetInstanceData();
+		data.Size  = FVector2::UnitVector * FMath::Clamp((sin(GetWorld.GetGameTime() * 5.f) + 1) * 2, 1.f, 1.5f);
+	});
+	mWidgetComponents[0]->mUIComponents.push_back(std::move(widget));
+
+
 	JLevel_Main::InitializeLevel();
 	G_NAV_MAP.Initialize();
 
@@ -89,7 +111,19 @@ JLevel_Main::JLevel_Main()
 	});
 
 	OnQuestEnd.Bind([&](uint32_t Index){
+		for (auto& component : mKihyunDialog->mUIComponents)
+		{
+			component->SetVisible(false);
+		}
 		mPlayerCharacter->LockInput(false);
+	});
+
+	OnInteractionStart.Bind([&](){
+		mPressEKey->SetVisible(true);
+	});
+
+	OnInteractionEnd.Bind([&](){
+		mPressEKey->SetVisible(false);
 	});
 }
 

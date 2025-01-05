@@ -44,6 +44,12 @@ void JStaticMeshActor::Initialize()
 
 	AActor::Tick(0);
 	mBoundingBox = mStaticMeshComponent->GetBoundingVolume();
+
+	if (mMeshChunkData.bChunkMesh)
+	{
+		mBoundingBox.Box.Center = mWorldLocation;
+		mBoundingBox.Box.Extent = FVector(mMeshChunkData.AreaSize / 2.f);
+	}
 }
 
 void JStaticMeshActor::Tick(float DeltaTime)

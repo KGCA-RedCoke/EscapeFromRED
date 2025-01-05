@@ -2,6 +2,10 @@
 #include "Core/Entity/Level/JLevel.h"
 #include "Core/Entity/UI/MUIManager.h"
 
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionStart);
+
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionEnd);
+
 DECLARE_DYNAMIC_DELEGATE(FOnQuestStart, uint32_t QuestID);
 
 DECLARE_DYNAMIC_DELEGATE(FOnQuestEnd, uint32_t QuestID);
@@ -16,8 +20,10 @@ public:
 class JLevel_Main : public JLevel
 {
 public:
-	FOnQuestStart OnQuestStart;
-	FOnQuestEnd   OnQuestEnd;
+	FOnInteractionStart OnInteractionStart;
+	FOnInteractionEnd   OnInteractionEnd;
+	FOnQuestStart       OnQuestStart;
+	FOnQuestEnd         OnQuestEnd;
 
 public:
 	JLevel_Main();
@@ -31,4 +37,6 @@ public:
 private:
 	class APlayerCharacter* mPlayerCharacter;
 	UPtr<JKihyunDialog>     mKihyunDialog;
+	JUIComponent*           mPressEKey;
+	JUIComponent*           mHPBar[3];
 };

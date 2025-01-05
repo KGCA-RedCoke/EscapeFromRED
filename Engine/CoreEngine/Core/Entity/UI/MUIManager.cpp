@@ -268,10 +268,7 @@ void JUIComponent::AddText(JWTextView InText, const FVector2& InPosition, const 
 
 void JUIComponent::Initialize()
 {
-	OnHovered.Bind([](){ LOG_CORE_INFO("Hovered"); });
-	OnUnhovered.Bind([](){ LOG_CORE_INFO("Unhovered"); });
-	OnPressed.Bind([](){ LOG_CORE_INFO("Pressed"); });
-	OnReleased.Bind([](){ LOG_CORE_INFO("Released"); });
+	mObjectFlags |= EObjectFlags::IsVisible;
 }
 
 void JUIComponent::Tick(float DeltaTime)
@@ -333,7 +330,8 @@ void JWidgetComponent::Tick(float DeltaTime)
 {
 	for (auto& ui : mUIComponents)
 	{
-		ui->Tick(DeltaTime);
+		if (ui->IsVisible())
+			ui->Tick(DeltaTime);
 	}
 
 	/*assert(mRenderTarget);
