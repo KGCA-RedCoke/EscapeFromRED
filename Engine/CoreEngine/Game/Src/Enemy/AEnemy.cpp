@@ -155,7 +155,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-		mWeaponCollider->Destroy();
+		// mWeaponCollider->Destroy();
 	}
 }
 

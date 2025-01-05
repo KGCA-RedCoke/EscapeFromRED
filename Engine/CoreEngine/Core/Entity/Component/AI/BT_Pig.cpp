@@ -47,7 +47,7 @@ void BT_Pig::Tick(float DeltaTime)
     BtBase::Tick(DeltaTime);
     // G_BIG_MAP.Render();
     // FVector npcPos = mOwnerActor->GetWorldLocation();
-    G_NAV_MAP.Render();
+    // G_NAV_MAP.Render();
     // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
     // SetGoal();
     // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
@@ -117,13 +117,13 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
     {
         std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
 
-        auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
-        G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
-        for (auto node : TempPath)
-        {
-            G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
-        }
-        G_DebugBatch.PostRender();
+        // auto* cam = GetWorld.CameraManager->GetCurrentMainCam();
+        // G_DebugBatch.PreRender(cam->GetViewMatrix(), cam->GetProjMatrix());
+        // for (auto node : TempPath)
+        // {
+        //     G_NAV_MAP.DrawNode(node->GridPos, Colors::Cyan);
+        // }
+        // G_DebugBatch.PostRender();
 
         if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
         {
