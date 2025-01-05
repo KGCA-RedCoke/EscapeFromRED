@@ -33,7 +33,7 @@ void AKillerClown::Initialize()
 	if (!mHammerMesh)
 	{
 		mHammerMesh = CreateDefaultSubObject<JStaticMeshComponent>("HammerMesh", this);
-		mHammerMesh->SetMeshObject("Game/Mesh/Cube.jasset");
+		mHammerMesh->SetMeshObject("Game/Mesh/SM_KC_Hammer.jasset");
 		mHammerMesh->SetupAttachment(mSkeletalMeshComponent);
 	}
 	mHammerMesh->AttachToBoneSocket(mSkeletalMeshComponent, "Hammer_M");

@@ -3,6 +3,7 @@
 #include "Core/Entity/Animation/JAnimator.h"
 
 class AEnemy;
+class BT_Butcher;
 
 class JButcherAnimator : public JAnimator
 {
@@ -17,4 +18,5 @@ public:
 
 private:
     AEnemy* mEnemy = nullptr; // 소유 액터
+    BT_Butcher* bt = nullptr;
 };

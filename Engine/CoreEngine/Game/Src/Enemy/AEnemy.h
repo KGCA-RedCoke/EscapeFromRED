@@ -20,6 +20,11 @@ enum class EEnemyState : uint8_t
     Run,
     Attack,
     Death,
+    Convers1,
+    Convers2,
+    Convers3,
+    Convers4,
+    ConversSad,
     MAX
 };
 
