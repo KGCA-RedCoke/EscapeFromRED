@@ -1,6 +1,7 @@
 #include "JPigAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
@@ -20,7 +21,7 @@ JPigAnimator::JPigAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalC
 void JPigAnimator::Initialize()
 {
     JAnimator::Initialize();
-
+    
     AddAnimationClip("Idle",
                      "Game/Animation/Pig/Pig_Idle.jasset", true);
     AddAnimationClip("Walk",
@@ -40,6 +41,10 @@ void JPigAnimator::Initialize()
 
     SetState("Idle");
     mCurrentAnimation->Play();
+    
+    auto* pigAnim = mStateMachine["Walk"].get();
+
+
 }
 
 void JPigAnimator::BeginPlay()

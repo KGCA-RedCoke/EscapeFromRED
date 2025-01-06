@@ -1,6 +1,7 @@
 ﻿#include "JKillerClownAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
@@ -24,6 +25,9 @@ JKillerClownAnimator::JKillerClownAnimator(JTextView InName, JSkeletalMeshCompon
 void JKillerClownAnimator::Initialize()
 {
     JAnimator::Initialize();
+
+    mLaughSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/LaughSound.wav");
+    
     bt = dynamic_cast<BT_BOSS*>(mBoss->mBehaviorTree);
     AddAnimationClip("Idle",
                      "Game/Animation/KillerClown/KC_Idle.jasset", true);
@@ -164,6 +168,7 @@ void JKillerClownAnimator::Initialize()
         if (mBoss)
         {
             mBoss->SetBossState(EBossState::StandUp);
+            mLaughSound->Play();
         }
     });
 
