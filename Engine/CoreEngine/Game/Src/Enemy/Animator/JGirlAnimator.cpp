@@ -22,15 +22,17 @@ void JGirlAnimator::Initialize()
     JAnimator::Initialize();
 
     AddAnimationClip("Idle",
-                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Idle.jasset", true);
+                     "Game/Animation/Madre_Anim/AS_CruelDoll_Idle.jasset", true);
     AddAnimationClip("Walk",
-                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Walk.jasset", true);
+                     "Game/Animation/Madre_Anim/AS_CruelDoll_Walk.jasset", true);
     AddAnimationClip("Run",
-                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Scary_Run.jasset", true);
+                     "Game/Animation/Madre_Anim/AS_CruelDoll_Scary_Run.jasset", true);
     AddAnimationClip("Death",
-                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Death01.jasset", false);
+                     "Game/Animation/Madre_Anim/AS_CruelDoll_Death01.jasset", false);
     AddAnimationClip("Attack",
-                     "Game/Animation/AS_CruelDoll/AS_CruelDoll_Attack02.jasset", false); 
+    "Game/Animation/Madre_Anim/AS_CruelDoll_Attack02.jasset", false); 
+    AddAnimationClip("Attack",
+                     "Game/Animation/Madre_Anim/AS_CruelDoll_Attack02.jasset", false); 
 
     mStateMachine["Death"]->OnAnimFinished.Bind([this]()
     {

@@ -8,6 +8,7 @@ enum class EEnemyType : uint8_t
 	Kihyun,
 	Girl,
 	Clown,
+	Madre,
 	Pig,
 	Butcher,
 	MAX // 이건 숫자 사용
@@ -40,6 +41,8 @@ constexpr const char* GetEnemyTypeString(EEnemyType InType)
 		return "Girl";
 	case EEnemyType::Clown:
 		return "Clown";
+	case EEnemyType::Madre:
+		return "Madre";
 	case EEnemyType::Pig:
 		return "Pig";
 	case EEnemyType::Butcher:
@@ -107,6 +110,7 @@ protected:
 
 	friend class JKihyunAnimator;
 	friend class JGirlAnimator;
+	friend class JMadreAnimator;
 	friend class JButcherAnimator;
 	friend class JPigAnimator;
 };

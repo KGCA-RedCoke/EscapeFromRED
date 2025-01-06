@@ -31,6 +31,7 @@ protected:
 	JPawnMovementComponent* mMovementComponent;
 	JSphereComponent*       mCollisionSphere;
 	JSphereComponent*       mInteractionSphere;
+	JSphereComponent*       mHitSphere;
 	JLineComponent*         mLineComponent;
 
 	void  SetYVelocity(float velocity);
