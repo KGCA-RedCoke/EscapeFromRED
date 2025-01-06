@@ -124,6 +124,7 @@
     <ClInclude Include="Core\Entity\Component\AI\BT_Pig.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
+    <ClInclude Include="Core\Entity\Component\Mesh\JBillboardComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Mesh\JStaticMeshComponent.h" />
     <ClInclude Include="Core\Entity\Component\Movement\JPawnMovementComponent.h" />
@@ -341,6 +342,7 @@
     <ClCompile Include="Core\Entity\Component\AI\BT_Pig.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
+    <ClCompile Include="Core\Entity\Component\Mesh\JBillboardComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JSkeletalMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Mesh\JStaticMeshComponent.cpp" />
     <ClCompile Include="Core\Entity\Component\Movement\JPawnMovementComponent.cpp" />

@@ -105,8 +105,8 @@ JCameraComponent::JCameraComponent()
 	  mPitch(0.f),
 	  mFOV(0),
 	  mAspect(0),
-	  mNearPlane(1.f),
-	  mFarPlane(10000.f),
+	  mNearPlane(10.f),
+	  mFarPlane(100000.f),
 	  mRotationValue(XM_PI / 180.0f),
 	  mTranslationValue(500.f)
 {
