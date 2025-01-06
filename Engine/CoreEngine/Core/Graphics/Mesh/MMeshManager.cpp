@@ -135,7 +135,7 @@ void MMeshManager::PushCommand(uint32_t                    NameHash, JMaterialIn
 													   InInstanceData.end());
 }
 
-void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialInstance* InMaterialRef,
+void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialInstance * InMaterialRef,
 							   FInstanceData_Mesh&        InInstanceData,
 							   ID3D11ShaderResourceView** InAnimTexture)
 {
