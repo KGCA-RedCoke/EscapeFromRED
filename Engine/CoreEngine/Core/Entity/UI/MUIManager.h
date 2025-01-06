@@ -104,7 +104,7 @@ REGISTER_CLASS_TYPE(JUIComponent)
 class JWidgetComponent : public JObject
 {
 public:
-	JWidgetComponent() = default;
+	JWidgetComponent();
 	JWidgetComponent(const JText& InName);
 	~JWidgetComponent() override = default;
 

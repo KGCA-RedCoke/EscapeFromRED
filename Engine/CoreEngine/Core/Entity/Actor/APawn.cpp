@@ -106,7 +106,7 @@ void APawn::Initialize()
 					// mLineComponent
 				}
 				break;
-			// case ETraceType::Projectile:
+			// case ETraceType::EnemyHitSpace:
 			//     
 			//     break;
 			}

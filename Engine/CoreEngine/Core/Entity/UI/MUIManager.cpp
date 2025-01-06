@@ -276,6 +276,9 @@ void JUIComponent::Tick(float DeltaTime)
 	OnAnimationEvent.Execute(DeltaTime);
 }
 
+JWidgetComponent::JWidgetComponent()
+	: JObject() {}
+
 JWidgetComponent::JWidgetComponent(const JText& InName)
 	: JObject(InName) {}
 
@@ -364,6 +367,9 @@ void JWidgetComponent::Tick(float DeltaTime)
 
 void JWidgetComponent::AddInstance()
 {
+	if (!IsVisible())
+		return;
+
 	for (int32_t i = 0; i < mUIComponents.size(); ++i)
 	{
 		if (mUIComponents[i]->IsVisible())

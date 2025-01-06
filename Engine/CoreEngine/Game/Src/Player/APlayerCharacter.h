@@ -4,8 +4,19 @@
 class JAnimator;
 class JStaticMeshComponent;
 
+DECLARE_DYNAMIC_DELEGATE(FOnPlayerHit, AActor* HitActor)
+
+DECLARE_DYNAMIC_DELEGATE(FOnPlayerDie)
+
+DECLARE_DYNAMIC_DELEGATE(FOnPlayerHealthChanged, bool bIncrease)
+
 class APlayerCharacter : public ACharacter
 {
+public:
+	FOnPlayerHit           OnPlayerHit;
+	FOnPlayerDie           OnPlayerDie;
+	FOnPlayerHealthChanged OnPlayerHealthChanged;
+
 public:
 	APlayerCharacter();
 	APlayerCharacter(JTextView InName, JTextView InMeshPath);
@@ -28,7 +39,7 @@ private:
 private:
 	class JCameraComponent* mFPSCamera;
 	JStaticMeshComponent*   mWeaponMesh;
-	JSphereComponent*          mWeaponCollision;
+	JSphereComponent*       mWeaponCollision;
 
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;
@@ -36,6 +47,8 @@ private:
 	bool            bShouldAttack = false;
 	bool            bShouldRun    = false;
 	uint32_t        mAttackCombo  = 0;
+	uint32_t        mHealth       = 2;
+	uint32_t        mMaxHealth    = 3;
 	UPtr<JAnimator> mPlayerAnimator;
 
 	friend class JPlayerAnimator;

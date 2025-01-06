@@ -41,10 +41,10 @@ void Quad::FNode::Render(JCameraComponent* InCamera)
 {
 	if (InCamera->IsBoxInFrustum(BoundBox))
 	{
-		if (GetWorld.bDebugMode)
-		{
-			BoundBox.DrawDebug();
-		}
+		// if (GetWorld.bDebugMode)
+		// {
+		// 	BoundBox.DrawDebug();
+		// }
 		for (const auto& actor : Actors)
 		{
 			if (actor)

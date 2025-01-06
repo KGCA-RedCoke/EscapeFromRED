@@ -170,7 +170,9 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		character->BeginPlay();
 
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::PlayerWeapon, ETraceType::Pawn, true);
-		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Projectile, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::EnemyHitSpace, true);
+
+		GetWorld.LevelManager->GetActiveLevel()->mPlayerCharacter = character;
 
 		// GetWorld.SoundManager->Load("rsc/GameResource/bgm.wav")->Play();
 
@@ -182,7 +184,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 
 		G_NAV_MAP.Initialize();
 		G_BIG_MAP.Initialize();
-		// GetWorld.bGameMode  = true;
+		GetWorld.bGameMode  = true;
 		GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();

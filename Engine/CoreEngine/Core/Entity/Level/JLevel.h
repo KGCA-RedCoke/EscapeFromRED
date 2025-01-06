@@ -24,7 +24,7 @@ public:
 	FOnLevelLoaded OnLevelLoaded;
 
 public:
-	JLevel() = default;
+	JLevel();
 	JLevel(const JText& InPath, bool bUseTree = true);
 	~JLevel() override;
 
@@ -55,18 +55,26 @@ public:
 
 public:
 	void ShowPressEKey(bool bShow);
+	void SetHPBar(uint32_t InIndex, bool bShow) const;
+	void IncreaseHPBar(uint32_t InIndex);
+	void DecreamentHPBar(uint32_t InIndex);
 
 public:
 	bool bThreadLoaded = false;
 
 	UPtr<Quad::JTree> mOcTree;
 
-	JArray<UPtr<class AActor>>      mActors;	// 레벨에 속한 액터들
-	JArray<UPtr<class AActor>>      mReservedActors;	// 예약된 액터들
-	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
+	JArray<UPtr<class AActor>> mActors;	// 레벨에 속한 액터들
+	JArray<UPtr<class AActor>> mReservedActors;	// 예약된 액터들
+	JHash<int32_t, int32_t>    mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
+	MPoolManager<AEnemy>       mEnemyPool;
+
+	// Widget
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
-	MPoolManager<AEnemy>            mEnemyPool;
+	class APlayerCharacter*         mPlayerCharacter;
+	JWidgetComponent*               mGameOverWidget;
 	JUIComponent*                   mPressEKey;
+	JUIComponent*                   mHPBar[3];
 
 	friend class GUI_Inspector;
 	friend class GUI_Viewport;
