@@ -36,17 +36,12 @@ void BT_Pig::Initialize()
 
 	mWorld = dynamic_cast<JLevel*>(GetWorld.LevelManager->GetActiveLevel());
 
-	mOwnerEnemy->OnEnemyHit.Bind([this](const FHitResult& HitResult){
-
-		if (HitResult.SrcCollision->GetActorID() == StringHash("Player") || HitResult.DstCollision->GetActorID() ==
-			StringHash("Player"))
-		{
-			mWorld->OnInteractionStart.Execute();
-		}
+	mOwnerEnemy->OnInteractionStart.Bind([this](){
+		mWorld->ShowPressEKey(true);
 	});
 
-	mOwnerEnemy->OnEnemyOut.Bind([this](){
-		mWorld->OnInteractionEnd.Execute();
+	mOwnerEnemy->OnInteractionEnd.Bind([this](){
+		mWorld->ShowPressEKey(false);
 	});
 
 }

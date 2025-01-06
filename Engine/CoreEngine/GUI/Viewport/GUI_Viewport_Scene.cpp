@@ -12,7 +12,6 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
-#include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
 #include "Game/Src/Boss/AKillerClown.h"
@@ -20,7 +19,7 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
 
-// #define ENABLE_TEST_MODE
+#define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -183,7 +182,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 
 		G_NAV_MAP.Initialize();
 		G_BIG_MAP.Initialize();
-		GetWorld.bGameMode  = true;
+		// GetWorld.bGameMode  = true;
 		GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();

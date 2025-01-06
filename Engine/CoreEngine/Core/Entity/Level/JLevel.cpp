@@ -130,14 +130,6 @@ void JLevel::InitializeLevel()
 		data.Size  = FVector2::UnitVector * FMath::Clamp((sin(GetWorld.GetGameTime() * 5.f) + 1) * 2, 1.f, 1.5f);
 	});
 	mWidgetComponents[0]->mUIComponents.push_back(std::move(widget));
-
-	OnInteractionStart.Bind([&](){
-		mPressEKey->SetVisible(true);
-	});
-
-	OnInteractionEnd.Bind([&](){
-		mPressEKey->SetVisible(false);
-	});
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -247,3 +239,5 @@ AActor* JLevel::LoadActorFromPath(const JText& InPath)
 	// return tryLoadActor;
 	return nullptr;
 }
+
+void JLevel::ShowPressEKey(bool bShow) { mPressEKey->SetVisible(bShow); }
