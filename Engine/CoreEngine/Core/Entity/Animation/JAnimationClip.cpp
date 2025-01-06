@@ -533,26 +533,14 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 
 	int32_t startFrame = 0, endFrame = 0;
 
-	float startTick;
-	float endTick;
+	FindFrame(boneTrack->TransformKeys.PositionKeys, InAnimElapsedTime, startFrame, endFrame);
 
-	if (FindFrame(boneTrack->TransformKeys.PositionKeys, InAnimElapsedTime, startFrame, endFrame))
-	{
-		// 정상적으로 startFrame과 endFrame을 찾은 경우
-		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
-		endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
-	}
-	else
-	{
-		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
-		endTick   = boneTrack->TransformKeys.PositionKeys[mStartFrame + 1].Time;
-	}
-
-	mInstanceData.DeltaTime        = (InAnimElapsedTime - startTick) / 0.0333;
+	mInstanceData.DeltaTime        = (InAnimElapsedTime - boneTrack->TransformKeys.PositionKeys[startFrame].Time) / 0.0333;
 	mInstanceData.CurrentAnimIndex = startFrame;
 	mInstanceData.NextAnimIndex    = endFrame;
 
 	mInstanceData.CurrentAnimIndex = FMath::Clamp(mInstanceData.CurrentAnimIndex, 0, mEndFrame - 1);
+	mInstanceData.NextAnimIndex    = FMath::Clamp(mInstanceData.NextAnimIndex, 0, mEndFrame - 1);
 
 	if (cachedAnimIndex != mInstanceData.CurrentAnimIndex)
 	{
