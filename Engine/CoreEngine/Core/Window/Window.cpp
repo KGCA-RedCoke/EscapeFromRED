@@ -168,6 +168,10 @@ void Window::LockMouseToWindow() const
 	POINT bottomRight = {rect.right, rect.bottom};
 	ClientToScreen(mWindowHandle, &topLeft);
 	ClientToScreen(mWindowHandle, &bottomRight);
+	ClipCursor(&rect);
+
+	SetForegroundWindow(mWindowHandle);
+	SetFocus(mWindowHandle);
 
 	// 화면 좌표로 마우스를 가둘 영역 설정
 	rect.left   = topLeft.x;
@@ -175,9 +179,6 @@ void Window::LockMouseToWindow() const
 	rect.right  = bottomRight.x;
 	rect.bottom = bottomRight.y;
 	ShowCursor(FALSE);
-
-	// 마우스 가두기
-	ClipCursor(&rect);
 }
 
 void Window::Resize(UINT InWidth, UINT InHeight)

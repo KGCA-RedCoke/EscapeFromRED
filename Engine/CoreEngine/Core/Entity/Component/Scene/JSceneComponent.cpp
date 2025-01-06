@@ -234,7 +234,7 @@ void JSceneComponent::SetWorldTransform(const FMatrix& InMatrix)
 	mWorldMat = InMatrix;
 
 	XMVECTOR scl, rot, loc;
-	
+
 	XMMatrixDecompose(&scl, &rot, &loc, InMatrix);
 
 	XMStoreFloat3(&mWorldScale, rot);
@@ -500,6 +500,12 @@ void JSceneComponent::UpdateTransform()
 	mWorldLocationMat = XMMatrixTranslation(mWorldLocation.x, mWorldLocation.y, mWorldLocation.z);
 
 	mCachedWorldMat = mWorldMat;
+
+	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldRotationMat));
+	mBoundingBox.Box.Center       = XMVector3Transform(FVector::ZeroVector, mWorldLocationMat);
+	mForwardVector                = mBoundingBox.Box.LocalAxis[2];
 
 	MarkAsDirty();
 }

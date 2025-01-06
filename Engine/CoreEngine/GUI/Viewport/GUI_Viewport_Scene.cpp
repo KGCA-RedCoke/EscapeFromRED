@@ -14,12 +14,13 @@
 #include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Window/Application.h"
 #include "Game/Src/Boss/AKillerClown.h"
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "Game/Src/Props/AInteractiveObject.h"
 
-#define ENABLE_TEST_MODE
+// #define ENABLE_TEST_MODE
 
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
@@ -162,7 +163,7 @@ void GUI_Viewport_Scene::ShowTopMenu()
 #ifdef ENABLE_TEST_MODE
 		// Play 동작 처리
 		std::cout << "Game Playing" << std::endl;
-		APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
+		APlayerCharacter* character = GetWorld.SpawnActor<APlayerCharacter>("Player",
 																			FVector::ZeroVector,
 																			FVector::ZeroVector,
 																			nullptr,
@@ -179,10 +180,10 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		// ShowCursor(FALSE);
 		// ClipCursor(&rect);
 		// SetCursorPos(0, 0);
-		
+
 		G_NAV_MAP.Initialize();
 		G_BIG_MAP.Initialize();
-		GetWorld.bGameMode = true;
+		GetWorld.bGameMode  = true;
 		GetWorld.bDebugMode = true;
 #else
 		JLevel* introScene = GetWorld.LevelManager->LoadIntroLevel();
@@ -190,5 +191,6 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		GetWorld.bGameMode = true;
 #endif
 
+		Application::s_AppInstance->LockMouseToWindow();
 	}
 }

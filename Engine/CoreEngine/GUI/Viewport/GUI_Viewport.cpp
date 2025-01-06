@@ -32,8 +32,8 @@ void GUI_Viewport::Initialize()
 		{
 			mEditorCameraRef->SetProjParams(M_PI / 3.f,
 											static_cast<float>(InWidth) / static_cast<float>(InHeight),
-											1.f,
-											10000.f);
+											10.f,
+											100000.f);
 		}
 	});
 }

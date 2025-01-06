@@ -129,7 +129,7 @@ void JSpawnerComponent::Spawn()
 	switch (enemyType)
 	{
 	case EEnemyType::Kihyun:
-		Utils::Serialization::DeSerialize("Game/Enemy/NewActor6.jasset", spawnedActor.get());
+		Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", spawnedActor.get());
 		break;
 	}
 	spawnedActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());

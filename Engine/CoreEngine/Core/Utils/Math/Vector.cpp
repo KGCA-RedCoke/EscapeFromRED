@@ -240,6 +240,13 @@ namespace JMath
 		OutVector.z = XMConvertToRadians(z);
 	}
 
+	void TVector::ConvertToDegrees()
+	{
+		x = XMConvertToDegrees(x);
+		y = XMConvertToDegrees(y);
+		z = XMConvertToDegrees(z);
+	}
+
 	TVector::TVector() noexcept
 		: XMFLOAT3(0.f, 0.f, 0.f) {}
 
@@ -258,6 +265,11 @@ namespace JMath
 
 	TVector::TVector(const DirectX::XMVECTORF32& InVector)
 		: XMFLOAT3(InVector.f[0], InVector.f[1], InVector.f[2]) {}
+
+	TVector::TVector(DirectX::FXMVECTOR& InVector)
+	{
+		XMStoreFloat3(this, InVector);
+	}
 
 	TVector::TVector(const float* pArray)
 		: XMFLOAT3(pArray) {}

@@ -316,6 +316,7 @@ void JAnimationClip::Stop()
 void JAnimationClip::ApplyRootMotion() const
 {
 	mSkeletalMeshComponent->GetOwnerActor()->AddLocalLocation(mRootMotionValue.Position);
+	 // XMMatrixRotationQuaternion(mRootMotionValue.Rotation);
 }
 
 bool JAnimationClip::TickAnim(const float DeltaSeconds)
@@ -324,7 +325,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	{
 		return true;
 	}
-	
+
 	// 경과 시간이 애니메이션의 시작 시간을 초과
 	if (mElapsedTime >= mEndTime)
 	{
@@ -340,7 +341,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 
 	// 경과시간 계산
 	mElapsedTime += DeltaSeconds * mAnimationSpeed;
-	
+
 	UpdateInstanceData(mElapsedTime);
 
 	mEvents[mInstanceData.CurrentAnimIndex].Execute();
@@ -646,16 +647,11 @@ uint32_t JAnimationClip::GenerateAnimationTexture(JArray<FVector4>& OutTextureDa
 	FAnimKeyDataTransform& initialTransform = mTracks[0]->TransformKeys;
 	FAnimKeyDataTransform& finalTransform   = mTracks[0]->TransformKeys;
 
-
 	// 루트 모션 계산
-	FVector deltaTransform = finalTransform.PositionKeys[mEndFrame - 1].Value - initialTransform.PositionKeys[0].Value;
-
-	// deltaTransform에서 위치, 회전, 스케일을 분리하여 루트 모션 값으로 저장
-	// FVector     deltaPosition(deltaTransform.m[3][0], deltaTransform.m[3][1], deltaTransform.m[3][2]);
-	FQuaternion deltaRotation = FQuaternion(finalTransform.RotationKeys[mEndFrame - 1].Value) -
-			FQuaternion(initialTransform.RotationKeys[0].Value);
+	FVector deltaTranslation = finalTransform.PositionKeys[mEndFrame - 1].Value - initialTransform.PositionKeys[0].Value;
+	FQuaternion deltaRotation = FQuaternion(finalTransform.RotationKeys[mEndFrame - 1].Value);
 	// 루트 모션 값 설정
-	mRootMotionValue = {deltaTransform, deltaRotation};
+	mRootMotionValue = {deltaTranslation, deltaRotation};
 
 	return offset;
 }

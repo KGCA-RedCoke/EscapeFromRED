@@ -139,6 +139,25 @@ void APlayerCharacter::UpdateRotation()
 	mRotVelocity.x = mMouseDelta.x * (XM_PI / 360.0);
 	mRotVelocity.y = mMouseDelta.y * (XM_PI / 360.0);
 
+	FVector2 currentMousePosition = mInput->GetMousePosition();
+	FVector2 screenCenter         = GetWorld.ScreenSize / 2;
+
+	// 화면 크기의 절반 (100% 기준)
+	float halfWidth  = GetWorld.ScreenSize.x / 2.0f;
+	float halfHeight = GetWorld.ScreenSize.y / 2.0f;
+
+	// 화면 중심에서 벗어난 비율 계산
+	float offsetX = (currentMousePosition.x - screenCenter.x) / halfWidth;
+	float offsetY = (currentMousePosition.y - screenCenter.y) / halfHeight;
+
+	float threshold = 0.7f;
+
+	// 화면 중심 기준으로 Yaw와 Pitch 추가
+	if (fabs(offsetX) > threshold)
+	{
+		mYaw += (offsetX > 0 ? 1 : -1) * (XM_PI / 360.0f); // 오른쪽/왼쪽 이동에 따라 Yaw 증가/감소
+	}
+
 	float yawDelta   = mRotVelocity.x;
 	float pitchDelta = mRotVelocity.y;
 

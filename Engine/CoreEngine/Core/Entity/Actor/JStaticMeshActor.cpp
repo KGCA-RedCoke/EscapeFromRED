@@ -104,6 +104,11 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 	return true;
 }
 
+void JStaticMeshActor::Draw()
+{
+	AActor::Draw();
+}
+
 void JStaticMeshActor::ShowEditor()
 {
 	AActor::ShowEditor();

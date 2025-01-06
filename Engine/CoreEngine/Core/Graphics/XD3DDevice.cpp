@@ -1,6 +1,7 @@
 ﻿#include "XD3DDevice.h"
 
 #include "Core/Interface/IRenderable.h"
+#include "Core/Interface/JWorld.h"
 #include "Core/Utils/Logger.h"
 #include "Core/Utils/Graphics/DXUtils.h"
 #include "Core/Utils/Math/Color.h"
@@ -38,10 +39,13 @@ void XD3DDevice::Initialize_Internal()
 	Create2DResources();
 
 	OnResize(Window::GetWindow()->GetWindowWidth(), Window::GetWindow()->GetWindowHeight());
-
+	GetWorld.ScreenSize.x = Window::GetWindow()->GetWindowWidth();
+	GetWorld.ScreenSize.y = Window::GetWindow()->GetWindowHeight();
 
 	Window::GetWindow()->ResizeCallbacks.emplace_back([this](UINT InWidth, UINT InHeight){
 		OnResize(InWidth, InHeight);
+		GetWorld.ScreenSize.x = InWidth;
+		GetWorld.ScreenSize.y = InHeight;
 	});
 
 	D3D11_RASTERIZER_DESC rsDesc;

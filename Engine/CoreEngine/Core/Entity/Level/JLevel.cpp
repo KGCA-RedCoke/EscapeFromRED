@@ -6,6 +6,7 @@
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
+#include "Core/Graphics/Texture/MTextureManager.h"
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
@@ -115,6 +116,28 @@ void JLevel::InitializeLevel()
 {
 	mOcTree = MakeUPtr<Quad::JTree>();
 	mOcTree->Initialize({{0, 0, 0}, {10000, 5000, 10000}}, MAX_DEPTH);
+
+	mWidgetComponents.reserve(4);
+	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
+
+	auto widget = MakeUPtr<JUIComponent>("PressE");
+	mPressEKey  = widget.get();
+	mPressEKey->SetPosition({0, -0.65});
+	mPressEKey->SetColor({1, 1, 1, 1});
+	mPressEKey->SetTexture(GetWorld.TextureManager->Load("Game/Textures/UI/Keyboard_E.PNG"));
+	mPressEKey->OnAnimationEvent.Bind([&](float DeltaTime){
+		auto& data = mPressEKey->GetInstanceData();
+		data.Size  = FVector2::UnitVector * FMath::Clamp((sin(GetWorld.GetGameTime() * 5.f) + 1) * 2, 1.f, 1.5f);
+	});
+	mWidgetComponents[0]->mUIComponents.push_back(std::move(widget));
+
+	OnInteractionStart.Bind([&](){
+		mPressEKey->SetVisible(true);
+	});
+
+	OnInteractionEnd.Bind([&](){
+		mPressEKey->SetVisible(false);
+	});
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -151,9 +174,9 @@ void JLevel::UpdateLevel(float DeltaTime)
 				  mWidgetComponents,
 				  [&](JWidgetComponent* widget){
 
-					
-						  widget->Tick(DeltaTime);
-					  
+
+					  widget->Tick(DeltaTime);
+
 					  if (widget->IsPendingKill())
 					  {
 						  widget = nullptr;
