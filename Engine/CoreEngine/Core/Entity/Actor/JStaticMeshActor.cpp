@@ -1,5 +1,7 @@
 ﻿#include "JStaticMeshActor.h"
 
+#include <DirectXColors.h>
+
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -106,6 +108,7 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JStaticMeshActor::Draw()
 {
+	mBoundingBox.DrawDebug(Colors::Red);
 	AActor::Draw();
 }
 

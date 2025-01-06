@@ -36,17 +36,12 @@ void BT_Pig::Initialize()
 
 	mWorld = dynamic_cast<JLevel*>(GetWorld.LevelManager->GetActiveLevel());
 
-	mOwnerEnemy->OnEnemyHit.Bind([this](const FHitResult& HitResult){
-
-		if (HitResult.SrcCollision->GetActorID() == StringHash("Player") || HitResult.DstCollision->GetActorID() ==
-			StringHash("Player"))
-		{
-			mWorld->OnInteractionStart.Execute();
-		}
+	mOwnerEnemy->OnInteractionStart.Bind([this](){
+		mWorld->ShowPressEKey(true);
 	});
 
-	mOwnerEnemy->OnEnemyOut.Bind([this](){
-		mWorld->OnInteractionEnd.Execute();
+	mOwnerEnemy->OnInteractionEnd.Bind([this](){
+		mWorld->ShowPressEKey(false);
 	});
 
 }
@@ -151,7 +146,6 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
 
 NodeStatus BT_Pig::SetGoal()
 {
-
 	if (mElapsedTime > 2.f && IsPlayerClose(2000))
 	{
 		FindGoal();
@@ -195,4 +189,13 @@ void BT_Pig::SetupTree()
 			 .AddActionNode(LAMBDA(RunFromPlayer, 1000))
 			 .EndBranch()
 			 .Build();
+}
+
+void BT_Pig::ResetBT()
+{
+	BtBase::ResetBT();
+	BigGoalGrid = FVector2::ZeroVector;
+	GoalGrid    = FVector2::ZeroVector;
+	Goals.clear();
+	mOwnerEnemy = nullptr;
 }

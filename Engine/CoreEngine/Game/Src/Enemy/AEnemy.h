@@ -55,11 +55,17 @@ DECLARE_DYNAMIC_DELEGATE(FOnEnemyHit, const FHitResult& HitResult);
 
 DECLARE_DYNAMIC_DELEGATE(FOnEnemyOut);
 
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionStart);
+
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionEnd);
+
 class AEnemy : public APawn
 {
 public:
-	FOnEnemyHit OnEnemyHit;
-	FOnEnemyOut OnEnemyOut;
+	FOnEnemyHit         OnEnemyHit;
+	FOnEnemyOut         OnEnemyOut;
+	FOnInteractionStart OnInteractionStart;
+	FOnInteractionEnd   OnInteractionEnd;
 
 public:
 	// Constructor

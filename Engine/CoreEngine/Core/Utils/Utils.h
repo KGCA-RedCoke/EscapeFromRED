@@ -93,30 +93,16 @@ inline JText GenerateUniqueFileName(const JText& InDirectory, const JText& InBas
 //--------------------------------------------- String Func -------------------------------------------------------------
 
 
-// void HideAndLockCursor(HWND hwnd) {
-// 	// 1. 커서 숨기기
-// 	ShowCursor(FALSE);
-//
-// 	// 2. 커서 위치 잠금
-// 	RECT windowRect;
-// 	GetClientRect(hwnd, &windowRect); // 클라이언트 영역 얻기
-// 	MapWindowPoints(hwnd, nullptr, (POINT*)&windowRect, 2); // 화면 좌표로 변환
-// 	ClipCursor(&windowRect); // 커서를 이 영역에 고정
-//
-// 	// 3. 커서를 화면 중앙으로 이동
-// 	POINT center;
-// 	center.x = (windowRect.left + windowRect.right) / 2;
-// 	center.y = (windowRect.top + windowRect.bottom) / 2;
-// 	SetCursorPos(center.x, center.y);
-// }
-//
-// void UnlockCursor() {
-// 	// 1. 커서 다시 표시
-// 	ShowCursor(TRUE);
-//
-// 	// 2. 커서 제한 해제
-// 	ClipCursor(nullptr);
-// }
+inline uint32_t GetParentIndex(uint32_t NodeIndex)
+{
+	return (NodeIndex - 1) / 4;
+}
+
+inline bool IsAdjacent(uint32_t NodeIndex1, uint32_t NodeIndex2)
+{
+	return GetParentIndex(NodeIndex1) == GetParentIndex(NodeIndex2);
+}
+
 // ------------------------------------------- JHash Table ---------------------------------------------------------------
 constexpr const char* NAME_OBJECT_BASE                    = "JObject";
 constexpr const char* NAME_OBJECT_ACTOR_COMPONENT         = "JActorComponent";

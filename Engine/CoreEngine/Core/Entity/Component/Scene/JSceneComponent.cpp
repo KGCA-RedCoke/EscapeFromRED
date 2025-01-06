@@ -154,6 +154,7 @@ void JSceneComponent::Tick(float DeltaTime)
 void JSceneComponent::Destroy()
 {
 	JActorComponent::Destroy();
+	
 	for (int32_t i = 0; i < mChildSceneComponents.size(); ++i)
 	{
 		mChildSceneComponents[i]->Destroy();

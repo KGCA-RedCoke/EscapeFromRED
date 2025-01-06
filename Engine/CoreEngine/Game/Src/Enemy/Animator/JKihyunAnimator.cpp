@@ -51,7 +51,7 @@ void JKihyunAnimator::Initialize()
     attackClip->SetAnimationSpeed(2.f);
     attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
     attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.8].Bind([&]()
+    attackClip->OnAnimFinished.Bind([&]()
     {
         if (mEnemy)
         {

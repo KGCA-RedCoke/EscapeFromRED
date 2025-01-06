@@ -29,7 +29,14 @@ void BT_Butcher::Initialize()
 	assert(mOwnerEnemy);
 
 	mWorld = dynamic_cast<JLevel_Main*>(GetWorld.LevelManager->GetActiveLevel());
-	// assert(mWorld);
+
+	mOwnerEnemy->OnInteractionStart.Bind([this](){
+		mWorld->ShowPressEKey(true);
+	});
+
+	mOwnerEnemy->OnInteractionEnd.Bind([this](){
+		mWorld->ShowPressEKey(false);
+	});
 
 	JActorComponent::Initialize();
 }
@@ -121,7 +128,6 @@ NodeStatus BT_Butcher::TalkTo()
 {
 	if (IsPlayerClose(300))
 	{
-		mWorld->OnInteractionStart.Execute();
 
 		if (mEventStartFlag)
 		{
@@ -129,7 +135,6 @@ NodeStatus BT_Butcher::TalkTo()
 		}
 		return NodeStatus::Success;
 	}
-	mWorld->OnInteractionEnd.Execute();
 	mEventStartFlag = true;
 	return NodeStatus::Failure;
 }
@@ -213,4 +218,15 @@ void BT_Butcher::SetupTree()
 			 // .AddActionNode(LAMBDA(StateTraceToIdle))
 			 .EndBranch()
 			 .Build();
+}
+
+void BT_Butcher::ResetBT()
+{
+	BtBase::ResetBT();
+	bIsIdle = true;
+	bIsConvers = false;
+	bIsTrace = false;
+	conversIdx = 0;
+	mOwnerEnemy = nullptr;
+	mWorld = nullptr;
 }

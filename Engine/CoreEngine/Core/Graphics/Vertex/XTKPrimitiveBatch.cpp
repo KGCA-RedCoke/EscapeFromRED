@@ -74,7 +74,7 @@ void XTKPrimitiveBatch::PostRender()
 
 void XTKPrimitiveBatch::Draw()
 {
-	if (GetWorld.bGameMode)
+	if (!GetWorld.bDebugMode)
 	{
 		return;
 	}

@@ -18,7 +18,7 @@ public:
     void BeginPlay() override;
     void Destroy() override;
     void Tick(float DeltaTime) override;
-    void ResetBT();
+    virtual void ResetBT();
 
 
 public:

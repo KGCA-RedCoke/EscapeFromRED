@@ -203,7 +203,7 @@ void JMeshObject::GenerateRandomInstanceData(uint32_t InCount, const FMatrix& In
 			float z = dist(rng) + noise(rng);
 
 			FInstanceData_Mesh data    = mInstanceData[0];
-			data.Transform.WorldMatrix = XMMatrixTranslation(x, InWorldMatrix.m[3][1], z) * InWorldMatrix;
+			data.Transform.WorldMatrix = XMMatrixTranslation(x, 0, z) * InWorldMatrix;
 
 			instanceData.push_back(data);
 		}

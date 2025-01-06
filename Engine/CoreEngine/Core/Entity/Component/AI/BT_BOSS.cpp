@@ -21,7 +21,7 @@ BT_BOSS::BT_BOSS(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
     // mInputKeyboard.Initialize();
-    SetupTree2();
+    SetupTree();
 }
 
 BT_BOSS::~BT_BOSS()
@@ -76,17 +76,21 @@ NodeStatus BT_BOSS::Attack1()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
+            BB_ElapsedTime["Attack1"] = 0.f;
             mOwnerEnemy->SetBossState(EBossState::Attack1);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetBossState() != EBossState::Attack1)
+        if (BB_ElapsedTime["Attack1"] > 2.f || mOwnerEnemy->GetBossState() != EBossState::Attack1)
         {
+            BB_ElapsedTime["Attack1"] = 0.f;
             mEventStartFlag = true;
+            mOwnerEnemy->SetBossState(EBossState::Idle);
             return NodeStatus::Success;
         }
         else
         {
+            BB_ElapsedTime["Attack1"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -106,17 +110,21 @@ NodeStatus BT_BOSS::Attack2()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
+            BB_ElapsedTime["Attack2"] = 0.f;
             mOwnerEnemy->SetBossState(EBossState::Attack2);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetBossState() != EBossState::Attack2)
+        if (BB_ElapsedTime["Attack2"] > 3.0f || mOwnerEnemy->GetBossState() != EBossState::Attack2)
         {
+            BB_ElapsedTime["Attack2"] = 0.f;
             mEventStartFlag = true;
+            mOwnerEnemy->SetBossState(EBossState::Idle);
             return NodeStatus::Success;
         }
         else
         {
+            BB_ElapsedTime["Attack2"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -139,6 +147,7 @@ NodeStatus BT_BOSS::JumpAttack()
         if (mEventStartFlag)
         {
             // 점프 시작
+            BB_ElapsedTime["JumpAttack"] = 0.f;
             MoveNPCWithJump(800.f, 1.0f);  // 점프 높이와 지속 시간
             mOwnerEnemy->SetBossState(EBossState::JumpAttack);
             mEventStartFlag = false;      // 이벤트 시작 플래그 리셋
@@ -148,12 +157,16 @@ NodeStatus BT_BOSS::JumpAttack()
         float height = GetFloorHeight();
         if (position.y <= height + 10.f)
         {
-            if (mOwnerEnemy->GetBossState() != EBossState::JumpAttack)
+            if (BB_ElapsedTime["JumpAttack"] > 5.f ||
+                        mOwnerEnemy->GetBossState() != EBossState::JumpAttack)
             {
+                BB_ElapsedTime["JumpAttack"] = 0.f;
                 mEventStartFlag = true;  // 점프를 다시 시작할 수 있도록 설정
+                mOwnerEnemy->SetBossState(EBossState::Idle);
                 return NodeStatus::Success;
             }
         }
+        BB_ElapsedTime["JumpAttack"] += mDeltaTime;
         if (GetYVelocity() > 700.f)
             mVelocity = FVector::ZeroVector;
         mOwnerActor->AddLocalLocation(mVelocity * mDeltaTime);
@@ -197,16 +210,16 @@ NodeStatus BT_BOSS::Hit()
         FVector rotation = mOwnerActor->GetLocalRotation();
         rotation.x = 10.f;
         mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 0.3)
+        if (BB_ElapsedTime["Hit"] > 0.3)
         {
-            mElapsedTime = 0;
+            BB_ElapsedTime["Hit"] = 0;
             rotation.x = 0.f;
             mOwnerActor->SetLocalRotation(rotation);
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
+            BB_ElapsedTime["Hit"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -239,28 +252,7 @@ NodeStatus BT_BOSS::ResurrectPhase()
     return NodeStatus::Success;
 }
 
-
-// 보스 패턴
-
 void BT_BOSS::SetupTree()
-{
-    BTRoot = builder
-            .CreateRoot<Sequence>()
-                // .AddActionNode(LAMBDA(IsPlayerClose))
-                // .AddSelector("phase")
-                //     .AddActionNode(LAMBDA(IsEventAnim))
-                //     .AddDecorator(LAMBDA(RandTime, "JumpAttack", 1.f, 0.9f))
-                //         .AddActionNode(LAMBDA(JumpAttack))
-                //     .EndBranch()
-                //     .AddSequence("")
-                //         .AddActionNode(LAMBDA(ChasePlayer, 0))
-                //     .EndBranch()
-                // .EndBranch()
-            .Build();
-}
-
-
-void BT_BOSS::SetupTree2()
 {
     BTRoot = builder
             .CreateRoot<Sequence>()
@@ -317,4 +309,14 @@ void BT_BOSS::SetupTree2()
                     .EndBranch()
     #pragma endregion
             .Build();
+}
+
+void BT_BOSS::ResetBT()
+{
+    BtBase::ResetBT();
+    IsRun = false;
+    bBossBattleOn = false;
+    bResurrectCondition = false;
+    bIsStandUpReady = false;
+    mOwnerEnemy = nullptr;
 }

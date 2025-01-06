@@ -164,6 +164,7 @@ private:
 private:
 	JHash<ETraceType, JArray<ICollision*>>   mLayerHash;		// 레이어별 충돌체 리스트
 	JHash<uint64_t, bool>                    mCollisionHash;	// 충돌체간 충돌 여부 해시
+	
 	std::bitset<EnumAsByte(ETraceType::Max)> mCollisionLayer[EnumAsByte(ETraceType::Max)];	// 충돌 레이어
 
 #pragma region Singleton Boilerplate

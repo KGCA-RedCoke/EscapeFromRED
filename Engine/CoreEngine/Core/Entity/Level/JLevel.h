@@ -15,19 +15,13 @@ class AActor;
 
 DECLARE_DYNAMIC_DELEGATE(FOnLevelLoaded);
 
-DECLARE_DYNAMIC_DELEGATE(FOnInteractionStart);
-
-DECLARE_DYNAMIC_DELEGATE(FOnInteractionEnd);
-
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
  */
 class JLevel : public JObject
 {
 public:
-	FOnInteractionStart OnInteractionStart;
-	FOnInteractionEnd   OnInteractionEnd;
-	FOnLevelLoaded      OnLevelLoaded;
+	FOnLevelLoaded OnLevelLoaded;
 
 public:
 	JLevel() = default;
@@ -58,6 +52,9 @@ public:
 
 	template <typename T, typename... Args>
 	T* CreateActor(JTextView InName, Args&&... InArgs);
+
+public:
+	void ShowPressEKey(bool bShow);
 
 public:
 	bool bThreadLoaded = false;
