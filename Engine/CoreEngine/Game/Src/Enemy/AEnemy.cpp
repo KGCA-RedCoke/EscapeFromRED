@@ -3,9 +3,11 @@
 #include "Animator/JButcherAnimator.h"
 #include "Animator/JGirlAnimator.h"
 #include "Animator/JKihyunAnimator.h"
+#include "Animator/JMadreAnimator.h"
 #include "Animator/JPigAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/AI/BT_Butcher.h"
+#include "Core/Entity/Component/AI/BT_Madre.h"
 #include "Core/Entity/Component/AI/BT_Pig.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
@@ -40,6 +42,7 @@ void AEnemy::Initialize()
 
 	mAnimator     = nullptr;
 	mBehaviorTree = nullptr;
+	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -54,6 +57,10 @@ void AEnemy::Initialize()
 			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
 			break;
 		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Madre:
+			mAnimator = MakeUPtr<JMadreAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_Madre>("BehaviorTree", this);
 			break;
 		case EEnemyType::Pig:
 			mAnimator = MakeUPtr<JPigAnimator>("Animator", mSkeletalMeshComponent);
@@ -177,7 +184,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-
+		mWeaponCollider->Destroy();
 	}
 
 	OnEnemyHit.Execute(HitResult);
@@ -190,12 +197,12 @@ void AEnemy::OnOut(ICollision* InActor, const FHitResult& HitResult)
 
 void AEnemy::EnableAttackCollision(float radius)
 {
-	// mWeaponCollider->EnableCollision(true);
-	// mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+	mWeaponCollider->EnableCollision(true);
+	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
-	// mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
-	// mWeaponCollider->EnableCollision(false);
+	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	mWeaponCollider->EnableCollision(false);
 }

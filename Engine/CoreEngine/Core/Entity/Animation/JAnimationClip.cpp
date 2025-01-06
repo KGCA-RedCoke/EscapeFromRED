@@ -89,15 +89,18 @@ JAnimationClip::JAnimationClip(const JAnimationClip& InOther)
 	  bLooping(InOther.bLooping),
 	  bPlaying(InOther.bPlaying),
 	  bRootMotion(InOther.bRootMotion),
+		mElapsedTime(0),
 	  mTracks(InOther.mTracks),
 	  mBoneMatrix(InOther.mBoneMatrix),
 	  mInstanceData(InOther.mInstanceData),
-	  mEvents(InOther.mEvents)
+	  mEvents(InOther.mEvents),
+mRootMotionValue(InOther.mRootMotionValue)
 {
-	OnAnimStart    = InOther.OnAnimStart;
+	OnAnimStart = InOther.OnAnimStart;
 	OnAnimFinished = InOther.OnAnimFinished;
 	OnAnimBlendOut = InOther.OnAnimBlendOut;
-	mSkeletalMesh  = InOther.mSkeletalMesh;
+	mSkeletalMeshComponent = InOther.mSkeletalMeshComponent;
+	mSkeletalMesh = InOther.mSkeletalMesh;
 }
 
 UPtr<IManagedInterface> JAnimationClip::Clone() const
@@ -315,7 +318,16 @@ void JAnimationClip::Stop()
 
 void JAnimationClip::ApplyRootMotion() const
 {
-	mSkeletalMeshComponent->GetOwnerActor()->AddLocalLocation(mRootMotionValue.Position);
+	const auto& owner = mSkeletalMeshComponent->GetOwnerActor();
+
+	if (owner)
+	{
+		owner->AddLocalLocation(-owner->GetForwardVector() * mRootMotionValue.Position.z);
+	}
+	
+	// mSkeletalMeshComponent->GetOwnerActor()->AddLocalLocation(mRootMotionValue.Position);
+
+	
 	// XMMatrixRotationQuaternion(mRootMotionValue.Rotation);
 }
 

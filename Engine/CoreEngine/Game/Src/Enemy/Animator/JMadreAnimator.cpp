@@ -1,4 +1,4 @@
-﻿#include "JKihyunAnimator.h"
+#include "JMadreAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
@@ -6,29 +6,29 @@
 #include "Core/Interface/JWorld.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
-JKihyunAnimator::JKihyunAnimator()
+JMadreAnimator::JMadreAnimator()
 {
 }
 
-JKihyunAnimator::JKihyunAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
+JMadreAnimator::JMadreAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
     : JAnimator(InName, InSkeletalComp)
 {
     mEnemy = dynamic_cast<AEnemy*>(InSkeletalComp->GetOwnerActor());
     assert(mEnemy);
 }
 
-void JKihyunAnimator::Initialize()
+void JMadreAnimator::Initialize()
 {
     JAnimator::Initialize();
 
     AddAnimationClip("Idle",
-                     "Game/Animation/BigZombie/BZ_Idle.jasset", true);
+                     "Game/Animation/Madre_Anim/Madre_Idle.jasset", true);
     AddAnimationClip("Walk",
-                     "Game/Animation/BigZombie/BZ_Run.jasset", true);
+                     "Game/Animation/Madre_Anim/Madre_Run.jasset", true);
     AddAnimationClip("Death",
-                     "Game/Animation/BigZombie/BZ_Death_Spinning.jasset", false);
+                     "Game/Animation/Madre_Anim/Madre_Death.jasset", false);
     AddAnimationClip("Attack",
-                     "Game/Animation/BigZombie/Zombie_Attack_4.jasset", false); //Zombie_Attack_01
+                     "Game/Animation/Madre_Anim/Madre_Attack.jasset", false); //Zombie_Attack_01
 
     
     mStateMachine["Idle"]->OnAnimStart.Bind([&]()
@@ -36,7 +36,7 @@ void JKihyunAnimator::Initialize()
         if (mEnemy)
         {
             // mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
-            mEnemy->DisableAttackCollision();
+            // mEnemy->DisableAttackCollision();
         }
     });
     
@@ -51,8 +51,8 @@ void JKihyunAnimator::Initialize()
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
     attackClip->SetAnimationSpeed(2.f);
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
+    // attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
+    // attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
     attackClip->OnAnimFinished.Bind([&]()
     {
         if (mEnemy)
@@ -80,7 +80,7 @@ void JKihyunAnimator::Initialize()
     mCurrentAnimation->Play();
 }
 
-void JKihyunAnimator::BeginPlay()
+void JMadreAnimator::BeginPlay()
 {
     JAnimator::BeginPlay();
 }
