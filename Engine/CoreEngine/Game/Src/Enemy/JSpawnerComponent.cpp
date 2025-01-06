@@ -131,6 +131,19 @@ void JSpawnerComponent::Spawn()
 	case EEnemyType::Kihyun:
 		Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", spawnedActor.get());
 		break;
+	case EEnemyType::Girl:
+		break;
+	case EEnemyType::Clown:
+		break;
+	case EEnemyType::Madre:
+		break;
+	case EEnemyType::Pig:
+		Utils::Serialization::DeSerialize("Game/Enemy/NPC_Pig.jasset", spawnedActor.get());
+		break;
+	case EEnemyType::Butcher:
+		break;
+	case EEnemyType::MAX:
+		break;
 	}
 	spawnedActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());
 	spawnedActor->Initialize();

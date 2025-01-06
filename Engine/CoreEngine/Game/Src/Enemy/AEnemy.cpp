@@ -27,6 +27,12 @@ AEnemy::AEnemy(JTextView InName)
 
 void AEnemy::Initialize()
 {
+	RemoveFlag(EObjectFlags::IsPendingKill);
+
+	mEnemyState = EEnemyState::Idle;
+	mActorComponents.clear();
+	mChildActorComponentIndices.clear();
+	
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
 	if (!mSkeletalMeshComponent)
@@ -73,6 +79,7 @@ void AEnemy::Initialize()
 		case EEnemyType::MAX:
 			break;
 		}
+		mBehaviorTree->ResetBT();
 		APawn::Initialize();
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
