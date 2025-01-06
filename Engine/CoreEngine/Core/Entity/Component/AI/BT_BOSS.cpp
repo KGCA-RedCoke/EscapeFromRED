@@ -403,9 +403,9 @@ void BT_BOSS::SetupTree()
             .Build();
 }
 
-void BT_BOSS::ResetBT()
+void BT_BOSS::ResetBT(AActor* NewOwner)
 {
-    BtBase::ResetBT();
+    BtBase::ResetBT(nullptr);
     IsRun = false;
     bBossBattleOn = false;
     bResurrectCondition = false;

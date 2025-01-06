@@ -189,9 +189,9 @@ void BT_Pig::SetupTree()
 			 .Build();
 }
 
-void BT_Pig::ResetBT()
+void BT_Pig::ResetBT(AActor* NewOwner)
 {
-	BtBase::ResetBT();
+	BtBase::ResetBT(nullptr);
 	BigGoalGrid = FVector2::ZeroVector;
 	GoalGrid    = FVector2::ZeroVector;
 	Goals.clear();

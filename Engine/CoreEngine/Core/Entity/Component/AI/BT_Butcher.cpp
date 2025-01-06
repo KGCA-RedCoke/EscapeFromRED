@@ -220,9 +220,9 @@ void BT_Butcher::SetupTree()
 			 .Build();
 }
 
-void BT_Butcher::ResetBT()
+void BT_Butcher::ResetBT(AActor* NewOwner)
 {
-	BtBase::ResetBT();
+	BtBase::ResetBT(nullptr);
 	bIsIdle = true;
 	bIsConvers = false;
 	bIsTrace = false;

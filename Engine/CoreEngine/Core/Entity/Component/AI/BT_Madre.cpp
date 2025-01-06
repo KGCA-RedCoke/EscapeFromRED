@@ -47,9 +47,9 @@ void BT_Madre::Tick(float DeltaTime)
 // Action Function
 
 
-void BT_Madre::ResetBT()
+void BT_Madre::ResetBT(AActor* NewOwner)
 {
-    BtBase::ResetBT();
+    BtBase::ResetBT(nullptr);
     mOwnerEnemy = nullptr;
 }
 

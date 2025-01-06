@@ -326,6 +326,8 @@ bool JWidgetComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		mUIComponents.push_back(std::move(ui));
 	}
 
+	mObjectFlags |= EObjectFlags::IsVisible;
+
 	return true;
 }
 

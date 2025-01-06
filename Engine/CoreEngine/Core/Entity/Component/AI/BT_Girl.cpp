@@ -136,8 +136,8 @@ void BT_Girl::SetupTree()
              .Build();
 }
 
-void BT_Girl::ResetBT()
+void BT_Girl::ResetBT(AActor* NewOwner)
 {
-    BtBase::ResetBT();
+    BtBase::ResetBT(nullptr);
     mOwnerEnemy = nullptr;
 }

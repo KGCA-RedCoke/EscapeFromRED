@@ -85,14 +85,14 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	LOG_CORE_INFO("Current File Pos: {}", (int)InFileStream.tellg());
 
 
-	size_t widgetSize;
-	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
-	for (int32_t i = 0; i < widgetSize; ++i)
-	{
-		JText path;
-		Utils::Serialization::DeSerialize_Text(path, InFileStream);
-		// mWidgetComponents.push_back(MUIManager::Get().Load(path));
-	}
+	// size_t widgetSize;
+	// Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	// for (int32_t i = 0; i < widgetSize; ++i)
+	// {
+	// 	JText path;
+	// 	Utils::Serialization::DeSerialize_Text(path, InFileStream);
+	// 	// mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	// }
 
 	for (auto& actor : mActors)
 	{
@@ -113,6 +113,7 @@ void JLevel::InitializeLevel()
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
 	mGameOverWidget = GetWorld.UIManager->Load("Game/UI/GameOverScene.jasset");
 	mWidgetComponents.push_back(mGameOverWidget);
+	mGameOverWidget->SetVisible(false);
 
 	auto eKeyUI = MakeUPtr<JUIComponent>("PressEKey");
 	mPressEKey  = eKeyUI.get();
