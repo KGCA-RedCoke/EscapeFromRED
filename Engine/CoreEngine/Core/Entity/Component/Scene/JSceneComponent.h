@@ -115,6 +115,7 @@ protected:
 
 	// ----------------------------- Bounding Box Data -----------------------------
 	FBoxShape mBoundingBox;
+	FVector   mForwardVector;
 
 	// ----------------------------- LevelManager Transform Data -----------------------------
 	FVector mWorldLocation = FVector::ZeroVector;

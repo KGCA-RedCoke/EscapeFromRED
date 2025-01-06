@@ -1,8 +1,8 @@
 ﻿#include "AEnemy.h"
 
-#include "Animator/JKihyunAnimator.h"
-#include "Animator/JGirlAnimator.h"
 #include "Animator/JButcherAnimator.h"
+#include "Animator/JGirlAnimator.h"
+#include "Animator/JKihyunAnimator.h"
 #include "Animator/JPigAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/AI/BT_Butcher.h"
@@ -38,14 +38,6 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>("SkeletalMesh", this);
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
-	
-	// mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
-
-	// if (!mBehaviorTree)
-	// {
-	// 	mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
-	// }
-
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -76,13 +68,24 @@ void AEnemy::Initialize()
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
 	}
+	else
+	{
+		APawn::Initialize();
+	}
 
 	assert(mCollisionSphere);
 	mCollisionSphere->OnComponentBeginOverlap.Bind(std::bind(&AEnemy::OnHit,
 															 this,
 															 std::placeholders::_1,
 															 std::placeholders::_2));
+	mCollisionSphere->OnComponentEndOverlap.Bind(std::bind(&AEnemy::OnOut,
+														   this,
+														   std::placeholders::_1,
+														   std::placeholders::_2));
 
+
+	// 상호작용 가능한 Enemy Type (Pig, Butcher)
+	mInteractionSphere = dynamic_cast<JSphereComponent*>(GetChildComponentByName("Interaction"));
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -155,8 +158,15 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-		// mWeaponCollider->Destroy();
+
 	}
+
+	OnEnemyHit.Execute(HitResult);
+}
+
+void AEnemy::OnOut(ICollision* InActor, const FHitResult& HitResult)
+{
+	OnEnemyOut.Execute();
 }
 
 void AEnemy::EnableAttackCollision(float radius)

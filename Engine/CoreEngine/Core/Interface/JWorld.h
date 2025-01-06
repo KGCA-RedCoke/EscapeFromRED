@@ -17,6 +17,7 @@ class JWorld : public TSingleton<JWorld>
 {
 public:
 	FOnDebugModeChanged OnDebugModeChanged;
+	FVector2            ScreenSize;
 
 public:
 	void Initialize();
@@ -61,7 +62,7 @@ public:
 		//
 		// return newActor;
 		return nullptr;
-	}	
+	}
 
 private:
 	void UpdateWorldShadowMap();

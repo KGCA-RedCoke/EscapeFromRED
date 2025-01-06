@@ -47,11 +47,6 @@ void AActor::Tick(float DeltaTime)
 {
 	JSceneComponent::Tick(DeltaTime);
 
-	mBoundingBox.Box.LocalAxis[0] = XMVector3TransformNormal(FVector(1, 0, 0), XMLoadFloat4x4(&mWorldRotationMat));
-	mBoundingBox.Box.LocalAxis[1] = XMVector3TransformNormal(FVector(0, 1, 0), XMLoadFloat4x4(&mWorldRotationMat));
-	mBoundingBox.Box.LocalAxis[2] = XMVector3TransformNormal(FVector(0, 0, 1), XMLoadFloat4x4(&mWorldRotationMat));
-	mBoundingBox.Box.Center       = XMVector3Transform(FVector::ZeroVector, mWorldLocationMat);
-
 	for (const auto& actorComponent : mActorComponents)
 	{
 		actorComponent->Tick(DeltaTime);
@@ -75,7 +70,6 @@ void AActor::Draw()
 {
 	for (auto& sceneComponent : mChildSceneComponents)
 	{
-
 		if (sceneComponent)
 		{
 			sceneComponent->Draw();
@@ -160,6 +154,19 @@ bool AActor::DeSerialize_Implement(std::ifstream& InFileStream)
 
 
 	return true;
+}
+
+JActorComponent* AActor::GetChildComponentByName(JTextView InName) const
+{
+	for (auto& component : mActorComponents)
+	{
+		if (component->GetName() == InName)
+		{
+			return component.get();
+		}
+	}
+
+	return nullptr;
 }
 
 JActorComponent* AActor::GetChildComponentByType(JTextView InType) const

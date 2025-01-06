@@ -4,6 +4,7 @@
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
+class JUIComponent;
 class AEnemy;
 class JWidgetComponent;
 namespace Quad
@@ -14,13 +15,19 @@ class AActor;
 
 DECLARE_DYNAMIC_DELEGATE(FOnLevelLoaded);
 
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionStart);
+
+DECLARE_DYNAMIC_DELEGATE(FOnInteractionEnd);
+
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
  */
 class JLevel : public JObject
 {
 public:
-	FOnLevelLoaded OnLevelLoaded;
+	FOnInteractionStart OnInteractionStart;
+	FOnInteractionEnd   OnInteractionEnd;
+	FOnLevelLoaded      OnLevelLoaded;
 
 public:
 	JLevel() = default;
@@ -62,6 +69,7 @@ public:
 	JHash<int32_t, int32_t>         mActorIndexMap;	// 액터 인덱스 맵 (FNode PinID, FNode Actor Index)
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
 	MPoolManager<AEnemy>            mEnemyPool;
+	JUIComponent*                   mPressEKey;
 
 	friend class GUI_Inspector;
 	friend class GUI_Viewport;

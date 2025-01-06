@@ -37,6 +37,25 @@ JKihyunDialog::JKihyunDialog()
 
 JLevel_Main::JLevel_Main()
 {
+	// for (int32_t i = 7; i < 10; ++i)
+	// {
+	// 	mHPBar[i - 7] = mWidgetComponents[0]->mUIComponents[i].get();
+	// 	mHPBar[i - 7]->OnAnimationEvent.Bind([&](float DeltaTime){
+	// 		auto& data  = mHPBar[i - 7]->GetInstanceData();
+	// 		float alpha = data.Color.w;
+	// 		alpha       = FMath::Lerp(alpha, 0.f, DeltaTime / 1.f);
+	// 	});
+	// }
+	JLevel_Main::InitializeLevel();
+}
+
+JLevel_Main::~JLevel_Main() {}
+
+void JLevel_Main::InitializeLevel()
+{
+	JLevel::InitializeLevel();
+
+
 	OnLevelLoaded.Bind([&](){
 
 		for (auto& actor : mActors)
@@ -44,7 +63,7 @@ JLevel_Main::JLevel_Main()
 			actor->BeginPlay();
 		}
 		// // Play 동작 처리
-		mPlayerCharacter = GetWorld.SpawnActor<APlayerCharacter>("Test Player",
+		mPlayerCharacter = GetWorld.SpawnActor<APlayerCharacter>("Player",
 																 {-850.f, 250, -10000.f},
 																 FVector::ZeroVector,
 																 nullptr,
@@ -61,7 +80,7 @@ JLevel_Main::JLevel_Main()
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::PlayerWeapon, true);
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Ground, true);
 
-
+		G_NAV_MAP.Initialize();
 	});
 
 	mKihyunDialog = MakeUPtr<JKihyunDialog>();
@@ -70,30 +89,6 @@ JLevel_Main::JLevel_Main()
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
 	mWidgetComponents.push_back(mKihyunDialog.get());
 
-	// for (int32_t i = 7; i < 10; ++i)
-	// {
-	// 	mHPBar[i - 7] = mWidgetComponents[0]->mUIComponents[i].get();
-	// 	mHPBar[i - 7]->OnAnimationEvent.Bind([&](float DeltaTime){
-	// 		auto& data  = mHPBar[i - 7]->GetInstanceData();
-	// 		float alpha = data.Color.w;
-	// 		alpha       = FMath::Lerp(alpha, 0.f, DeltaTime / 1.f);
-	// 	});
-	// }
-
-	auto widget = MakeUPtr<JUIComponent>("PressE");
-	mPressEKey  = widget.get();
-	mPressEKey->SetPosition({0, -0.65});
-	mPressEKey->SetColor({1, 1, 1, 1});
-	mPressEKey->SetTexture(GetWorld.TextureManager->Load("Game/Textures/UI/Keyboard_E.PNG"));
-	mPressEKey->OnAnimationEvent.Bind([&](float DeltaTime){
-		auto& data = mPressEKey->GetInstanceData();
-		data.Size  = FVector2::UnitVector * FMath::Clamp((sin(GetWorld.GetGameTime() * 5.f) + 1) * 2, 1.f, 1.5f);
-	});
-	mWidgetComponents[0]->mUIComponents.push_back(std::move(widget));
-
-
-	JLevel_Main::InitializeLevel();
-	G_NAV_MAP.Initialize();
 
 	GetWorld.ThreadPool.ExecuteTask([this](){
 		Utils::Serialization::DeSerialize("Game/Levels/Map.jasset", this);
@@ -117,21 +112,6 @@ JLevel_Main::JLevel_Main()
 		}
 		mPlayerCharacter->LockInput(false);
 	});
-
-	OnInteractionStart.Bind([&](){
-		mPressEKey->SetVisible(true);
-	});
-
-	OnInteractionEnd.Bind([&](){
-		mPressEKey->SetVisible(false);
-	});
-}
-
-JLevel_Main::~JLevel_Main() {}
-
-void JLevel_Main::InitializeLevel()
-{
-	JLevel::InitializeLevel();
 }
 
 void JLevel_Main::UpdateLevel(float DeltaTime)

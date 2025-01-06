@@ -31,6 +31,7 @@ public:
 	bool     DeSerialize_Implement(std::ifstream& InFileStream) override;
 
 public:
+	JActorComponent* GetChildComponentByName(JTextView InName) const;
 	JActorComponent* GetChildComponentByType(JTextView InType) const;
 
 	template <class ObjectType, typename... Args>

@@ -36,7 +36,7 @@ public:
 public:
 	void ShowEditor() override;
 
-private:
+protected:
 	UPtr<JMeshObject> mMeshObject = nullptr;
 
 };
