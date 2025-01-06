@@ -1,16 +1,15 @@
-﻿#pragma once
-// #include "Core/Input/XKeyboardMouse.h"
-#include "BtBase.h"
+#pragma once
 
+#include "BtBase.h"
 class AEnemy;
 class AStar;
 
-class BT_BigZombie : public BtBase,
-                public std::enable_shared_from_this<BT_BigZombie>
+class BT_Madre: public BtBase,
+                public std::enable_shared_from_this<BT_Madre>
 {
 public:
-    BT_BigZombie(JTextView InName, AActor* InOwner);
-    ~BT_BigZombie() override;
+    BT_Madre(JTextView InName, AActor* InOwner);
+    ~BT_Madre() override;
 
     void Initialize() override;
     void BeginPlay() override;
@@ -37,7 +36,6 @@ public:
 
 public:
     AEnemy* mOwnerEnemy;
-///ㅁㄴㅇㄻㄴㅇㄹ
 private:
     // FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }
     // FORCEINLINE bool IsKeyDown(EKeyCode InKey) const { return mInputKeyboard.IsKeyDown(InKey); }

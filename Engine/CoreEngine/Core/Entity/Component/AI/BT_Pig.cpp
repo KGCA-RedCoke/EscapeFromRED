@@ -13,8 +13,6 @@
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
-
-#define MAG 0.01f
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
 
@@ -188,19 +186,19 @@ void BT_Pig::SetupTree()
 {
 	BTRoot = builder
 			 .CreateRoot<Selector>()
-			 .AddDecorator(LAMBDA(IsPlayerNearAndPressE))
-			 .AddActionNode(LAMBDA(CountPig))
-			 .EndBranch()
-			 .AddSequence("Run")
-			 .AddActionNode(LAMBDA(SetGoal))
-			 .AddActionNode(LAMBDA(RunFromPlayer, 1000))
-			 .EndBranch()
+				 .AddDecorator(LAMBDA(IsPlayerNearAndPressE))
+					 .AddActionNode(LAMBDA(CountPig))
+				 .EndBranch()
+				 .AddSequence("Run")
+					 .AddActionNode(LAMBDA(SetGoal))
+					 .AddActionNode(LAMBDA(RunFromPlayer, 1000))
+				.EndBranch()
 			 .Build();
 }
 
-void BT_Pig::ResetBT()
+void BT_Pig::ResetBT(AActor* NewOwner)
 {
-	BtBase::ResetBT();
+	BtBase::ResetBT(nullptr);
 	BigGoalGrid = FVector2::ZeroVector;
 	GoalGrid    = FVector2::ZeroVector;
 	Goals.clear();

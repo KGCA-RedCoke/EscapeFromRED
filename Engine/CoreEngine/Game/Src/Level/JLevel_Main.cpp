@@ -1,6 +1,8 @@
 ﻿#include "JLevel_Main.h"
 
+
 #include "Core/Entity/Audio/MSoundManager.h"
+#include "Core/Entity/Navigation/BigGrid.h"
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -86,6 +88,7 @@ void JLevel_Main::InitializeLevel()
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Ground, true);
 
 		G_NAV_MAP.Initialize();
+		G_BIG_MAP.Initialize();
 	});
 
 	mKihyunDialog = MakeUPtr<JKihyunDialog>();

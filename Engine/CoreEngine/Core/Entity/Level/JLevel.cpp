@@ -10,16 +10,18 @@
 #include "Core/Graphics/Vertex/XTKPrimitiveBatch.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Player/APlayerCharacter.h"
 #include "GUI/MGUIManager.h"
+
+JLevel::JLevel() {}
 
 JLevel::JLevel(const JText& InPath, bool bUseTree)
 	: JObject(InPath)
 {
 	OnLevelLoaded.Bind([&](){
 		bThreadLoaded = true;
-
-
 	});
+
 	if (bUseTree)
 	{
 		JLevel::InitializeLevel();
@@ -53,16 +55,6 @@ bool JLevel::Serialize_Implement(std::ofstream& FileStream)
 		mActors[i]->Serialize_Implement(FileStream);
 	}
 
-	LOG_CORE_INFO("Current File Pos: {}", (int)FileStream.tellp());
-
-	size_t widgetSize = mWidgetComponents.size();
-	Utils::Serialization::Serialize_Primitive(&widgetSize, sizeof(widgetSize), FileStream);
-	for (auto& widget : mWidgetComponents)
-	{
-		JText path = widget->GetPath();
-		Utils::Serialization::Serialize_Text(path, FileStream);
-	}
-
 	return true;
 }
 
@@ -93,14 +85,14 @@ bool JLevel::DeSerialize_Implement(std::ifstream& InFileStream)
 	LOG_CORE_INFO("Current File Pos: {}", (int)InFileStream.tellg());
 
 
-	size_t widgetSize;
-	Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
-	for (int32_t i = 0; i < widgetSize; ++i)
-	{
-		JText path;
-		Utils::Serialization::DeSerialize_Text(path, InFileStream);
-		mWidgetComponents.push_back(MUIManager::Get().Load(path));
-	}
+	// size_t widgetSize;
+	// Utils::Serialization::DeSerialize_Primitive(&widgetSize, sizeof(widgetSize), InFileStream);
+	// for (int32_t i = 0; i < widgetSize; ++i)
+	// {
+	// 	JText path;
+	// 	Utils::Serialization::DeSerialize_Text(path, InFileStream);
+	// 	// mWidgetComponents.push_back(MUIManager::Get().Load(path));
+	// }
 
 	for (auto& actor : mActors)
 	{
@@ -119,9 +111,15 @@ void JLevel::InitializeLevel()
 
 	mWidgetComponents.reserve(4);
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
+	mGameOverWidget = GetWorld.UIManager->Load("Game/UI/GameOverScene.jasset");
+	mWidgetComponents.push_back(mGameOverWidget);
+	mGameOverWidget->SetVisible(false);
 
-	auto widget = MakeUPtr<JUIComponent>("PressE");
-	mPressEKey  = widget.get();
+	auto eKeyUI = MakeUPtr<JUIComponent>("PressEKey");
+	mPressEKey  = eKeyUI.get();
+	mWidgetComponents[0]->mUIComponents.push_back(std::move(eKeyUI));
+	mPressEKey = mWidgetComponents[0]->mUIComponents[0].get();
+	mPressEKey->SetVisible(false);
 	mPressEKey->SetPosition({0, -0.65});
 	mPressEKey->SetColor({1, 1, 1, 1});
 	mPressEKey->SetTexture(GetWorld.TextureManager->Load("Game/Textures/UI/Keyboard_E.PNG"));
@@ -129,7 +127,12 @@ void JLevel::InitializeLevel()
 		auto& data = mPressEKey->GetInstanceData();
 		data.Size  = FVector2::UnitVector * FMath::Clamp((sin(GetWorld.GetGameTime() * 5.f) + 1) * 2, 1.f, 1.5f);
 	});
-	mWidgetComponents[0]->mUIComponents.push_back(std::move(widget));
+
+	for (int32_t i = 8; i <= 10; ++i)
+	{
+		mHPBar[i - 8] = mWidgetComponents[0]->mUIComponents[i].get();
+		SetHPBar(i - 8, false);
+	}
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -137,6 +140,11 @@ void JLevel::UpdateLevel(float DeltaTime)
 	if (!bThreadLoaded)
 	{
 		return;
+	}
+
+	if (GetAsyncKeyState(VK_F1) & 0x8000)
+	{
+		mPlayerCharacter->OnPlayerHealthChanged.Execute(false);
 	}
 
 	std::erase_if(
@@ -241,3 +249,21 @@ AActor* JLevel::LoadActorFromPath(const JText& InPath)
 }
 
 void JLevel::ShowPressEKey(bool bShow) { mPressEKey->SetVisible(bShow); }
+
+void JLevel::SetHPBar(uint32_t InIndex, bool bShow) const
+{
+	mHPBar[InIndex]->SetVisible(bShow);
+}
+
+void JLevel::IncreaseHPBar(uint32_t InIndex)
+{
+	LOG_CORE_INFO("Player Health Increased");
+	SetHPBar(InIndex - 1, true);
+
+}
+
+void JLevel::DecreamentHPBar(uint32_t InIndex)
+{
+	LOG_CORE_INFO("Player Health Decreased");
+	SetHPBar(InIndex, false);
+}

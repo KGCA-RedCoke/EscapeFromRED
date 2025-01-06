@@ -1,42 +1,34 @@
-﻿#include "JKihyunAnimator.h"
+#include "JMadreAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
-#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
-JKihyunAnimator::JKihyunAnimator()
+JMadreAnimator::JMadreAnimator()
 {
 }
 
-JKihyunAnimator::JKihyunAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
+JMadreAnimator::JMadreAnimator(JTextView InName, JSkeletalMeshComponent* InSkeletalComp)
     : JAnimator(InName, InSkeletalComp)
 {
     mEnemy = dynamic_cast<AEnemy*>(InSkeletalComp->GetOwnerActor());
     assert(mEnemy);
 }
 
-void JKihyunAnimator::Initialize()
+void JMadreAnimator::Initialize()
 {
     JAnimator::Initialize();
 
-    mWalkSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
-    //mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
-    mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
-    mDeathSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
-
-    
-    
     AddAnimationClip("Idle",
-                     "Game/Animation/BigZombie/BZ_Idle.jasset", true);
+                     "Game/Animation/Madre_Anim/Madre_Idle.jasset", true);
     AddAnimationClip("Walk",
-                     "Game/Animation/BigZombie/BZ_Run.jasset", true);
+                     "Game/Animation/Madre_Anim/Madre_Run.jasset", true);
     AddAnimationClip("Death",
-                     "Game/Animation/BigZombie/BZ_Death_Spinning.jasset", false);
+                     "Game/Animation/Madre_Anim/Madre_Death.jasset", false);
     AddAnimationClip("Attack",
-                     "Game/Animation/BigZombie/Zombie_Attack_4.jasset", false); //Zombie_Attack_01
+                     "Game/Animation/Madre_Anim/Madre_Attack.jasset", false); //Zombie_Attack_01
 
     
     mStateMachine["Idle"]->OnAnimStart.Bind([&]()
@@ -44,7 +36,7 @@ void JKihyunAnimator::Initialize()
         if (mEnemy)
         {
             // mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
-            mEnemy->DisableAttackCollision();
+            // mEnemy->DisableAttackCollision();
         }
     });
     
@@ -59,8 +51,8 @@ void JKihyunAnimator::Initialize()
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
     attackClip->SetAnimationSpeed(2.f);
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
-    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
+    // attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
+    // attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
     attackClip->OnAnimFinished.Bind([&]()
     {
         if (mEnemy)
@@ -86,38 +78,9 @@ void JKihyunAnimator::Initialize()
 
     SetState("Idle");
     mCurrentAnimation->Play();
-
-
-    auto* walkAnim = mStateMachine["Walk"].get();
-    auto* attackAnim = mStateMachine["Attack"].get();
-    auto* deathAnim = mStateMachine["Death"].get();
-    
-    const uint32_t walkEndFrame = walkAnim->GetEndFrame();
-    const uint32_t AttackEndFrame = attackAnim->GetEndFrame();
-    const uint32_t DeathEndFrame = deathAnim->GetEndFrame();
-    
-    // for (uint32_t i = 0; i < walkEndFrame; i+=15)
-    // {
-    //     walkAnim->mEvents[i].Bind([&]()
-    //     {
-    //         mWalkSound->Play();
-    //     });
-    // }
-    
-    attackAnim->mEvents[AttackEndFrame * 0.15].Bind([&]()
-    {
-        mAttackSound->Play();
-    });
-    
-
-    // deathAnim->mEvents[DeathEndFrame* 0.15].Bind([&]()
-    // {
-    //     mDeathSound->Play();
-    // });
-
 }
 
-void JKihyunAnimator::BeginPlay()
+void JMadreAnimator::BeginPlay()
 {
     JAnimator::BeginPlay();
 }

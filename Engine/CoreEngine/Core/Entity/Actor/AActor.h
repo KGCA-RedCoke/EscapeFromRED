@@ -85,8 +85,6 @@ protected:
 	JHash<JText, int32_t>         mChildActorComponentIndices;
 	JArray<UPtr<JActorComponent>> mActorComponents;
 
-	FVector mForwardVector;
-
 	bool bSaveActorComponent = false;
 
 	friend class GUI_Editor_Actor;

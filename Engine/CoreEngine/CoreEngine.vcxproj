@@ -121,6 +121,7 @@
     <ClInclude Include="Core\Entity\Component\AI\BT_BOSS.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Butcher.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Girl.h" />
+    <ClInclude Include="Core\Entity\Component\AI\BT_Madre.h" />
     <ClInclude Include="Core\Entity\Component\AI\BT_Pig.h" />
     <ClInclude Include="Core\Entity\Component\AI\Node.h" />
     <ClInclude Include="Core\Entity\Component\JActorComponent.h" />
@@ -222,6 +223,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JButcherAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JGirlAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JKihyunAnimator.h" />
+    <ClInclude Include="Game\Src\Enemy\Animator\JMadreAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JPigAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
@@ -339,6 +341,7 @@
     <ClCompile Include="Core\Entity\Component\AI\BT_BOSS.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Butcher.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Girl.cpp" />
+    <ClCompile Include="Core\Entity\Component\AI\BT_Madre.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\BT_Pig.cpp" />
     <ClCompile Include="Core\Entity\Component\AI\Node.cpp" />
     <ClCompile Include="Core\Entity\Component\JActorComponent.cpp" />
@@ -427,6 +430,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JButcherAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JGirlAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JKihyunAnimator.cpp" />
+    <ClCompile Include="Game\Src\Enemy\Animator\JMadreAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JPigAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
@@ -489,6 +493,7 @@
     <Content Include="Game\Enemy\Boss_KC.jasset" />
     <Content Include="Game\Enemy\Enemy_CD.jasset" />
     <Content Include="Game\Enemy\Enemy_KH.jasset" />
+    <Content Include="Game\Enemy\Enemy_MD.jasset" />
     <Content Include="Game\Enemy\Landscape.jasset" />
     <Content Include="Game\Enemy\NewLevel1.jasset" />
     <Content Include="Game\Enemy\NPC_Butcher.jasset" />

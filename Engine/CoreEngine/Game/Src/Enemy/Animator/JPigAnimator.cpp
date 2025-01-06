@@ -29,6 +29,9 @@ void JPigAnimator::Initialize()
     // AddAnimationClip("Attack",
     //                  "Game/Animation/BigZombie/Zombie_Attack_4.jasset", false); //Zombie_Attack_01
 
+    auto& walkClip = mStateMachine["Walk"];
+    walkClip->SetAnimationSpeed(1.5f);
+    
     AddAnimLink("Idle", "Walk", [&]() { return !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
     AddAnimLink("Walk", "Idle", [&]() { return mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 

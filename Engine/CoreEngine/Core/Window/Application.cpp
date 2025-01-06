@@ -1,7 +1,6 @@
 ﻿#include "Application.h"
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/JCameraComponent.h"
-#include "Core/Entity/Navigation/BigGrid.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Font/JFont.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
@@ -80,7 +79,6 @@ void Application::Initialize()
 	mFpsText->SetTextRect({50, 50}, {100, 100});
 	mFpsText->SetColor(FLinearColor::Gallary);
 	// mFpsText->SetScreenPosition({5, 5});
-	G_BIG_MAP.Initialize();
 }
 
 void Application::Run()
@@ -114,8 +112,6 @@ void Application::Update(float DeltaTime)
 
 	mFpsText->Update(DeltaTime);
 	mFpsText->SetText(std::format(L"fps: {:d}", mFramesPerSec));
-	
-	// G_BIG_MAP.Render();
 }
 
 void Application::Render()

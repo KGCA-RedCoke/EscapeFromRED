@@ -109,6 +109,9 @@ void GUI_Editor_Material::ShowMaterialEditor()
 
 			switch (param.ParamValue)
 			{
+			case EMaterialParamValue::Boolean:
+				HandleBoolType(param);
+				break;
 			case EMaterialParamValue::Float:
 				HandleFloatType(param);
 				break;
@@ -143,6 +146,21 @@ void GUI_Editor_Material::ShowMaterialEditor()
 	}
 
 	ImGui::EndChild();
+}
+
+void GUI_Editor_Material::HandleBoolType(const FMaterialParam& Param) const
+{
+	if (bool* instanceValue = static_cast<bool*>(mMaterialToEdit->GetInstanceParam(Param.Key)))
+	{
+		bool cachedValue = *instanceValue;
+
+		ImGui::Checkbox(Param.Name.c_str(), instanceValue);
+
+		if (cachedValue != *instanceValue)
+		{
+			mMaterialToEdit->OnMaterialInstanceParamChanged.Execute();
+		}
+	}
 }
 
 void GUI_Editor_Material::HandleFloatType(const FMaterialParam& Param)

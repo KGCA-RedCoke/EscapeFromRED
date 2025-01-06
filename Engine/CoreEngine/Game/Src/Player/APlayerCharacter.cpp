@@ -9,6 +9,7 @@
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Interface/JWorld.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -51,12 +52,48 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mFPSCamera = CreateDefaultSubObject<JPlayerCamera>("FPSCamera", this);
 	mFPSCamera->SetupAttachment(mSkeletalMeshComponent);
 
+	OnPlayerHealthChanged.Bind([this](bool bIncrease){
+		if (bIncrease)
+		{
+			// 체력 회복
+			mHealth = FMath::Clamp(mHealth + 1, 1u, mMaxHealth);
+
+			GetWorld.LevelManager->GetActiveLevel()->IncreaseHPBar(mHealth);
+		}
+		else
+		{
+			// 체력 감소
+			if (mHealth <= 1)
+			{
+				OnPlayerDie.Execute();
+				return;
+			}
+			mHealth--;
+
+			GetWorld.LevelManager->GetActiveLevel()->DecreamentHPBar(mHealth);
+
+		}
+	});
+
+	OnPlayerDie.Bind([this](){
+		// 플레이어 사망
+		// 게임 오버
+		GetWorld.LevelManager->GetActiveLevel()->mGameOverWidget->SetVisible(true);
+	});
+
+
 	GetWorld.CameraManager->SetCurrentMainCam(mFPSCamera);
 }
 
 void APlayerCharacter::Initialize()
 {
 	ACharacter::Initialize();
+	mCollisionSphere->OnComponentBeginOverlap.Bind([this](ICollision* OtherActor, const FHitResult& HitResult){
+		if (OtherActor->GetTraceType() == ETraceType::EnemyHitSpace)
+		{
+			OnPlayerHealthChanged.Execute(false);
+		}
+	});
 	mPlayerAnimator->Initialize();
 }
 
@@ -64,6 +101,12 @@ void APlayerCharacter::BeginPlay()
 {
 	ACharacter::BeginPlay();
 	SetupInputComponent();
+
+
+	for (int32_t i = 0; i < mHealth; ++i)
+	{
+		GetWorld.LevelManager->GetActiveLevel()->SetHPBar(i, true);
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -127,6 +170,19 @@ void APlayerCharacter::SetupInputComponent()
 
 void APlayerCharacter::UpdateRotation()
 {
+	FVector2 currentMousePosition = mInput->GetMousePosition();
+	FVector2 screenCenter         = GetWorld.ScreenSize / 2;
+	float    halfWidth            = GetWorld.ScreenSize.x / 2.0f;
+	float    halfHeight           = GetWorld.ScreenSize.y / 2.0f;
+	float    offsetX              = (currentMousePosition.x - screenCenter.x) / halfWidth;
+	float    threshold            = 0.9f;
+	// 화면 중심 기준으로 Yaw와 Pitch 추가
+	if (fabs(offsetX) > threshold)
+	{
+		SetCursorPos(screenCenter.x, currentMousePosition.y);
+		return;
+	}
+
 	mMouseDelta.x  = 0.f;
 	mRotVelocity.x = 0.f;
 
@@ -139,24 +195,6 @@ void APlayerCharacter::UpdateRotation()
 	mRotVelocity.x = mMouseDelta.x * (XM_PI / 360.0);
 	mRotVelocity.y = mMouseDelta.y * (XM_PI / 360.0);
 
-	FVector2 currentMousePosition = mInput->GetMousePosition();
-	FVector2 screenCenter         = GetWorld.ScreenSize / 2;
-
-	// 화면 크기의 절반 (100% 기준)
-	float halfWidth  = GetWorld.ScreenSize.x / 2.0f;
-	float halfHeight = GetWorld.ScreenSize.y / 2.0f;
-
-	// 화면 중심에서 벗어난 비율 계산
-	float offsetX = (currentMousePosition.x - screenCenter.x) / halfWidth;
-	float offsetY = (currentMousePosition.y - screenCenter.y) / halfHeight;
-
-	float threshold = 0.7f;
-
-	// 화면 중심 기준으로 Yaw와 Pitch 추가
-	if (fabs(offsetX) > threshold)
-	{
-		mYaw += (offsetX > 0 ? 1 : -1) * (XM_PI / 360.0f); // 오른쪽/왼쪽 이동에 따라 Yaw 증가/감소
-	}
 
 	float yawDelta   = mRotVelocity.x;
 	float pitchDelta = mRotVelocity.y;

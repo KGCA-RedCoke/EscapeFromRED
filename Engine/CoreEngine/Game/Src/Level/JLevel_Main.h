@@ -32,7 +32,6 @@ public:
 	void RenderLevel() override;
 
 private:
-	class APlayerCharacter* mPlayerCharacter;
 	UPtr<JKihyunDialog>     mKihyunDialog;
 	JUIComponent*           mHPBar[3];
 	JAudioComponent* mMainSound;

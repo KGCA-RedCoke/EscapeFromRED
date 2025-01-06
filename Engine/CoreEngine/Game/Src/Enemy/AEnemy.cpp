@@ -3,9 +3,11 @@
 #include "Animator/JButcherAnimator.h"
 #include "Animator/JGirlAnimator.h"
 #include "Animator/JKihyunAnimator.h"
+#include "Animator/JMadreAnimator.h"
 #include "Animator/JPigAnimator.h"
 #include "Core/Entity/Component/AI/BT_BigZombie.h"
 #include "Core/Entity/Component/AI/BT_Butcher.h"
+#include "Core/Entity/Component/AI/BT_Madre.h"
 #include "Core/Entity/Component/AI/BT_Pig.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 
@@ -38,8 +40,9 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
 
-	mAnimator     = nullptr;
-	mBehaviorTree = nullptr;
+	mAnimator       = nullptr;
+	mBehaviorTree   = nullptr;
+	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -54,6 +57,10 @@ void AEnemy::Initialize()
 			mBehaviorTree = CreateDefaultSubObject<BT_BigZombie>("BehaviorTree", this);
 			break;
 		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Madre:
+			mAnimator = MakeUPtr<JMadreAnimator>("Animator", mSkeletalMeshComponent);
+			mBehaviorTree = CreateDefaultSubObject<BT_Madre>("BehaviorTree", this);
 			break;
 		case EEnemyType::Pig:
 			mAnimator = MakeUPtr<JPigAnimator>("Animator", mSkeletalMeshComponent);
@@ -177,7 +184,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-
+		mWeaponCollider->Destroy();
 	}
 
 	OnEnemyHit.Execute(HitResult);
@@ -188,14 +195,91 @@ void AEnemy::OnOut(ICollision* InActor, const FHitResult& HitResult)
 	OnEnemyOut.Execute();
 }
 
+void AEnemy::SetEnemyType(EEnemyType InType)
+{
+	if (InType == mEnemyType)
+	{
+		mBehaviorTree->ResetBT(this);
+		mAnimator->SetState("Idle");
+		RemoveFlag(EObjectFlags::IsPendingKill);
+		SetEnemyState(EEnemyState::Idle);
+
+		if (mInteractionSphere)
+			mInteractionSphere->Initialize();
+		mCollisionSphere->Initialize();
+		mWeaponCollider->Initialize();
+		return;
+	}
+
+	if (mEnemyType == EEnemyType::MAX)
+	{
+		switch (InType)
+		{
+		case EEnemyType::Kihyun:
+			Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", this);
+			break;
+		case EEnemyType::Girl:
+			break;
+		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Madre:
+			break;
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+
+		Initialize();
+		return;
+	}
+
+	else
+	{
+		mEnemyType = InType;
+
+
+		switch (InType)
+		{
+		case EEnemyType::Kihyun:
+			{
+				mSkeletalMeshComponent->SetSkeletalMesh("Game/Mesh/SK_BigZombie.jasset");
+				mAnimator = MakeUPtr<JKihyunAnimator>("Animator",
+													  mSkeletalMeshComponent);
+				auto uPtr = MakeUPtr<
+					BT_BigZombie>("BehaviorTree", this);
+				mBehaviorTree                                                 = uPtr.get();
+				mActorComponents[mChildActorComponentIndices["BehaviorTree"]] = std::move(uPtr);
+			}
+
+
+			break;
+		case EEnemyType::Madre:
+			break;
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+	}
+
+	mBehaviorTree->ResetBT(this);
+	RemoveFlag(EObjectFlags::IsPendingKill);
+	SetEnemyState(EEnemyState::Idle);
+}
+
 void AEnemy::EnableAttackCollision(float radius)
 {
-	// mWeaponCollider->EnableCollision(true);
-	// mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+	mWeaponCollider->EnableCollision(true);
+	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
-	// mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
-	// mWeaponCollider->EnableCollision(false);
+	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	mWeaponCollider->EnableCollision(false);
 }

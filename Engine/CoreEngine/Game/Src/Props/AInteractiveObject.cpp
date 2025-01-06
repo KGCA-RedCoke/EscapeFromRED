@@ -1,5 +1,7 @@
 ﻿#include "AInteractiveObject.h"
 
+#include "Game/Src/Player/APlayerCharacter.h"
+
 AInteractiveObject::AInteractiveObject()
 	: AActor(),
 	  mInteractionComponent(nullptr)
@@ -56,24 +58,6 @@ void AInteractiveObject::Initialize()
 void AInteractiveObject::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
-
-	switch (mInteractiveType) {
-	case EInteractiveType::Cookie:
-		
-		break;
-	case EInteractiveType::Chocolate:
-		break;
-	case EInteractiveType::Chicken:
-		break;
-	case EInteractiveType::Coke:
-		break;
-	case EInteractiveType::BossEnter_Clown:
-		break;
-	case EInteractiveType::BossEnter_Doll:
-		break;
-	case EInteractiveType::Max:
-		break;
-	}
 }
 
 void AInteractiveObject::Destroy()
@@ -108,8 +92,12 @@ void AInteractiveObject::EnrollInteractionComponent()
 	switch (mInteractiveType)
 	{
 	case EInteractiveType::Cookie:
-		OnBeginOverlap.Bind([](AActor* OtherActor){
-			LOG_CORE_INFO("쿠키를 주시오");
+		OnBeginOverlap.Bind([this](AActor* OtherActor){
+			if (auto* player = dynamic_cast<APlayerCharacter*>(OtherActor))
+			{
+				player->OnPlayerHealthChanged.Execute(true);
+				Destroy();
+			}
 		});
 		break;
 	case EInteractiveType::Chocolate:

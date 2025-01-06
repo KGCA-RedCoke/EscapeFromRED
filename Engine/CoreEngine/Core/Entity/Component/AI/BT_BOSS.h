@@ -22,18 +22,22 @@ public:
 	void Tick(float DeltaTime) override;
 	void SetupTree();
 	void SetupTree2();
-	void ResetBT() override;
+	void ResetBT(AActor* NewOwner) override;
 
 public:
 	// Action Function
 	NodeStatus Attack1();
 	NodeStatus Attack2();
 	NodeStatus Attack3();
+	NodeStatus Attack4();
 	NodeStatus JumpAttack();
 	void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
 	NodeStatus IsEventAnim();
-	NodeStatus ResurrectPhase();
+	NodeStatus Resurrect();
+
+	// Decorator Function
+	NodeStatus IsResurrectPhase();
 
 
 public:

@@ -1,6 +1,5 @@
-﻿#include "BT_Girl.h"
+#include "BT_Madre.h"
 
-#include "BT_Girl.h"
 #include "GUI/GUI_Inspector.h"
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
@@ -10,36 +9,36 @@
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Game/Src/Enemy/AEnemy.h"
 
+
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
 
-BT_Girl::BT_Girl(JTextView InName, AActor* InOwner)
+BT_Madre::BT_Madre(JTextView InName, AActor* InOwner)
     : BtBase(InName, InOwner)
 {
     SetupTree();
 }
 
-BT_Girl::~BT_Girl()
+BT_Madre::~BT_Madre()
 {
 }
 
-void BT_Girl::Initialize()
+void BT_Madre::Initialize()
 {
     assert(mOwnerActor);
     mOwnerEnemy = dynamic_cast<AEnemy*>(mOwnerActor);
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
-    mAttackDistance = 150;
+    mAttackDistance = 200;
 }
 
-void BT_Girl::BeginPlay() { JActorComponent::BeginPlay(); }
+void BT_Madre::BeginPlay() { JActorComponent::BeginPlay(); }
 
-void BT_Girl::Destroy() { JActorComponent::Destroy(); }
+void BT_Madre::Destroy() { JActorComponent::Destroy(); }
 
-void BT_Girl::Tick(float DeltaTime)
+void BT_Madre::Tick(float DeltaTime)
 {
-    // mInputKeyboard.Update(DeltaTime);
     BtBase::Tick(DeltaTime);
 }
 
@@ -47,15 +46,14 @@ void BT_Girl::Tick(float DeltaTime)
 
 // Action Function
 
-NodeStatus BT_Girl::IsPressedKey(EKeyCode Key)
+
+void BT_Madre::ResetBT(AActor* NewOwner)
 {
-    if (IsKeyPressed(Key))
-        return NodeStatus::Success;
-    else
-        return NodeStatus::Failure;
+    BtBase::ResetBT(nullptr);
+    mOwnerEnemy = nullptr;
 }
 
-NodeStatus BT_Girl::Attack()
+NodeStatus BT_Madre::Attack()
 {
     if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
         return NodeStatus::Failure;
@@ -68,17 +66,21 @@ NodeStatus BT_Girl::Attack()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
+            BB_ElapsedTime["Attack"] = 0.f;
             mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        if (BB_ElapsedTime["Attack"] > 1.f || mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
         {
+            BB_ElapsedTime["Attack"] = 0.f;
             mEventStartFlag = true;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
             return NodeStatus::Success;
         }
         else
         {
+            BB_ElapsedTime["Attack"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -87,7 +89,41 @@ NodeStatus BT_Girl::Attack()
         return NodeStatus::Failure;
 }
 
-NodeStatus BT_Girl::Hit()
+NodeStatus BT_Madre::Attack2()
+{
+    if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
+        return NodeStatus::Failure;
+    int frameIdx = GetWorld.currentFrame % g_Index;
+    if (frameIdx == mIdx || runningFlag)
+    {
+        FVector rotation = RotateTowards(GetPlayerDirection(), mOwnerActor->GetLocalRotation());
+        mOwnerActor->SetWorldRotation(rotation);
+        if (mEventStartFlag)
+        {
+            BB_ElapsedTime["Attack2"] = 0.f;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
+            mEventStartFlag = false;
+        }
+        runningFlag = false;
+        if (BB_ElapsedTime["Attack2"] > 1.0f || (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack))
+        {
+            BB_ElapsedTime["Attack2"] = 0.f;
+            mEventStartFlag = true;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
+            return NodeStatus::Success;
+        }
+        else
+        {
+            BB_ElapsedTime["Attack2"] += mDeltaTime;
+            runningFlag = true;
+            return NodeStatus::Running;
+        }
+    }
+    else
+        return NodeStatus::Failure;
+}
+
+NodeStatus BT_Madre::Hit()
 {
     int frameIdx = GetWorld.currentFrame % g_Index;
     if (frameIdx == mIdx || runningFlag)
@@ -96,16 +132,16 @@ NodeStatus BT_Girl::Hit()
         FVector rotation = mOwnerActor->GetLocalRotation();
         rotation.x = 10.f;
         mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 0.3)
+        if (BB_ElapsedTime["Hit"] > 0.3)
         {
-            mElapsedTime = 0;
+            BB_ElapsedTime["Hit"] = 0;
             rotation.x = 0.f;
             mOwnerActor->SetLocalRotation(rotation);
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
+            BB_ElapsedTime["Hit"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -114,7 +150,7 @@ NodeStatus BT_Girl::Hit()
         return NodeStatus::Failure;
 }
 
-NodeStatus BT_Girl::Dead()
+NodeStatus BT_Madre::Dead()
 {
     if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
     {
@@ -125,19 +161,14 @@ NodeStatus BT_Girl::Dead()
 }
 
 // 단순 추적, 공격
-void BT_Girl::SetupTree()
+void BT_Madre::SetupTree()
 {
     BTRoot = builder
              .CreateRoot<Selector>()
                  .AddActionNode(LAMBDA(Dead))
                  .AddSequence("")
                      .AddActionNode(LAMBDA(ChasePlayer, 0))
+                     .AddActionNode(LAMBDA(Attack2))
                  .EndBranch()
              .Build();
-}
-
-void BT_Girl::ResetBT(AActor* NewOwner)
-{
-    BtBase::ResetBT(nullptr);
-    mOwnerEnemy = nullptr;
 }
