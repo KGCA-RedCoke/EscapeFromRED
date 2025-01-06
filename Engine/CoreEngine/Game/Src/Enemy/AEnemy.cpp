@@ -179,6 +179,8 @@ void AEnemy::ShowEditor()
 void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 {
 	const ETraceType traceType = InActor->GetTraceType();
+	if (mEnemyType == EEnemyType::Pig || mEnemyType == EEnemyType::Butcher)
+		return ;
 	if (traceType == ETraceType::PlayerWeapon)
 	{
 		mEnemyState = EEnemyState::Death;

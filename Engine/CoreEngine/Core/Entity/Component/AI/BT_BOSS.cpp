@@ -35,7 +35,7 @@ void BT_BOSS::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
-    mAttackDistance = 400;
+    // mAttackDistance = 400;
 
 }
 
@@ -117,7 +117,7 @@ NodeStatus BT_BOSS::Attack2()
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (BB_ElapsedTime["Attack2"] > 4.0f || mOwnerEnemy->GetBossState() != EBossState::Attack2)
+        if (BB_ElapsedTime["Attack2"] > 3.0f || mOwnerEnemy->GetBossState() != EBossState::Attack2)
         {
             BB_ElapsedTime["Attack2"] = 0.f;
             mEventStartFlag = true;

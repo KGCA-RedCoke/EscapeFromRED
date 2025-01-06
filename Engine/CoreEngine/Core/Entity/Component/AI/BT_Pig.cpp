@@ -163,7 +163,7 @@ NodeStatus BT_Pig::SetGoal()
 
 NodeStatus BT_Pig::IsPlayerNearAndPressE()
 {
-	if (GetAsyncKeyState('E') & 0x8000 && IsPlayerClose(180))
+	if (GetAsyncKeyState('E') & 0x8000 && IsPlayerClose(200))
 	{
 		mOwnerEnemy->Destroy();
 		mPigGetSound->Play();

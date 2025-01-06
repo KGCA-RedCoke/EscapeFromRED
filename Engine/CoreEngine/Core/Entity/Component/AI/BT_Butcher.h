@@ -31,6 +31,9 @@ public:
 	NodeStatus StateIdleToConvers();
 	NodeStatus StateConversToTrace(int N);
 	NodeStatus GetNextConvers();
+	NodeStatus GetPath(FVector2 GoalGrid);
+	NodeStatus GoGoal();
+	NodeStatus LookAt(FVector direction);
 
 	// Decorator Function
 	NodeStatus IsIdle();
