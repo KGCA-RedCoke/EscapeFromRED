@@ -18,6 +18,7 @@ public :
 
     void Tick(float DeltaTime) override;
     void SetupTree();
+    void ResetBT() override;
 
 public:
     // Action Function
@@ -36,9 +37,6 @@ public:
 
 
 public:
-    FVector     mVelocity;
-    float       mFloorHeight    = 1.f;
-
     AEnemy* mOwnerEnemy;
 
 private:

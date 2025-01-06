@@ -22,6 +22,7 @@ public:
 	void Tick(float DeltaTime) override;
 	void SetupTree();
 	void SetupTree2();
+	void ResetBT() override;
 
 public:
 	// Action Function
@@ -39,7 +40,6 @@ public:
 	// BlackBoard BB;
 	bool		IsRun = false;
 	FVector     mVelocity;
-	float       mFloorHeight    = 1.f;
 	bool		bBossBattleOn = false;
 	bool		bResurrectCondition = false;
 	bool		bIsStandUpReady = false;

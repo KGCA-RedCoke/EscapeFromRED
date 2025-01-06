@@ -191,3 +191,12 @@ void BT_Pig::SetupTree()
 			 .EndBranch()
 			 .Build();
 }
+
+void BT_Pig::ResetBT()
+{
+    BtBase::ResetBT();
+    BigGoalGrid = FVector2::ZeroVector;
+    GoalGrid = FVector2::ZeroVector;
+    Goals.clear();
+    mOwnerEnemy = nullptr;
+}

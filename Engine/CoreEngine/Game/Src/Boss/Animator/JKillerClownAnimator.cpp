@@ -103,6 +103,7 @@ void JKillerClownAnimator::Initialize()
 
     auto& attackClip3 = mStateMachine["Attack3"];
     attackClip3->SetAnimationSpeed(2.f);
+    attackClip3->SetRootMotion(true);
     attackClip3->mEvents[attackClip3->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
     attackClip3->mEvents[attackClip3->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
     attackClip3->mEvents[attackClip3->GetEndFrame() * 0.7].Bind([&]()

@@ -19,7 +19,7 @@ public:
     void Tick(float DeltaTime) override;
     void SetupTree();
     void SetupTree2();
-
+    void ResetBT() override;
 public:
     // Action Function
     NodeStatus Attack();
@@ -36,10 +36,6 @@ public:
 
 
 public:
-    // BlackBoard BB;
-    FVector     mVelocity;
-    float       mFloorHeight    = 1.f;
-
     AEnemy* mOwnerEnemy;
 ///ㅁㄴㅇㄻㄴㅇㄹ
 private:

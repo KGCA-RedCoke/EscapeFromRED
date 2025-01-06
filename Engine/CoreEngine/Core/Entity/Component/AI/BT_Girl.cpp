@@ -135,3 +135,9 @@ void BT_Girl::SetupTree()
                  .EndBranch()
              .Build();
 }
+
+void BT_Girl::ResetBT()
+{
+    BtBase::ResetBT();
+    mOwnerEnemy = nullptr;
+}

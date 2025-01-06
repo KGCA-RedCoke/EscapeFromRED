@@ -48,6 +48,12 @@ void BT_BigZombie::Tick(float DeltaTime)
 // Action Function
 
 
+void BT_BigZombie::ResetBT()
+{
+    BtBase::ResetBT();
+    mOwnerEnemy = nullptr;
+}
+
 NodeStatus BT_BigZombie::Attack()
 {
     if (mOwnerEnemy->GetEnemyState() == EEnemyState::Death)
@@ -61,17 +67,21 @@ NodeStatus BT_BigZombie::Attack()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
+            BB_ElapsedTime["Attack"] = 0.f;
             mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        if (BB_ElapsedTime["Attack"] > 1.f || mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
         {
+            BB_ElapsedTime["Attack"] = 0.f;
             mEventStartFlag = true;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
             return NodeStatus::Success;
         }
         else
         {
+            BB_ElapsedTime["Attack"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -91,17 +101,21 @@ NodeStatus BT_BigZombie::Attack2()
         mOwnerActor->SetWorldRotation(rotation);
         if (mEventStartFlag)
         {
+            BB_ElapsedTime["Attack2"] = 0.f;
             mOwnerEnemy->SetEnemyState(EEnemyState::Attack);
             mEventStartFlag = false;
         }
         runningFlag = false;
-        if (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack)
+        if (BB_ElapsedTime["Attack2"] > 1.0f || (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack))
         {
+            BB_ElapsedTime["Attack2"] = 0.f;
             mEventStartFlag = true;
+            mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
             return NodeStatus::Success;
         }
         else
         {
+            BB_ElapsedTime["Attack2"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
@@ -119,16 +133,16 @@ NodeStatus BT_BigZombie::Hit()
         FVector rotation = mOwnerActor->GetLocalRotation();
         rotation.x = 10.f;
         mOwnerActor->SetLocalRotation(rotation);
-        if (mElapsedTime > 0.3)
+        if (BB_ElapsedTime["Hit"] > 0.3)
         {
-            mElapsedTime = 0;
+            BB_ElapsedTime["Hit"] = 0;
             rotation.x = 0.f;
             mOwnerActor->SetLocalRotation(rotation);
             return NodeStatus::Success;
         }
         else
         {
-            mElapsedTime += mDeltaTime;
+            BB_ElapsedTime["Hit"] += mDeltaTime;
             runningFlag = true;
             return NodeStatus::Running;
         }
