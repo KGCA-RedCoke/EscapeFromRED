@@ -48,7 +48,7 @@ void AEnemy::Initialize()
 
 	mAnimator     = nullptr;
 	mBehaviorTree = nullptr;
-	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
+	// mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -191,7 +191,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-		mWeaponCollider->Destroy();
+		// mWeaponCollider->Destroy();
 	}
 
 	OnEnemyHit.Execute(HitResult);
@@ -204,12 +204,12 @@ void AEnemy::OnOut(ICollision* InActor, const FHitResult& HitResult)
 
 void AEnemy::EnableAttackCollision(float radius)
 {
-	mWeaponCollider->EnableCollision(true);
-	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+	// mWeaponCollider->EnableCollision(true);
+	// mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
-	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
-	mWeaponCollider->EnableCollision(false);
+	// mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	// mWeaponCollider->EnableCollision(false);
 }

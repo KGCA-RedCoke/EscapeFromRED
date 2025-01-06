@@ -10,6 +10,7 @@
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 
 #define RADIUS 8.f
+
 JKillerClownAnimator::JKillerClownAnimator()
 {
 }
@@ -36,11 +37,11 @@ void JKillerClownAnimator::Initialize()
     AddAnimationClip("Attack2",
                      "Game/Animation/KillerClown/KC_Attack_02.jasset");
     AddAnimationClip("Attack3",
-    "Game/Animation/KillerClown/KC_Attack_01.jasset");
+                     "Game/Animation/KillerClown/KC_Attack_01.jasset");
     AddAnimationClip("Attack4",
                      "Game/Animation/KillerClown/KC_Attack.jasset");
     AddAnimationClip("JumpAttack",
-                     "Game/Animation/KillerClown/KC_Jump_Attack.jasset");//Anim_KC_JumpAttack
+                     "Game/Animation/KillerClown/KC_Jump_Attack.jasset"); //Anim_KC_JumpAttack
     AddAnimationClip("Hit",
                      "Game/Animation/KillerClown/KC_Hit.jasset");
     AddAnimationClip("Death",
@@ -52,11 +53,11 @@ void JKillerClownAnimator::Initialize()
     {
         if (mBoss)
         {
-            mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
+            mBoss->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
             mBoss->DisableAttackCollision();
         }
     });
-    
+
     auto& hitClip = mStateMachine["Hit"];
     hitClip->OnAnimStart.Bind([&]()
     {
@@ -69,8 +70,8 @@ void JKillerClownAnimator::Initialize()
                 bt->mPhase++;
             }
         }
-    });//            
-    
+    }); //            
+
     hitClip->mEvents[hitClip->GetEndFrame() * 0.8].Bind([&]()
     {
         if (mBoss)
@@ -78,7 +79,7 @@ void JKillerClownAnimator::Initialize()
             mBoss->SetBossState(EBossState::Idle);
         }
     });
-    
+
     auto& attackClip1 = mStateMachine["Attack1"];
     attackClip1->SetAnimationSpeed(2.f);
     attackClip1->mEvents[attackClip1->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
@@ -134,7 +135,8 @@ void JKillerClownAnimator::Initialize()
     JumpAtkClip->SetRootMotion(true);
     JumpAtkClip->OnAnimStart.Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
 
-    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, RADIUS));
+    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.3].Bind(
+        std::bind(&AEnemy::EnableAttackCollision, mBoss, RADIUS));
     JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.5].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
     JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.8].Bind([&]()
     {
@@ -143,7 +145,7 @@ void JKillerClownAnimator::Initialize()
             mBoss->SetBossState(EBossState::Idle);
         }
     });
-    
+
     auto& DeathClip = mStateMachine["Death"];
     DeathClip->mEvents[DeathClip->GetEndFrame() * 0.9].Bind([&]()
     {
@@ -176,7 +178,7 @@ void JKillerClownAnimator::Initialize()
             mBoss->HP = 100;
         }
     });
-    
+
     StandUpClip->mEvents[StandUpClip->GetEndFrame() * 0.9].Bind([&]()
     {
         if (mBoss)
@@ -184,9 +186,10 @@ void JKillerClownAnimator::Initialize()
             mBoss->SetBossState(EBossState::Idle);
         }
     });
-    AddAnimLink("Idle", "Walk", [&]() { return !bt->IsRun && !mMovementComponent->GetVelocity().IsNearlyZero() ; }, 0.2f);
+    AddAnimLink("Idle", "Walk", [&]() { return !bt->IsRun && !mMovementComponent->GetVelocity().IsNearlyZero(); },
+                0.2f);
     AddAnimLink("Idle", "Run", [&]() { return bt->IsRun && !mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
-    AddAnimLink("Walk", "Idle", [&]() { return !bt->IsRun && mMovementComponent->GetVelocity().IsNearlyZero() ; }, 0.2f);
+    AddAnimLink("Walk", "Idle", [&]() { return !bt->IsRun && mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
     AddAnimLink("Run", "Idle", [&]() { return bt->IsRun && mMovementComponent->GetVelocity().IsNearlyZero(); }, 0.2f);
 
     AddAnimLink("Idle", "Death", [&]() { return mBoss->mBossState == EBossState::Death; }, 0.5f);
@@ -207,7 +210,7 @@ void JKillerClownAnimator::Initialize()
     AddAnimLink("Attack3", "Hit", [&]() { return mBoss->mBossState == EBossState::Hit; }, 0.5f);
     AddAnimLink("Attack4", "Hit", [&]() { return mBoss->mBossState == EBossState::Hit; }, 0.5f);
     AddAnimLink("JumpAttack", "Hit", [&]() { return mBoss->mBossState == EBossState::Hit; }, 0.5f);
-    
+
     AddAnimLink("Idle", "Attack1", [&]() { return mBoss->mBossState == EBossState::Attack1; }, 0.5f);
     AddAnimLink("Walk", "Attack1", [&]() { return mBoss->mBossState == EBossState::Attack1; }, 0.5f);
     AddAnimLink("Run", "Attack1", [&]() { return mBoss->mBossState == EBossState::Attack1; }, 0.5f);
@@ -220,7 +223,10 @@ void JKillerClownAnimator::Initialize()
     AddAnimLink("Walk", "Attack2", [&]() { return mBoss->mBossState == EBossState::Attack2; }, 0.5f);
     AddAnimLink("Run", "Attack2", [&]() { return mBoss->mBossState == EBossState::Attack2; }, 0.5f);
     AddAnimLink("Hit", "Attack2", [&]() { return mBoss->mBossState == EBossState::Attack2; }, 0.5f);
-    AddAnimLink("Attack2", "Idle", [&]() { return mBoss->mBossState == EBossState::Idle; }, 0.5f);
+    AddAnimLink("Attack2", "Idle", [&]()
+    {
+        return mBoss->mBossState == EBossState::Idle | GetAnimElapsedRatio() > 0.89f;
+    }, 0.5f);
     AddAnimLink("Attack2", "Walk", [&]() { return mBoss->mBossState == EBossState::Walk; }, 0.5f);
     AddAnimLink("Attack2", "Run", [&]() { return mBoss->mBossState == EBossState::Run; }, 0.5f);
 
@@ -231,7 +237,7 @@ void JKillerClownAnimator::Initialize()
     AddAnimLink("Attack3", "Idle", [&]() { return mBoss->mBossState == EBossState::Idle; }, 0.5f);
     AddAnimLink("Attack3", "Walk", [&]() { return mBoss->mBossState == EBossState::Walk; }, 0.5f);
     AddAnimLink("Attack3", "Run", [&]() { return mBoss->mBossState == EBossState::Run; }, 0.5f);
-    
+
     AddAnimLink("Idle", "Attack4", [&]() { return mBoss->mBossState == EBossState::Attack4; }, 0.5f);
     AddAnimLink("Walk", "Attack4", [&]() { return mBoss->mBossState == EBossState::Attack4; }, 0.5f);
     AddAnimLink("Run", "Attack4", [&]() { return mBoss->mBossState == EBossState::Attack4; }, 0.5f);
@@ -250,7 +256,7 @@ void JKillerClownAnimator::Initialize()
     AddAnimLink("JumpAttack", "Run", [&]() { return mBoss->mBossState == EBossState::Run; }, 0.5f);
 
     // AddAnimLink("Attack", "Walk", [&](){return !mMovementComponent->GetVelocity().IsNearlyZero() && /*공격 끝난상태*/});
-    
+
     AddAnimLink("Death", "StandUp", [&]() { return mBoss->mBossState == EBossState::StandUp; }, 0.5f);
     AddAnimLink("StandUp", "Idle", [&]()
     {
