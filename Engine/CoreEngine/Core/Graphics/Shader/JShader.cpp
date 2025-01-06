@@ -60,6 +60,10 @@ void JShader::BindShaderPipeline(ID3D11DeviceContext* InDeviceContext)
 								? ERasterState::WireFrame
 								: ERasterState::CCW);
 
+	float gameTime = GetWorld.GetGameTime();
+	// // Time버퍼를(상수) 넘겨줘야한다.
+	UpdateConstantData(InDeviceContext, CBuffer::NAME_CONSTANT_BUFFER_TIME, &gameTime);
+
 	UpdateGlobalConstantBuffer(InDeviceContext);
 }
 

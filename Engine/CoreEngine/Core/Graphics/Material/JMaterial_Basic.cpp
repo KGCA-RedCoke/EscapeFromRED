@@ -19,7 +19,7 @@ void JMaterial_Basic::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 void JMaterial_Basic::InitializeParams()
 {
-	if (!mMaterialParams.empty())
+	if (mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 
@@ -80,8 +80,20 @@ void JMaterial_Basic::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		mMaterialParams.push_back(FMaterialParam("Flags",
-												 EMaterialParamValue::Integer,
+		mMaterialParams.push_back(FMaterialParam("Use Rim Light",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Rim Light Power",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Rim Light Range",
+												 EMaterialParamValue::Float,
+												 &FVector::ZeroVector,
+												 true));
+		mMaterialParams.push_back(FMaterialParam("Rim Light Color",
+												 EMaterialParamValue::Float4,
 												 &FVector::ZeroVector,
 												 true));
 		mMaterialName = "Basic";
