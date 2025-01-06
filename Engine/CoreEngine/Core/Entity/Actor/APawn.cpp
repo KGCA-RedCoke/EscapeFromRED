@@ -132,9 +132,6 @@ void APawn::Tick(float DeltaTime)
 void APawn::Destroy()
 {
 	AActor::Destroy();
-
-	mLineComponent->Destroy();
-	mCollisionSphere->Destroy();
 }
 
 void APawn::ReSpawn(const FVector& Location)

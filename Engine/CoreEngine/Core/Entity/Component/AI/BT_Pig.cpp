@@ -146,7 +146,6 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
 
 NodeStatus BT_Pig::SetGoal()
 {
-
 	if (mElapsedTime > 2.f && IsPlayerClose(2000))
 	{
 		FindGoal();
@@ -194,9 +193,9 @@ void BT_Pig::SetupTree()
 
 void BT_Pig::ResetBT()
 {
-    BtBase::ResetBT();
-    BigGoalGrid = FVector2::ZeroVector;
-    GoalGrid = FVector2::ZeroVector;
-    Goals.clear();
-    mOwnerEnemy = nullptr;
+	BtBase::ResetBT();
+	BigGoalGrid = FVector2::ZeroVector;
+	GoalGrid    = FVector2::ZeroVector;
+	Goals.clear();
+	mOwnerEnemy = nullptr;
 }

@@ -316,7 +316,7 @@ void JAnimationClip::Stop()
 void JAnimationClip::ApplyRootMotion() const
 {
 	mSkeletalMeshComponent->GetOwnerActor()->AddLocalLocation(mRootMotionValue.Position);
-	 // XMMatrixRotationQuaternion(mRootMotionValue.Rotation);
+	// XMMatrixRotationQuaternion(mRootMotionValue.Rotation);
 }
 
 bool JAnimationClip::TickAnim(const float DeltaSeconds)
@@ -324,6 +324,13 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 	if (!bPlaying || !mSkeletalMesh)
 	{
 		return true;
+	}
+	// 경과시간 계산
+	mElapsedTime += DeltaSeconds * mAnimationSpeed;
+
+	if (CheckTransition())
+	{
+		return false;
 	}
 
 	// 경과 시간이 애니메이션의 시작 시간을 초과
@@ -339,18 +346,7 @@ bool JAnimationClip::TickAnim(const float DeltaSeconds)
 		OnAnimBlendOut.Execute();
 	}
 
-	// 경과시간 계산
-	mElapsedTime += DeltaSeconds * mAnimationSpeed;
-
 	UpdateInstanceData(mElapsedTime);
-
-	mEvents[mInstanceData.CurrentAnimIndex].Execute();
-
-	if (CheckTransition())
-	{
-		return false;
-	}
-
 
 	return true;
 }
@@ -533,6 +529,8 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 		return;
 	}
 
+	const uint32_t cachedAnimIndex = mInstanceData.CurrentAnimIndex;
+
 	int32_t startFrame = 0, endFrame = 0;
 
 	float startTick;
@@ -543,17 +541,22 @@ void JAnimationClip::UpdateInstanceData(const float InAnimElapsedTime)
 		// 정상적으로 startFrame과 endFrame을 찾은 경우
 		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
 		endTick   = boneTrack->TransformKeys.PositionKeys[endFrame].Time;
-
-
-		mInstanceData.DeltaTime        = (InAnimElapsedTime - startTick) / (endTick - startTick);
-		mInstanceData.CurrentAnimIndex = startFrame;
-		mInstanceData.NextAnimIndex    = endFrame;
 	}
-	if (startFrame >= mEndFrame)
+	else
 	{
-		mInstanceData.DeltaTime        = (0.33);
-		mInstanceData.CurrentAnimIndex = 0;
-		mInstanceData.NextAnimIndex    = 0;
+		startTick = boneTrack->TransformKeys.PositionKeys[startFrame].Time;
+		endTick   = boneTrack->TransformKeys.PositionKeys[mStartFrame + 1].Time;
+	}
+
+	mInstanceData.DeltaTime        = (InAnimElapsedTime - startTick) / 0.0333;
+	mInstanceData.CurrentAnimIndex = startFrame;
+	mInstanceData.NextAnimIndex    = endFrame;
+
+	mInstanceData.CurrentAnimIndex = FMath::Clamp(mInstanceData.CurrentAnimIndex, 0, mEndFrame - 1);
+
+	if (cachedAnimIndex != mInstanceData.CurrentAnimIndex)
+	{
+		mEvents[cachedAnimIndex].Execute();
 	}
 }
 

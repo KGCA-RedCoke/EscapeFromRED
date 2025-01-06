@@ -175,15 +175,20 @@ bool Quad::FNode::Remove(AActor* InActor)
 
 bool Quad::FNode::IsContainedOverlapping(const FBoxShape& InBox) const
 {
+	uint32_t count = 0;
 	for (int i = 0; i < 4; ++i)
 	{
-		if (!Children[i] || !Children[i]->BoundBox.Intersect(InBox))
+		if (Children[i] && Children[i]->BoundBox.Intersect(InBox))
 		{
-			return false;
+			++count;
+			if (count > 1)
+			{
+				return true;
+			}
 		}
 	}
 
-	return true;
+	return false;
 }
 
 void Quad::FNode::Clear()

@@ -19,6 +19,7 @@ public:
 
 	void Tick(float DeltaTime) override;
 	void SetupTree();
+	void ResetBT() override;
 
 public:
 	// Action Function

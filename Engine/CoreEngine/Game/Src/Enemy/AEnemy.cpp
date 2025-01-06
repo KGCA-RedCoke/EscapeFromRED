@@ -25,18 +25,21 @@ AEnemy::AEnemy(JTextView InName)
 
 void AEnemy::Initialize()
 {
-	mChildActorComponentIndices.clear();
-	mActorComponents.clear();
-	
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
-	mSkeletalMeshComponent = dynamic_cast<JSkeletalMeshComponent*>(GetChildComponentByType(
-		 NAME_OBJECT_SKELETAL_MESH_COMPONENT));
+	if (!mSkeletalMeshComponent)
+	{
+		mSkeletalMeshComponent = dynamic_cast<JSkeletalMeshComponent*>(GetChildComponentByType(
+			 NAME_OBJECT_SKELETAL_MESH_COMPONENT));
+	}
 	if (!mSkeletalMeshComponent)
 	{
 		mSkeletalMeshComponent = CreateDefaultSubObject<JSkeletalMeshComponent>("SkeletalMesh", this);
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
+
+	mAnimator     = nullptr;
+	mBehaviorTree = nullptr;
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -84,20 +87,24 @@ void AEnemy::Initialize()
 
 
 	// 상호작용 가능한 Enemy Type (Pig, Butcher)
-	mInteractionSphere = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("Interaction"));
-	if (mInteractionSphere)
+	if (!mInteractionSphere)
 	{
-		mInteractionSphere->OnComponentBeginOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
-			if (InOther->GetActorID() == StringHash("Player"))
-				OnInteractionStart.Execute();
-		});
-		mInteractionSphere->OnComponentEndOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
-			if (InOther->GetActorID() == StringHash("Player"))
-			{
-				OnInteractionEnd.Execute();
-			}
-		});
+		mInteractionSphere = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("Interaction"));
+		if (mInteractionSphere)
+		{
+			mInteractionSphere->OnComponentBeginOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
+				if (InOther->GetActorID() == StringHash("Player"))
+					OnInteractionStart.Execute();
+			});
+			mInteractionSphere->OnComponentEndOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
+				if (InOther->GetActorID() == StringHash("Player"))
+				{
+					OnInteractionEnd.Execute();
+				}
+			});
+		}
 	}
+
 }
 
 void AEnemy::Tick(float DeltaTime)

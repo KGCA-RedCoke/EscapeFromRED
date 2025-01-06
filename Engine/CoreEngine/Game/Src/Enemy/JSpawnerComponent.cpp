@@ -134,5 +134,6 @@ void JSpawnerComponent::Spawn()
 	}
 	spawnedActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());
 	spawnedActor->Initialize();
+	
 	level->mReservedActors.push_back(std::move(spawnedActor));
 }
