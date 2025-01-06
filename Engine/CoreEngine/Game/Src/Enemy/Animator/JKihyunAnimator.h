@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Animation/JAnimator.h"
 
+class JAudioComponent;
 class AEnemy;
 
 class JKihyunAnimator : public JAnimator
@@ -16,4 +17,8 @@ public:
 
 private:
 	AEnemy* mEnemy = nullptr; // 소유 액터
+	
+	JAudioComponent* mWalkSound;
+	JAudioComponent* mAttackSound;
+	JAudioComponent* mDeathSound;
 };

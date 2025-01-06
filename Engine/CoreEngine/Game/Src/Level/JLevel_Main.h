@@ -6,6 +6,8 @@ DECLARE_DYNAMIC_DELEGATE(FOnQuestStart, uint32_t QuestID);
 
 DECLARE_DYNAMIC_DELEGATE(FOnQuestEnd, uint32_t QuestID);
 
+class JAudioComponent;
+
 class JKihyunDialog : public JWidgetComponent
 {
 public:
@@ -33,4 +35,5 @@ private:
 	class APlayerCharacter* mPlayerCharacter;
 	UPtr<JKihyunDialog>     mKihyunDialog;
 	JUIComponent*           mHPBar[3];
+	JAudioComponent* mMainSound;
 };

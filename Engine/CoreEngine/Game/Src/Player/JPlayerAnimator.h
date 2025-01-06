@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Animation/JAnimator.h"
 
+class JAudioComponent;
 class APlayerCharacter;
 
 enum class EPlayerState : uint8_t
@@ -36,4 +37,15 @@ private:
 	bool bIsMoving;
 	bool bIsSprinting;
 	bool bIsCrouching;
+
+
+	JAudioComponent* mWalkLSound;
+	JAudioComponent* mWalkRSound;
+	JAudioComponent* mRunLSound;
+	JAudioComponent* mRunRSound;
+	JAudioComponent* mAttackBasicSound;
+	JAudioComponent* mAttackEnemySound;
+	
+	
+	
 };

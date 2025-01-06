@@ -1,5 +1,6 @@
 ﻿#include "JLevel_Main.h"
 
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Navigation/NavTest.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -55,6 +56,7 @@ void JLevel_Main::InitializeLevel()
 {
 	JLevel::InitializeLevel();
 
+	mMainSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/MainSound.mp3");
 
 	OnLevelLoaded.Bind([&](){
 
@@ -71,6 +73,9 @@ void JLevel_Main::InitializeLevel()
 
 		mPlayerCharacter->BeginPlay();
 
+		mMainSound->Play(true);
+		
+		
 		Application::s_AppInstance->LockMouseToWindow();
 
 		bThreadLoaded = true;

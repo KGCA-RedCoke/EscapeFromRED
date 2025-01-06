@@ -2,6 +2,8 @@
 
 #include "BtBase.h"
 
+class JAudioComponent;
+
 class JLevel;
 class AEnemy;
 class AStar;
@@ -45,4 +47,6 @@ public:
 	inline static int32_t g_Count = 0;
 
 private:
+	JAudioComponent* mPigSound;
+	JAudioComponent* mPigGetSound;
 };
