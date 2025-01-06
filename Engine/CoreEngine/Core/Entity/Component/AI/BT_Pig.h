@@ -18,6 +18,7 @@ public:
 
     void Tick(float DeltaTime) override;
     void SetupTree();
+    void ResetBT() override;
 
 public:
     // Action Function
@@ -34,8 +35,8 @@ public:
     
 
 public:
-    FVector2    BigGoalGrid = FVector2(0.f, 0.f);
-    FVector2    GoalGrid = FVector2(0.f, 0.f);
+    FVector2    BigGoalGrid = FVector2::ZeroVector;
+    FVector2    GoalGrid = FVector2::ZeroVector;
     std::vector<FVector2> Goals;
     AEnemy* mOwnerEnemy;
     

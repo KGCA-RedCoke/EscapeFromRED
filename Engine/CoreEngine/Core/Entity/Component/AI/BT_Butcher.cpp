@@ -214,3 +214,14 @@ void BT_Butcher::SetupTree()
 			 .EndBranch()
 			 .Build();
 }
+
+void BT_Butcher::ResetBT()
+{
+	BtBase::ResetBT();
+	bIsIdle = true;
+	bIsConvers = false;
+	bIsTrace = false;
+	conversIdx = 0;
+	mOwnerEnemy = nullptr;
+	mWorld = nullptr;
+}
