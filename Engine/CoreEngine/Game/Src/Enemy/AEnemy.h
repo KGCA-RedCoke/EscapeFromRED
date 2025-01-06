@@ -94,14 +94,16 @@ public:
 public:
 	virtual void OnHit(ICollision* InActor, const FHitResult& HitResult);
 	virtual void OnOut(ICollision* InActor, const FHitResult& HitResult);
-	void         SetEnemyState(EEnemyState InNewState) { mEnemyState = InNewState; }
-	EEnemyState  GetEnemyState() { return mEnemyState; }
+
+	void        SetEnemyType(EEnemyType InType);
+	void        SetEnemyState(EEnemyState InNewState) { mEnemyState = InNewState; }
+	EEnemyState GetEnemyState() { return mEnemyState; }
 
 	void EnableAttackCollision(float radius);
 	void DisableAttackCollision();
 
 protected:
-	EEnemyType                    mEnemyType;
+	EEnemyType                    mEnemyType = EEnemyType::MAX;
 	EEnemyState                   mEnemyState;
 	UPtr<JAnimator>               mAnimator;
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;

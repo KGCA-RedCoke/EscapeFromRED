@@ -2,6 +2,7 @@
 
 #include "APlayerCharacter.h"
 #include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
@@ -20,6 +21,15 @@ JPlayerAnimator::JPlayerAnimator(JTextView InName, AActor* InOwnerActor)
 void JPlayerAnimator::Initialize()
 {
 	JAnimator::Initialize();
+
+	mWalkLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
+	mWalkRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
+	
+	mRunLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
+	mRunRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
+	
+	mAttackBasicSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/AttackEnemy.mp3");
+	mAttackEnemySound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/AttackEnemy.mp3");
 
 	AddAnimationClip("Idle_Free",
 	                 "Game/Animation/Player/FPP_Halb_Idle.jasset", true);
@@ -142,6 +152,9 @@ void JPlayerAnimator::Initialize()
 
 void JPlayerAnimator::BindEvents()
 {
+	auto* walkAnim = mStateMachine["Walk_Free"].get();
+	auto* runAnim = mStateMachine["Run_Free"].get();	
+	
 	auto* combo1Anim = mStateMachine["Combo1"].get();
 	auto* combo2Anim = mStateMachine["Combo2"].get();
 	auto* combo3Anim = mStateMachine["Combo3"].get();
@@ -183,6 +196,59 @@ void JPlayerAnimator::BindEvents()
 	combo4Anim->mEvents[combo4Anim->GetEndFrame() * 0.8].Bind(std::bind(&APlayerCharacter::OnMeleeAttackFinished,
 																		mOwnerCharacter));
 
+	const uint32_t walkEndFrame = walkAnim->GetEndFrame();
+	const uint32_t runEndFrame = runAnim->GetEndFrame();
+	
+	for (uint32_t i = 0; i < walkEndFrame; i+=14)
+	{
+		walkAnim->mEvents[i].Bind([&,i]()  
+		{
+			if (i / 14 % 2 == 0) 
+			{
+				mWalkLSound->Play();
+			}
+			else 
+			{
+				mWalkRSound->Play();
+			}
+		});
+	}
+	
+	for (uint32_t i = 0; i < runEndFrame; i+=10)
+	{
+		runAnim->mEvents[i].Bind([&]()
+		{
+			mRunLSound->Play();
+		});
+	}
+
+	
+	combo1Anim->mEvents[combo1Anim->GetEndFrame()*0.1].Bind([&]()
+	{
+		mAttackBasicSound->Play();
+	});
+	
+	combo2Anim->mEvents[combo2Anim->GetEndFrame()*0.2].Bind([&]()
+	{
+		mAttackBasicSound->Play();
+	});
+	
+	combo3Anim->mEvents[combo3Anim->GetEndFrame()*0.2].Bind([&]()
+	{
+		mAttackBasicSound->Play();
+	});
+	
+	combo4Anim->mEvents[combo4Anim->GetEndFrame()*0.4].Bind([&]()
+	{
+		mAttackBasicSound->Play();
+	});
+	
+	
+
+	
+	
+
+	
 }
 
 void JPlayerAnimator::BeginPlay()

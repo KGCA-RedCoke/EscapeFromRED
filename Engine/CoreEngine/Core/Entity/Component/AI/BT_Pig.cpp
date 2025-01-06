@@ -2,6 +2,7 @@
 
 #include "GUI/GUI_Inspector.h"
 #include "Core/Entity/Actor/AActor.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Entity/Navigation/AStar.h"
@@ -41,7 +42,9 @@ void BT_Pig::Initialize()
 	mOwnerEnemy->OnInteractionEnd.Bind([this](){
 		mWorld->ShowPressEKey(false);
 	});
-
+	
+	mPigSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/pig.mp3");
+	mPigGetSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/pig_Get.mp3");
 }
 
 void BT_Pig::BeginPlay() { JActorComponent::BeginPlay(); }
@@ -152,6 +155,7 @@ NodeStatus BT_Pig::SetGoal()
 		FVector TempPos = G_BIG_MAP.WorldPosFromGridPos(BigGoalGrid);
 		GoalGrid        = G_NAV_MAP.GridFromWorldPoint(TempPos);
 		mElapsedTime    = 0.f;
+		mPigSound->Play();
 	}
 	mElapsedTime += mDeltaTime;
 	return NodeStatus::Success;
@@ -162,6 +166,9 @@ NodeStatus BT_Pig::IsPlayerNearAndPressE()
 	if (GetAsyncKeyState('E') & 0x8000 && IsPlayerClose(180))
 	{
 		mOwnerEnemy->Destroy();
+		mPigGetSound->Play();
+
+		
 		return NodeStatus::Success;
 	}
 	return NodeStatus::Failure;
@@ -189,9 +196,9 @@ void BT_Pig::SetupTree()
 			 .Build();
 }
 
-void BT_Pig::ResetBT()
+void BT_Pig::ResetBT(AActor* NewOwner)
 {
-	BtBase::ResetBT();
+	BtBase::ResetBT(nullptr);
 	BigGoalGrid = FVector2::ZeroVector;
 	GoalGrid    = FVector2::ZeroVector;
 	Goals.clear();

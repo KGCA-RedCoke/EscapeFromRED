@@ -18,7 +18,7 @@ public:
 
 	void Tick(float DeltaTime) override;
 	void SetupTree();
-	void ResetBT() override;
+	void ResetBT(AActor* NewOwner) override;
 
 public:
 	// Action Function

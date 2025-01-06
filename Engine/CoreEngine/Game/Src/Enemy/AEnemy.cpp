@@ -27,12 +27,6 @@ AEnemy::AEnemy(JTextView InName)
 
 void AEnemy::Initialize()
 {
-	RemoveFlag(EObjectFlags::IsPendingKill);
-
-	mEnemyState = EEnemyState::Idle;
-	mActorComponents.clear();
-	mChildActorComponentIndices.clear();
-	
 	mObjectFlags |= EObjectFlags::ShouldTick;
 
 	if (!mSkeletalMeshComponent)
@@ -46,9 +40,9 @@ void AEnemy::Initialize()
 		mSkeletalMeshComponent->SetupAttachment(this);
 	}
 
-	mAnimator     = nullptr;
-	mBehaviorTree = nullptr;
-	// mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
+	mAnimator       = nullptr;
+	mBehaviorTree   = nullptr;
+	mWeaponCollider = dynamic_cast<JSphereComponent*>(GetChildSceneComponentByName("AttackSphere"));
 
 	if (mSkeletalMeshComponent && mSkeletalMeshComponent->GetSkeletalMesh())
 	{
@@ -79,7 +73,6 @@ void AEnemy::Initialize()
 		case EEnemyType::MAX:
 			break;
 		}
-		mBehaviorTree->ResetBT();
 		APawn::Initialize();
 		mAnimator->Initialize();
 		mSkeletalMeshComponent->SetAnimator(mAnimator.get());
@@ -191,7 +184,7 @@ void AEnemy::OnHit(ICollision* InActor, const FHitResult& HitResult)
 		mEnemyState = EEnemyState::Death;
 		DisableAttackCollision();
 		mCollisionSphere->Destroy();
-		// mWeaponCollider->Destroy();
+		mWeaponCollider->Destroy();
 	}
 
 	OnEnemyHit.Execute(HitResult);
@@ -202,14 +195,91 @@ void AEnemy::OnOut(ICollision* InActor, const FHitResult& HitResult)
 	OnEnemyOut.Execute();
 }
 
+void AEnemy::SetEnemyType(EEnemyType InType)
+{
+	if (InType == mEnemyType)
+	{
+		mBehaviorTree->ResetBT(this);
+		mAnimator->SetState("Idle");
+		RemoveFlag(EObjectFlags::IsPendingKill);
+		SetEnemyState(EEnemyState::Idle);
+
+		if (mInteractionSphere)
+			mInteractionSphere->Initialize();
+		mCollisionSphere->Initialize();
+		mWeaponCollider->Initialize();
+		return;
+	}
+
+	if (mEnemyType == EEnemyType::MAX)
+	{
+		switch (InType)
+		{
+		case EEnemyType::Kihyun:
+			Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", this);
+			break;
+		case EEnemyType::Girl:
+			break;
+		case EEnemyType::Clown:
+			break;
+		case EEnemyType::Madre:
+			break;
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+
+		Initialize();
+		return;
+	}
+
+	else
+	{
+		mEnemyType = InType;
+
+
+		switch (InType)
+		{
+		case EEnemyType::Kihyun:
+			{
+				mSkeletalMeshComponent->SetSkeletalMesh("Game/Mesh/SK_BigZombie.jasset");
+				mAnimator = MakeUPtr<JKihyunAnimator>("Animator",
+													  mSkeletalMeshComponent);
+				auto uPtr = MakeUPtr<
+					BT_BigZombie>("BehaviorTree", this);
+				mBehaviorTree                                                 = uPtr.get();
+				mActorComponents[mChildActorComponentIndices["BehaviorTree"]] = std::move(uPtr);
+			}
+
+
+			break;
+		case EEnemyType::Madre:
+			break;
+		case EEnemyType::Pig:
+			break;
+		case EEnemyType::Butcher:
+			break;
+		case EEnemyType::MAX:
+			break;
+		}
+	}
+
+	mBehaviorTree->ResetBT(this);
+	RemoveFlag(EObjectFlags::IsPendingKill);
+	SetEnemyState(EEnemyState::Idle);
+}
+
 void AEnemy::EnableAttackCollision(float radius)
 {
-	// mWeaponCollider->EnableCollision(true);
-	// mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
+	mWeaponCollider->EnableCollision(true);
+	mWeaponCollider->SetLocalScale(FVector(radius, radius, radius));
 }
 
 void AEnemy::DisableAttackCollision()
 {
-	// mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
-	// mWeaponCollider->EnableCollision(false);
+	mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f));
+	mWeaponCollider->EnableCollision(false);
 }

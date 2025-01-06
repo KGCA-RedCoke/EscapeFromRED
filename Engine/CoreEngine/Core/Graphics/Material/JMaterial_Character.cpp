@@ -14,7 +14,7 @@ void JMaterial_Character::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 void JMaterial_Character::InitializeParams()
 {
-	if (!mMaterialParams.empty())
+	if (mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 
@@ -47,9 +47,9 @@ void JMaterial_Character::InitializeParams()
 												 &FVector::ZeroVector,
 												 true));
 		mMaterialParams.push_back(FMaterialParam("MaskMap",
-										 EMaterialParamValue::Texture2D,
-										 &FVector::ZeroVector,
-										 true));
+												 EMaterialParamValue::Texture2D,
+												 &FVector::ZeroVector,
+												 true));
 
 		mMaterialParams.push_back(FMaterialParam("BaseColor",
 												 EMaterialParamValue::Float3,
@@ -79,7 +79,7 @@ void JMaterial_Character::InitializeParams()
 												 EMaterialParamValue::Float,
 												 &FVector::ZeroVector,
 												 true));
-		
+
 		mMaterialParams.push_back(FMaterialParam("MaskColor1",
 												 EMaterialParamValue::Float3,
 												 &FVector::ZeroVector,
@@ -92,9 +92,9 @@ void JMaterial_Character::InitializeParams()
 												 EMaterialParamValue::Float3,
 												 &FVector::ZeroVector,
 												 true));
-		
+
 		mMaterialName = "Material_Character";
-		
+
 		Utils::Serialization::Serialize(NAME_MAT_CHARACTER, this);
 	}
 

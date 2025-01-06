@@ -1,6 +1,7 @@
 ﻿#include "JKihyunAnimator.h"
 
 #include "Core/Entity/Animation/MAnimManager.h"
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
 #include "Core/Interface/JWorld.h"
@@ -21,6 +22,13 @@ void JKihyunAnimator::Initialize()
 {
     JAnimator::Initialize();
 
+    mWalkSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
+    //mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
+    mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
+    mDeathSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
+
+    
+    
     AddAnimationClip("Idle",
                      "Game/Animation/BigZombie/BZ_Idle.jasset", true);
     AddAnimationClip("Walk",
@@ -78,6 +86,35 @@ void JKihyunAnimator::Initialize()
 
     SetState("Idle");
     mCurrentAnimation->Play();
+
+
+    auto* walkAnim = mStateMachine["Walk"].get();
+    auto* attackAnim = mStateMachine["Attack"].get();
+    auto* deathAnim = mStateMachine["Death"].get();
+    
+    const uint32_t walkEndFrame = walkAnim->GetEndFrame();
+    const uint32_t AttackEndFrame = attackAnim->GetEndFrame();
+    const uint32_t DeathEndFrame = deathAnim->GetEndFrame();
+    
+    // for (uint32_t i = 0; i < walkEndFrame; i+=15)
+    // {
+    //     walkAnim->mEvents[i].Bind([&]()
+    //     {
+    //         mWalkSound->Play();
+    //     });
+    // }
+    
+    attackAnim->mEvents[AttackEndFrame * 0.15].Bind([&]()
+    {
+        mAttackSound->Play();
+    });
+    
+
+    // deathAnim->mEvents[DeathEndFrame* 0.15].Bind([&]()
+    // {
+    //     mDeathSound->Play();
+    // });
+
 }
 
 void JKihyunAnimator::BeginPlay()

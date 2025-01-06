@@ -27,7 +27,8 @@ private:
 private:
 	void SetMeshObject(JTextView InMeshPath);
 	void ShowMaterialEditor();
-	
+
+	void HandleBoolType(const FMaterialParam& Param) const;
 	void HandleFloatType(const FMaterialParam& Param);
 	void HandleFloat2Type(const FMaterialParam& Param);
 	void HandleFloat3Type(const FMaterialParam& Param);

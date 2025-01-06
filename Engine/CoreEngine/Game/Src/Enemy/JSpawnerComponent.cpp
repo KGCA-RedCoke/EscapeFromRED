@@ -126,10 +126,11 @@ void JSpawnerComponent::Spawn()
 	JText      enemyTypeStr = GetEnemyTypeString(enemyType);
 	JText      enemyName    = std::format("{}_{}", enemyTypeStr, mSpawnCount);
 	auto       spawnedActor = level->mEnemyPool.Spawn(enemyName);
+
 	switch (enemyType)
 	{
 	case EEnemyType::Kihyun:
-		Utils::Serialization::DeSerialize("Game/Enemy/Enemy_KH.jasset", spawnedActor.get());
+		spawnedActor->SetEnemyType(EEnemyType::Kihyun);
 		break;
 	case EEnemyType::Girl:
 		break;
@@ -146,7 +147,6 @@ void JSpawnerComponent::Spawn()
 		break;
 	}
 	spawnedActor->SetWorldLocation(GetOwnerActor()->GetWorldLocation());
-	spawnedActor->Initialize();
-	
+
 	level->mReservedActors.push_back(std::move(spawnedActor));
 }

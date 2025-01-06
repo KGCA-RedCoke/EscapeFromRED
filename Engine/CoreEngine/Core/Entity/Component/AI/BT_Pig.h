@@ -2,6 +2,8 @@
 
 #include "BtBase.h"
 
+class JAudioComponent;
+
 class JLevel;
 class AEnemy;
 class AStar;
@@ -19,7 +21,7 @@ public:
 
 	void Tick(float DeltaTime) override;
 	void SetupTree();
-	void ResetBT() override;
+	void ResetBT(AActor* NewOwner) override;
 
 public:
 	// Action Function
@@ -45,4 +47,6 @@ public:
 	inline static int32_t g_Count = 0;
 
 private:
+	JAudioComponent* mPigSound;
+	JAudioComponent* mPigGetSound;
 };

@@ -17,4 +17,5 @@ public:
 
 private:
     AEnemy* mEnemy = nullptr; // 소유 액터
+
 };

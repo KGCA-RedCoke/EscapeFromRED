@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Level/JLevel.h"
 
+class JAudioComponent;
 class JUIComponent;
 
 class JLevel_Intro : public JLevel
@@ -16,4 +17,6 @@ public:
 
 private:
 	FVector2 mStartButtonSize;
+	JAudioComponent* mIntroSound;
+	JAudioComponent* mButtonSound;
 };

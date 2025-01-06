@@ -1,5 +1,6 @@
 ﻿#include "JLevel_Intro.h"
 
+#include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -7,10 +8,14 @@
 
 JLevel_Intro::JLevel_Intro()
 {
+	mIntroSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/IntroSound.mp3");
+	mButtonSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/ButtonSound.mp3");
+	
 	mWidgetComponents.reserve(1);
 
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/IntroScene.jasset"));
 
+	mIntroSound->Play();
 	mActors.clear();
 
 	bThreadLoaded = true;
@@ -31,12 +36,16 @@ JLevel_Intro::JLevel_Intro()
 	mStartButtonSize = mWidgetComponents[0]->mUIComponents[5]->GetInstanceData().Size;
 	mWidgetComponents[0]->mUIComponents[5]->OnAnimationEvent.Bind([&](float DeltaTime){
 		auto& data   = mWidgetComponents[0]->mUIComponents[5]->GetInstanceData();
-		data.Color.w = (sin(GetWorld.GetGameTime()) + 1) / 2;
-		data.Size    = mStartButtonSize * FMath::Clamp((sin(GetWorld.GetGameTime()) + 1) / 2, 0.7f, 1.5f);
+		data.Color.w = (sin(GetWorld.GetGameTime() * 3.14159f / 2) + 1) / 2;
+		//data.Color.w = (sin(GetWorld.GetGameTime()) + 1) / 2;
+		//data.Size    = mStartButtonSize * FMath::Clamp((sin(GetWorld.GetGameTime()) + 1) / 2, 0.7f, 1.5f);
 	});
 }
 
-JLevel_Intro::~JLevel_Intro() {}
+JLevel_Intro::~JLevel_Intro()
+{
+
+}
 
 void JLevel_Intro::InitializeLevel()
 {}
@@ -47,6 +56,7 @@ void JLevel_Intro::UpdateLevel(float DeltaTime)
 	{
 		JLevel* mainLevel = GetWorld.LevelManager->LoadMainLevel();
 		GetWorld.LevelManager->SetActiveLevel(mainLevel);
+		mButtonSound->Play();
 	}
 
 	std::erase_if(

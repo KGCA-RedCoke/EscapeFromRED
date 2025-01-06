@@ -33,7 +33,7 @@ void JMaterial_Wind::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 void JMaterial_Wind::InitializeParams()
 {
-	if (!mMaterialParams.empty())
+	if (mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 

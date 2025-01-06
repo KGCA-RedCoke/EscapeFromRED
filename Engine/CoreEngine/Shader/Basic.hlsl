@@ -24,12 +24,18 @@ cbuffer CMaterialBuffer : register(b9)
 {
 	float3 BaseColor : MAT_BASECOLOR;
 	float  AO : MAT_SPECULAR;
-	float  Roughness : MAT_ROUGHNESS;
-	float  Metallic : MAT_METALLIC;
-	float  Emissive : MAT_EMISSIVE;
-	float  Specular : MAT_SPECULAR;
-	float  Opacity : MAT_OPACITY;
-	uint   Flag : MAT_TEXTUREFLAG;
+
+	float Roughness : MAT_ROUGHNESS;
+	float Metallic : MAT_METALLIC;
+	float Emissive : MAT_EMISSIVE;
+	float Specular : MAT_SPECULAR;
+
+	float Opacity : MAT_OPACITY;
+	float UseRimLight : MAT_USERIMLIGHT;
+	float RimLightPower : MAT_RIMLIGHTPOWER;
+	float RimLightRange : MAT_RIMLIGHTRANGE;
+
+	float4 RimLightColor : MAT_RIMLIGHTCOLOR;
 };
 
 PixelIn_Base VS(VertexIn_Base Input, InstanceData Instance)
@@ -167,7 +173,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	float3 diffuse  = albedo * normDotLight;
 	float3 f0       = lerp(0.04f, Specular, metallic);
 	float3 specular = SpecularGGX(normal, viewDir, lightDir, roughness, f0);
-	
+
 	// Point Lights and Spot Lights
 	float3 finalPointLight = 0.0f;
 	float3 finalSpotLight  = 0.0f;
@@ -194,9 +200,13 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	finalColor += emissive;
 
-	if (Flag & FLAG_USE_RIMLIGHT)
+	if (UseRimLight > 0.f)
 	{
-		finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 10.f, 10.f);
+		float  time                  = abs(sin(GameTime)) * 3; // GameTime은 쉐이더로 전달된 현재 게임 시간 (초 단위)
+		float  rimLightPowerAnimated = lerp(0.5, 5.0, time);
+		float3 rimLightColor         = ComputeRimLight(normal, viewDir, RimLightColor, rimLightPowerAnimated, 5.f);
+
+		finalColor += rimLightColor;
 	}
 
 	// finalColor += ComputeRimLight(normal, viewDir, float3(0, 1, 0), 10.f, 10.f);
