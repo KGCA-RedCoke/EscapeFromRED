@@ -125,7 +125,8 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
 		{
 			LastPlayerPos   = PlayerPos;
 			mHasPath        = PaStar->FindPath(NpcNode, GoalNode, 2);
-			PaStar->mSpeed  = FMath::GenerateRandomFloat(500, 1000);
+			// PaStar->mSpeed  = FMath::GenerateRandomFloat(500, 1000);
+			PaStar->mSpeed  = 10;
 			NeedsPathReFind = false;
 		}
 	}
