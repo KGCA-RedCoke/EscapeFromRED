@@ -536,9 +536,26 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
-	LoadingScreen = Load("Game/UI/inthedark.jasset");
+	LoadingScreen = Load("Game/UI/loadingding.jasset");
 
 
+	LoadingScreen->mUIComponents[2]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[2]->GetInstanceData();
+		data.Color.w =  (sin(GetWorld.GetGameTime() * 7.14159f / 2) + 1) / 2;
+	});
+	
+	LoadingScreen->mUIComponents[3]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[3]->GetInstanceData();
+		data.Color.w =  (sin((GetWorld.GetGameTime()-0.32f) * 7.14159f / 2) + 1) / 2;
+	});
+	
+	LoadingScreen->mUIComponents[4]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[4]->GetInstanceData();
+		data.Color.w =  (sin((GetWorld.GetGameTime()-0.64f) * 7.14159f / 2) + 1) / 2;
+	});
 }
 
 MUIManager::~MUIManager() {}

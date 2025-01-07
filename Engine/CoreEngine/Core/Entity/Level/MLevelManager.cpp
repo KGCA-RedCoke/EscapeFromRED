@@ -36,6 +36,7 @@ void MLevelManager::Render()
 	{
 		if (!mActiveLevel->IsLoaded())
 		{
+			MUIManager::Get().LoadingScreen->Tick(0);
 			MUIManager::Get().LoadingScreen->AddInstance();
 			MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 		}
