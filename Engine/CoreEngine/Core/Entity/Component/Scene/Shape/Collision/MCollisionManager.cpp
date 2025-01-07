@@ -1,5 +1,8 @@
 ﻿#include "MCollisionManager.h"
 
+#include "Core/Interface/JWorld.h"
+#include "Game/Src/Player/APlayerCharacter.h"
+
 void MCollisionManager::EnrollCollision(ICollision* InCollision)
 {
 	mLayerHash[InCollision->GetTraceType()].emplace_back(InCollision);
@@ -35,6 +38,43 @@ JArray<ICollision*>& MCollisionManager::GetLayer(ETraceType InType)
 
 void MCollisionManager::UpdateCollision()
 {
+	// auto* player = MLevelManager::Get().GetActiveLevel()->mPlayerCharacter;
+	// auto& pawns  = MLevelManager::Get().GetActiveLevel()->Pawns;
+	//
+	// const JArray<ICollision*>& blockingVolume = mLayerHash[ETraceType::BlockingVolume];
+	// const JArray<ICollision*>& interactions   = mLayerHash[ETraceType::Interactive];
+	// const JArray<>
+	//
+	// for (auto& volume : blockingVolume)
+	// {
+	// 	for (auto& pawn : pawns)
+	// 	{
+	// 		CheckCollision(volume, pawn->PawnSphere());
+	// 	}
+	// }
+	//
+	// for (auto& pawn : pawns)
+	// {
+	// 	for (auto& pawn2 : pawns)
+	// 	{
+	// 		if (pawn != pawn2)
+	// 		{
+	// 			CheckCollision(pawn->PawnSphere(), pawn2->PawnSphere());
+	// 		}
+	// 	}
+	// }
+	//
+	// for (auto& interaction : interactions)
+	// {
+	// 	CheckCollision(player->PawnSphere(), interaction);
+	// }
+	//
+	// for (auto& pawn : pawns)
+	// {
+	// 	CheckCollision(pawn->PawnSphere(), player->WeaponCollider());
+	// }
+
+
 	// 2차원 배열(각 레이어별로)을 순회하면서 충돌을 검사한다.
 	for (uint8_t i = 0; i < EnumAsByte(ETraceType::Max); ++i)
 	{
@@ -47,6 +87,8 @@ void MCollisionManager::UpdateCollision()
 			}
 		}
 	}
+
+
 }
 
 void MCollisionManager::UpdateLayerCollision(ETraceType InRow, ETraceType InCol)

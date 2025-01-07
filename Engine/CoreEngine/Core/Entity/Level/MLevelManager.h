@@ -16,6 +16,7 @@ public:
 	JLevel* LoadIntroLevel();
 	JLevel* LoadMainLevel();
 	JLevel* LoadGameOverLevel();
+	JLevel* LoadEndingLevel();
 
 public:
 	JLevel* CreateLevel(const JText& InSavePath);

@@ -12,9 +12,9 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 
 
-
 JLevel_Main::JLevel_Main()
 {
+
 	// for (int32_t i = 7; i < 10; ++i)
 	// {
 	// 	mHPBar[i - 7] = mWidgetComponents[0]->mUIComponents[i].get();
@@ -39,7 +39,11 @@ void JLevel_Main::InitializeLevel()
 
 		for (auto& actor : mActors)
 		{
-			actor->BeginPlay();
+			if (actor->GetChildComponentByType(NAME_COMPONENT_SPAWNER))
+			{
+				EnemySpawner.push_back(actor.get());
+			}
+			// actor->BeginPlay();
 		}
 		// // Play 동작 처리
 		mPlayerCharacter = GetWorld.SpawnActor<APlayerCharacter>("Player",
@@ -51,21 +55,24 @@ void JLevel_Main::InitializeLevel()
 		mPlayerCharacter->BeginPlay();
 
 		mMainSound->Play(true);
-		
-		
+
+
 		Application::s_AppInstance->LockMouseToWindow();
 
 		bThreadLoaded = true;
 
-		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Pawn, true);
+		// GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Player, ETraceType::Pawn, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Player, ETraceType::BlockingVolume, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Player, ETraceType::EnemyHitSpace, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Player, ETraceType::Interactive, true);
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::BlockingVolume, true);
 		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::PlayerWeapon, true);
-		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Ground, true);
+		GetWorld.ColliderManager->SetCollisionLayer(ETraceType::Pawn, ETraceType::Pawn, true);
 
 		G_NAV_MAP.Initialize();
 		G_BIG_MAP.Initialize();
 	});
-	
+
 	GetWorld.ThreadPool.ExecuteTask([this](){
 		Utils::Serialization::DeSerialize("Game/Levels/Map.jasset", this);
 	});

@@ -93,6 +93,10 @@ public:
 	JUIComponent*                   mPressEKey;
 	JUIComponent*                   mHPBar[3];
 
+	JArray<AActor*> EnemySpawner;
+	JArray<APawn*>  Pawns;
+
+
 	friend class GUI_Inspector;
 	friend class GUI_Viewport;
 };
