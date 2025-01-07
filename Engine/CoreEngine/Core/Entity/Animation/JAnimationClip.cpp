@@ -283,7 +283,7 @@ bool JAnimationClip::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JAnimationClip::Initialize()
 {
-	mEvents[mEndFrame - 1].Bind([this](){ OnAnimFinished.Execute(); });
+	mEvents[mEndFrame - 2].Bind([this](){ OnAnimFinished.Execute(); });
 	OnAnimBlendOut.Bind([&](){
 		if (bRootMotion)
 		{

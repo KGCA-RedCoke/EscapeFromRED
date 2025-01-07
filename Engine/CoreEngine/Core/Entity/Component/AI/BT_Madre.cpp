@@ -30,7 +30,8 @@ void BT_Madre::Initialize()
     assert(mOwnerEnemy);
     
     JActorComponent::Initialize();
-    mAttackDistance = 200;
+    mAttackDistance = 300;
+    PaStar->mSpeed = 700;
 }
 
 void BT_Madre::BeginPlay() { JActorComponent::BeginPlay(); }

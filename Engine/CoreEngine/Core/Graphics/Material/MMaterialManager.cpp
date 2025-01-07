@@ -39,7 +39,7 @@ void MMaterialManager::SaveEngineMaterials()
 	// auto detail = Load<JMaterial_Detail>(NAME_MAT_DETAIL);
 	// detail->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_Detail.hlsl"));
 	//
-	// Utils::Serialization::Serialize(NAME_MAT_POM, POM);
+	Utils::Serialization::Serialize(NAME_MAT_POM, POM);
 	// Utils::Serialization::Serialize(NAME_MAT_DETAIL, detail);
 
 	// auto mirror = Load<JMaterial_Mirror>(NAME_MAT_MIRROR);

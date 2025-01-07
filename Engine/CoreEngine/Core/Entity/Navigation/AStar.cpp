@@ -9,8 +9,7 @@
 #include "Core/Interface/JWorld.h"
 
 #include "Core/Utils/Math/Vector2.h"
-#define MAX_GCOST 500
-#define MIN_GCOST 400
+
 
 AStar::~AStar()
 {
@@ -34,7 +33,7 @@ bool AStar::FindPath(Ptr<Node> Start, Ptr<Node> Target, float Weight)
         if (current == Target)
         {
             RetracePath(Start, Target);
-            mLimitGCost = MAX_GCOST;
+            mLimitGCost = mMaxGCost;
             return true;
         }
         for (auto child : current->Children)
@@ -45,7 +44,7 @@ bool AStar::FindPath(Ptr<Node> Start, Ptr<Node> Target, float Weight)
                 continue;
             if (current->GCost > mLimitGCost)
             {
-                mLimitGCost = MIN_GCOST;
+                mLimitGCost = mMinGCost;
                 // std::vector<Ptr<Nav::Node>> TempPath;
                 // TempPath.push_back(Target);
                 // mPath = MakePtr<Path>(simplifyPath(TempPath), Start->WorldPos, TurnDst);
@@ -194,5 +193,5 @@ void AStar::resetAstar()
     TurnDst = 1;
     IsPosUpdated = false;
     mPath = nullptr;
-    mLimitGCost = MAX_GCOST;
+    mLimitGCost = mMaxGCost;
 }

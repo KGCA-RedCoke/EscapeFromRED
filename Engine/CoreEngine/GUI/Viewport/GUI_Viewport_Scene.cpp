@@ -12,6 +12,7 @@
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Mesh/MMeshManager.h"
 #include "Core/Graphics/Texture/MTextureManager.h"
+#include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
 #include "Core/Window/Application.h"
 #include "Game/Src/Boss/AKillerClown.h"
@@ -194,6 +195,6 @@ void GUI_Viewport_Scene::ShowTopMenu()
 		GetWorld.bGameMode = true;
 #endif
 
-		Application::s_AppInstance->LockMouseToWindow();
+		// Application::s_AppInstance->LockMouseToWindow();
 	}
 }

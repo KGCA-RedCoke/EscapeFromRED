@@ -43,6 +43,8 @@ public:
     AActor* mOwnerActor = nullptr;
     FVector2 obstacle = FVector2::ZeroVector;
     int mLimitGCost = 500;
+    int mMaxGCost = 500;
+    int mMinGCost = 400;
 };
 
 

@@ -56,6 +56,10 @@ void JButcherAnimator::Initialize()
     AddAnimLink("Convers1", "Convers2", [&](){ return mEnemy->mEnemyState == EEnemyState::Convers2; }, 0.5f);
     AddAnimLink("Convers2", "Convers3", [&](){ return mEnemy->mEnemyState == EEnemyState::Convers3; }, 0.5f);
     AddAnimLink("Convers3", "Convers4", [&](){ return mEnemy->mEnemyState == EEnemyState::Convers4; }, 0.5f);
+    AddAnimLink("Convers4", "Convers1", [&](){ return mEnemy->mEnemyState == EEnemyState::Convers1; }, 0.5f);
+    AddAnimLink("Convers1", "Idle", [&](){ return mEnemy->mEnemyState == EEnemyState::Idle; }, 0.5f);
+    AddAnimLink("Convers2", "Idle", [&](){ return mEnemy->mEnemyState == EEnemyState::Idle; }, 0.5f);
+    AddAnimLink("Convers3", "Idle", [&](){ return mEnemy->mEnemyState == EEnemyState::Idle; }, 0.5f);
     AddAnimLink("Convers4", "Idle", [&](){ return mEnemy->mEnemyState == EEnemyState::Idle; }, 0.5f);
     
     // AddAnimLink("Walk", "Death", [&]() { return mEnemy->mEnemyState == EEnemyState::Death; }, 0.5f);

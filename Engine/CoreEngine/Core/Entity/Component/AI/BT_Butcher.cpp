@@ -4,10 +4,13 @@
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Core/Entity/Navigation/Path.h"
 #include "Core/Entity/Navigation/AStar.h"
+#include "Core/Entity/Navigation/NavTest.h"
 #include "imgui/imgui_internal.h"
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Level/JLevel_Main.h"
+#include "Core/Entity/Component/AI/BT_Pig.h"
 
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
@@ -37,6 +40,10 @@ void BT_Butcher::Initialize()
 	});
 
 	JActorComponent::Initialize();
+	PaStar->mSpeed = 500;
+	
+	PaStar->mMaxGCost = 2000;
+	PaStar->mMinGCost = 2000;
 }
 
 void BT_Butcher::BeginPlay() { JActorComponent::BeginPlay(); }
@@ -98,6 +105,59 @@ NodeStatus BT_Butcher::GetNextConvers()
 	return NodeStatus::Success;
 }
 
+NodeStatus BT_Butcher::GetPath(FVector2 GoalGrid)
+{
+	FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
+	if (PaStar->FindPath(G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x], G_NAV_MAP.mGridGraph[GoalGrid.y][GoalGrid.x], 2))
+		return NodeStatus::Success;
+	return NodeStatus::Failure;
+}
+
+NodeStatus BT_Butcher::GoGoal()
+{
+	std::vector<Ptr<Nav::Node>> TempPath = PaStar->mPath->lookPoints;
+	if (TempPath.size() && PaStar->mPathIdx < TempPath.size())
+	{
+		FollowPath();
+		return NodeStatus::Running;
+	}
+	return NodeStatus::Success;
+}
+
+NodeStatus BT_Butcher::LookAt(FVector direction)
+{
+	if (mElapsedTime < 2.0f)
+	{
+		mElapsedTime += mDeltaTime;
+		FVector rotation = mOwnerActor->GetLocalRotation();
+		mOwnerActor->SetLocalRotation(RotateTowards(direction, rotation));
+		return NodeStatus::Running;
+	}
+	bIsTrace = false;
+	
+	return NodeStatus::Success;
+}
+
+NodeStatus BT_Butcher::StateToNextQuest()
+{
+	bool    bIsNextQuest   = true;
+	return NodeStatus::Success;
+}
+
+NodeStatus BT_Butcher::StateToTransform(int N)
+{
+	mEventStartFlag = true;
+	if (conversIdx == N)
+	{
+		bIsNextQuest = false;
+		bIsTransform   = true;
+		conversIdx = 0;
+		mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
+		GetWorld.LevelManager->GetActiveLevel()->OnQuestEnd.Execute(conversIdx);
+	}
+	return NodeStatus::Success;
+}
+
 NodeStatus BT_Butcher::IsIdle()
 {
 	if (bIsIdle)
@@ -117,6 +177,21 @@ NodeStatus BT_Butcher::IsConvers()
 NodeStatus BT_Butcher::IsTrace()
 {
 	if (bIsTrace)
+		return NodeStatus::Success;
+	else
+		return NodeStatus::Failure;
+}
+
+NodeStatus BT_Butcher::IsQuestFinished(int n)
+{
+	if (BT_Pig::g_Count == n)
+		return NodeStatus::Success;
+	return NodeStatus::Failure;
+}
+
+NodeStatus BT_Butcher::IsQuestEnd()
+{
+	if (bIsNextQuest)
 		return NodeStatus::Success;
 	else
 		return NodeStatus::Failure;
@@ -143,7 +218,7 @@ NodeStatus BT_Butcher::conversation(int idx)
 	{
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
 	}
-
+	
 	switch (idx)
 	{
 	case 0:
@@ -190,8 +265,119 @@ NodeStatus BT_Butcher::conversation(int idx)
 			return NodeStatus::Success;
 		}
 		break;
+	case 4:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers1);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 5:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers2);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 6:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers3);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
 	}
+	return NodeStatus::Failure;
+}
 
+NodeStatus BT_Butcher::conversation2(int idx)
+{
+	if (mEventStartFlag)
+	{
+		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
+	}
+	
+	switch (idx)
+	{
+	case 7:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers1);
+				LOG_CORE_INFO("Welcome Traveler");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 8:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers2);
+				LOG_CORE_INFO("Bring me 10 pigs");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 9:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers3);
+				LOG_CORE_INFO("Then the Curse would disappear");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 10:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers4);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 11:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers1);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 12:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers2);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	}
 	return NodeStatus::Failure;
 }
 
@@ -199,23 +385,35 @@ NodeStatus BT_Butcher::conversation(int idx)
 void BT_Butcher::SetupTree()
 {
 	BTRoot = builder
-			 .CreateRoot<Selector>()
-			 .AddDecorator(LAMBDA(IsIdle))
-			 .AddActionNode(LAMBDA(TalkTo))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
-			 .AddActionNode(LAMBDA(StateIdleToConvers))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsConvers))
-			 .AddActionNode(LAMBDA(conversation, conversIdx))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-			 .AddActionNode(LAMBDA(GetNextConvers))
-			 .AddActionNode(LAMBDA(StateConversToTrace, 4))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsTrace))
-			 .AddActionNode(LAMBDA(ChasePlayer, 0))
-			 // .AddActionNode(LAMBDA(StateTraceToIdle))
-			 .EndBranch()
-			 .Build();
+			.CreateRoot<Selector>()
+				.AddDecorator(LAMBDA(IsIdle))
+					.AddActionNode(LAMBDA(TalkTo))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+					.AddActionNode(LAMBDA(StateIdleToConvers))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsConvers))
+					.AddActionNode(LAMBDA(conversation, conversIdx))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+					.AddActionNode(LAMBDA(GetNextConvers))
+					.AddActionNode(LAMBDA(StateConversToTrace, 7))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsTrace))
+					.AddActionNode(LAMBDA(GetPath, FVector2(50, 100)))
+					.AddActionNode(LAMBDA(GoGoal))
+					.AddActionNode(LAMBDA(LookAt, FVector(100, 110, 100)))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsQuestFinished, 1))
+					.AddActionNode(LAMBDA(TalkTo))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+					.AddActionNode(LAMBDA(StateToNextQuest))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsQuestEnd))
+					.AddActionNode(LAMBDA(conversation2, conversIdx))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+					.AddActionNode(LAMBDA(GetNextConvers))
+					.AddActionNode(LAMBDA(StateConversToTrace, 12))
+				.EndBranch()
+			.Build();
 }
 
 void BT_Butcher::ResetBT(AActor* NewOwner)

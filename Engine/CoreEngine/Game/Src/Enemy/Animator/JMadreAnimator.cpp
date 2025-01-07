@@ -35,8 +35,7 @@ void JMadreAnimator::Initialize()
     {
         if (mEnemy)
         {
-            // mEnemy->mWeaponCollider->SetLocalScale(FVector(1.0f, 1.0f, 1.0f ));
-            // mEnemy->DisableAttackCollision();
+            mEnemy->DisableAttackCollision();
         }
     });
     
@@ -51,13 +50,12 @@ void JMadreAnimator::Initialize()
     auto& attackClip = mStateMachine["Attack"];
     attackClip->SetLoop(false);
     attackClip->SetAnimationSpeed(2.f);
-    // attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
-    // attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.5].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
     attackClip->OnAnimFinished.Bind([&]()
     {
         if (mEnemy)
         {
-            // mEnemy->AddLocalLocation(attackClip->GetRMPosition());
             mEnemy->SetEnemyState(EEnemyState::Idle);
         }
     });

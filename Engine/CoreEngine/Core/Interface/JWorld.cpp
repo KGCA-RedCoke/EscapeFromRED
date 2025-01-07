@@ -85,6 +85,7 @@ void JWorld::Initialize()
 	// 								 nullptr,
 	// 								 "Game/Mesh/SM_Couch_01.jasset");
 	// }
+	// G_NAV_MAP.Initialize();
 }
 
 void JWorld::Update(float DeltaTime)
@@ -110,6 +111,7 @@ void JWorld::Render()
 	// GUI 먼저 업데이트 후 뷰포트 업데이트
 	ShaderManager->UpdateCamera(GetWorld.CameraManager->GetCurrentMainCam());
 	LevelManager->Render();
+	// G_NAV_MAP.Render();
 }
 
 void JWorld::Release()
