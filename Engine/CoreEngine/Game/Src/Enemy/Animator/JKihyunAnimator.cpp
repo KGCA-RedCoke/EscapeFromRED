@@ -61,7 +61,7 @@ void JKihyunAnimator::Initialize()
     attackClip->SetAnimationSpeed(2.f);
     attackClip->mEvents[attackClip->GetEndFrame() * 0.3].Bind(std::bind(&AEnemy::EnableAttackCollision, mEnemy, 1.2f));
     attackClip->mEvents[attackClip->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mEnemy));
-    attackClip->OnAnimFinished.Bind([&]()
+    attackClip->mEvents[attackClip->GetEndFrame() * 0.89].Bind([&]()
     {
         if (mEnemy)
         {
@@ -80,7 +80,10 @@ void JKihyunAnimator::Initialize()
     AddAnimLink("Idle", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
     AddAnimLink("Walk", "Attack", [&]() { return mEnemy->mEnemyState == EEnemyState::Attack; }, 0.5f);
 
-    AddAnimLink("Attack", "Idle", [&]() { return mEnemy->mEnemyState == EEnemyState::Idle; }, 0.5f);
+    AddAnimLink("Attack", "Idle", [&]()
+    {
+        return mEnemy->mEnemyState == EEnemyState::Idle | GetAnimElapsedRatio() > 0.89f;
+    }, 0.5f);
     // AddAnimLink("Attack", "Walk", [&](){return !mMovementComponent->GetVelocity().IsNearlyZero() && /*공격 끝난상태*/});
 
 

@@ -112,7 +112,14 @@ NodeStatus BT_Pig::RunFromPlayer(UINT Distance)
 		Ptr<Nav::Node>& GoalNode = G_NAV_MAP.mGridGraph[GoalGrid.y][GoalGrid.x];
 
 		FVector2        npcGrid = G_NAV_MAP.GridFromWorldPoint(NpcPos);
-		Ptr<Nav::Node>& NpcNode = G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x];
+		Ptr<Nav::Node>& NpcNode =
+				(NpcPos.y < 300 || mFloorType == EFloorType::FirstFloor)
+					? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+					: (NpcPos.y > 800
+						   ? G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x]
+						   : (mFloorType == EFloorType::FirstFloor
+								  ? G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x]
+								  : G_NAV_MAP.m2ndFloor[npcGrid.y][npcGrid.x]));
 
 		if ((PlayerPos - LastPlayerPos).Length() >= 50 || NeedsPathReFind)
 		{

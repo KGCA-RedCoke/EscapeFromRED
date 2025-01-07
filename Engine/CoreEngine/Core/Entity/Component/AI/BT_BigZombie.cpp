@@ -106,7 +106,7 @@ NodeStatus BT_BigZombie::Attack2()
 			mEventStartFlag = false;
 		}
 		runningFlag = false;
-		if (BB_ElapsedTime["Attack2"] > 1.0f || (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack))
+		if (BB_ElapsedTime["Attack2"] > 1.2f || (mOwnerEnemy->GetEnemyState() != EEnemyState::Attack))
 		{
 			BB_ElapsedTime["Attack2"] = 0.f;
 			mEventStartFlag           = true;
