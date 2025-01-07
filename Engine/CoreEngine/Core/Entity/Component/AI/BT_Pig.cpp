@@ -33,17 +33,15 @@ void BT_Pig::Initialize()
 
 	JActorComponent::Initialize();
 
-	mWorld = dynamic_cast<JLevel*>(GetWorld.LevelManager->GetActiveLevel());
-
 	mOwnerEnemy->OnInteractionStart.Bind([this](){
-		mWorld->ShowPressEKey(true);
+		GetWorld.LevelManager->GetActiveLevel()->ShowPressEKey(true);
 	});
 
 	mOwnerEnemy->OnInteractionEnd.Bind([this](){
-		mWorld->ShowPressEKey(false);
+		GetWorld.LevelManager->GetActiveLevel()->ShowPressEKey(false);
 	});
-	
-	mPigSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/pig.mp3");
+
+	mPigSound    = GetWorld.SoundManager->Load("rsc/GameResource/Sound/pig.mp3");
 	mPigGetSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/pig_Get.mp3");
 }
 
@@ -175,8 +173,9 @@ NodeStatus BT_Pig::IsPlayerNearAndPressE()
 	{
 		mOwnerEnemy->Destroy();
 		mPigGetSound->Play();
+		mOwnerEnemy->OnInteractionEnd.Execute();
 
-		
+
 		return NodeStatus::Success;
 	}
 	return NodeStatus::Failure;
@@ -194,13 +193,13 @@ void BT_Pig::SetupTree()
 {
 	BTRoot = builder
 			 .CreateRoot<Selector>()
-				 .AddDecorator(LAMBDA(IsPlayerNearAndPressE))
-					 .AddActionNode(LAMBDA(CountPig))
-				 .EndBranch()
-				 .AddSequence("Run")
-					 .AddActionNode(LAMBDA(SetGoal))
-					 .AddActionNode(LAMBDA(RunFromPlayer, 1000))
-				.EndBranch()
+			 .AddDecorator(LAMBDA(IsPlayerNearAndPressE))
+			 .AddActionNode(LAMBDA(CountPig))
+			 .EndBranch()
+			 .AddSequence("Run")
+			 .AddActionNode(LAMBDA(SetGoal))
+			 .AddActionNode(LAMBDA(RunFromPlayer, 1000))
+			 .EndBranch()
 			 .Build();
 }
 

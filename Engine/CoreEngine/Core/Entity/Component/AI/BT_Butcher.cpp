@@ -42,7 +42,7 @@ void BT_Butcher::Initialize()
 
 	JActorComponent::Initialize();
 	PaStar->mSpeed = 500;
-	
+
 	PaStar->mMaxGCost = 2000;
 	PaStar->mMinGCost = 2000;
 }
@@ -111,7 +111,13 @@ NodeStatus BT_Butcher::GetPath(FVector2 GoalGrid)
 {
 	FVector2 npcGrid = G_NAV_MAP.GridFromWorldPoint(mOwnerActor->GetWorldLocation());
 	if (PaStar->FindPath(G_NAV_MAP.mGridGraph[npcGrid.y][npcGrid.x], G_NAV_MAP.mGridGraph[GoalGrid.y][GoalGrid.x], 2))
+	{
+		for (auto& spawner : GetWorld.LevelManager->GetActiveLevel()->EnemySpawner)
+		{
+			spawner->BeginPlay();
+		}
 		return NodeStatus::Success;
+	}
 	return NodeStatus::Failure;
 }
 
@@ -138,13 +144,13 @@ NodeStatus BT_Butcher::LookAt(FVector direction)
 	npcLocation = mOwnerActor->GetWorldLocation();
 	npcRotation = mOwnerActor->GetLocalRotation();
 	bIsTrace = false;
-	
+
 	return NodeStatus::Success;
 }
 
 NodeStatus BT_Butcher::StateToNextQuest()
 {
-	bIsNextQuest   = true;
+	bIsNextQuest = true;
 	return NodeStatus::Success;
 }
 
@@ -154,8 +160,8 @@ NodeStatus BT_Butcher::StateToTransform(int N)
 	if (conversIdx == N)
 	{
 		bIsNextQuest = false;
-		bIsTransform   = true;
-		conversIdx = 0;
+		bIsTransform = true;
+		conversIdx   = 0;
 		mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestEnd.Execute(conversIdx);
 	}
@@ -240,7 +246,7 @@ NodeStatus BT_Butcher::conversation(int idx)
 	{
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
 	}
-	
+
 	switch (idx)
 	{
 	case 0:
@@ -330,7 +336,7 @@ NodeStatus BT_Butcher::conversation2(int idx)
 	{
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
 	}
-	
+
 	switch (idx)
 	{
 	case 7:
@@ -439,6 +445,7 @@ void BT_Butcher::SetupTree()
 				.EndBranch()
 				.AddActionNode(LAMBDA(TransformPhase))
 			.Build();
+
 }
 
 void BT_Butcher::ResetBT(AActor* NewOwner)

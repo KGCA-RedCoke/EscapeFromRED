@@ -59,7 +59,7 @@ void APawn::Initialize()
 	{
 		mLineComponent = CreateDefaultSubObject<JLineComponent>("LineComponent", this);
 		mLineComponent->SetupAttachment(this);
-		mLineComponent->SetTraceType(ETraceType::None);
+		mLineComponent->SetTraceType(ETraceType::Player);
 
 	}
 	if (!mCollisionSphere)
@@ -82,6 +82,7 @@ void APawn::Initialize()
 			switch (type)
 			{
 			case ETraceType::Pawn:
+			case ETraceType::Player:
 				{
 					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
 

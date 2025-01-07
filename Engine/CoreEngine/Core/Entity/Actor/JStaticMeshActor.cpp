@@ -108,7 +108,7 @@ bool JStaticMeshActor::DeSerialize_Implement(std::ifstream& InFileStream)
 
 void JStaticMeshActor::Draw()
 {
-	mBoundingBox.DrawDebug(Colors::Red);
+	// mBoundingBox.DrawDebug(Colors::Red);
 	AActor::Draw();
 }
 

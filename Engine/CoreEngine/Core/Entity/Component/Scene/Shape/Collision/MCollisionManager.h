@@ -37,7 +37,7 @@ enum class ETraceType : uint8_t
 	EnemyHitSpace,
 	PlayerWeapon,
 	Interactive,
-	None,
+	Player,
 	Max
 };
 

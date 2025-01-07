@@ -94,7 +94,7 @@ namespace CBuffer
 
 	constexpr const char* TextureUsageString[]
 	{
-		"None",
+		"Player",
 		"Diffuse",
 		"Normal",
 		"AmbientOcclusion",

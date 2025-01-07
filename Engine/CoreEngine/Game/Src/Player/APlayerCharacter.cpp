@@ -40,13 +40,62 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mWeaponMesh->SetLocalRotation({-127, 89, -82});
 
 	// 무기 콜라이더 부착
-	mWeaponCollision = CreateDefaultSubObject<JSphereComponent>("WeaponCollision", this);
-	mWeaponCollision->SetTraceType(ETraceType::PlayerWeapon);
-	mWeaponCollision->SetupAttachment(mWeaponMesh);
-	mWeaponCollision->SetLocalLocation({0, 100, 0});
-	mWeaponCollision->SetLocalScale({0.5, 0.5, 0.5f});
-	mWeaponCollision->SetColor(DirectX::Colors::Orange);
-	mWeaponCollision->EnableCollision(false);
+	mWeaponCollider = CreateDefaultSubObject<JSphereComponent>("WeaponCollision", this);
+	mWeaponCollider->SetTraceType(ETraceType::PlayerWeapon);
+	mWeaponCollider->SetupAttachment(mWeaponMesh);
+	mWeaponCollider->SetLocalLocation({0, 100, 0});
+	mWeaponCollider->SetLocalScale({0.5, 0.5, 0.5f});
+	mWeaponCollider->SetColor(DirectX::Colors::Orange);
+	mWeaponCollider->EnableCollision(false);
+
+	mCollisionSphere = CreateDefaultSubObject<JSphereComponent>("CollisionSphere", this);
+	mCollisionSphere->SetTraceType(ETraceType::Player);
+	mCollisionSphere->SetupAttachment(this);
+	mCollisionSphere->SetLocalLocation({0, 115, 0});
+	mCollisionSphere->SetLocalScale({1, 2, 1});
+
+	mCollisionSphere->OnComponentOverlap.Bind([&](ICollision* InOther, const FHitResult& HitResult){
+
+			auto* sceneComponent = dynamic_cast<JCollisionComponent*>(InOther);
+			assert(sceneComponent);
+
+			auto* Other = sceneComponent->GetParentSceneComponent();
+			assert(Other);
+
+			const ETraceType type = sceneComponent->GetTraceType();
+
+			switch (type)
+			{
+			case ETraceType::Pawn:
+				{
+					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
+
+					FVector correction = HitResult.HitNormal * HitResult.Distance * 0.5;
+
+					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
+					AddLocalLocation(correction);
+				}
+				break;
+			case ETraceType::BlockingVolume:
+				{
+					FVector RelativePosition = mWorldLocation - Other->GetWorldLocation();
+
+					FVector correction = HitResult.HitNormal * HitResult.Distance * 1;
+
+					correction = (RelativePosition.Dot(HitResult.HitNormal) < 0) ? -correction : correction;
+					AddLocalLocation(correction);
+				}
+				break;
+			case ETraceType::Ground:
+				{
+					// mLineComponent
+				}
+				break;
+			// case ETraceType::EnemyHitSpace:
+			//     
+			//     break;
+			}
+		});
 
 	mSpotLight = CreateDefaultSubObject<JLight_Spot>("SpotLight", this);
 	mSpotLight->SetupAttachment(mSkeletalMeshComponent);
@@ -95,6 +144,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 void APlayerCharacter::Initialize()
 {
 	ACharacter::Initialize();
+
 	mCollisionSphere->OnComponentBeginOverlap.Bind([this](ICollision* OtherActor, const FHitResult& HitResult){
 		if (OtherActor->GetTraceType() == ETraceType::EnemyHitSpace)
 		{
@@ -243,13 +293,13 @@ void APlayerCharacter::OnMovementInputPressed(float DeltaTime, const FVector& In
 
 void APlayerCharacter::OnMeleeAttack()
 {
-	mWeaponCollision->EnableCollision(true);
+	mWeaponCollider->EnableCollision(true);
 	bShouldAttack = false;
 }
 
 void APlayerCharacter::DisableMeleeCollision()
 {
-	mWeaponCollision->EnableCollision(false);
+	mWeaponCollider->EnableCollision(false);
 }
 
 void APlayerCharacter::OnMeleeAttackFinished()
