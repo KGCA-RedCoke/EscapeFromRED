@@ -140,7 +140,7 @@ NodeStatus BT_Butcher::LookAt(FVector direction)
 
 NodeStatus BT_Butcher::StateToNextQuest()
 {
-	bool    bIsNextQuest   = true;
+	bIsNextQuest   = true;
 	return NodeStatus::Success;
 }
 
@@ -192,7 +192,10 @@ NodeStatus BT_Butcher::IsQuestFinished(int n)
 NodeStatus BT_Butcher::IsQuestEnd()
 {
 	if (bIsNextQuest)
+	{
+		mEventStartFlag = true;
 		return NodeStatus::Success;
+	}
 	else
 		return NodeStatus::Failure;
 }
@@ -411,7 +414,7 @@ void BT_Butcher::SetupTree()
 					.AddActionNode(LAMBDA(conversation2, conversIdx))
 					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
 					.AddActionNode(LAMBDA(GetNextConvers))
-					.AddActionNode(LAMBDA(StateConversToTrace, 12))
+					.AddActionNode(LAMBDA(StateToTransform, 12))
 				.EndBranch()
 			.Build();
 }
