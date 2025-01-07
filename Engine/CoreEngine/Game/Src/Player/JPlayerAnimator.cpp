@@ -22,11 +22,11 @@ void JPlayerAnimator::Initialize()
 {
 	JAnimator::Initialize();
 
-	mWalkLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
-	mWalkRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
+	mWalkLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/footstep_L.wav");
+	mWalkRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/footstep_R.wav");
 	
-	mRunLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
-	mRunRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_4.wav");
+	mRunLSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/footstep_L.wav");
+	mRunRSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/footstep_R.wav");
 	
 	mAttackBasicSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/AttackEnemy.mp3");
 	mAttackEnemySound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/AttackEnemy.mp3");

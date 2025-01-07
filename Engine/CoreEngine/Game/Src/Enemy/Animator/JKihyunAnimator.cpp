@@ -25,7 +25,7 @@ void JKihyunAnimator::Initialize()
     mWalkSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
     //mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
     mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_attack_one_shot_20.wav");
-    mDeathSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/W_Dirt_1.wav");
+    mDeathSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Zombie_DeathSound.wav");
 
     
     
@@ -108,10 +108,10 @@ void JKihyunAnimator::Initialize()
     });
     
 
-    // deathAnim->mEvents[DeathEndFrame* 0.15].Bind([&]()
-    // {
-    //     mDeathSound->Play();
-    // });
+    deathAnim->mEvents[DeathEndFrame* 0.0001].Bind([&]()
+    {
+        mDeathSound->Play();
+    });
 
 }
 

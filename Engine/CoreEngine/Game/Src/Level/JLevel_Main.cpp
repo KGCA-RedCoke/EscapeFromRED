@@ -30,9 +30,9 @@ JKihyunDialog::JKihyunDialog()
 	for (auto& component : mUIComponents)
 	{
 		component->SetColor({1, 1, 1, 1});
-		component->SetSize({10, 5});
+		component->SetSize({10, 4});
 		component->SetVisible(false);
-		component->SetPosition({0, -0.6});
+		component->SetPosition({0, -0.5});
 	}
 }
 

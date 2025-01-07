@@ -26,6 +26,17 @@ void JKillerClownAnimator::Initialize()
     JAnimator::Initialize();
 
     mLaughSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/LaughSound.wav");
+
+    mPhase2Sound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/Phase2Sound.mp3");
+
+    mAttackSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/KC_Attack.mp3");
+    mAttack2Sound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/KC_Attack_1.mp3");
+    
+    mHitSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/KC_Hit.wav");
+    
+    mDeathSound = GetWorld.SoundManager->Load("rsc/GameResource/Sound/KC_Death.wav");
+    
+
     
     bt = dynamic_cast<BT_BOSS*>(mBoss->mBehaviorTree);
     AddAnimationClip("Idle",
@@ -97,7 +108,7 @@ void JKillerClownAnimator::Initialize()
     attackClip2->SetAnimationSpeed(1.5f);
     attackClip2->mEvents[attackClip2->GetEndFrame() * 0.2].Bind(std::bind(&AEnemy::EnableAttackCollision, mBoss, 1));
     attackClip2->mEvents[attackClip2->GetEndFrame() * 0.7].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
-    attackClip2->OnAnimFinished.Bind([&]()
+    attackClip2->mEvents[attackClip2->GetEndFrame() * 0.8].Bind([&]()
     {
         if (mBoss)
         {
@@ -172,6 +183,7 @@ void JKillerClownAnimator::Initialize()
         {
             mBoss->SetBossState(EBossState::StandUp);
             mLaughSound->Play();
+            mPhase2Sound->Play();
         }
     });
 
@@ -268,6 +280,50 @@ void JKillerClownAnimator::Initialize()
 
     SetState("Idle");
     mCurrentAnimation->Play();
+
+    auto* attack1Anim = mStateMachine["Attack1"].get();
+    auto* attack2Anim = mStateMachine["Attack2"].get();
+    auto* attack3Anim = mStateMachine["Attack3"].get();
+    auto* jumpAttackAnim = mStateMachine["JumpAttack"].get();
+    auto* hitAnim = mStateMachine["Hit"].get();
+    auto* deathAnim = mStateMachine["Death"].get();
+
+    attack1Anim->mEvents[attack1Anim->GetEndFrame()*0.2].Bind([&]()
+    {
+        mAttack2Sound->Play();
+    });
+    attack2Anim->mEvents[attack2Anim->GetEndFrame()*0.2].Bind([&]()
+    {
+        mAttackSound->Play();
+    });
+    attack2Anim->mEvents[attack2Anim->GetEndFrame()*0.4].Bind([&]()
+    {
+    mAttackSound->Play();
+    });
+    attack2Anim->mEvents[attack2Anim->GetEndFrame()*0.6].Bind([&]()
+    {
+    mAttackSound->Play();
+    });
+    attack3Anim->mEvents[attack3Anim->GetEndFrame()*0.2].Bind([&]()
+    {
+        mAttackSound->Play();
+    });
+    jumpAttackAnim->mEvents[jumpAttackAnim->GetEndFrame()*0.2].Bind([&]()
+{
+    mAttackSound->Play();
+});
+    hitAnim->mEvents[hitAnim->GetEndFrame()*0.00001].Bind([&]()
+    {
+        mHitSound->Play();
+    });
+    deathAnim->mEvents[deathAnim->GetEndFrame()*0.1].Bind([&]()
+    {
+        mDeathSound->Play();
+    });
+    
+	
+    
+    
 }
 
 void JKillerClownAnimator::BeginPlay()

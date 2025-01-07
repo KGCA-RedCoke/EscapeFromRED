@@ -19,5 +19,12 @@ public:
 private:
     AKillerClown* mBoss = nullptr; // 소유 액터
     BT_BOSS* bt = nullptr;
+    JAudioComponent* mAttackSound;
+    JAudioComponent* mAttack2Sound;
+    JAudioComponent* mAttack3Sound;
+    JAudioComponent* mJumpAttackSound;
+    JAudioComponent* mHitSound;
+    JAudioComponent* mDeathSound;
     JAudioComponent* mLaughSound;
+    JAudioComponent* mPhase2Sound;
 };
