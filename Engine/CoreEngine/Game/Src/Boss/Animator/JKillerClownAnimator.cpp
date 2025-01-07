@@ -45,7 +45,7 @@ void JKillerClownAnimator::Initialize()
     AddAnimationClip("Attack4",
                      "Game/Animation/KillerClown/KC_Attack.jasset");
     AddAnimationClip("JumpAttack",
-                     "Game/Animation/KillerClown/KC_Jump_Attack.jasset"); //Anim_KC_JumpAttack
+                     "Game/Animation/KillerClown/Anim_KC_JumpAttack.jasset"); //Anim_KC_JumpAttack
     AddAnimationClip("Hit",
                      "Game/Animation/KillerClown/KC_Hit.jasset");
     AddAnimationClip("Death",
@@ -135,14 +135,14 @@ void JKillerClownAnimator::Initialize()
     });
 
     auto& JumpAtkClip = mStateMachine["JumpAttack"];
-    JumpAtkClip->SetAnimationSpeed(0.7f);
+    JumpAtkClip->SetAnimationSpeed(1.3f);
     JumpAtkClip->SetRootMotion(true);
     JumpAtkClip->OnAnimStart.Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
 
-    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.3].Bind(
+    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.55].Bind(
         std::bind(&AEnemy::EnableAttackCollision, mBoss, RADIUS));
-    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.5].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
-    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.8].Bind([&]()
+    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.65].Bind(std::bind(&AEnemy::DisableAttackCollision, mBoss));
+    JumpAtkClip->mEvents[JumpAtkClip->GetEndFrame() * 0.9].Bind([&]()
     {
         if (mBoss)
         {

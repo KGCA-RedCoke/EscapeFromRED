@@ -217,7 +217,7 @@ NodeStatus BT_BOSS::JumpAttack()
         {
             // 점프 시작
             BB_ElapsedTime["JumpAttack"] = 0.f;
-            MoveNPCWithJump(800.f, 1.5f);  // 점프 높이와 지속 시간
+            MoveNPCWithJump(800.f, 1.0f);  // 점프 높이와 지속 시간
             mOwnerEnemy->SetBossState(EBossState::JumpAttack);
             mEventStartFlag = false;      // 이벤트 시작 플래그 리셋
         }
@@ -236,7 +236,7 @@ NodeStatus BT_BOSS::JumpAttack()
             }
         }
         BB_ElapsedTime["JumpAttack"] += mDeltaTime;
-        if (GetYVelocity() > 450.f)
+        if (GetYVelocity() > 700.f)
             mVelocity = FVector::ZeroVector;
         mOwnerActor->AddLocalLocation(mVelocity * mDeltaTime);
 
