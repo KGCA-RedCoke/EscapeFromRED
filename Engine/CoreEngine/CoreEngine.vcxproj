@@ -226,6 +226,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JMadreAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JPigAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
+    <ClInclude Include="Game\Src\Level\JLevel_GameOver.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
     <ClInclude Include="Game\Src\Player\APlayerCharacter.h" />
@@ -433,6 +434,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JMadreAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JPigAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
+    <ClCompile Include="Game\Src\Level\JLevel_GameOver.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />
     <ClCompile Include="Game\Src\Player\APlayerCharacter.cpp" />
@@ -526,6 +528,7 @@
     <Content Include="Game\Materials\Horror_Map\MI_debris.jasset" />
     <Content Include="Game\Materials\Horror_Map\MI_deer.jasset" />
     <Content Include="Game\Materials\Horror_Map\MI_grass.jasset" />
+    <Content Include="Game\Materials\Horror_Map\MI_grass2.jasset" />
     <Content Include="Game\Materials\Horror_Map\MI_Ground.jasset" />
     <Content Include="Game\Materials\Horror_Map\MI_grunge.jasset" />
     <Content Include="Game\Materials\Horror_Map\MI_hay.jasset" />

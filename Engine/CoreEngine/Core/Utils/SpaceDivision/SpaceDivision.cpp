@@ -269,6 +269,15 @@ void Quad::JTree::Sort(AActor* InActor)
 	Insert(InActor);
 }
 
+void Quad::JTree::Clear()
+{
+	IgnoreFrustumActors.clear();
+	if (mRootNode)
+	{
+		mRootNode->Clear();
+	}
+}
+
 void Quad::JTree::Subdivide(FNode* InNode, uint32_t InDepth, FNode* InRoot)
 {
 	if (!InNode)
