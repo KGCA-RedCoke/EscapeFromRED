@@ -135,7 +135,7 @@ NodeStatus BT_Butcher::LookAt(FVector direction)
 	return NodeStatus::Success;
 }
 
-NodeStatus BT_Butcher::StateToNextQuest(FVector direction)
+NodeStatus BT_Butcher::StateToNextQuest()
 {
 	bool    bIsNextQuest   = true;
 	return NodeStatus::Success;
