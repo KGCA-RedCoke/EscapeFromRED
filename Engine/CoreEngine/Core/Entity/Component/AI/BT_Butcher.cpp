@@ -83,7 +83,6 @@ NodeStatus BT_Butcher::StateIdleToConvers()
 	bIsIdle         = false;
 	bIsConvers      = true;
 	mEventStartFlag = true;
-	bIsTransform = true;
 	return NodeStatus::Success;
 }
 
