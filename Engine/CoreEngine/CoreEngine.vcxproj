@@ -226,6 +226,7 @@
     <ClInclude Include="Game\Src\Enemy\Animator\JMadreAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\Animator\JPigAnimator.h" />
     <ClInclude Include="Game\Src\Enemy\JSpawnerComponent.h" />
+    <ClInclude Include="Game\Src\Level\JLevel_Ending.h" />
     <ClInclude Include="Game\Src\Level\JLevel_GameOver.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Intro.h" />
     <ClInclude Include="Game\Src\Level\JLevel_Main.h" />
@@ -434,6 +435,7 @@
     <ClCompile Include="Game\Src\Enemy\Animator\JMadreAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\Animator\JPigAnimator.cpp" />
     <ClCompile Include="Game\Src\Enemy\JSpawnerComponent.cpp" />
+    <ClCompile Include="Game\Src\Level\JLevel_Ending.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_GameOver.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Intro.cpp" />
     <ClCompile Include="Game\Src\Level\JLevel_Main.cpp" />

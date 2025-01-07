@@ -1,14 +1,13 @@
 ﻿#pragma once
 #include "Core/Entity/Level/JLevel.h"
 
-
 class JAudioComponent;
 
-class JLevel_Main : public JLevel
+class JLevel_Ending : public JLevel
 {
 public:
-	JLevel_Main();
-	~JLevel_Main() override;
+	JLevel_Ending();
+	~JLevel_Ending() override;
 
 public:
 	void InitializeLevel() override;
@@ -16,7 +15,7 @@ public:
 	void RenderLevel() override;
 
 private:
-	JAudioComponent* mMainSound;
-
-
+	JWidgetComponent* mEndingWidget;
+	JAudioComponent*  mIntroSound;
+	JAudioComponent*  mButtonSound;
 };

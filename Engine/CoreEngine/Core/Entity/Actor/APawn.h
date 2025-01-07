@@ -25,13 +25,18 @@ protected:
 	void CheckGround();
 
 public:
+	JSphereComponent* PawnSphere() const { return mCollisionSphere; }
+	JSphereComponent* InteractionSphere() const { return mInteractionSphere; }
+	JSphereComponent* WeaponCollider() const { return mWeaponCollider; }
+
+public:
 	friend class BtBase;
 
 protected:
 	JPawnMovementComponent* mMovementComponent;
 	JSphereComponent*       mCollisionSphere;
 	JSphereComponent*       mInteractionSphere;
-	JSphereComponent*       mHitSphere;
+	JSphereComponent*       mWeaponCollider;
 	JLineComponent*         mLineComponent;
 
 	void  SetYVelocity(float velocity);

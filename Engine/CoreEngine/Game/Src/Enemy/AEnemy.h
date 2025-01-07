@@ -108,7 +108,6 @@ protected:
 	UPtr<JAnimator>               mAnimator;
 	class JSkeletalMeshComponent* mSkeletalMeshComponent;
 	class BtBase*                 mBehaviorTree;
-	JSphereComponent*             mWeaponCollider;
 
 	friend class JKihyunAnimator;
 	friend class JGirlAnimator;

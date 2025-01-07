@@ -60,6 +60,7 @@ JLevel::JLevel(const JText& InPath, bool bUseTree)
 {
 	OnLevelLoaded.Bind([&](){
 		bThreadLoaded = true;
+		// MCollisionManager::Get().UnEnrollAllCollision();
 	});
 
 	if (bUseTree)

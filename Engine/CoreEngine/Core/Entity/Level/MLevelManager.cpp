@@ -6,6 +6,7 @@
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Level/JLevel_Ending.h"
 #include "Game/Src/Level/JLevel_GameOver.h"
 #include "Game/Src/Level/JLevel_Intro.h"
 #include "Game/Src/Level/JLevel_Main.h"
@@ -63,6 +64,8 @@ JLevel* MLevelManager::LoadIntroLevel()
 
 JLevel* MLevelManager::LoadMainLevel()
 {
+	MCollisionManager::Get().UnEnrollAllCollision();
+
 	uint32_t hash      = StringHash("MainLevel");
 	mManagedList[hash] = nullptr;
 	auto  mainLevel    = MakeUPtr<JLevel_Main>();
@@ -81,6 +84,18 @@ JLevel* MLevelManager::LoadGameOverLevel()
 	mManagedList[hash] = std::move(mainLevel);
 
 	return ptr;
+}
+
+JLevel* MLevelManager::LoadEndingLevel()
+{
+	uint32_t hash      = StringHash("EndingLevel");
+	mManagedList[hash] = nullptr;
+	auto  mainLevel    = MakeUPtr<JLevel_Ending>();
+	auto* ptr          = mainLevel.get();
+	mManagedList[hash] = std::move(mainLevel);
+
+	return ptr;
+
 }
 
 JLevel* MLevelManager::CreateLevel(const JText& InSavePath)

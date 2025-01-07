@@ -42,7 +42,6 @@ public:
 	FVector2              GoalGrid    = FVector2(0.f, 0.f);
 	std::vector<FVector2> Goals;
 	AEnemy*               mOwnerEnemy;
-	JLevel*               mWorld;
 
 	inline static int32_t g_Count = 0;
 
