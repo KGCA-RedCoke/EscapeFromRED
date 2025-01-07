@@ -11,6 +11,7 @@
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Level/JLevel_Main.h"
 #include "Core/Entity/Component/AI/BT_Pig.h"
+#include "Game/Src/Boss/AKillerClown.h"
 
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
@@ -82,6 +83,7 @@ NodeStatus BT_Butcher::StateIdleToConvers()
 	bIsIdle         = false;
 	bIsConvers      = true;
 	mEventStartFlag = true;
+	bIsTransform = true;
 	return NodeStatus::Success;
 }
 
@@ -139,6 +141,8 @@ NodeStatus BT_Butcher::LookAt(FVector direction)
 		mOwnerActor->SetLocalRotation(RotateTowards(direction, rotation));
 		return NodeStatus::Running;
 	}
+	npcLocation = mOwnerActor->GetWorldLocation();
+	npcRotation = mOwnerActor->GetLocalRotation();
 	bIsTrace = false;
 
 	return NodeStatus::Success;
@@ -160,6 +164,21 @@ NodeStatus BT_Butcher::StateToTransform(int N)
 		conversIdx   = 0;
 		mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestEnd.Execute(conversIdx);
+	}
+	return NodeStatus::Success;
+}
+
+NodeStatus BT_Butcher::TransformPhase()
+{
+	if (bIsTransform)
+	{
+		auto* kc=  GetWorld.LevelManager->GetActiveLevel()->CreateActor<AKillerClown>("KillerClown");
+		Utils::Serialization::DeSerialize("Game/Enemy/Boss_KC.jasset", kc);
+		kc->Initialize();
+		kc->SetLocalLocation(npcLocation);
+		kc->SetLocalRotation(npcRotation);
+		
+		mOwnerActor->Destroy();
 	}
 	return NodeStatus::Success;
 }
@@ -394,35 +413,39 @@ NodeStatus BT_Butcher::conversation2(int idx)
 void BT_Butcher::SetupTree()
 {
 	BTRoot = builder
-			 .CreateRoot<Selector>()
-			 .AddDecorator(LAMBDA(IsIdle))
-			 .AddActionNode(LAMBDA(TalkTo))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
-			 .AddActionNode(LAMBDA(StateIdleToConvers))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsConvers))
-			 .AddActionNode(LAMBDA(conversation, conversIdx))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-			 .AddActionNode(LAMBDA(GetNextConvers))
-			 .AddActionNode(LAMBDA(StateConversToTrace, 7))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsTrace))
-			 .AddActionNode(LAMBDA(GetPath, FVector2(50, 100)))
-			 .AddActionNode(LAMBDA(GoGoal))
-			 .AddActionNode(LAMBDA(LookAt, FVector(100, 110, 100)))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsQuestFinished, 10))
-			 .AddActionNode(LAMBDA(TalkTo))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
-			 .AddActionNode(LAMBDA(StateToNextQuest))
-			 .EndBranch()
-			 .AddDecorator(LAMBDA(IsQuestEnd))
-			 .AddActionNode(LAMBDA(conversation2, conversIdx))
-			 .AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
-			 .AddActionNode(LAMBDA(GetNextConvers))
-			 .AddActionNode(LAMBDA(StateToTransform, 12))
-			 .EndBranch()
-			 .Build();
+			.CreateRoot<Selector>()
+				.AddDecorator(LAMBDA(IsIdle))
+					.AddActionNode(LAMBDA(TalkTo))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+					.AddActionNode(LAMBDA(StateIdleToConvers))
+				.EndBranch()
+				.AddActionNode(LAMBDA(TransformPhase))
+
+				.AddDecorator(LAMBDA(IsConvers))
+					.AddActionNode(LAMBDA(conversation, conversIdx))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+					.AddActionNode(LAMBDA(GetNextConvers))
+					.AddActionNode(LAMBDA(StateConversToTrace, 7))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsTrace))
+					.AddActionNode(LAMBDA(GetPath, FVector2(50, 100)))
+					.AddActionNode(LAMBDA(GoGoal))
+					.AddActionNode(LAMBDA(LookAt, FVector(100, 110, 100)))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsQuestFinished, 1))
+					.AddActionNode(LAMBDA(TalkTo))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+					.AddActionNode(LAMBDA(StateToNextQuest))
+				.EndBranch()
+				.AddDecorator(LAMBDA(IsQuestEnd))
+					.AddActionNode(LAMBDA(conversation2, conversIdx))
+					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+					.AddActionNode(LAMBDA(GetNextConvers))
+					.AddActionNode(LAMBDA(StateToTransform, 12))
+				.EndBranch()
+				.AddActionNode(LAMBDA(TransformPhase))
+			.Build();
+
 }
 
 void BT_Butcher::ResetBT(AActor* NewOwner)
