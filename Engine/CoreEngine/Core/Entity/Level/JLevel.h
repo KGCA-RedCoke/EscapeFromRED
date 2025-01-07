@@ -19,7 +19,7 @@ class JKihyunDialog : public JWidgetComponent
 {
 public:
 	JKihyunDialog();
-	~JKihyunDialog() override = default;
+	~JKihyunDialog() override;
 };
 
 DECLARE_DYNAMIC_DELEGATE(FOnLevelLoaded);
@@ -65,6 +65,8 @@ public:
 
 	AActor* LoadActorFromPath(const JText& InPath);
 
+	void ClearLevel();
+
 	template <typename T, typename... Args>
 	T* CreateActor(JTextView InName, Args&&... InArgs);
 
@@ -88,8 +90,6 @@ public:
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
 	class APlayerCharacter*         mPlayerCharacter;
 	UPtr<class JKihyunDialog>       mKihyunDialog;
-	JWidgetComponent*               mGameOverWidget;
-	uint32_t                        mButtonIndex = 0;
 	JUIComponent*                   mPressEKey;
 	JUIComponent*                   mHPBar[3];
 

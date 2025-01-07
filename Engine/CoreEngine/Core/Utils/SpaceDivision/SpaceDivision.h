@@ -49,6 +49,7 @@ namespace Quad
 		void Render(JCameraComponent* InCamera);
 		void Remove(AActor* InActor);
 		void Sort(AActor* InActor);
+		void Clear();
 
 	private:
 		void Subdivide(FNode* InNode, uint32_t InDepth, FNode* InRoot);

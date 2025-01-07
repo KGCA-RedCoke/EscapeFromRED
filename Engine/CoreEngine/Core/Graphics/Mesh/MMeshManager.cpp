@@ -135,30 +135,30 @@ void MMeshManager::PushCommand(uint32_t                    NameHash, JMaterialIn
 													   InInstanceData.end());
 }
 
-void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialInstance * InMaterialRef,
+void MMeshManager::PushCommand(uint32_t                   NameHash, JMaterialInstance* InMaterialRef,
 							   FInstanceData_Mesh&        InInstanceData,
 							   ID3D11ShaderResourceView** InAnimTexture)
 {
 	assert(mBufferList.contains(NameHash));
-	
+
 	InInstanceData.Transform.ShadowMatrix = InInstanceData.Transform.WorldMatrix * GetWorld.
-														  DirectionalLightView * GetWorld
-														  .DirectionalLightProj * FMatrix(0.5f,
-																   0.0f,
-																   0.0f,
-																   0.0f,
-																   0.0f,
-																   -0.5f,
-																   0.0f,
-																   0.0f,
-																   0.0f,
-																   0.0f,
-																   1.0f,
-																   0.0f,
-																   0.5f,
-																   0.5f,
-																   0.0f,
-																   1.0f);
+			DirectionalLightView * GetWorld
+			.DirectionalLightProj * FMatrix(0.5f,
+											0.0f,
+											0.0f,
+											0.0f,
+											0.0f,
+											-0.5f,
+											0.0f,
+											0.0f,
+											0.0f,
+											0.0f,
+											1.0f,
+											0.0f,
+											0.5f,
+											0.5f,
+											0.0f,
+											1.0f);
 
 	mInstanceData_Mesh[NameHash][InMaterialRef].emplace_back(InInstanceData);
 
@@ -251,8 +251,6 @@ void MMeshManager::FlushCommandList(ID3D11DeviceContext* InContext)
 
 	mInstanceData_Mesh.clear();
 	mInstanceData_Skeletal.clear();
-
-	MShaderManager::Get().mCachedShader = nullptr;
 
 }
 

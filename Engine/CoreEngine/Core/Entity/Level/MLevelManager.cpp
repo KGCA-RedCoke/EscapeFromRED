@@ -6,6 +6,7 @@
 #include "Core/Graphics/Mesh/JMeshObject.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
 #include "Core/Interface/JWorld.h"
+#include "Game/Src/Level/JLevel_GameOver.h"
 #include "Game/Src/Level/JLevel_Intro.h"
 #include "Game/Src/Level/JLevel_Main.h"
 
@@ -36,6 +37,7 @@ void MLevelManager::Render()
 	{
 		if (!mActiveLevel->IsLoaded())
 		{
+			MUIManager::Get().LoadingScreen->Tick(0);
 			MUIManager::Get().LoadingScreen->AddInstance();
 			MUIManager::Get().FlushCommandList(G_Device.GetImmediateDeviceContext());
 		}
@@ -62,8 +64,20 @@ JLevel* MLevelManager::LoadIntroLevel()
 JLevel* MLevelManager::LoadMainLevel()
 {
 	uint32_t hash      = StringHash("MainLevel");
-	auto     mainLevel = MakeUPtr<JLevel_Main>();
-	auto*    ptr       = mainLevel.get();
+	mManagedList[hash] = nullptr;
+	auto  mainLevel    = MakeUPtr<JLevel_Main>();
+	auto* ptr          = mainLevel.get();
+	mManagedList[hash] = std::move(mainLevel);
+
+	return ptr;
+}
+
+JLevel* MLevelManager::LoadGameOverLevel()
+{
+	uint32_t hash      = StringHash("GameOverLevel");
+	mManagedList[hash] = nullptr;
+	auto  mainLevel    = MakeUPtr<JLevel_GameOver>();
+	auto* ptr          = mainLevel.get();
 	mManagedList[hash] = std::move(mainLevel);
 
 	return ptr;

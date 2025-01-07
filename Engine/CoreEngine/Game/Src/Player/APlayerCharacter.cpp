@@ -51,8 +51,8 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mSpotLight = CreateDefaultSubObject<JLight_Spot>("SpotLight", this);
 	mSpotLight->SetupAttachment(mSkeletalMeshComponent);
 	mSpotLight->SetLocalLocation({0, 150, 0});
-	mSpotLight->SetLightColor({1, 0.69, 0.2, 1});
-	mSpotLight->SetIntensity(0.8f);
+	// mSpotLight->SetLightColor({1, 0.69, 0.2, 1});
+	mSpotLight->SetIntensity(1.5f);
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 
@@ -85,7 +85,7 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	OnPlayerDie.Bind([this](){
 		// 플레이어 사망
 		// 게임 오버
-		GetWorld.LevelManager->GetActiveLevel()->mGameOverWidget->SetVisible(true);
+		GetWorld.LevelManager->GetActiveLevel()->ClearLevel();
 	});
 
 

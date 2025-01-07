@@ -276,8 +276,7 @@ void JUIComponent::Tick(float DeltaTime)
 	OnAnimationEvent.Execute(DeltaTime);
 }
 
-JWidgetComponent::JWidgetComponent()
-	: JObject() {}
+JWidgetComponent::JWidgetComponent() {}
 
 JWidgetComponent::JWidgetComponent(const JText& InName)
 	: JObject(InName) {}
@@ -326,8 +325,6 @@ bool JWidgetComponent::DeSerialize_Implement(std::ifstream& InFileStream)
 		mUIComponents.push_back(std::move(ui));
 	}
 
-	mObjectFlags |= EObjectFlags::IsVisible;
-
 	return true;
 }
 
@@ -369,9 +366,6 @@ void JWidgetComponent::Tick(float DeltaTime)
 
 void JWidgetComponent::AddInstance()
 {
-	if (!IsVisible())
-		return;
-
 	for (int32_t i = 0; i < mUIComponents.size(); ++i)
 	{
 		if (mUIComponents[i]->IsVisible())
@@ -544,9 +538,26 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
-	LoadingScreen = Load("Game/UI/inthedark.jasset");
+	LoadingScreen = Load("Game/UI/loadingding.jasset");
 
 
+	LoadingScreen->mUIComponents[2]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[2]->GetInstanceData();
+		data.Color.w =  (sin(GetWorld.GetGameTime() * 7.14159f / 2) + 1) / 2;
+	});
+	
+	LoadingScreen->mUIComponents[3]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[3]->GetInstanceData();
+		data.Color.w =  (sin((GetWorld.GetGameTime()-0.32f) * 7.14159f / 2) + 1) / 2;
+	});
+	
+	LoadingScreen->mUIComponents[4]->OnAnimationEvent.Bind([&](float DeltaTime)
+	{
+		auto& data = LoadingScreen->mUIComponents[4]->GetInstanceData();
+		data.Color.w =  (sin((GetWorld.GetGameTime()-0.64f) * 7.14159f / 2) + 1) / 2;
+	});
 }
 
 MUIManager::~MUIManager() {}
