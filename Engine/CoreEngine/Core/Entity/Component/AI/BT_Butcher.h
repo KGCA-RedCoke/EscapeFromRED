@@ -24,6 +24,7 @@ public:
 	// Action Function
 	NodeStatus TalkTo();
 	NodeStatus conversation(int idx);
+	NodeStatus conversation2(int idx);
 	// NodeStatus JumpAttack();
 	// void       MoveNPCWithJump(float jumpHeight, float duration);
 	NodeStatus Hit();
@@ -35,13 +36,14 @@ public:
 	NodeStatus GoGoal();
 	NodeStatus LookAt(FVector direction);
 	NodeStatus StateToNextQuest();
+	NodeStatus StateToTransform(int N);
 
 	// Decorator Function
 	NodeStatus IsIdle();
 	NodeStatus IsConvers();
 	NodeStatus IsTrace();
 	NodeStatus IsQuestFinished(int n);
-	NodeStatus IsNextQuest();
+	NodeStatus IsQuestEnd();
 	NodeStatus IsPressedKey(EKeyCode Key);
 	
 
@@ -53,7 +55,8 @@ private:
 	bool    bIsIdle      = true;
 	bool    bIsConvers   = false;
 	bool    bIsTrace     = false;
-	bool    bIsNextQuest   = false;
+	bool    bIsNextQuest = false;
+	bool	bIsTransform = false;
 	int     conversIdx   = 0;
 
 	AEnemy*            mOwnerEnemy;
