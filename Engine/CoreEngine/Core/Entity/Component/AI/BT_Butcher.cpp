@@ -30,14 +30,12 @@ void BT_Butcher::Initialize()
 	mOwnerEnemy = dynamic_cast<AEnemy*>(mOwnerActor);
 	assert(mOwnerEnemy);
 
-	mWorld = dynamic_cast<JLevel_Main*>(GetWorld.LevelManager->GetActiveLevel());
-
 	mOwnerEnemy->OnInteractionStart.Bind([this](){
-		mWorld->ShowPressEKey(true);
+		GetWorld.LevelManager->GetActiveLevel()->ShowPressEKey(true);
 	});
 
 	mOwnerEnemy->OnInteractionEnd.Bind([this](){
-		mWorld->ShowPressEKey(false);
+		GetWorld.LevelManager->GetActiveLevel()->ShowPressEKey(false);
 	});
 
 	JActorComponent::Initialize();
@@ -93,7 +91,7 @@ NodeStatus BT_Butcher::StateConversToTrace(int N)
 		bIsConvers = false;
 		bIsTrace   = true;
 		mOwnerEnemy->SetEnemyState(EEnemyState::Idle);
-		mWorld->OnQuestEnd.Execute(conversIdx);
+		GetWorld.LevelManager->GetActiveLevel()->OnQuestEnd.Execute(conversIdx);
 	}
 	return NodeStatus::Success;
 }
@@ -179,7 +177,7 @@ NodeStatus BT_Butcher::conversation(int idx)
 {
 	if (mEventStartFlag)
 	{
-		mWorld->OnQuestStart.Execute(idx);
+		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
 	}
 
 	switch (idx)
@@ -260,10 +258,9 @@ void BT_Butcher::SetupTree()
 void BT_Butcher::ResetBT(AActor* NewOwner)
 {
 	BtBase::ResetBT(nullptr);
-	bIsIdle = true;
-	bIsConvers = false;
-	bIsTrace = false;
-	conversIdx = 0;
+	bIsIdle     = true;
+	bIsConvers  = false;
+	bIsTrace    = false;
+	conversIdx  = 0;
 	mOwnerEnemy = nullptr;
-	mWorld = nullptr;
 }

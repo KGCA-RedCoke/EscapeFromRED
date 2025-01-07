@@ -13,7 +13,7 @@ void JMaterial_POM::BindShader(ID3D11DeviceContext* InDeviceContext)
 
 void JMaterial_POM::InitializeParams()
 {
-	if (mMaterialParams.empty())
+	if (!mMaterialParams.empty())
 	{
 		mMaterialParams.clear();
 

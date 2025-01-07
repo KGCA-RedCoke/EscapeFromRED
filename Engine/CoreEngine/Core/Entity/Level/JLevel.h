@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Core/Entity/JObject.h"
+#include "Core/Entity/UI/MUIManager.h"
 #include "Core/Manager/MPoolManager.h"
 #include "Core/Utils/SpaceDivision/SpaceDivision.h"
 #include "Game/Src/Enemy/AEnemy.h"
@@ -13,7 +14,19 @@ namespace Quad
 }
 class AActor;
 
+
+class JKihyunDialog : public JWidgetComponent
+{
+public:
+	JKihyunDialog();
+	~JKihyunDialog() override = default;
+};
+
 DECLARE_DYNAMIC_DELEGATE(FOnLevelLoaded);
+
+DECLARE_DYNAMIC_DELEGATE(FOnQuestStart, uint32_t QuestID)
+
+DECLARE_DYNAMIC_DELEGATE(FOnQuestEnd, uint32_t QuestID);
 
 /**
  * 레벨에서는 액터 관리(환경, 배치)를 담당한다.
@@ -22,6 +35,8 @@ class JLevel : public JObject
 {
 public:
 	FOnLevelLoaded OnLevelLoaded;
+	FOnQuestStart  OnQuestStart;
+	FOnQuestEnd    OnQuestEnd;
 
 public:
 	JLevel();
@@ -72,7 +87,9 @@ public:
 	// Widget
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
 	class APlayerCharacter*         mPlayerCharacter;
+	UPtr<class JKihyunDialog>       mKihyunDialog;
 	JWidgetComponent*               mGameOverWidget;
+	uint32_t                        mButtonIndex = 0;
 	JUIComponent*                   mPressEKey;
 	JUIComponent*                   mHPBar[3];
 

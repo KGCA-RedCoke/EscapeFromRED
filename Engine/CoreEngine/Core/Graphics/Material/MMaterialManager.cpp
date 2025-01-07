@@ -34,8 +34,8 @@ void MMaterialManager::SaveEngineMaterials()
 	// ui->SetShader(MShaderManager::Get().UIShader);
 	// Utils::Serialization::Serialize(NAME_MAT_2D, ui);
 
-	// auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
-	// POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
+	auto POM = Load<JMaterial_POM>(NAME_MAT_POM);
+	POM->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_POM.hlsl"));
 	// auto detail = Load<JMaterial_Detail>(NAME_MAT_DETAIL);
 	// detail->SetShader(MShaderManager::Get().Load("Shader/HorrorMap_Detail.hlsl"));
 	//

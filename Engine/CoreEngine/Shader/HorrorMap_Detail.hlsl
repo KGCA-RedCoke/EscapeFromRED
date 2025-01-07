@@ -145,7 +145,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	{
 		discard;
 	}
-	float  fLightAmount   = 1.0f;
+	float fLightAmount = 1.0f;
 	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
 	//
 	// // 그림자 맵 해상도에 따른 샘플링 간격 계산
@@ -189,7 +189,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	for (int i = 0; i < NumPointLights; ++i)
 	{
 		finalPointLight += ComputePointLight(Input.WorldSpace,
-											 Input.Normal,
+											 normal,
 											 PointLight[i]);
 	}
 	finalPointLight = smoothstep(0.0f, 1.0f, finalPointLight);
@@ -197,17 +197,17 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	for (int i = 0; i < NumSpotLights; ++i)
 	{
 		finalSpotLight += ComputeSpotLight(Input.WorldSpace,
-										   Input.Normal,
+										   normal,
 										   SpotLight[i]);
 	}
 	finalSpotLight = smoothstep(0.0f, 1.0f, finalSpotLight);
 
-	diffuse += finalPointLight + finalSpotLight;
+	diffuse += albedo * (finalPointLight + finalSpotLight);
 
 	// Final Color Calculation: Diffuse + Ambient + Specular
-	float3 finalColor = diffuse  + specular;
+	float3 finalColor = diffuse + specular;
 
-	finalColor = lerp(finalColor, finalColor * ambientColor, 1);
+	finalColor = lerp(finalColor, finalColor + ambientColor * albedo * 0.1f, 1.f);
 
 	return float4(finalColor, opacity);
 

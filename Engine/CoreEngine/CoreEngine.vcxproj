@@ -510,6 +510,7 @@
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_Collar.jasset" />
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_Eye.jasset" />
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_Hair.jasset" />
+    <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_Hammer.jasset" />
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_Jacket.jasset" />
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_ShirtGloves.jasset" />
     <Content Include="Game\Materials\Horror_Map\Killer_Clown\MI_TrosersShoes.jasset" />

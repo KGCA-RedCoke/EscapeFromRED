@@ -1,5 +1,6 @@
 ﻿#include "JLight_Spot.h"
 
+#include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Interface/JWorld.h"
 
 JLight_Spot::JLight_Spot()
@@ -27,18 +28,9 @@ void JLight_Spot::Tick(float DeltaTime)
 {
 	JLightComponent::Tick(DeltaTime);
 
-	// 오일러 각을 라디안 단위로 변환
-	float pitch = XMConvertToRadians(mWorldRotation.x); // X축 회전
-	float yaw   = XMConvertToRadians(mWorldRotation.y);   // Y축 회전
-
-	// Forward Vector 계산
-	float x = cosf(pitch) * sinf(yaw);
-	float y = sinf(pitch);
-	float z = cosf(pitch) * cosf(yaw);
-
-
 	mLightData.Position  = mWorldLocation;
-	mLightData.Direction = FVector(x, y, z);
+	
+	mLightData.Direction = GetWorld.CameraManager->GetCurrentMainCam()->GetForwardVector();
 
 	GetWorld.WorldSpotLightData.Data[mWorldBufferIndex] = mLightData;
 }

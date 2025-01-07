@@ -36,8 +36,8 @@ Texture2D opacityMap : register(t6);
 Texture2D heightMap : register(t7);
 Texture2D specularMap : register(t8);
 
-Texture2D directionLightShadowMap : register(t10);
-Texture2D pointLightShadowMap : register(t11);
+Texture2D              directionLightShadowMap : register(t10);
+Texture2D              pointLightShadowMap : register(t11);
 SamplerState           Sampler_Linear : register(s0);
 SamplerState           SamplerShadowMap: register (s1);
 SamplerComparisonState SamplerComShadowMap: register (s2);
@@ -104,7 +104,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 
 	const float opacity = opacityMap.Sample(Sampler_Linear, texCoord).r * Opacity;
 
-	float  fLightAmount   = 1.0f;
+	float fLightAmount = 1.0f;
 	// float3 ShadowTexColor = Input.TexShadow.xyz / Input.TexShadow.w;
 	//
 	// // 그림자 맵 해상도에 따른 샘플링 간격 계산
@@ -148,23 +148,23 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	for (int i = 0; i < NumPointLights; ++i)
 	{
 		finalPointLight += ComputePointLight(Input.WorldSpace,
-											 Input.Normal,
+											 normal,
 											 PointLight[i]);
 	}
 
 	for (int i = 0; i < NumSpotLights; ++i)
 	{
 		finalSpotLight += ComputeSpotLight(Input.WorldSpace,
-										   Input.Normal,
+										   normal,
 										   SpotLight[i]);
 	}
 
-	diffuse += finalPointLight + finalSpotLight;
+	diffuse += albedo * (finalPointLight + finalSpotLight);
 
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + specular;
-	finalColor        = lerp(finalColor, finalColor * ambientColor, 1);
-	
+	finalColor        = lerp(finalColor, finalColor + ambientColor * albedo * 0.1f, 1.f);
+
 	return float4(finalColor, 1);
 
 }

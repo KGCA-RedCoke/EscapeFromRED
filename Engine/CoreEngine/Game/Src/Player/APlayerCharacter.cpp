@@ -9,6 +9,7 @@
 #include "Core/Entity/Component/Mesh/JSkeletalMeshComponent.h"
 #include "Core/Entity/Component/Mesh/JStaticMeshComponent.h"
 #include "Core/Entity/Component/Movement/JPawnMovementComponent.h"
+#include "Core/Entity/Light/JLight_Spot.h"
 #include "Core/Entity/UI/MUIManager.h"
 #include "Core/Interface/JWorld.h"
 
@@ -46,6 +47,12 @@ APlayerCharacter::APlayerCharacter(JTextView InName, JTextView InMeshPath)
 	mWeaponCollision->SetLocalScale({0.5, 0.5, 0.5f});
 	mWeaponCollision->SetColor(DirectX::Colors::Orange);
 	mWeaponCollision->EnableCollision(false);
+
+	mSpotLight = CreateDefaultSubObject<JLight_Spot>("SpotLight", this);
+	mSpotLight->SetupAttachment(mSkeletalMeshComponent);
+	mSpotLight->SetLocalLocation({0, 150, 0});
+	mSpotLight->SetLightColor({1, 0.69, 0.2, 1});
+	mSpotLight->SetIntensity(0.8f);
 
 	mBoundingBox = mSkeletalMeshComponent->GetBoundingVolume();
 

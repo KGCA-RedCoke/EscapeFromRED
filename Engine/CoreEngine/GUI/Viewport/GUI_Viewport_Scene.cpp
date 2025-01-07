@@ -25,7 +25,9 @@
 GUI_Viewport_Scene::GUI_Viewport_Scene(const JText& InTitle)
 	: GUI_Viewport(InTitle),
 	  mPauseIcon(nullptr),
-	  mPlayIcon(nullptr) {}
+	  mPlayIcon(nullptr)
+{
+}
 
 
 void GUI_Viewport_Scene::Initialize()

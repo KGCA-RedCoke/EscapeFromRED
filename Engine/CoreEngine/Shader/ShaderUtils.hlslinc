@@ -156,17 +156,24 @@ float3 ComputePointLight(float3      InWorldPos,
 						 float3      InWorldNormal,
 						 FPointLight InPointLight)
 {
-	// 빛의 방향을 계산
+	// 빛의 방향 및 거리 계산
 	float3 lightDir           = InPointLight.Position - InWorldPos;
-	float3 lightDirNormalized = normalize(InPointLight.Position - InWorldPos);
+	float  lightDistance      = length(lightDir);
+	float3 lightDirNormalized = normalize(lightDir);
 
-	// 빛의 거리를 계산
-	float lightDistance = length(lightDir);
-
+	// 빛이 범위를 벗어나면 0 반환
 	if (lightDistance > InPointLight.Range)
 	{
 		return float3(0, 0, 0);
 	}
+
+	// 감쇠 계산 (Quadratic Falloff: 1 / (C + L*d + Q*d^2))
+	float constantAttenuation  = 1.0f;       // 고정 감쇠
+	float linearAttenuation    = 0.7f;       // 선형 감쇠
+	float quadraticAttenuation = 1.8f;       // 제곱 감쇠
+	float attenuation          = 1.0f / (constantAttenuation +
+		linearAttenuation * lightDistance +
+		quadraticAttenuation * lightDistance * lightDistance);
 
 	// 빛의 강도를 계산
 	float lightIntensity = saturate(1.0f - lightDistance / InPointLight.Range) * InPointLight.Intensity;
@@ -185,25 +192,32 @@ float3 ComputeSpotLight(float3     InWorldPos,
 						float3     InWorldNormal,
 						FSpotLight InSpotLight)
 {
-	// 광원으로부터 표면까지의 벡터
-	float3 LightDir = -normalize(InSpotLight.Position - InWorldPos);
+	// 광원 벡터 및 거리 계산
+	float3 LightVec = InSpotLight.Position - InWorldPos;
+	float  Distance = length(LightVec);
+	float3 LightDir = LightVec / Distance;
 
-	// 광원 방향과 표면 법선 간의 내적 계산 (Diffuse 조명)
+	// Diffuse 조명 계산
 	float DiffuseFactor = max(dot(InWorldNormal, LightDir), 0.0);
 
-	// 표면이 SpotLight 조사각 내에 있는지 확인
-	float SpotEffect = dot(LightDir, -normalize(InSpotLight.Direction)); // 광원 방향과 표면 방향 비교
-	SpotEffect       = smoothstep(cos(radians(InSpotLight.SpotAngle)), 1.0, SpotEffect); // 부드러운 경계 처리
+	// Spot Light 효과 계산 (부드러운 경계 처리)
+	float SpotEffect  = dot(LightDir, -normalize(InSpotLight.Direction));
+	float InnerCutoff = cos(radians(15));
+	float OuterCutoff = cos(radians(35));
+	SpotEffect        = smoothstep(OuterCutoff, InnerCutoff, SpotEffect);
 
-	// 광원의 범위(Range) 기반 감쇠
-	float Distance         = length(InSpotLight.Position - InWorldPos);
-	float RangeAttenuation = saturate(1.0 - (Distance / InSpotLight.Range)); // 선형 감쇠
+	// 거리 기반 감쇠 (역제곱 법칙)
+	float RangeAttenuation = saturate(1.0 / (1.0 + Distance * Distance / (InSpotLight.Range * InSpotLight.Range)));
 
-	// 조명 색과 강도(Intensity) 적용
-	float3 LightColor = InSpotLight.Color * InSpotLight.Intensity;
+	// Specular 조명 추가
+	float3 ReflectDir = reflect(-LightDir, InWorldNormal);
+	float3 ViewDir    = normalize(WorldCameraPos - InWorldPos);
+	float  SpecFactor = pow(max(dot(ViewDir, ReflectDir), 0.0), 16.f);
+	float3 Specular   = InSpotLight.Color * 0.5f * SpecFactor;
 
 	// 최종 조명 계산
-	float3 FinalLight = LightColor * DiffuseFactor * SpotEffect * RangeAttenuation;
+	float3 LightColor = InSpotLight.Color * InSpotLight.Intensity;
+	float3 FinalLight = (LightColor * DiffuseFactor + Specular) * SpotEffect * RangeAttenuation;
 
 	return FinalLight;
 }
