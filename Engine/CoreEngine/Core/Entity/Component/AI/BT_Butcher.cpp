@@ -83,7 +83,6 @@ NodeStatus BT_Butcher::StateIdleToConvers()
 	bIsIdle         = false;
 	bIsConvers      = true;
 	mEventStartFlag = true;
-	bIsTransform = true;
 	return NodeStatus::Success;
 }
 
@@ -419,8 +418,6 @@ void BT_Butcher::SetupTree()
 					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
 					.AddActionNode(LAMBDA(StateIdleToConvers))
 				.EndBranch()
-				.AddActionNode(LAMBDA(TransformPhase))
-
 				.AddDecorator(LAMBDA(IsConvers))
 					.AddActionNode(LAMBDA(conversation, conversIdx))
 					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
