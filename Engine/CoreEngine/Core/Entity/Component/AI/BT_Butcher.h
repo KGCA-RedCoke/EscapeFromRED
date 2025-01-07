@@ -37,6 +37,7 @@ public:
 	NodeStatus LookAt(FVector direction);
 	NodeStatus StateToNextQuest();
 	NodeStatus StateToTransform(int N);
+	NodeStatus TransformPhase();
 
 	// Decorator Function
 	NodeStatus IsIdle();
@@ -58,6 +59,9 @@ private:
 	bool    bIsNextQuest = false;
 	bool	bIsTransform = false;
 	int     conversIdx   = 0;
+	FVector npcLocation = FVector::ZeroVector;
+	FVector npcRotation = FVector::ZeroVector;
+	
 
 	AEnemy*            mOwnerEnemy;
 
