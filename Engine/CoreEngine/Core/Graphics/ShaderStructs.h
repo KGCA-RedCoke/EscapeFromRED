@@ -251,9 +251,9 @@ namespace Buffer
 	struct FBuffer_Light_Spot
 	{
 		FVector Position  = FVector::ZeroVector;
-		float   Range     = 200.f;
+		float   Range     = 500.f;
 		FVector Direction = {0, 0, 1};
-		float   Angle     = 45.f;
+		float   Angle     = 30.f;
 		FVector Color     = FVector(0.8f, 0.68f, 0.48f);
 		float   Intensity = 1.f;
 	};

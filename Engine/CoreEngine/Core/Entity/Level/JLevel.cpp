@@ -13,6 +13,33 @@
 #include "Game/Src/Player/APlayerCharacter.h"
 #include "GUI/MGUIManager.h"
 
+JKihyunDialog::JKihyunDialog()
+{
+	AddUIComponent("Quest_Start_1");
+	AddUIComponent("Quest_Start_2");
+	AddUIComponent("Quest_Start_3");
+	AddUIComponent("Quest_Start_4");
+	AddUIComponent("Quest_Start_5");
+	AddUIComponent("Quest_Start_6");
+	AddUIComponent("Quest_Start_7");
+
+	mUIComponents[0]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_1.png"));
+	mUIComponents[1]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_2.png"));
+	mUIComponents[2]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_3.png"));
+	mUIComponents[3]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_4.png"));
+	mUIComponents[4]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_5.png"));
+	mUIComponents[5]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_6.png"));
+	mUIComponents[6]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_7.png"));
+
+	for (auto& component : mUIComponents)
+	{
+		component->SetColor({1, 1, 1, 1});
+		component->SetSize({10, 5});
+		component->SetVisible(false);
+		component->SetPosition({0, -0.6});
+	}
+}
+
 JLevel::JLevel() {}
 
 JLevel::JLevel(const JText& InPath, bool bUseTree)
@@ -115,6 +142,19 @@ void JLevel::InitializeLevel()
 	mWidgetComponents.push_back(mGameOverWidget);
 	mGameOverWidget->SetVisible(false);
 
+	mGameOverWidget->mUIComponents[0]->OnAnimationEvent.Bind([&](float DeltaTime){
+		uint32_t normalBtnIndex   = mButtonIndex == 0 ? 3 : 2;
+		uint32_t selectedBtnIndex = mButtonIndex == 0 ? 2 : 3;
+
+		auto& data   = mGameOverWidget->mUIComponents[selectedBtnIndex]->GetInstanceData();
+		data.Color.x = 1.f;
+		data.Size    = FVector2{2.f, 2.f};
+
+		auto& data2 = mGameOverWidget->mUIComponents[normalBtnIndex]->GetInstanceData();
+		data2.Color.x *= 0.6f;
+		data2.Size = FVector2{1.5f, 1.5f};
+	});
+
 	auto eKeyUI = MakeUPtr<JUIComponent>("PressEKey");
 	mPressEKey  = eKeyUI.get();
 	mWidgetComponents[0]->mUIComponents.push_back(std::move(eKeyUI));
@@ -133,6 +173,30 @@ void JLevel::InitializeLevel()
 		mHPBar[i - 8] = mWidgetComponents[0]->mUIComponents[i].get();
 		SetHPBar(i - 8, false);
 	}
+
+	mKihyunDialog = MakeUPtr<JKihyunDialog>();
+	mWidgetComponents.push_back(mKihyunDialog.get());
+
+	OnQuestStart.Bind([&](uint32_t Index){
+		mPlayerCharacter->LockInput(true);
+
+		mKihyunDialog->SetVisible(true);
+		for (auto& component : mKihyunDialog->mUIComponents)
+		{
+			component->SetVisible(false);
+		}
+		mKihyunDialog->mUIComponents[Index]->SetVisible(true);
+
+	});
+
+	OnQuestEnd.Bind([&](uint32_t Index){
+		mKihyunDialog->SetVisible(false);
+		for (auto& component : mKihyunDialog->mUIComponents)
+		{
+			component->SetVisible(false);
+		}
+		mPlayerCharacter->LockInput(false);
+	});
 }
 
 void JLevel::UpdateLevel(float DeltaTime)
@@ -142,9 +206,18 @@ void JLevel::UpdateLevel(float DeltaTime)
 		return;
 	}
 
-	if (GetAsyncKeyState(VK_F1) & 0x8000)
+	if (GetAsyncKeyState('P') & 0x8000)
 	{
 		mPlayerCharacter->OnPlayerHealthChanged.Execute(false);
+	}
+
+	if (GetAsyncKeyState(VK_UP) & 0x8000)
+	{
+		mButtonIndex = 0;
+	}
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+	{
+		mButtonIndex = 1;
 	}
 
 	std::erase_if(

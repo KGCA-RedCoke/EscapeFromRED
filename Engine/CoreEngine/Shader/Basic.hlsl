@@ -180,23 +180,23 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	for (int i = 0; i < NumPointLights; ++i)
 	{
 		finalPointLight += ComputePointLight(Input.WorldSpace,
-											 Input.Normal,
+											 normal,
 											 PointLight[i]);
 	}
 
 	for (int i = 0; i < NumSpotLights; ++i)
 	{
 		finalSpotLight += ComputeSpotLight(Input.WorldSpace,
-										   Input.Normal,
+										   normal,
 										   SpotLight[i]);
 	}
 
-	diffuse += finalPointLight + finalSpotLight;
+	diffuse += albedo * smoothstep(0, 1, (finalPointLight + finalSpotLight));
 
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + specular;
 
-	finalColor = lerp(finalColor, finalColor * ambientColor, AO);
+	finalColor = lerp(finalColor, finalColor + ambientColor * albedo * 0.1f, AO);
 
 	finalColor += emissive;
 

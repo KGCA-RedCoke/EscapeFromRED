@@ -11,32 +11,7 @@
 #include "Core/Window/Application.h"
 #include "Game/Src/Player/APlayerCharacter.h"
 
-JKihyunDialog::JKihyunDialog()
-{
-	AddUIComponent("Quest_Start_1");
-	AddUIComponent("Quest_Start_2");
-	AddUIComponent("Quest_Start_3");
-	AddUIComponent("Quest_Start_4");
-	AddUIComponent("Quest_Start_5");
-	AddUIComponent("Quest_Start_6");
-	AddUIComponent("Quest_Start_7");
 
-	mUIComponents[0]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_1.png"));
-	mUIComponents[1]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_2.png"));
-	mUIComponents[2]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_3.png"));
-	mUIComponents[3]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_4.png"));
-	mUIComponents[4]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_5.png"));
-	mUIComponents[5]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_6.png"));
-	mUIComponents[6]->SetTexture(GetWorld.TextureManager->Load("Game/Textures/Dialog/Quest_Start_7.png"));
-
-	for (auto& component : mUIComponents)
-	{
-		component->SetColor({1, 1, 1, 1});
-		component->SetSize({10, 5});
-		component->SetVisible(false);
-		component->SetPosition({0, -0.6});
-	}
-}
 
 JLevel_Main::JLevel_Main()
 {
@@ -90,36 +65,11 @@ void JLevel_Main::InitializeLevel()
 		G_NAV_MAP.Initialize();
 		G_BIG_MAP.Initialize();
 	});
-
-	mKihyunDialog = MakeUPtr<JKihyunDialog>();
-
-	mWidgetComponents.reserve(2);
-	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
-	mWidgetComponents.push_back(mKihyunDialog.get());
-
-
+	
 	GetWorld.ThreadPool.ExecuteTask([this](){
 		Utils::Serialization::DeSerialize("Game/Levels/Map.jasset", this);
 	});
 
-	OnQuestStart.Bind([&](uint32_t Index){
-		mPlayerCharacter->LockInput(true);
-
-		for (auto& component : mKihyunDialog->mUIComponents)
-		{
-			component->SetVisible(false);
-		}
-		mKihyunDialog->mUIComponents[Index]->SetVisible(true);
-
-	});
-
-	OnQuestEnd.Bind([&](uint32_t Index){
-		for (auto& component : mKihyunDialog->mUIComponents)
-		{
-			component->SetVisible(false);
-		}
-		mPlayerCharacter->LockInput(false);
-	});
 }
 
 void JLevel_Main::UpdateLevel(float DeltaTime)

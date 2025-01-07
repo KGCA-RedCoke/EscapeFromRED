@@ -49,7 +49,6 @@ private:
 	int     conversIdx   = 0;
 
 	AEnemy*            mOwnerEnemy;
-	class JLevel_Main* mWorld;	// 월드 이벤트 발동 위해 필요
 
 private:
 	FORCEINLINE bool IsKeyPressed(EKeyCode InKey) const { return mInputKeyboard.IsKeyPressed(InKey); }

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Core/Entity/Actor/Character/ACharacter.h"
 
+class JLight_Spot;
 class JAnimator;
 class JStaticMeshComponent;
 
@@ -40,6 +41,7 @@ private:
 	class JCameraComponent* mFPSCamera;
 	JStaticMeshComponent*   mWeaponMesh;
 	JSphereComponent*       mWeaponCollision;
+	JLight_Spot*            mSpotLight;
 
 	FVector2 mMouseDelta;
 	FVector2 mRotVelocity;

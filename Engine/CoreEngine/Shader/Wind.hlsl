@@ -189,7 +189,7 @@ float4 PS(PixelIn_Base Input) : SV_TARGET
 	// Final Color Calculation: Diffuse + Ambient + Specular
 	float3 finalColor = diffuse + specular;
 
-	finalColor = lerp(finalColor, finalColor * ambientColor, 1);
+	finalColor        = lerp(finalColor, finalColor + ambientColor * albedo * 0.1f, 1.f);
 
 
 	return float4(finalColor, opacity);
