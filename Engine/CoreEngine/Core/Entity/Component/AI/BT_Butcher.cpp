@@ -10,6 +10,7 @@
 #include "imgui/imgui_internal.h"
 #include "Game/Src/Enemy/AEnemy.h"
 #include "Game/Src/Level/JLevel_Main.h"
+#include "Core/Entity/Component/AI/BT_Pig.h"
 
 #define LAMBDA(func, ...) [this]() -> NodeStatus { return func(__VA_ARGS__); }
 
@@ -134,6 +135,12 @@ NodeStatus BT_Butcher::LookAt(FVector direction)
 	return NodeStatus::Success;
 }
 
+NodeStatus BT_Butcher::StateToNextQuest(FVector direction)
+{
+	bool    bIsNextQuest   = true;
+	return NodeStatus::Success;
+}
+
 NodeStatus BT_Butcher::IsIdle()
 {
 	if (bIsIdle)
@@ -158,6 +165,18 @@ NodeStatus BT_Butcher::IsTrace()
 		return NodeStatus::Failure;
 }
 
+NodeStatus BT_Butcher::IsQuestFinished(int n)
+{
+	if (BT_Pig::g_Count == n)
+		return NodeStatus::Success;
+	return NodeStatus::Failure;
+}
+
+NodeStatus BT_Butcher::IsNextQuest()
+{
+	
+}
+
 NodeStatus BT_Butcher::TalkTo()
 {
 	if (IsPlayerClose(300))
@@ -179,7 +198,7 @@ NodeStatus BT_Butcher::conversation(int idx)
 	{
 		GetWorld.LevelManager->GetActiveLevel()->OnQuestStart.Execute(idx);
 	}
-
+	
 	switch (idx)
 	{
 	case 0:
@@ -226,8 +245,40 @@ NodeStatus BT_Butcher::conversation(int idx)
 			return NodeStatus::Success;
 		}
 		break;
+	case 4:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers1);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 5:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers2);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
+	case 6:
+		{
+			if (mEventStartFlag)
+			{
+				mEventStartFlag = false;
+				mOwnerEnemy->SetEnemyState(EEnemyState::Convers3);
+				LOG_CORE_INFO("Good Luck!");
+			}
+			return NodeStatus::Success;
+		}
+		break;
 	}
-
 	return NodeStatus::Failure;
 }
 
@@ -245,13 +296,24 @@ void BT_Butcher::SetupTree()
 					.AddActionNode(LAMBDA(conversation, conversIdx))
 					.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
 					.AddActionNode(LAMBDA(GetNextConvers))
-					.AddActionNode(LAMBDA(StateConversToTrace, 4))
+					.AddActionNode(LAMBDA(StateConversToTrace, 7))
 				.EndBranch()
 				.AddDecorator(LAMBDA(IsTrace))
 					.AddActionNode(LAMBDA(GetPath, FVector2(50, 100)))
 					.AddActionNode(LAMBDA(GoGoal))
 					.AddActionNode(LAMBDA(LookAt, FVector(100, 110, 100)))
 				.EndBranch()
+				// .AddDecorator(LAMBDA(IsQuestFinished, 10))
+				// 	.AddActionNode(LAMBDA(TalkTo))
+				// 	.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::E))
+				// 	.AddActionNode(LAMBDA(StateToNextQuest))
+				// .EndBranch()
+				// .AddDecorator(LAMBDA(IsConvers))
+				// 	.AddActionNode(LAMBDA(conversation, conversIdx))
+				// 	.AddActionNode(LAMBDA(IsPressedKey, EKeyCode::Space))
+				// 	.AddActionNode(LAMBDA(GetNextConvers))
+				// 	.AddActionNode(LAMBDA(StateConversToTrace, 7))
+				// .EndBranch()
 			.Build();
 }
 

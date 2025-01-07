@@ -115,7 +115,7 @@ void BigGrid::SetObstacle(std::vector<std::vector<Ptr<Node>>>& graph, JTexture* 
     {
         for (int col = 0; col < GridDivs.x; col++)
         {
-            if (MapFile->mRGBAData[row * GridDivs.x + col] > 200)
+            if (MapFile->mRGBAData[row * GridDivs.x + col] > 11)
                 Obstacles.push_back(FVector2(col, row));
 
         }

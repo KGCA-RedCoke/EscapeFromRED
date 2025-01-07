@@ -34,12 +34,16 @@ public:
 	NodeStatus GetPath(FVector2 GoalGrid);
 	NodeStatus GoGoal();
 	NodeStatus LookAt(FVector direction);
+	NodeStatus StateToNextQuest();
 
 	// Decorator Function
 	NodeStatus IsIdle();
 	NodeStatus IsConvers();
 	NodeStatus IsTrace();
+	NodeStatus IsQuestFinished(int n);
+	NodeStatus IsNextQuest();
 	NodeStatus IsPressedKey(EKeyCode Key);
+	
 
 
 	// Just Function
@@ -49,6 +53,7 @@ private:
 	bool    bIsIdle      = true;
 	bool    bIsConvers   = false;
 	bool    bIsTrace     = false;
+	bool    bIsNextQuest   = false;
 	int     conversIdx   = 0;
 
 	AEnemy*            mOwnerEnemy;
