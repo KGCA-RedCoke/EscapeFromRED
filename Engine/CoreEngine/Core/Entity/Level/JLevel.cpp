@@ -149,6 +149,11 @@ void JLevel::InitializeLevel()
 {
 	mOcTree = MakeUPtr<Quad::JTree>();
 	mOcTree->Initialize({{0, 0, 0}, {10000, 5000, 10000}}, MAX_DEPTH);
+#if ENGINE_EDITOR_ONLY
+	// A new editor level has no dependency on the archived game's HUD or dialogs.
+	bThreadLoaded = true;
+	return;
+#endif
 
 	mWidgetComponents.reserve(4);
 	mWidgetComponents.push_back(GetWorld.UIManager->Load("Game/UI/NewWidget.jasset"));
@@ -206,7 +211,7 @@ void JLevel::UpdateLevel(float DeltaTime)
 	}
 
 
-	if (GetAsyncKeyState('P') & 0x8000)
+	if (mPlayerCharacter && (GetAsyncKeyState('P') & 0x8000))
 	{
 		mPlayerCharacter->OnPlayerHealthChanged.Execute(false);
 	}

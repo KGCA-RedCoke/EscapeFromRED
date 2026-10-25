@@ -1,6 +1,7 @@
 ﻿#include "MGUIManager.h"
 #include <imgui/imgui_impl_dx11.h>
 #include <imgui/imgui_impl_win32.h>
+#include <imgui/imgui_internal.h>
 #include "GUI_AssetBrowser.h"
 #include "GUI_Inspector.h"
 #include "GUI_Themes.h"
@@ -43,7 +44,12 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// 키보드 컨트롤 활성화
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// Docking(다른 창에 붙이기) 활성화
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 뷰포트 활성화 
+#if ENGINE_EDITOR_ONLY
+	std::filesystem::create_directories("Saved");
+	io.IniFilename = "Saved/editor.ini";
+#else
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 뷰포트 활성화
+#endif
 
 	ImGui::Spectrum::StyleColorsSpectrum();	// 스펙트럼 테마 적용(테마는 io로 다양하게 설정이 가능하다)
 	ImGui::Spectrum::LoadFont(18);
@@ -229,7 +235,24 @@ void MGUIManager::Update(float_t DeltaTime)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::DockSpaceOverViewport();
+	const ImGuiID dockspace = ImGui::DockSpaceOverViewport();
+#if ENGINE_EDITOR_ONLY
+	static bool firstFrame = true;
+	if (firstFrame && !std::filesystem::exists("Saved/editor.ini"))
+	{
+		ImGui::DockBuilderRemoveNode(dockspace);
+		ImGui::DockBuilderAddNode(dockspace, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspace, ImGui::GetMainViewport()->WorkSize);
+		ImGuiID center = dockspace;
+		const ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &center);
+		const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.30f, nullptr, &center);
+		ImGui::DockBuilderDockWindow(Name_Viewport, center);
+		ImGui::DockBuilderDockWindow(Name_Inspector, right);
+		ImGui::DockBuilderDockWindow(Name_AssetBrowser, bottom);
+		ImGui::DockBuilderFinish(dockspace);
+	}
+	firstFrame = false;
+#endif
 
 	UpdateMainMenuBar();
 

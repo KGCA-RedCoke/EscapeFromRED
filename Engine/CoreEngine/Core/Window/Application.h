@@ -10,7 +10,7 @@ struct FBasicWindowData;
 class Application final
 {
 public:
-	void Run();
+	void Run(uint32_t MaxFrames = 0);
 
 public:
 	void Initialize();

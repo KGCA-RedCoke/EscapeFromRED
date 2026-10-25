@@ -22,7 +22,7 @@ public:
 	void PauseAll();
 
 private:
-	FMOD::System* mFmodSystem;
+	FMOD::System* mFmodSystem = nullptr;
 
 private:
 	friend class TSingleton<MSoundManager>;

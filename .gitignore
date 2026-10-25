@@ -1,0 +1,11 @@
+/bin/
+/.vs/
+/.serena/
+/Engine/CoreEngine/Saved/
+*.vcxproj.user
+# Locally restored SDKs; sources and versions are documented in DEPENDENCIES.md.
+/Engine/CoreEngine/Vender/include/*
+!/Engine/CoreEngine/Vender/include/imgui/
+!/Engine/CoreEngine/Vender/include/inifile_cpp/
+/Engine/CoreEngine/Vender/lib/
+/Engine/CoreEngine/Vender/licenses/

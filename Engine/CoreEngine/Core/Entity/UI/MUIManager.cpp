@@ -1,4 +1,4 @@
-﻿#include "MUIManager.h"
+#include "MUIManager.h"
 
 #include "Core/Entity/Camera/MCameraManager.h"
 #include "Core/Graphics/XD3DDevice.h"
@@ -538,6 +538,9 @@ MUIManager::MUIManager()
 	mShader        = MShaderManager::Get().UIShader;
 	mPickingShader = MShaderManager::Get().UIElementShader;
 
+#if ENGINE_EDITOR_ONLY
+	LoadingScreen = nullptr;
+#else
 	LoadingScreen = Load("Game/UI/loadingding.jasset");
 
 
@@ -558,6 +561,7 @@ MUIManager::MUIManager()
 		auto& data = LoadingScreen->mUIComponents[4]->GetInstanceData();
 		data.Color.w =  (sin((GetWorld.GetGameTime()-0.64f) * 7.14159f / 2) + 1) / 2;
 	});
+#endif
 }
 
 MUIManager::~MUIManager() {}

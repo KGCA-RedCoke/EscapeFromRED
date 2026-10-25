@@ -88,10 +88,10 @@ public:
 
 	// Widget
 	JArray<class JWidgetComponent*> mWidgetComponents;	// 레벨에 속한 UI 컴포넌트들
-	class APlayerCharacter*         mPlayerCharacter;
+	class APlayerCharacter*         mPlayerCharacter = nullptr;
 	UPtr<class JKihyunDialog>       mKihyunDialog;
-	JUIComponent*                   mPressEKey;
-	JUIComponent*                   mHPBar[3];
+	JUIComponent*                   mPressEKey = nullptr;
+	JUIComponent*                   mHPBar[3] = {};
 
 	JArray<AActor*> EnemySpawner;
 	JArray<APawn*>  Pawns;

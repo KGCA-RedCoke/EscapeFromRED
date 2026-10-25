@@ -52,7 +52,9 @@ void JWorld::Initialize()
 	AnimationManager        = &MAnimManager::Get();
 	ColliderManager         = &MCollisionManager::Get();
 
+#if !ENGINE_EDITOR_ONLY
 	MaterialManager->SaveEngineMaterials();
+#endif
 	GUIManager->Initialize(D3D11API->GetDevice(), D3D11API->GetImmediateDeviceContext());
 	G_DebugBatch.Initialize();		 // Primitive Batch
 
@@ -62,10 +64,17 @@ void JWorld::Initialize()
 	// ThreadPool.ExecuteTask(&SearchFiles_Recursive, std::filesystem::path(R"(rsc/GameResource)"));
 	// ThreadPool.ExecuteTask(&ParseFiles_Recursive, std::filesystem::path(R"(rsc)"));
 
+#if ENGINE_EDITOR_ONLY
+	bDebugMode = true;
+	std::filesystem::create_directories("Saved");
+	LevelManager->SetActiveLevel(LevelManager->Load("Saved/EditorLevel.jasset"));
+	LOG_CORE_INFO("Editor-only workspace initialized.");
+#else
 	const char* levelPath = g_settings["Editor.Level"]["DefaultLevel"].as<const char*>();
 	assert(levelPath[0] != '\0');
 
 	LevelManager->SetActiveLevel(LevelManager->Load(levelPath));
+#endif
 
 	// DirectionalLightShadowMap = ViewportManager->Load("DirectionalLightShadowMap",
 	// 												  4096,

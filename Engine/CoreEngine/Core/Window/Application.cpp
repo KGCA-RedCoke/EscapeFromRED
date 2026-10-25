@@ -73,7 +73,8 @@ void Application::Initialize()
 	viewportPtr->OnViewportResized.Bind([&](uint32_t InWidth, uint32_t InHeight){
 		mFpsText->SetRenderTarget(GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport)->RTV_2D.Get());
 	});
-	mFpsText = MakeUPtr<JFont>(nullptr);
+	// The first docked frame may have no drawable viewport area and skip resize.
+	mFpsText = MakeUPtr<JFont>(viewportPtr->RTV_2D.Get());
 	mFpsText->Initialize();
 	mFpsText->SetFontSize(36);
 	mFpsText->SetTextRect({50, 50}, {100, 100});
@@ -81,11 +82,12 @@ void Application::Initialize()
 	// mFpsText->SetScreenPosition({5, 5});
 }
 
-void Application::Run()
+void Application::Run(uint32_t MaxFrames)
 {
 	// 개체 초기화
 	Initialize();
 
+	uint32_t renderedFrames = 0;
 	while (bRunning)
 	{
 		mCurrentTime = mTimer->Elapsed();
@@ -102,6 +104,11 @@ void Application::Run()
 
 		// 윈도우 X 버튼을 누르거나 프로그램 종료 확인
 		CheckWindowClosure();
+		if (MaxFrames && ++renderedFrames >= MaxFrames)
+		{
+			LOG_CORE_INFO("Smoke test completed: {} frames rendered.", renderedFrames);
+			bRunning = false;
+		}
 	}
 
 }

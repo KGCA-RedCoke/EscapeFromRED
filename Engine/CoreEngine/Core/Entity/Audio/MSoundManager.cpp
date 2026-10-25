@@ -1,6 +1,8 @@
 ﻿#include "MSoundManager.h"
+#if WITH_FMOD
 #include <fmod.hpp>
 #include <fmod_errors.h>
+#endif
 
 MSoundManager::MSoundManager()
 {
@@ -10,6 +12,7 @@ MSoundManager::MSoundManager()
 
 void MSoundManager::Initialize()
 {
+#if WITH_FMOD
 	FMOD_RESULT result;
 
 	// Creates an instance of the FMOD system.
@@ -21,23 +24,30 @@ void MSoundManager::Initialize()
 	result = mFmodSystem->init(32, FMOD_INIT_NORMAL, nullptr);
 
 	assert(result == FMOD_OK, "fmod system initialize failed");
+#else
+	LOG_CORE_INFO("Audio disabled: build with EnableFmod=true to enable the FMOD backend.");
+#endif
 }
 
 void MSoundManager::Update(float DeltaTime)
 {
-	mFmodSystem->update();
+#if WITH_FMOD
+	if (mFmodSystem) mFmodSystem->update();
+#endif
 }
 
 void MSoundManager::Render() {}
 
 void MSoundManager::Release()
 {
+#if WITH_FMOD
 	if (mFmodSystem)
 	{
 		mFmodSystem->close();
 		mFmodSystem->release();
 		mFmodSystem = nullptr;
 	}
+#endif
 }
 
 void MSoundManager::Stop() {}

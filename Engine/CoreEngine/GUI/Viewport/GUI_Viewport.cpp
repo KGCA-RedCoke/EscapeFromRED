@@ -45,11 +45,16 @@ void GUI_Viewport::Update_Implementation(float DeltaTime)
 
 	if (!mViewportData)
 	{
-		ImGui::End();
 		LOG_CORE_FATAL("Invalid Viewport");
+		return;
 	}
 
 	ImVec2 size = ImGui::GetContentRegionAvail();
+	// Docking/collapsing can temporarily leave no drawable content area.
+	// Never cast a negative size to UINT or allocate a zero-size D3D texture.
+	if (size.x < 1.0f || size.y < 1.0f) return;
+	size.x = std::floor(size.x);
+	size.y = std::floor(size.y);
 	if (size.x != mCachedViewportWidth || size.y != mCachedViewportHeight)
 	{
 		mCachedViewportWidth  = size.x;

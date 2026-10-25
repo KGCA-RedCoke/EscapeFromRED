@@ -18,11 +18,13 @@ JAudioComponent::JAudioComponent(JTextView InName)
 
 void JAudioComponent::Initialize()
 {
+#if WITH_FMOD
 	assert(
 		   MSoundManager::Get().mFmodSystem->createSound(mPath.c_str(), FMOD_DEFAULT, nullptr, &mFmodSound)
 		   ==
 		   FMOD_OK,
 		   "Sound creation failed");
+#endif
 }
 
 void JAudioComponent::BeginPlay()
@@ -37,30 +39,38 @@ void JAudioComponent::Tick(float DeltaTime)
 
 void JAudioComponent::Destroy()
 {
+#if WITH_FMOD
 	if (mFmodSound)
 	{
 		Stop();
 		mFmodSound->release();
+		mFmodSound = nullptr;
 	}
+#endif
 }
 
 void JAudioComponent::Play(bool bLoop)
 {
+#if WITH_FMOD
 	MSoundManager::Get().mFmodSystem->playSound(mFmodSound, nullptr, false, &mFmodChannel);
 
 	mFmodChannel->setMode(bLoop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+#endif
 }
 
 void JAudioComponent::Stop()
 {
+#if WITH_FMOD
 	if (mFmodChannel)
 	{
 		mFmodChannel->stop();
 	}
+#endif
 }
 
 void JAudioComponent::Pause()
 {
+#if WITH_FMOD
 	if (mFmodChannel)
 	{
 		mFmodChannel->isPlaying(&bIsPlaying);
@@ -70,4 +80,5 @@ void JAudioComponent::Pause()
 			mFmodChannel->setPaused(!bPaused);
 		}
 	}
+#endif
 }

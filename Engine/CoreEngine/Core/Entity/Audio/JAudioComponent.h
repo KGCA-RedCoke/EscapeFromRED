@@ -1,5 +1,9 @@
 ﻿#pragma once
+#if WITH_FMOD
 #include <fmod.hpp>
+#else
+namespace FMOD { class Sound; class Channel; }
+#endif
 #include "Core/Entity/Component/JActorComponent.h"
 
 class JAudioComponent : public JActorComponent
@@ -21,12 +25,12 @@ public:
 	void Pause();
 
 protected:
-	float mVolume;
+	float mVolume = 0.5f;
 
-	bool bLoop;
-	bool bIsPlaying;
-	bool  bPaused;
+	bool bLoop = false;
+	bool bIsPlaying = false;
+	bool bPaused = false;
 
-	FMOD::Sound*   mFmodSound;
-	FMOD::Channel* mFmodChannel;
+	FMOD::Sound*   mFmodSound = nullptr;
+	FMOD::Channel* mFmodChannel = nullptr;
 };

@@ -75,8 +75,20 @@ void JTexture::LoadFromFile()
 	// 			   mShaderResourceView.GetAddressOf())))
 	{
 		JText errorText = WString2String(std::format(L"텍스처 생성 실패 (경로 확인): {}", mTextureName));
-		LOG_CORE_ERROR("{}",errorText);
-		// assert(false, errorText);
+		LOG_CORE_WARN("{}; using a generated placeholder", errorText);
+		// Keep the editor usable when the archived icon/texture pack is absent.
+		const uint32_t pixel = 0xffffffff;
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width = desc.Height = desc.MipLevels = desc.ArraySize = 1;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		D3D11_SUBRESOURCE_DATA data = {&pixel, sizeof(pixel), 0};
+		CheckResult(G_Device.GetDevice()->CreateTexture2D(&desc, &data, mTexture2D.GetAddressOf()));
+		CheckResult(G_Device.GetDevice()->CreateShaderResourceView(mTexture2D.Get(), nullptr, mShaderResourceView.GetAddressOf()));
+		mTextureDesc = desc;
+		mShaderResourceView->GetDesc(&mSRVDesc);
 		return;
 	}
 

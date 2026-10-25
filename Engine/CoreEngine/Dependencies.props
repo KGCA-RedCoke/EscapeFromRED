@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <EnableFmod Condition="'$(EnableFmod)' == ''">false</EnableFmod>
+    <EngineEditorOnly Condition="'$(EngineEditorOnly)' == ''">true</EngineEditorOnly>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>SPDLOG_COMPILED_LIB;SPDLOG_FMT_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>wininet.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EnableFmod)' == 'true'">
+    <ClCompile><PreprocessorDefinitions>WITH_FMOD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+    <Link><AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EngineEditorOnly)' == 'true'">
+    <ClCompile><PreprocessorDefinitions>ENGINE_EDITOR_ONLY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions></ClCompile>
+  </ItemDefinitionGroup>
+  <Target Name="CopyFmodRuntime" AfterTargets="Build"
+          Condition="'$(EnableFmod)' == 'true' and Exists('$(ProjectDir)Vender\lib\$(Configuration)\fmod.dll')">
+    <Copy SourceFiles="$(ProjectDir)Vender\lib\$(Configuration)\fmod.dll"
+          DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

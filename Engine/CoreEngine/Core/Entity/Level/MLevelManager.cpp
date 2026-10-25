@@ -18,9 +18,14 @@ void MLevelManager::PostInitialize(const JText& OriginalNameOrPath, const JText&
 
 	if (Utils::Serialization::IsJAssetFileAndExist(OriginalNameOrPath.c_str()))
 	{
+#if ENGINE_EDITOR_ONLY
+		// The editor may immediately render the scene; finish loading before exposing it.
+		Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(), loadLevel);
+#else
 		GetWorld.ThreadPool.ExecuteTask([OriginalNameOrPath, loadLevel](){
 			Utils::Serialization::DeSerialize(OriginalNameOrPath.c_str(), loadLevel);
 		});
+#endif
 	}
 }
 

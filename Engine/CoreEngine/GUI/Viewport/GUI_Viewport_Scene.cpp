@@ -124,6 +124,10 @@ void GUI_Viewport_Scene::Update_Implementation(float DeltaTime)
 
 void GUI_Viewport_Scene::ShowTopMenu()
 {
+#if ENGINE_EDITOR_ONLY
+	ImGui::TextUnformatted("Engine Editor - game preview disabled");
+	return;
+#endif
 	if (GetWorld.bGameMode)
 		return;
 	ImVec2 availSize = ImGui::GetContentRegionAvail();
