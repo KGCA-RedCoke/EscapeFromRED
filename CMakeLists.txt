@@ -76,6 +76,20 @@ jacob_checks(PlatformSmoke)
 
 include(CTest)
 if(BUILD_TESTING)
+    if(JACOB_PLATFORM_BACKEND STREQUAL "WIN32")
+        set(imgui_dir Engine/CoreEngine/Vender/include/imgui)
+        add_library(JacobImGuiTestSupport STATIC
+            ${imgui_dir}/imgui.cpp ${imgui_dir}/imgui_draw.cpp
+            ${imgui_dir}/imgui_widgets.cpp ${imgui_dir}/imgui_tables.cpp
+            ${imgui_dir}/imgui_impl_win32.cpp)
+        target_include_directories(JacobImGuiTestSupport PUBLIC Engine/CoreEngine/Vender/include)
+        target_link_libraries(JacobImGuiTestSupport PRIVATE user32 gdi32 dwmapi imm32)
+        add_executable(ImGuiBridgeTests tests/platform/ImGuiBridgeTests.cpp)
+        target_link_libraries(ImGuiBridgeTests PRIVATE JacobPlatform JacobImGuiWin32Bridge JacobImGuiTestSupport)
+        jacob_checks(ImGuiBridgeTests)
+        add_test(NAME platform.imgui_bridge COMMAND ImGuiBridgeTests)
+        set_tests_properties(platform.imgui_bridge PROPERTIES TIMEOUT 30)
+    endif()
     add_executable(PlatformTests tests/platform/PlatformTests.cpp)
     target_link_libraries(PlatformTests PRIVATE JacobPlatform)
     jacob_checks(PlatformTests)

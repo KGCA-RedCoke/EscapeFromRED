@@ -122,6 +122,7 @@ Windows 인자는 `wmain`으로 받아 한글·공백 경로를 보존합니다.
 - `platform.window`: 실제 백엔드 창 생성, resize 및 콜백, native event 전달, 종료와 재생성. SDL에서는 주입한 키/마우스 이벤트와 포커스 해제도 확인.
 - `platform.facade`: 기존 엔진이 사용하는 어댑터의 문자열 소유, 초기화/종료, resize 상태 갱신.
 - `platform.smoke`: 120회 이벤트 펌프 후 정상 종료. **120프레임 렌더링 테스트가 아닙니다.**
+- `platform.imgui_bridge` (Windows): 기존 에디터용 Win32–ImGui 연결을 실제로 초기화하고 CPU draw list 생성, native 문자 입력 전달, 종료 순서를 검사합니다. GPU 없이 실행합니다.
 
 `.github/workflows/platform.yml`에서 Windows/Linux/macOS의 Debug/Release를 빌드·검증합니다.
 워크플로 파일 추가는 실행 성공을 뜻하지 않으며, 실제 CI 결과와 아래 로컬 검증 기록을 구분합니다.
@@ -141,5 +142,6 @@ Windows 인자는 `wmain`으로 받아 한글·공백 경로를 보존합니다.
 - SDL dummy 드라이버의 헤드리스 테스트 통과. 데스크톱/GPU 검증과 구분합니다.
 - MinGW-w64 GCC 14: Windows 대상 플랫폼 라이브러리, 테스트 실행 파일, 실제 ImGui Win32 연결 코드의 교차 컴파일 통과.
 - Release 구성은 별도 빌드 디렉터리에서 SDL 소스를 다운로드하고 SHA-256을 검증하여 빌드했습니다.
-- Windows MSVC 전체 에디터 실행 및 macOS Cocoa 실행은 이 Linux 클라우드에서 직접 검증하지 않았습니다.
-  새 플랫폼 CI의 결과와 Windows `Build-Editor.ps1 -SmokeTest` 재실행으로 확인해야 합니다.
+- Windows 교차 빌드 실행 파일의 경로·입력·창·어댑터·이벤트 루프 테스트도 Wine 10/Xvfb에서 통과했습니다. 실제 Windows 실행과 구분합니다.
+- [첫 플랫폼 CI 실행](https://github.com/KGCA-RedCoke/EscapeFromRED/actions/runs/40166852893): Windows 2022 / Ubuntu 24.04 / macOS 14 각각 Debug·Release, 6개 작업 모두 성공.
+- 전체 DX11 에디터는 여전히 Windows에서 `Build-Editor.ps1 -SmokeTest` 및 수동 도킹/입력 확인이 필요합니다. 플랫폼 테스트 성공을 게임/렌더러 검증으로 해석하지 않습니다.

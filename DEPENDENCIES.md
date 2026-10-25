@@ -53,3 +53,11 @@ These remain follow-up cleanup items; this recovery is not a full engine audit.
 
 Reproducible runtime test logs: `bin/Tests/{Debug,Release}/smoke.log` and `smoke.err`.
 Earlier recovery/build logs are retained locally in the sibling `EscapeFromRED-validation` folder.
+
+## Platform-only build
+
+The standalone CMake platform target uses SDL 3.2.28 on Linux/macOS (Win32 remains the Windows default).
+SDL is fetched from upstream commit `7f3ae3d57459e59943a4ecfefc8f6277ec6bf540` with SHA-256 verification:
+`7a8347c770b90b33daac2352858ca03f9c9a2ccc8ce711054870361d1a6b32e5`.
+Its zlib license is retained in the fetched source's `LICENSE.txt`; SDL binaries are not committed.
+The legacy Windows editor does not acquire an SDL dependency. See [platform setup and validation](docs/PLATFORM.md).
