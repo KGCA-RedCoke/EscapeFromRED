@@ -1,63 +1,54 @@
 ﻿#pragma once
-#include "common_include.h"
+#include "Platform/Window.h"
 
-/**
- * 윈도우 창 데이터
- */
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
 struct FBasicWindowData
 {
-	uint32_t Width;			// 창 너비
-	uint32_t Height;		// 창 높이
-	bool     bFullScreen;	// 전체화면 여부
-	bool     bVsync;		// 수직동기화 여부
+    std::uint32_t Width;
+    std::uint32_t Height;
+    bool bFullScreen;
+    bool bVsync;
 };
 
+// Compatibility facade for the existing engine. The platform backend owns the
+// OS window; graphics and GUI only borrow the tagged native handle.
 class Window
 {
 public:
-	explicit Window();
-	explicit Window(LPCWSTR InWindowTitle, const FBasicWindowData& InWindowData);
-	~Window();
+    Window();
+    Window(const char* title, const FBasicWindowData& data);
+    ~Window();
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
 
-public:
-	void Initialize();
-	void Update();
+    void Initialize();
+    void Update();
+    static Window* GetWindow();
 
-public:
-	static Window* GetWindow(void* InWindowHandle = nullptr);
+    Jacob::Platform::NativeWindowHandle GetNativeHandle() const;
+    const char* GetWindowTitle() const { return mTitle.c_str(); }
+    const FBasicWindowData& GetWindowData() const { return mWindowData; }
+    std::uint32_t GetWindowWidth() const { return mWindowData.Width; }
+    std::uint32_t GetWindowHeight() const { return mWindowData.Height; }
+    bool IsClosed() const;
+    bool IsFullScreen() const { return mWindowData.bFullScreen; }
+    bool IsVsyncEnabled() const { return mWindowData.bVsync; }
 
-private:
-	static void RegisterWindow(void* InHandle, Window* InWindowClass);
+    void OnResize(std::uint32_t width, std::uint32_t height);
+    void LockMouseToWindow() const;
+    void WarpMouse(Jacob::Platform::Point position) const;
+    Jacob::Platform::InputSnapshot ReadInput() const;
+    void SetNativeEventFilter(std::function<bool(const Jacob::Platform::NativeEvent&)> filter);
 
-public:
-	[[nodiscard]] FORCEINLINE HINSTANCE               GetInstanceHandle() const { return mInstanceHandle; }
-	[[nodiscard]] FORCEINLINE HWND                    GetWindowHandle() const { return mWindowHandle; }
-	[[nodiscard]] FORCEINLINE LPCWSTR                 GetWindowTitle() const { return mWindowTitle; }
-	[[nodiscard]] FORCEINLINE const FBasicWindowData& GetWindowData() const { return mWindowData; }
-	[[nodiscard]] FORCEINLINE uint32_t                GetWindowWidth() const { return mWindowData.Width; }
-	[[nodiscard]] FORCEINLINE uint32_t                GetWindowHeight() const { return mWindowData.Height; }
-	[[nodiscard]] FORCEINLINE bool                    IsClosed() const { return bClosed; }
-	[[nodiscard]] FORCEINLINE bool                    IsFullScreen() const { return mWindowData.bFullScreen; }
-	[[nodiscard]] FORCEINLINE bool                    IsVsyncEnabled() const { return mWindowData.bVsync; }
-
-public:
-	void OnResize(UINT InWidth, UINT InHeight) const;
-	void LockMouseToWindow() const;
-private:
-	void Resize(UINT InWidth, UINT InHeight);
-
-public:
-	JArray<std::function<void(UINT Width, UINT Height)>> ResizeCallbacks;
+    std::vector<std::function<void(std::uint32_t, std::uint32_t)>> ResizeCallbacks;
 
 private:
-	HINSTANCE        mInstanceHandle;
-	HWND             mWindowHandle;
-	LPCWSTR          mWindowTitle;
-	FBasicWindowData mWindowData;
-	bool             bClosed;
-
-	static int32_t                            s_windowNum;
-	static std::unordered_map<void*, Window*> s_WindowHandles;
-
-	friend LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+    std::string mTitle;
+    FBasicWindowData mWindowData;
+    std::unique_ptr<Jacob::Platform::IWindow> mBackend;
+    static Window* s_Window;
 };

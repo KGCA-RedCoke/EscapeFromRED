@@ -1,4 +1,5 @@
-﻿#include "JLevel.h"
+﻿#include "Core/Window/Window.h"
+#include "JLevel.h"
 
 #include "Core/Entity/Actor/AActor.h"
 #include "Core/Entity/Audio/MSoundManager.h"
@@ -211,7 +212,7 @@ void JLevel::UpdateLevel(float DeltaTime)
 	}
 
 
-	if (mPlayerCharacter && (GetAsyncKeyState('P') & 0x8000))
+	if (mPlayerCharacter && (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::P)))
 	{
 		mPlayerCharacter->OnPlayerHealthChanged.Execute(false);
 	}

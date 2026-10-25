@@ -1,3 +1,4 @@
+#include "Core/Window/Window.h"
 #include "BT_Pig.h"
 
 #include "GUI/GUI_Inspector.h"
@@ -169,7 +170,7 @@ NodeStatus BT_Pig::SetGoal()
 
 NodeStatus BT_Pig::IsPlayerNearAndPressE()
 {
-	if (GetAsyncKeyState('E') & 0x8000 && IsPlayerClose(200))
+	if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::E) && IsPlayerClose(200))
 	{
 		mOwnerEnemy->Destroy();
 		mPigGetSound->Play();

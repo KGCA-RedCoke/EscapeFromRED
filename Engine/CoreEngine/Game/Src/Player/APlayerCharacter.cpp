@@ -1,4 +1,5 @@
-﻿#include "APlayerCharacter.h"
+﻿#include "Core/Window/Window.h"
+#include "APlayerCharacter.h"
 
 #include <DirectXColors.h>
 
@@ -236,7 +237,7 @@ void APlayerCharacter::UpdateRotation()
 	// 화면 중심 기준으로 Yaw와 Pitch 추가
 	if (fabs(offsetX) > threshold)
 	{
-		SetCursorPos(screenCenter.x, currentMousePosition.y);
+		Window::GetWindow()->WarpMouse({static_cast<int>(screenCenter.x), static_cast<int>(currentMousePosition.y)});
 		return;
 	}
 

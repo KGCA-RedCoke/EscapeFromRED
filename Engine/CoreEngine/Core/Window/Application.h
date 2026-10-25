@@ -39,6 +39,7 @@ public:
 private:
 	UPtr<class Window> mWindow;
 
+	bool bWorldInitialized = false;
 	bool bRunning   = false;
 	bool bMinimized = false;
 
@@ -53,6 +54,6 @@ private:
 
 public:
 	Application();
-	Application(LPCWSTR WindowTitle, const FBasicWindowData& WindowData);
+	Application(const char* WindowTitle, const FBasicWindowData& WindowData);
 	~Application();
 };

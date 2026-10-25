@@ -1,4 +1,5 @@
-﻿#include "JLevel_GameOver.h"
+﻿#include "Core/Window/Window.h"
+#include "JLevel_GameOver.h"
 
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -35,7 +36,7 @@ void JLevel_GameOver::UpdateLevel(float DeltaTime)
 {
 	if (mGameOverWidget->IsVisible())
 	{
-		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+		if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::Enter))
 		{
 			if (mButtonIndex == 0)
 			{
@@ -49,11 +50,11 @@ void JLevel_GameOver::UpdateLevel(float DeltaTime)
 			return;
 		}
 
-		if (GetAsyncKeyState(VK_UP) & 0x8000)
+		if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::Up))
 		{
 			mButtonIndex = 0;
 		}
-		if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+		if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::Down))
 		{
 			mButtonIndex = 1;
 		}

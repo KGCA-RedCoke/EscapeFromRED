@@ -579,6 +579,16 @@
     <Content Include="rsc\GameResource\GridMap\GridMap.png" />
     <Content Include="rsc\GameResource\GridMap\GridMap2.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Platform\Window.h" />
+    <ClInclude Include="Core\Input\KeyState.h" />
+    <ClInclude Include="Platform\ResourcePaths.h" />
+    <ClInclude Include="Platform\Win32\NativeWindow.h" />
+    <ClInclude Include="GUI\Platform\ImGuiWindowWin32.h" />
+    <ClCompile Include="Platform\ResourcePaths.cpp" />
+    <ClCompile Include="Platform\Win32\WindowWin32.cpp" />
+    <ClCompile Include="GUI\Platform\ImGuiWindowWin32.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

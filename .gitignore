@@ -9,3 +9,5 @@
 !/Engine/CoreEngine/Vender/include/inifile_cpp/
 /Engine/CoreEngine/Vender/lib/
 /Engine/CoreEngine/Vender/licenses/
+/out/
+/CMakeUserPresets.json

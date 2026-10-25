@@ -1,4 +1,5 @@
-﻿#include "JLevel_Ending.h"
+﻿#include "Core/Window/Window.h"
+#include "JLevel_Ending.h"
 
 #include "Core/Graphics/XD3DDevice.h"
 #include "Core/Graphics/Viewport/MViewportManager.h"
@@ -20,7 +21,7 @@ void JLevel_Ending::InitializeLevel()
 void JLevel_Ending::UpdateLevel(float DeltaTime)
 {
 
-	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+	if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::Enter))
 	{
 
 		PostQuitMessage(0);

@@ -1,0 +1,26 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": { "major": 3, "minor": 24, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "platform",
+      "displayName": "Platform library and window tests (no game renderer)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "BUILD_TESTING": "ON" }
+    },
+    {
+      "name": "platform-headless",
+      "inherits": "platform",
+      "cacheVariables": { "JACOB_PLATFORM_BACKEND": "SDL", "JACOB_HEADLESS_TESTS": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "platform", "configurePreset": "platform", "jobs": 4 },
+    { "name": "platform-headless", "configurePreset": "platform-headless", "jobs": 4 }
+  ],
+  "testPresets": [
+    { "name": "platform", "configurePreset": "platform", "output": { "outputOnFailure": true }, "execution": { "noTestsAction": "error" } },
+    { "name": "platform-headless", "configurePreset": "platform-headless", "output": { "outputOnFailure": true }, "execution": { "noTestsAction": "error" } }
+  ]
+}

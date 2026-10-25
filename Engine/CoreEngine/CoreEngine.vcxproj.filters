@@ -1008,4 +1008,30 @@
     <None Include="Shader\LandScape.hlsl" />
     <None Include="Shader\Decal_Color.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Platform\Window.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\ResourcePaths.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Win32\NativeWindow.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Platform\ImGuiWindowWin32.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Input\KeyState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClCompile Include="Platform\ResourcePaths.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Win32\WindowWin32.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Platform\ImGuiWindowWin32.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
-﻿#include "GUI_Chat.h"
+﻿#include "GUI/Platform/ImGuiWindowWin32.h"
+#include "GUI_Chat.h"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_win32.h>
@@ -20,7 +21,7 @@ void GUI_Chat::Initialize()
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
+    InitializeImGuiWindowWin32(*Window::GetWindow());
     ImGui_ImplDX11_Init(DeviceRSC.GetDevice(), DeviceRSC.GetImmediateDeviceContext());
 }
 

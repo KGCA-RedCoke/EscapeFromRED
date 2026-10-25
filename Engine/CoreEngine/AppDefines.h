@@ -11,7 +11,7 @@ constexpr uint32_t QHD_X = 2560;
 constexpr uint32_t QHD_Y = 1440;
 
 // ---------------------------- Name -------------------------
-constexpr wchar_t Name_Engine_Version[] = L"J.01";
+constexpr char Name_Engine_Version[] = "J.01";
 
 #if defined(_DEBUG)
 	#define RUN(Engine_V, Resolution_X, Resolution_Y)\

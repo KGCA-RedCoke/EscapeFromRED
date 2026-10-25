@@ -1,4 +1,5 @@
-﻿#include "JLevel_Intro.h"
+﻿#include "Core/Window/Window.h"
+#include "JLevel_Intro.h"
 
 #include "Core/Entity/Audio/MSoundManager.h"
 #include "Core/Entity/UI/MUIManager.h"
@@ -52,7 +53,7 @@ void JLevel_Intro::InitializeLevel()
 
 void JLevel_Intro::UpdateLevel(float DeltaTime)
 {
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	if (Window::GetWindow()->ReadInput().IsDown(Jacob::Platform::Key::Space))
 	{
 		JLevel* mainLevel = GetWorld.LevelManager->LoadMainLevel();
 		GetWorld.LevelManager->SetActiveLevel(mainLevel);

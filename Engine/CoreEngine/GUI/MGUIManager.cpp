@@ -1,4 +1,5 @@
-﻿#include "MGUIManager.h"
+﻿#include "GUI/Platform/ImGuiWindowWin32.h"
+#include "MGUIManager.h"
 #include <imgui/imgui_impl_dx11.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_internal.h>
@@ -66,7 +67,7 @@ void MGUIManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InDevi
 	// }
 
 	// 플랫폼, 백엔드 초기화
-	ImGui_ImplWin32_Init(Window::GetWindow()->GetWindowHandle());
+	InitializeImGuiWindowWin32(*Window::GetWindow());
 	ImGui_ImplDX11_Init(InDevice, InDeviceContext);
 
 	InitializeStaticGUI();
@@ -87,6 +88,7 @@ void MGUIManager::InitializeStaticGUI()
 
 void MGUIManager::Release()
 {
+	Window::GetWindow()->SetNativeEventFilter({});
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();

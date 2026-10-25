@@ -1,0 +1,47 @@
+name: Platform library
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+        configuration: [Debug, Release]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux window dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev xvfb xauth
+      - name: Configure Windows platform (no FBX/ATL required)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B out/build/platform -G "Visual Studio 17 2022" -A x64
+      - name: Configure Linux platform
+        if: runner.os == 'Linux'
+        run: cmake -S . -B out/build/platform -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.configuration }} -DSDL_WAYLAND=OFF
+      - name: Configure macOS platform
+        if: runner.os == 'macOS'
+        run: cmake -S . -B out/build/platform -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+      - name: Build
+        run: cmake --build out/build/platform --config ${{ matrix.configuration }} --parallel 4
+      - name: Test Linux X11 windows
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ctest --test-dir out/build/platform -C ${{ matrix.configuration }} --output-on-failure --no-tests=error
+      - name: Test Windows / macOS windows
+        if: runner.os != 'Linux'
+        run: ctest --test-dir out/build/platform -C ${{ matrix.configuration }} --output-on-failure --no-tests=error
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-${{ matrix.os }}-${{ matrix.configuration }}
+          path: out/build/platform/Testing/Temporary/

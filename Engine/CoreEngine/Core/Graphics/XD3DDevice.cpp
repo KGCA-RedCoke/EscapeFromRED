@@ -1,4 +1,5 @@
 ﻿#include "XD3DDevice.h"
+#include "Platform/Win32/NativeWindow.h"
 
 #include "Core/Interface/IRenderable.h"
 #include "Core/Interface/JWorld.h"
@@ -43,6 +44,8 @@ void XD3DDevice::Initialize_Internal()
 	GetWorld.ScreenSize.y = Window::GetWindow()->GetWindowHeight();
 
 	Window::GetWindow()->ResizeCallbacks.emplace_back([this](UINT InWidth, UINT InHeight){
+		// Minimized native windows have no drawable area. Keep the last valid targets.
+		if (InWidth == 0 || InHeight == 0) return;
 		OnResize(InWidth, InHeight);
 		GetWorld.ScreenSize.x = InWidth;
 		GetWorld.ScreenSize.y = InHeight;
@@ -352,7 +355,7 @@ void XD3DDevice::CreateSwapChain()
 	CheckResult(
 				mGIFactory->CreateSwapChainForHwnd(
 												   mDevice.Get(),
-												   Window::GetWindow()->GetWindowHandle(),
+												   Jacob::Platform::Win32Handle(Window::GetWindow()->GetNativeHandle()),
 												   &mSwapChainDesc,
 												   nullptr,
 												   nullptr,

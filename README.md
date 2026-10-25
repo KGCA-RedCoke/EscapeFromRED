@@ -43,3 +43,10 @@ FMOD를 켜려면 동일 버전의 공식 헤더·라이브러리·DLL을 복구
 
 의존성 버전과 검증 내역은 [DEPENDENCIES.md](DEPENDENCIES.md)에 있습니다.
 SDK, 빌드 결과, 로컬 로그와 에디터 저장 파일은 Git에 올리지 않습니다.
+
+## 플랫폼 분리 작업
+
+창·입력·리소스 경로를 분리하는 첫 단계가 추가되었습니다. 기존 Windows 에디터는
+Win32 구현을 사용하며, CMake의 `PlatformSmoke`는 Windows/SDL3(Linux·macOS)에서
+**렌더러 없는 창과 이벤트 처리**를 검증합니다. 전체 게임/에디터의 멀티플랫폼 실행은 아직 아닙니다.
+빌드 명령, 구조와 검증 범위는 [플랫폼 문서](docs/PLATFORM.md)를 참고하세요.

@@ -23,14 +23,14 @@ Application* Application::s_AppInstance = nullptr;
  * 기본생성자의 경우 Renderer라는 이름의 창을 생성하고 1600x900의 크기로 생성한다.
  */
 Application::Application()
-	: Application(L"Renderer", FBasicWindowData(1600, 900, false, false)) {}
+	: Application("Renderer", FBasicWindowData(1600, 900, false, false)) {}
 
 /**
  * 커스텀 생성자의 경우 사용자가 지정한 이름과 크기로 창을 생성한다.
  * @param WindowTitle 어플리케이션 이름
  * @param WindowData 창의 기본 데이터 
  */
-Application::Application(LPCWSTR WindowTitle, const FBasicWindowData& WindowData)
+Application::Application(const char* WindowTitle, const FBasicWindowData& WindowData)
 {
 	if (s_AppInstance != nullptr)
 	{
@@ -66,6 +66,7 @@ void Application::Initialize()
 	mWindow->Initialize();	// 가장 먼저 윈도우 창을 초기화한다.
 
 	GetWorld.Initialize();	// 통합 매니저 인터페이스를 통해 초기화한다. (자세한 파이프라인은 JWorld.cpp 참조)
+	bWorldInitialized = true;
 
 	// 프레임 표시용 텍스트 FIXME: 이것도 매니저(Object)로 관리해야함
 	auto viewportPtr = GetWorld.ViewportManager->FetchResource(Name_Editor_Viewport);
@@ -134,9 +135,16 @@ void Application::Render()
 
 void Application::Release()
 {
+	// Native messages can be dispatched while GUI/graphics objects are shutting down.
+	if (mWindow) mWindow->ResizeCallbacks.clear();
 	mFpsText = nullptr;
 
-	GetWorld.Release();
+	if (bWorldInitialized)
+	{
+		GetWorld.Release();
+		bWorldInitialized = false;
+	}
+	bRunning = false;
 }
 
 void Application::HandleFrame()
