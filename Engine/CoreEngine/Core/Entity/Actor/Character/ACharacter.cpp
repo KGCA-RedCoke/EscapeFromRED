@@ -84,5 +84,6 @@ void ACharacter::ShowEditor()
 
 FVector2 ACharacter::GetMouseDelta() const
 {
-	return mInput->GetCurMouseDelta();
+	const auto delta = mInput->GetCurMouseDelta();
+	return FVector2{static_cast<float>(delta.x), static_cast<float>(delta.y)};
 }
